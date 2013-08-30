@@ -1,0 +1,426 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{ANMM06}
+
+\bibitem[AAA06]{AbiAntounA2006:OOPSLA}
+Marwan Abi-Antoun and Jonathan Aldrich.
+\newblock Bringing ownership domains to mainstream {Java}.
+\newblock In {\em Companion to Object-Oriented Programming Systems, Languages,
+  and Applications (OOPSLA 2006)}, pages 702--703, Portland, OR, USA,
+  October~24--26, 2006.
+
+\bibitem[ACG{\etalchar{+}}06]{AndreaCGNVZ2006}
+Chris Andrea, Yvonne Coady, Celina Gibbs, James Noble, Jan Vitek, and Tian
+  Zhao.
+\newblock Scoped types and aspects for real-time systems.
+\newblock In {\em ECOOP 2006 --- Object-Oriented Programming, 20th European
+  Conference}, pages 124--147, Nantes, France, July~5--7, 2006.
+
+\bibitem[AFKT03]{aiken:pldi03}
+Alex Aiken, Jeffrey~S. Foster, John Kodumal, and Tachio Terauchi.
+\newblock Checking and inferring local non-aliasing.
+\newblock In {\em PLDI 2003, Proceedings of the {ACM} {SIGPLAN} 2003 Conference
+  on Programming Language Design and Implementation}, pages 129--140, San
+  Diego, CA, USA, June~9--11, 2003.
+
+\bibitem[ANMM06]{AndreaeNMM2006}
+Chris Andreae, James Noble, Shane Markstrum, and Todd Millstein.
+\newblock A framework for implementing pluggable type systems.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2006)}, pages 57--74, Portland, OR, USA, October~24--26,
+  2006.
+
+\bibitem[BE04]{BirkaE2004}
+Adrian Birka and Michael~D. Ernst.
+\newblock A practical type system and language for reference immutability.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2004)}, pages 35--49, Vancouver, BC, Canada,
+  October~26--28, 2004.
+
+\bibitem[BHP07]{BurdyHP2007}
+Lilian Burdy, Marieke Huisman, and Mariela Pavlova.
+\newblock Preliminary design of {BML}: A behavioral interface specification
+  language for {Java} bytecode.
+\newblock In {\em Fundamental Approaches to Software Engineering}, pages
+  215--229, Braga, Portugal, March~27--30, 2007.
+
+\bibitem[Blo04]{JSR175}
+Joshua Bloch.
+\newblock {JSR} 175: A metadata facility for the {Java} programming language.
+\newblock \url{http://jcp.org/en/jsr/detail?id=175}, September~30, 2004.
+
+\bibitem[BLR02]{BoyapatiLR2002}
+Chandrasekhar Boyapati, Robert Lee, and Martin Rinard.
+\newblock Ownership types for safe programming: Preventing data races and
+  deadlocks.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2002)}, pages 211--230, Seattle, WA, USA,
+  October~28--30, 2002.
+
+\bibitem[BLS04]{BarnettLS2004}
+Mike Barnett, K.~Rustan~M. Leino, and Wolfram Schulte.
+\newblock The {Spec\#} programming system: An overview.
+\newblock In {\em Construction and Analysis of Safe, Secure, and Interoperable
+  Smart Devices}, pages 49--69, Marseille, France, March~10--13, 2004.
+
+\bibitem[BN02]{BanerjeeN2002}
+Anindya Banerjee and David~A. Naumann.
+\newblock Representation independence, confinement, and access control.
+\newblock In {\em Proceedings of the 29th Annual ACM SIGPLAN-SIGACT Symposium
+  on Principles of Programming Languages}, pages 166--177, Portland, Oregon,
+  January~16--18, 2002.
+
+\bibitem[Boy04]{Boyapati2004:PhD}
+Chandrasekhar Boyapati.
+\newblock {\em {SafeJava}: A Unified Type System for Safe Programming}.
+\newblock PhD thesis, MIT Department of Electrical Engineering and Computer
+  Science, Cambridge, MA, February 2004.
+
+\bibitem[Bra04]{Bracha2004}
+Gilad Bracha.
+\newblock Pluggable type systems.
+\newblock In {\em Workshop on Revival of Dynamic Languages}, Vancouver, BC,
+  Canada, October~25, 2004.
+
+\bibitem[BSBR03]{BoyapatiSBR2003}
+Chandrasekhar Boyapati, Alexandru Salcianu, William {Beebee, Jr.}, and Martin
+  Rinard.
+\newblock Ownership types for safe region-based memory management in real-time
+  java.
+\newblock In {\em PLDI 2003, Proceedings of the {ACM} {SIGPLAN} 2003 Conference
+  on Programming Language Design and Implementation}, pages 324--337, San
+  Diego, CA, USA, June~9--11, 2003.
+
+\bibitem[CCC05]{CazzolaCC2005:JOT}
+Walter Cazzola, Antonio Cisternino, and Diego Colombo.
+\newblock Freely annotating {C}\#.
+\newblock {\em Journal of Object Technology}, 4(10):31--48, December 2005.
+\newblock Special Issue: OOPS Track at SAC 2005.
+
+\bibitem[CD02]{ClarkD2002}
+Dave Clarke and Sophia Drossopoulou.
+\newblock Ownership, encapsulation and the disjointness of type and effect.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2002)}, pages 292--310, Seattle, WA, USA,
+  October~28--30, 2002.
+
+\bibitem[CJ07]{ChalinJ2007}
+Patrice Chalin and Perry~R. James.
+\newblock Non-null references by default in {Java}: Alleviating the nullity
+  annotation burden.
+\newblock In {\em ECOOP 2007 --- Object-Oriented Programming, 21st European
+  Conference}, pages 227--247, Berlin, Germany, August~1--3, 2007.
+
+\bibitem[Cla01]{Clark2001}
+David Clarke.
+\newblock {\em Object Ownership and Containment}.
+\newblock PhD thesis, University of New South Wales, Sydney, Australia, 2001.
+
+\bibitem[CMM05]{ChinMM2005}
+Brian Chin, Shane Markstrum, and Todd Millstein.
+\newblock Semantic type qualifiers.
+\newblock In {\em PLDI 2005, Proceedings of the {ACM} {SIGPLAN} 2005 Conference
+  on Programming Language Design and Implementation}, pages 85--95, Chicago,
+  IL, USA, June~13--15, 2005.
+
+\bibitem[CPN98]{ClarkePN98}
+David~G. Clarke, John~M. Potter, and James Noble.
+\newblock Ownership types for flexible alias protection.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA '98)}, pages 48--64, Vancouver, BC, Canada,
+  October~20--22, 1998.
+
+\bibitem[Cro06]{JSR198}
+Jose Cronembold.
+\newblock {JSR} 198: A standard extension {API} for {Integrated} {Development}
+  {Environments}.
+\newblock \url{http://jcp.org/en/jsr/detail?id=198}, May~8, 2006.
+
+\bibitem[Dar06]{JSR269}
+Joe Darcy.
+\newblock {JSR} 269: Pluggable annotation processing {API}.
+\newblock \url{http://jcp.org/en/jsr/detail?id=269}, May~17, 2006.
+\newblock Public review version.
+
+\bibitem[Det96]{Detlefs96}
+David~L. Detlefs.
+\newblock An overview of the {E}xtended {S}tatic {C}hecking system.
+\newblock In {\em Proceedings of the First Workshop on Formal Methods in
+  Software Practice}, pages 1--9, January 1996.
+
+\bibitem[DF01]{DelineF2001}
+Robert DeLine and Manuel F{\"a}hndrich.
+\newblock Enforcing high-level protocols in low-level software.
+\newblock In {\em PLDI 2001, Proceedings of the {ACM} {SIGPLAN} 2001 Conference
+  on Programming Language Design and Implementation}, pages 59--69, Snowbird,
+  UT, USA, June~20--22, 2001.
+
+\bibitem[DLNS98]{Detlefs-etal98}
+David~L. Detlefs, K.~Rustan~M. Leino, Greg Nelson, and James~B. Saxe.
+\newblock Extended static checking.
+\newblock SRC Research Report 159, Compaq Systems Research Center, December~18,
+  1998.
+
+\bibitem[DM05]{DietlM2005}
+Werner Dietl and Peter M{\"u}ller.
+\newblock Universes: Lightweight ownership for {JML}.
+\newblock {\em Journal of Object Technology}, 4(8):5--32, October 2005.
+
+\bibitem[ECM06]{ECMA334-4th}
+{ECMA} 334: C\# language specification, 4th edition.
+\newblock ECMA International, June 2006.
+
+\bibitem[EFA99]{ElsmanFA99}
+Martin Elsman, Jeffrey~S. Foster, and Alexander Aiken.
+\newblock {\em Carillon --- A System to Find {Y2K} Problems in {C} Programs},
+  July~30, 1999.
+
+\bibitem[EM04]{EichbergM2004}
+Michael Eichberg and Mira Mezini.
+\newblock Alice: Modularization of middleware using aspect-oriented
+  programming.
+\newblock In {\em 4th International Workshop on Software Engineering and
+  Middleware (SEM04)}, pages 47--63, Linz, Austria, December 2004.
+
+\bibitem[Eva96]{Evans96}
+David Evans.
+\newblock Static detection of dynamic memory errors.
+\newblock In {\em PLDI 1996, Proceedings of the SIGPLAN '96 Conference on
+  Programming Language Design and Implementation}, pages 44--53, Philadelphia,
+  PA, USA, May~21--24, 1996.
+
+\bibitem[FL03]{FahndrichL2003}
+Manuel F{\"a}hndrich and K.~Rustan~M. Leino.
+\newblock Declaring and checking non-null types in an object-oriented language.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2003)}, pages 302--312, Anaheim, CA, USA, November~6--8,
+  2003.
+
+\bibitem[FLL{\etalchar{+}}02]{FlanaganLLNSS02}
+Cormac Flanagan, K.~Rustan~M. Leino, Mark Lillibridge, Greg Nelson, James~B.
+  Saxe, and Raymie Stata.
+\newblock Extended static checking for {Java}.
+\newblock In {\em PLDI 2002, Proceedings of the {ACM} {SIGPLAN} 2002 Conference
+  on Programming Language Design and Implementation}, pages 234--245, Berlin,
+  Germany, June~17--19, 2002.
+
+\bibitem[FTA02]{foster:pldi02}
+Jeffrey~S. Foster, Tachio Terauchi, and Alex Aiken.
+\newblock Flow-sensitive type qualifiers.
+\newblock In {\em PLDI 2002, Proceedings of the {ACM} {SIGPLAN} 2002 Conference
+  on Programming Language Design and Implementation}, pages 1--12, Berlin,
+  Germany, June~17--19, 2002.
+
+\bibitem[GF05]{GreenfieldboyceF2005}
+David Greenfieldboyce and Jeffrey~S. Foster.
+\newblock Type qualifiers for {Java}.
+\newblock
+  \url{http://www.cs.umd.edu/Grad/scholarlypapers/papers/greenfiledboyce.pdf},
+  August~8, 2005.
+
+\bibitem[GJS{\etalchar{+}}12]{GoslingJSBB2012}
+James Gosling, Bill Joy, Guy Steele, Gilad Bracha, and Alex Buckley.
+\newblock {\em The Java Language Specification}.
+\newblock \url{http://docs.oracle.com/javase/specs/jls/se7/jls7.pdf}, {Java SE
+  7} edition, 2012.
+
+\bibitem[GJSB00]{GoslingJSB2000}
+James Gosling, Bill Joy, Guy Steele, and Gilad Bracha.
+\newblock {\em The Java Language Specification}.
+\newblock Addison Wesley, Boston, MA, second edition, 2000.
+
+\bibitem[GJSB05]{GoslingJSB2005}
+James Gosling, Bill Joy, Guy Steele, and Gilad Bracha.
+\newblock {\em The Java Language Specification}.
+\newblock Addison Wesley, Boston, MA, third edition, 2005.
+
+\bibitem[GPB{\etalchar{+}}06]{Goetz2006}
+Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug
+  Lea.
+\newblock {\em Java Concurrency in Practice}.
+\newblock Addison-Wesley, 2006.
+
+\bibitem[HK07]{HarmonK2007}
+Trevor Harmon and Raymond Klefstad.
+\newblock Toward a unified standard for worst-case execution time annotations
+  in real-time {Java}.
+\newblock In {\em WPDRTS 2007, Fifteenth International Workshop on Parallel and
+  Distributed Real-Time Systems}, Long Beach, CA, USA, March 2007.
+
+\bibitem[JPLS05]{JacobsPLS2005}
+Bart Jacobs, Frank Piessens, K.~Rustan~M. Leino, and Wolfram Schulte.
+\newblock Safe concurrency for aggregate objects with invariants.
+\newblock In {\em Proceedings of the Third IEEE International Conference on
+  Software Engineering and Formal Methods}, pages 137--147, Koblenz, Germany,
+  September~7--9, 2005.
+
+\bibitem[JW04]{JohnsonW2004}
+Rob Johnson and David Wagner.
+\newblock Finding user/kernel pointer bugs with type inference.
+\newblock In {\em 13th USENIX Security Symposium}, pages 119--134, San Diego,
+  CA, USA, August~11--13, 2004.
+
+\bibitem[KT01]{KnieselT2001}
+G{\"u}nter Kniesel and Dirk Theisen.
+\newblock {JAC} --- access right based encapsulation for {Java}.
+\newblock {\em Software: Practice and Experience}, 31(6):555--576, 2001.
+
+\bibitem[LBR06]{LeavensBR2006:JML}
+Gary~T. Leavens, Albert~L. Baker, and Clyde Ruby.
+\newblock Preliminary design of {JML}: A behavioral interface specification
+  language for {Java}.
+\newblock {\em ACM SIGSOFT Software Engineering Notes}, 31(3), March 2006.
+
+\bibitem[LM04]{LeinoM2004}
+K.~Rustan~M. Leino and Peter M{\"u}ller.
+\newblock Object invariants in dynamic contexts.
+\newblock In {\em ECOOP 2004 --- Object-Oriented Programming, 18th European
+  Conference}, pages 491--, Oslo, Norway, June~16--18, 2004.
+
+\bibitem[LP06]{YuP2006}
+Yi~Lu and John Potter.
+\newblock Protecting representation with effect encapsulation.
+\newblock In {\em Proceedings of the 33rd Annual ACM SIGPLAN-SIGACT Symposium
+  on Principles of Programming Languages}, pages 359--371, Charleston, SC, USA,
+  January~11--13, 2006.
+
+\bibitem[LY99]{LindholmY99}
+Tim Lindholm and Frank Yellin.
+\newblock {\em The Java Virtual Machine Specification}.
+\newblock Addison-Wesley, Reading, MA, USA, 2nd edition, 1999.
+
+\bibitem[LY07]{LindholmY99:CFF5}
+Tim Lindholm and Frank Yellin.
+\newblock The \texttt{class} file format.
+\newblock
+  \url{http://java.sun.com/docs/books/jvms/second_edition/ClassFileFormat-Java5.pdf}, December 2007.
+\newblock Revision to chapter 4 of \cite{LindholmY99} for JDK 1.5.
+
+\bibitem[Mor06]{JSR250}
+Rajiv Mordani.
+\newblock {JSR} 250: Common annotations for the {Java} platform.
+\newblock \url{http://jcp.org/en/jsr/detail?id=250}, May~11, 2006.
+
+\bibitem[MPHL06]{MullerPHL2006}
+Peter M{\"u}ller, Arnd Poetzsch-Heffter, and Gary~T. Leavens.
+\newblock Modular invariants for layered object structures.
+\newblock {\em Science of Computer Programming}, 62:253--286, October 2006.
+
+\bibitem[MPPD08]{MalePPD2008}
+Chris Male, David Pearce, Alex Potanin, and Constantine Dymnikov.
+\newblock Java bytecode verification for {@NonNull} types.
+\newblock In {\em Compiler Construction: 14th International Conference, CC
+  2008}, pages 229--244, Budapest, Hungary, April~3--4, 2008.
+
+\bibitem[M{\"u}l02]{Muller2002}
+Peter M{\"u}ller.
+\newblock {\em Modular Specification and Verification of Object-Oriented
+  Programs}.
+\newblock Number 2262 in Lecture Notes in Computer Science. Springer-Verlag,
+  2002.
+
+\bibitem[NVP98]{NobleVP98}
+James Noble, Jan Vitek, and John Potter.
+\newblock Flexible alias protection.
+\newblock In {\em ECOOP '98, the 12th European Conference on Object-Oriented
+  Programming}, pages 158--185, Brussels, Belgium, July~20-24, 1998.
+
+\bibitem[PAC{\etalchar{+}}08]{PapiACPE2008}
+Matthew~M. Papi, Mahmood Ali, Telmo~Luis {Correa~Jr.}, Jeff~H. Perkins, and
+  Michael~D. Ernst.
+\newblock Practical pluggable types for {Java}.
+\newblock In {\em ISSTA 2008, Proceedings of the 2008 International Symposium
+  on Software Testing and Analysis}, pages 201--212, Seattle, WA, USA,
+  July~22--24, 2008.
+
+\bibitem[PBKM00]{PoratBKM2000}
+Sara Porat, Marina Biberstein, Larry Koved, and Bilba Mendelson.
+\newblock Automatic detection of immutable fields in {Java}.
+\newblock In {\em CASCON}, Mississauga, Ontario, Canada, November~13--16, 2000.
+
+\bibitem[Pec03]{Pechtchanski2003}
+Igor Pechtchanski.
+\newblock {\em A Framework for Optimistic Program Optimization}.
+\newblock PhD thesis, New York University, September 2003.
+
+\bibitem[Pfe92]{PfenningF:deptlp}
+Frank Pfenning.
+\newblock Dependent types in logic programming.
+\newblock In Frank Pfenning, editor, {\em Types in Logic Programming},
+  chapter~10, pages 285--311. MIT Press, Cambridge, MA, 1992.
+
+\bibitem[PNCB06]{PotaninNCB2006}
+Alex Potanin, James Noble, Dave Clarke, and Robert Biddle.
+\newblock {Generic} {Ownership} for {Generic} {Java}.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2006)}, pages 311--324, Portland, OR, USA,
+  October~24--26, 2006.
+
+\bibitem[P{\O}95]{PalsbergO95}
+Jens Palsberg and Peter {\O}rb{\ae}k.
+\newblock Trust in the $\lambda$-calculus.
+\newblock In {\em Proceedings of the Second International Symposium on Static
+  Analysis, SAS '95}, pages 314--329, Glasgow, UK, September~25--27, 1995.
+
+\bibitem[Pug06]{JSR305}
+William Pugh.
+\newblock {JSR} 305: Annotations for software defect detection.
+\newblock \url{http://jcp.org/en/jsr/detail?id=305}, August~29, 2006.
+\newblock JSR Review Ballot version.
+
+\bibitem[STFW01]{ShankarTFW2001}
+Umesh Shankar, Kunal Talwar, Jeffrey~S. Foster, and David Wagner.
+\newblock Detecting format string vulnerabilities with type qualifiers.
+\newblock In {\em 10th USENIX Security Symposium}, Washington, DC, USA,
+  August~15--17, 2001.
+
+\bibitem[SW01]{SkoglundW2001}
+Mats Skoglund and Tobias Wrigstad.
+\newblock A mode system for read-only references in {Java}.
+\newblock In {\em FTfJP'2001: 3rd Workshop on Formal Techniques for Java-like
+  Programs}, Glasgow, Scotland, June~18, 2001.
+
+\bibitem[TE05]{TschantzE2005}
+Matthew~S. Tschantz and Michael~D. Ernst.
+\newblock Javari: Adding reference immutability to {Java}.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2005)}, pages 211--230, San Diego, CA, USA,
+  October~18--20, 2005.
+
+\bibitem[VS97]{VolpanoS97}
+Dennis~M. Volpano and Geoffrey Smith.
+\newblock A type-based approach to program security.
+\newblock In {\em TAPSOFT '97: Theory and Practice of Software Development, 7th
+  International Joint Conference CAAP/FASE}, pages 607--621, Lille, France,
+  April~14--18, 1997.
+
+\bibitem[Xi98]{Xi1998}
+Hongwei Xi.
+\newblock {\em Dependent Types in Practical Programming}.
+\newblock PhD thesis, Carnegie Mellon University, Pittsburgh, PA, USA, December
+  1998.
+
+\bibitem[XP99]{Xi-Pfenning99}
+Hongwei Xi and Frank Pfenning.
+\newblock Dependent types in practical programming.
+\newblock In {\em Proceedings of the 26th Annual ACM SIGPLAN-SIGACT Symposium
+  on Principles of Programming Languages}, pages 214--227, San Antonio, TX,
+  January~20--22, 1999.
+
+\bibitem[YSP{\etalchar{+}}98]{YelickSPMLKHGGCA1998}
+Kathy Yelick, Luigi Semenzato, Geoff Pike, Carleton Miyamoto, Ben Liblit,
+  Arvind Krishnamurthy, Paul Hilfinger, Susan Graham, David Gay, Phil Colella,
+  and Alex Aiken.
+\newblock Titanium: A high-performance {Java} dialect.
+\newblock {\em Concurrency: Practice and Experience}, 10(11--13):825--836,
+  September--November 1998.
+
+\bibitem[ZPA{\etalchar{+}}07]{ZibinPAAKE2007}
+Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and
+  Michael~D. Ernst.
+\newblock Object and reference immutability using {Java} generics.
+\newblock In {\em ESEC/FSE 2007: Proceedings of the 11th European Software
+  Engineering Conference and the 15th {ACM} {SIGSOFT} Symposium on the
+  Foundations of Software Engineering}, pages 75--84, Dubrovnik, Croatia,
+  September~5--7, 2007.
+
+\end{thebibliography}

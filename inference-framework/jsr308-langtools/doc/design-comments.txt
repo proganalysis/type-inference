@@ -1,0 +1,144 @@
+The prototype implementation of langtools for
+JSR 308: Type Annotations in Java
+
++The JSR 308 team (http://types.cs.washington.edu/jsr308/)
+===========================================================
+
+This document describes the command-line changes and implementation
+changes introduced in this prototype.
+
+===========================================================
+1. Command-line changes to the toolchain
+2. Tree API (com.sun.source.tree) changes
+3. changes to javap
+4. changes to javac
+===========================================================
+
+1. Command-line argument changes
+The JSR 308 specification does not introduce any required command-line
+change to any of the langtools commands.
+
+The Type Annotations compiler includes one non-standard option
+ -XDTA:spacesincomments
+that is documented in the Checker Framework manual [1].
+
+Additionally, the compiler recognizes one more environment variable/property:
+  jsr308.import
+The value needs to be a package or a type name.  The parser inserts
+import statements for the package/class to all compiled classes.
+This is discussed in the Checker Framework manual [2].
+
+Finally, the compiler includes some hidden options for debugging:
+ -XDTA:parser    parsing annotations in JavacParser
+ -XDTA:reader    reading annotations from classfile in ClassReader
+ -XDTA:writer    writing annotations to classfile in ClassWriter
+ -XDTA:scanner
+
+You can get an up-to-date list of all the options by searching for
+   .get("TA
+in the jsr308-langtools repository.
+
+===========================================================
+
+2. Tree API changes
+  The Tree API is changed in the following ways:
+    1. new class com.sun.source.tree.AnnotatedTypeTree to represent
+       annotated types
+    2. new method getReceiver() in MethodTree
+    3. new method getAnnotations() in TypeParameterTree
+    4. Updated TreeVisitor and TreeScanner to include methods for new
+       classes
+
+  Consideration:
+
+    1. MethodTree.getReceiver() returns AnnotatedTypeTree whose
+       getUnderlyingType() is null.  Should it simply return
+       List<? extends AnnotationTree>
+
+    2. Should TypeParameterTree have .getAnnotations()?  Representing
+       annotated type parameters with AnnotatedTypeMirror would require
+       changing the API (ClassTree and MethodTree) and a large portion
+       of the javac code that handle type parameters.
+
+===========================================================
+
+3. Javap changes
+
+Javap is written in a modular way to handle type annotations.  Thus, there
+are only a few minor changes:
+  - new classes:
+    ExtendedAnnotation  - datatype for extended type annotation
+    RuntimeTypeAnnotations_attribute   - base class for all type annotations
+    Runtime[In]visibleTypeAnnotations_attribute
+        - data for either runtime visible or invisible type annotations
+  - new class: ExtendedAnnotation
+    datatype to represent type annotations and parse them from classfile.
+  - modification to AnnotationWriter and AttributeWriter, Attribute,
+    ClassWriter
+    minor modification to hook ExtendedAnnotation in the printout
+
+===========================================================
+
+4. Javac changes
+
+The prototype changes the phases of the javac to handle the type annotations
+and implement the modification of the Tree API.
+
+4.1. changes to the Compiler data-types
+4.1.1 TypeAnnotations and TargetType classes
+
+TypeAnnotations and TargetType are used to describe the location of the
+type annotation uniquely.  TargetType corresponds to the target_type values
+in the JSR 308 specification, while TypeAnnotations store the necessary
+information for reference_info.
+
+TypeAnnotations store a list of the annotation symbols not the annotations
+trees.
+
+Considerations:
+    TargetType is quite large and TypeAnnotations has complex logic for
+    its internal state, which adds complication to the class readers
+    and writers alike.  How can we simplify it?
+
+________________________________________
+4.1.1 changes to JCTree
+Each annotated tree contains a list of the annotations and an instance of
+TypeAnnotations.  The fields are populated in different stages:
+  - JCTree.annotations       populated by the parser
+  - TypeAnnotations.position populated by TransType.TypeAnnotationsPositions
+  - TypeAnnotations.annotations populated by MemberEnter.TypeAnnotate
+
+Exception:
+  The position for local variables is not filled properly till Code generation
+when variable offset and length are known.
+
+________________________________________
+4.1.2 changes to Symbol
+Each symbol contains a list of TypeAnnotations, but in reality only
+class, method, and fields symbols have it populated.  The symbol
+contains their type annotations along with the annotations targeting their
+direct descendants.
+
+TransTypes.TypeAnnotationsLift lifts the annotations of the annotated trees
+to the closest enclosing class/method/field symbol.
+
+The type annotations are properly attributed/resolved in MemberEnter.TypeAnnotate
+(which is called through MemberEnter.complete).  The annotations are
+attributed semi-lazily just like other annotations.
+
+Attr.typeAnnotationValidator (with the help of Check.validateTypeAnnotation)
+checks for the JLS rules (e.g. duplicate annotations, duplicate members) and
+the applicability of type annotations in the context.  The call to
+typeAnnotationValidator occurs at the end of attribClassBody, because only
+then are all the type annotations are properly attributed.
+
+________________________________________
+4.1.3 Annotation processing invocation
+
+The prototype introduces a new annotation processing phase, after attribution.
+AbstractTypeProcessor handles these cases.
+
+===========================================================
+References
+[1] http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#annotations-in-comments
+[2] http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#jsr308_imports

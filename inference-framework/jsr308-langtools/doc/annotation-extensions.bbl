@@ -1,0 +1,27 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{GPB{\etalchar{+}}06}
+
+\bibitem[Blo04]{JSR175-PFD2}
+Joshua Bloch.
+\newblock {JSR175}: A program annotation facility for the {Java} programming
+  language: Proposed final draft 2.
+\newblock \url{http://jcp.org/en/jsr/detail?id=175}, August~12, 2004.
+
+\bibitem[GJSB05]{GoslingJSB2005}
+James Gosling, Bill Joy, Guy Steele, and Gilad Bracha.
+\newblock {\em The Java Language Specification}.
+\newblock Addison Wesley, Boston, MA, third edition, 2005.
+
+\bibitem[GPB{\etalchar{+}}06]{Goetz2006}
+Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug
+  Lea.
+\newblock {\em Java Concurrency in Practice}.
+\newblock Addison-Wesley, 2006.
+
+\bibitem[Pug06]{JSR305}
+William Pugh.
+\newblock {JSR} 305: Annotations for software defect detection.
+\newblock \url{http://jcp.org/en/jsr/detail?id=305}, August~29, 2006.
+\newblock JSR Review Ballot version.
+
+\end{thebibliography}

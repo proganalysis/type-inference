@@ -1,0 +1,864 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <title>Changelog for Type Annotations (JSR 308) specification</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="icon" type="image/png" href="../favicon-jsr308.png" />
+</head>
+<body>
+
+<h1>Changelog for Type Annotations (JSR 308) specification</h1>
+
+<!--
+ This file lists changes made to the SPECIFICATION.
+ For changes to the IMPLEMENTATION, see file changelog-jsr308.txt.
+-->
+
+<p>
+This webpage lists changes made to the specification
+for <a href="../">Type annotations (JSR 308)</a>.
+Please always refer to the
+current version of the specification
+(<a href="java-annotation-design.pdf">PDF</a>,
+<a href="java-annotation-design.html">HTML</a>).
+</p>
+
+<dl>
+
+<!-- See Makefile for documentation of how to compute a new changelog entry.
+-->
+
+  <!-- TODO: Constructor result annotations -->
+
+  <dt><a href="java-annotation-design-20120703.html">3 July 2012</a></dt>
+  <dd>
+    Annotation syntax changes:
+    <ul>
+      <li>
+        New receiver syntax.  It is permitted to write an explicit first
+        formal parameter for the method receiver (<tt>this</tt>), which has
+        no run-time effect nor any purpose other than serving as a place
+        for the receiver annotation.  Then, no special case for receiver
+        annotations is needed.
+        For example, what was previously written as
+        <pre>  public String toString() @Readonly { ... }</pre>
+        is now written as
+        <pre>  public String toString(@Readonly MyClass this) { ... }</pre>
+        The syntax enables annotations on type parameters, outer
+        <tt>this</tt> types, etc.
+      </li>
+      <li>
+        Annotations are not permitted on class literals, nor arrays thereof.
+      </li>
+      <li>
+        A type annotation on a nested type before the type's simple name,
+        as in <tt>Map.@NonNull Entry</tt>.
+      </li>
+      <li>
+        If an annotation has no @Target meta-annotation, then it applies
+        only to the ElementTypes that were supported in Java SE 5.
+        An annotation that is applicable to both types and declarations
+        (which would be bad style) is permitted to be written on a
+        <tt>void</tt>-returning method.
+      </li>
+    </ul>
+    Classfile changes:
+    <ul>
+      <li>
+        Rename <tt>extended_annotation</tt> to <tt>type_annotation</tt>.
+      </li>
+      <li>
+        Add a class file format for annotations on static nested classes.
+      </li>
+      <li>
+        Change the class file format for exception parameters (catch clauses).
+      </li>
+      <li>
+        Remove <tt>wildcard_bound</tt> and <tt>wildcard_bound_target</tt>.
+        Wildcards are instead expressed in the location array used for type
+        arguments, array element types, and static nested types.
+      </li>
+      <li>
+        Make <tt>typeparam_bound_target</tt> reserve an index for an
+        implicit type variable upper bound of <tt>java.lang.Object</tt>.
+      </li>
+      <li>
+        Change the <tt>target_type</tt> field of <tt>type_annotation</tt>
+        from <tt>u1</tt> to <tt>u2</tt>, to
+        permit future expansion and to improve word-alignment of the
+        classfile.
+      </li>
+      <li>
+        Renumber all the enumeration constants of <tt>target_type</tt>.
+      </li>
+      <li>
+        Bug fix: Java forbids type parameters in <tt>catch</tt>, not in
+        <tt>throws</tt>.
+      </li>
+    </ul>
+    Specification clarifications:
+    <ul>
+      <li>
+        Clarify the difference between type uses and other type names that
+        appear in Java code.  Examples of type names that are not type uses
+        are <tt>import</tt> statements and class constants such as
+        <tt>int.class</tt>.  Type annotations cannot be written on these
+        type names.  This distinction now appears in the Java Language
+        Specification as well.
+      </li>
+      <li>
+        Clarify that for a constructor result, there is no source code
+        syntax for annotating its type parameters.  Constructor result
+        annotations are stored in the classfile the same place as method
+        return type annotations, using the METHOD_RESULT TargetType.
+      </li>
+      <li>
+        Improve discussion of compiler optimizations that remove an
+        annotated cast. 
+      </li>
+      <li>
+        The classfile representation of annotations does not depend on the
+        source code representation.  Annotations that are implicit in
+        the source code are present in the classfile.  Classfile
+        indexing is with respect to the complete type, regardless of
+        abbreviated types written in source code.  Classfile indexing
+        assumes that all optional <tt>extends Object</tt> clauses are present.
+      </li>
+    </ul>
+    Other specification document changes:
+    <ul>
+      <li>
+        Change grammar productions to be compatible with the grammar in
+        chapter 18 of the Java Language Specification, Java SE
+        7 version.  Remove section 5, merging the two lists of
+        grammar changes into one list.  Separate the declaration annotation
+        on type parameters from the list of type annotations.
+      </li>
+      <li>
+        Remove two incorrect examples of inner class syntax.
+      </li>
+      <li>
+        Add an appendix "Interactions with other Java SE 8 language changes".
+      </li>
+      <li>
+        Remove the "Other possible extensions to Java annotations" appendix.
+        It will be maintained as a separate document.
+        Also remove the "Logistical matters" appendix (Appendix E).
+        Move all discussion of compiler modifications into an appendix.
+        Eliminate Appendix B (discussion of changes), distributing its parts
+        to section 2 (description of changes) and to Appendix A
+        (motivation).
+      </li>
+      <li>
+        Change "Java SE 7" to "Java SE 8".
+        Change "Sun" to "Oracle".
+        Update URLs.
+      </li>
+    </ul>
+    FAQ:
+    <ul>
+      <li>
+        Add section "What is the relationship between the Type Annotations
+        compiler and the OpenJDK compiler?"
+      </li>
+    </ul>
+  </dd>    
+
+  <dt><a href="java-annotation-design-20100729.html">29 July 2010</a></dt>
+  <dd>
+    Fix minor typos.
+  </dd>
+
+  <dt><a href="java-annotation-design-20091125.html">25 November 2009</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        Permit annotations on types in throws clause.
+      </li>
+      <li>
+        If an annotation has no @Target meta-annotation, then it applies
+        everywhere, not just the ElementTypes that were supported in Java SE
+        6.
+      </li>
+      <li>
+        Changes to classfile format:
+        <ul>
+          <li>
+            Change extends/implements from using u1 to u2.
+          </li>
+          <li>
+            Rename reference_info to target_info.
+            Introduce names for each variant.
+          </li>
+          <li>
+            Clarify where attributes appear (on what element in the class file).
+          </li>
+        </ul>
+      </li>
+      <li>
+        Improve discussion of annotations on compiler-generated methods
+        (such as bridge methods).  Cut compiler-specific discussion.
+      </li>
+      <li>
+        The grammar summary in Section 2.1 now separates type parameter
+        declarations from type uses.
+      </li>
+    </ul>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Add new section "Annotations on receiver type parameters" as a
+        potential future extension to the syntax. 
+      </li>
+    </ul>
+  </dd>    
+
+
+  <dt><a href="java-annotation-design-20091005.html">5 October 2009</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        Use terminology 'declaration annotation' for old Java SE 5/6
+        annotations.
+      </li>
+      <li>
+        An annotation with no @Target meta-annotation is
+        treated as a declaration annotation, compatibly with the current
+        behavior of Java SE 6.
+      </li>
+      <li>
+        Classfile format changes:
+        <ul>
+        <li>
+          In classfile, put declaration annotations and type annotations in
+          different places.
+        </li>
+        <li>
+          Better specification of array locations, which were only specified
+          by example before.
+        </li>
+        <li>
+          Specify the reference_info for annotations on class literals.
+        </li>
+        </ul>
+      </li>
+    </ul>
+  </dd>    
+
+  <dt><a href="java-annotation-design-20090904.html">4 September 2009</a></dt>
+  <dd>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Expand discussion of subtyping/inheritance among annotations.
+      </li>
+      <li>
+        Expand discussion of duplicate annotations at a location.
+      </li>
+      <li>
+        Mention OpenJDK support for type annotations, since build M4.
+      </li>
+      <li>
+        Update URLs to reflect that the JSR 308 webpages have moved.
+      </li>
+      <li>
+        Clarify license terms.
+      </li>
+    </ul>
+    Changes to FAQ:
+    <ul>
+      <li>
+        Move pluggable types questions into their own FAQ.
+      </li>
+    </ul>
+  </dd>    
+
+  <dt><a href="java-annotation-design-20090514.html">14 May 2009</a></dt>
+  <dd>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Discuss handling of base case for recursive annotations (a
+        potential future extension).
+      </li>
+      <li>
+        Improve discussion of constructor receivers and results.
+      </li>
+    </ul>
+  </dd>    
+
+  <dt><a href="java-annotation-design-20090227.html">27 February 2009</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        Add new enum constant ElementType.TYPE_PARAMETER, to represent
+        declarations of type variables.
+      </li>
+      <li>
+        Allow annotations on wildcard bounds. 
+      </li>
+    </ul>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Add more examples:  performance annotations, local/remote...
+      </li>
+      <li>
+        Improve explanation of meta-annotating with @Target(ElementType.TYPE_USE).
+      </li>
+    </ul>
+  </dd>    
+
+  <dt><a href="java-annotation-design-20081114.html">14 November 2008</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        Allow annotations on type parameters.
+      </li>
+      <li>
+        Clarify target_type for locations where Java 5 already allowed
+        annotations:  method return type, method parameter, field.
+      </li>
+    </ul>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        There is no commitment as to whether Oracle's javac will parse
+        annotations in comments.
+      </li>
+    </ul>
+  </dd>    
+
+  <dt><a href="java-annotation-design-20081020.html">20 October 2008</a></dt>
+  <dd>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Improve the discussion of repeated annotations and annotation
+        inheritance, both adding new technical material and new motivating
+        examples.  (Thanks to Niko Matsakis, Jonathan Aldrich, and others
+        for the raw material.)
+      </li>
+      <li>
+        In &ldquo;inheritance among annotations&rdquo; section, separate
+        discussion of two approaches:  subclassing among annotations
+        vs. extending/implementing interfaces.
+      </li>
+      <li>
+        Mention two low-priority proposals for further annotation changes:
+        nullable annotation fields and optional/default fields in annotations.
+      </li>
+      <li>
+        Make &ldquo;Annotations on statements&rdquo; a subsection of
+        &ldquo;Locations for annotations&rdquo;.
+      </li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20080926.html">26 September 2008</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        In class file format, add missing fields from attributes for method
+        parameter generic types and method type arguments.  Also
+        cross-reference between the table of <tt>target_type</tt> and
+        sections explaining the <tt>reference_info</tt> definition.
+      </li>
+      <li>
+        Add to-do item:  ambiguity in class file format for annotations on
+        inner classes.
+      </li>
+      <li>
+        Provide a better citation for the JDK 1.5 class file format.
+      </li>
+      <li>
+        Restructure introduction to section 4 (class file format), to
+        separate the summary of the current class file from the summary of
+        the changes.  Clarify other parts of section 4 as
+        well.  This doesn't change the specification, just improves the
+        writing.
+      </li>
+    </ul>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Separate reflection section into things that need to be done, and things
+        that need not be done &mdash; it's mostly the latter!.  Also, delete old
+        reflection proposal an replace it by a simpler yet more expressive one.
+        (Both the old and the new are high-level and remain to be fleshed out.)
+      </li>
+      <li>
+        Many writing improvements and clarifications,
+        including discussions of duplicate annotations, subclassing annotations,
+        and annotations as arguments to annotations, disambiguating type and
+        declaration annotations, annotations on <tt>new</tt>, and receivers
+        (including an explicit definition of the term
+        &ldquo;receiver&rdquo;).  Also expand several examples
+        to show actual declarations instead of just explaining them in the text.
+      </li>
+      <li>
+        More extensive explanation of duplication issues with subclassing
+        annotations.  Conclusion:  this should be deferred to the specific
+        annotation processor, since there is no one-size-fits-all solution.
+        Also, suggest that annotations that can be duplicated should be
+        explicitly so marked.
+      </li>
+      <li>
+        Undo one level of sectioning in appendix D (about possible other
+        annotation changes).  Emphasize again that the
+        specification is not set in stone.  Add another possible (but
+        currently out of scope) extension to annotations:  the
+        <tt>@ValueMember</tt> proposal for the <em>SingleElementAnnotation</em>
+        grammar rule. 
+      </li>
+      <li>
+        Add quotations from the (rather obscure) JSR 175 Design FAQ,
+        explaining the rationale for several JSR 175 annotation design
+        decisions:
+        <ul>
+          <li>
+            Why is it illegal [to] annotate a single element repeatedly
+            with the same annotation type?
+          </li>
+          <li>
+            Why can't you annotate arbitrary program elements such as
+            blocks and individual statements?
+          </li>
+          <li>
+            Why don't you support annotation subtyping (where one annotation type
+          </li>
+          <li>
+            Why is it illegal for an annotation type to contain an element
+            of the same type?
+          </li>
+        </ul>
+      </li>
+    </ul>
+    Changes to introduction:
+    <ul>
+      <li>
+        Reference the FAQ.
+      </li>
+      <li>
+        Explain the term &ldquo;JSR&rdquo; earlier in the document.
+      </li>
+    </ul>
+    Changes to FAQ:
+    <ul>
+      <li>
+        Emphasize backward compatibility.
+      </li>
+      <li>
+        New question on how to write a checker.
+      </li>
+      <li>
+        New question on why the Type Annotations Specification doesn't define
+        annotation types.
+      </li>
+      <li>
+        New question on how to determine the annotation on an object.
+      </li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20080912.html">12 September 2008</a></dt>
+  <dd>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Slightly expand discussion of array syntax.
+      </li>
+      <li>
+        Add examples of arrays with differing nullness annotations on different levels.
+      </li>
+      <li>
+        Add a FAQ to the website that cross-references into the specification.
+      </li>
+      <li>
+        Move discussion of JSR process into the specification document, to remove
+        clutter from the webpage.
+      </li>
+    </ul>
+  </dd>
+    
+  <dt><a href="java-annotation-design-20080829.html">29 August 2008</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        Array syntax is now uniformly prefix:
+        <code>@English String  @NonNull [] @Length(10) []</code>
+        is a non-null array of length-10 arrays of English Strings.
+        (This was already the default for the reference implementation.)
+      </li>
+      <li>
+        Make description of varargs more explicit early in the document.
+      </li>
+    </ul>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Remove long, distracting discussions of alternative syntax
+        proposals.  Retain high-level comments about the other alternatives.
+      </li>
+      <li>
+        Add details about annotations in comments (which are supported by
+        the Type Annotations compiler).
+      </li>
+      <li>
+        Improve and lengthen comparison with JSR 305.
+      </li>
+      <li>
+        Clarify that annotations must be stored in the classfile because
+        the classfile is supposed to represent the full type of each
+        expression.
+      </li>
+      <li>
+        Clarify that Oracle's Tree API is javac-specific.
+      </li>
+      <li>
+        Clarify that reflective invocation is not changed.
+      </li>
+      <li>
+        Note that anonymous class constructors are analogous to bridge methods.
+      </li>
+    </ul>
+    Editorial changes:
+    <ul>
+      <li>
+        Many small textual improvements, typo fixes, improved examples, new citations, new
+        HTML links.
+      </li>
+      <li>
+        Reinstate table of contents, for easier navigation.
+      </li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20071112.html">12 November 2007</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        Change <tt>TYPEREF</tt> to <tt>TYPE_USE</tt> in <tt>ElementType</tt> enum.
+      </li>
+      <li>
+        Note that class file format ought to store the annotations for stack
+        elements, much as is done with types to ease bytecode verification.
+      </li>
+    </ul>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Note that JSR 198 can permit creating cross-IDE plug-ins.
+        Mention need to update JSR 198 AST with respect to Java syntax changes.
+      </li>
+      <li>
+        Add further discussion of the two approaches to handling duplicate
+        annotations at a single location.
+      </li>
+    </ul>
+    Editorial changes:
+    <ul>
+      <li>
+        Re-organize Figure 1 (target_type table) to separate annotations that may
+        appear on class/method/field declarations from those that only appear
+        inside method bodies.
+      </li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20071105.html">5 November 2007</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        Make local variable info an array, to handle separate live ranges.
+      </li>
+    </ul>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Add new example of need for type qualifier annotations:  ThreadSafe.
+      </li>
+      <li>
+        Fix type in comment describing meaning of example variables.
+      </li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20071029.html">29 October 2007</a></dt>
+  <dd>
+    Changes to normative section:
+    <ul>
+      <li>
+        Use new <code>ElementType.TYPEREF</code> enum constant for type
+        annotations, instead of overloading the existing
+        <code>ElementType.TYPE</code> enum constant.
+      </li>
+    </ul>
+    Changes to non-normative section:
+    <ul>
+      <li>
+        Add new example of need for annotations on array elements (non-null type
+        system with non-null default).
+      </li>
+      <li>
+        Clarify the principle that annotations should not affect behavior:  in
+        the absence of an annotation processor, the compiler produces the same
+        bytecodes for annotated code as it would have for the same code
+        without annotations.
+      </li>
+      <li>
+        Discuss backward-compatibility with Java 5 annotation processors,
+        including reading annotations from files produced by Java 5 compilers,
+        and putting annotations in files when the <code>-target 5</code>
+        switch is supplied to javac.
+      </li>
+      <li>
+        Note a problem with desugaring duplicate annotations into arrays:  it
+        loses ordering information among different annotations.  Also add
+        another approach to duplicate annotations:  adding a
+        <code>getAnnotations</code> method like the current
+        <code>getAnnotation</code> method.
+      </li>
+      <li>
+        Expand discussion of permitting annotations to subclass one another,
+        including providing some use cases and explaining some potential
+        problems.
+      </li>
+    </ul>
+    Editorial improvements:
+    <ul>
+      <li>
+        Fix placement of figures in PDF version of document.
+      </li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20071015.html">15 October 2007</a></dt>
+  <dd>
+    Editorial improvements:
+    <ul>
+      <li>Use names, not numbers, for array annotation syntax proposals.
+          Add 2 missing possibilities to the list of alternatives.
+      </li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20071010.html">10 October 2007</a></dt>
+  <dd>
+    New material:
+    <ul>
+      <li>
+        Simplify JSR 308 webpage, and make proposal more self-contained, by
+        moving &ldquo;Open issues&rdquo; into appendices of the design
+        document.
+      </li>
+      <li>
+        Reinstate design alternatives for array annotations.
+      </li>
+    </ul>
+    Editorial improvements:
+    <ul>
+      <li>Grammar changes now avoid deletions; annotations apply to a
+          declaration whenever possible, and &ldquo;Type&rdquo; is used only in places
+          that a pre-JSR308 annotation could <em>not</em> appear.
+      </li>
+      <li>Remove discussion of -typeprocessor; recent compiler
+          changes make it unnecessary.
+      </li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20071002.html">2 October 2007</a></dt>
+  <dd>
+    New material:
+    <ul>
+      <li>Add section giving Java grammar changes.</li>
+      <li>Give syntax for varargs annotation.</li>
+      <li>Expand list of target types for classfile format.</li>
+    </ul>
+    Editorial improvements:
+    <ul>
+      <li>Split document into normative main text and non-normative
+          appendices that explain or amplify.  This makes the main text a
+          manageable 8 pages (most of which is grammar changes anyway),
+          which should be less off-putting to readers.</li>
+      <li>Move design alternatives out of this document, for brevity.</li>
+      <li>Rewrite old section on &ldquo;Disambiguating type and declaration
+          annotations&rdquo; to be a new section &ldquo;Target
+          meta-annotation for type annotations&rdquo;, to emphasize the
+          purpose rather than the mechanism.</li>
+    </ul>
+  </dd>
+
+
+  <dt><a href="java-annotation-design-20070801.html">1 August 2007</a></dt>
+  <dd>
+    New material:
+    <ul>
+      <li>Explain why typecast annotations are attached to a single bytecode, not a range.</li>
+      <li>More syntax examples; note they aren't exhaustive.  Also make
+          example syntax and example use sections consecutive.</li>
+      <li>Add more out-of-scope items (and re-organize that section).</li>
+      <li>Give examples of ambiguity problems for within-the-brackets
+          syntax for arrays (from David Audel).</li>
+    </ul>
+    Editorial improvements:
+    <ul>
+      <li>Fix incorrect statement about annotations as annotation parameters.</li>
+      <li>Rewrite sections on casts and instanceof.</li>
+      <li>Move some FAQ items into design documents, to enable maintaining
+          one instead of two documents and to keep the webpage short.</li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20070705.html">5 July 2007</a></dt>
+  <dd>
+    New material:
+    <ul>
+      <li>Add ideas for array annotation that do not require new locations for annotations.</li>
+      <li>Discuss principles for choosing syntax for array annotations.</li>
+      <li>Explain checking as type-checking of a qualified type system.</li>
+      <li>Discuss Javadoc and clutter-reduction abbreviations.</li>
+    </ul>
+    Editorial improvements:
+    <ul>
+      <li>Many editorial changes suggested by Werner Dietl.</li>
+      <li>Expand related work, particularly with respect to ownership types.</li>
+      <li>Do not state that <code>@DefaultAnnotation(@MyAnnotation(arg="foo"))</code> is illegal.</li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20070607.html">7 June 2007</a></dt>
+  <dd>
+    New material:
+    <ul>
+      <li>Move resolved issues from the
+          <a href="http://types.cs.washington.edu/jsr308/">JSR 308 webpage</a>
+          into the design document (even those out of scope), so 
+          there is one place for people to look.
+        <ul>
+          <li>Dynamic proxy classes</li>
+          <li>Javadoc</li>
+          <li>Annotation inference</li>
+          <li>Annotation defaults</li>
+          <li>Expression annotations</li>
+          <li>Implicit Java types in casts</li>
+          <li>JSR 308 doesn't have to be the last annotations JSR</li>
+        </ul>
+      </li>
+      <li>Discuss restrictions on compiler optimizations.</li>
+      <li>Clarify location of receiver annotation when a
+          <code>throws</code> clause is present.</li>
+      <li>Add additional to-do items for tools/APIs that must be updated,
+        gleaned from Joseph D. Darcy's Oracle Weblog entry
+        <a href="http://blogs.oracle.com/darcy/entry/so_you_want_to_change">So you
+        want to change the Java Programming Language</a>.
+        </li>
+    </ul>
+    Editorial improvements:
+    <ul>
+      <li>Add section to design document for JLS changes and for JVMS
+          changes.</li>
+      <li>Refactor tools section to give Annotation processing its own
+          subsection.</li> 
+      <li>Make &ldquo;Disambiguating type and declaration annotations&rdquo; into a
+          section, and discuss potential disadvantages of using @Target
+          meta-annotation to disambiguate target.</li>
+      <li>Mention that JSR 308 won the Most Innovative JSR of the Year award.</li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20070501.html">1 May 2007</a></dt>
+  <dd>
+    New material:
+    <ul>
+      <li>Add related work on C#.</li>
+      <li>Add discussion of test suite (TCK).</li>
+      <li>Discuss bridge methods.</li>
+      <li>Note Mirror API as an open question.</li>
+      <li>Discuss <code>-typeprocessor</code> option to compiler for post-attribution annotation processors.</li>
+      <li>Explain why JSR 269 is necessary but not sufficient for type-checking plug-ins (Tree API is necessary instead).</li>
+      <li>Discuss a difference between typecast annotations and expression annotations.</li>
+    </ul>
+    Editorial improvements:
+    <ul>
+      <li>Reorganize &ldquo;Required Tool Modifications&rdquo; section (no new content).</li>
+      <li>For clarity, put examples of annotation syntax in their own section
+          (used to be in section with description of source locations).</li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20070225.html">25 February 2007</a></dt>
+  <dd>
+    Substantive changes:
+    <ul>
+      <li>Add 2 new locations for type annotations:
+        <ul>
+          <li>generic type arguments in a generic method or constructor invocation</li>
+          <li>class literals</li>
+        </ul>
+      </li>
+      <li>Add 2 new possible syntaxes for array annotations; now there are 4 in total.</li>
+    </ul>
+    Minor enhancements:
+    <ul>
+      <li>Add related work, and also mention the Access Intents mechanism of WebSphere Application Server.</li>
+      <li>Add URLs for two ancillary documents.</li>
+      <li>Put source-level type annotation locations in its own subsection.</li>
+      <li>Clarify that type syntax follows a simple prefix rule, though with a few special cases.</li>
+      <li>Clarify syntax for generic constructors.</li>
+      <li>Clarify relationship between variable and declaration annotations, and lack of ambiguity therein.</li>
+      <li>Expand explanation and justification of receiver annotations.</li>
+      <li>Clarify that annotations are not part of the Java signature.</li>
+      <li>Clarify that annotations do not affect bytecode, even though they appear in class files.</li>
+      <li>Clarify that &ldquo;annotation processor&rdquo; and &ldquo;type-checking plug-in&rdquo; are synonyms.</li>
+      <li>Explain that the file format must be readable and modifiable by people.</li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20070204.html">4 February 2007</a></dt>
+  <dd>
+    This revision makes only minor editorial improvements.
+    <ul>
+      <li>Improve text about multi-dimensional arrays.</li>
+      <li>Add URL of JSR 308 webpage and PDF version.</li>
+      <li>Clarify syntax for generic constructors.</li>
+      <li>Clarify that annotations are not part of the Java signature.</li>
+      <li>Clarify that &ldquo;annotation processor&rdquo; and &ldquo;type-checking plug-in&rdquo;
+          are synonyms.</li>
+      <li>Add URLs for two ancillary documents.</li>
+    </ul>
+  </dd>
+
+  <dt><a href="java-annotation-design-20070201.html">1 February 2007</a></dt>
+  <dd>
+    First version tracked by this changelog.
+  </dd>
+</dl>
+
+
+
+</body>
+</html>
+
+<!--  LocalWords:  JCP wiki classfile OpenJDK javac var NonNull subcategory JLS
+ -->
+<!--  LocalWords:  classfiles const Changelog WebSphere changelog Weblog TCK
+ -->
+<!--  LocalWords:  instanceof Dietl Audel typeprocessor varargs TYPEREF enum
+ -->
+<!--  LocalWords:  ElementType ThreadSafe webpage PDF bytecode bytecodes JVMS
+ -->
+<!--  LocalWords:  Refactor ValueMember SingleElementAnnotation nullness Niko
+ -->
+<!--  LocalWords:  Matsakis Aldrich multi ElementTypes Readonly MyClass
+ -->

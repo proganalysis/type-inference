@@ -1,0 +1,27 @@
+Adding a new target_type
+------------------------
+
+Whenever a new target_type is added to the specification in:
+  design.tex
+(which is on the web as
+http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#class-file:ext:target_type )
+the following needs to be done to fully incorporate it into the rest of the
+system.
+
+   - Update the annotation index file specification at
+       annotations/doc/annotation-file-format.tex
+     This will appear on the web the next time the Annotation File
+     Utilities are distributed.
+   - Incorporate it into the annotation scene library in the correct 
+       manner (depending on the target_type) at annotations/scene-lib
+   - Update the parser and writer as specified by the above two points
+   - Update the asmx classfile parser to read the new attribute:
+       annotations/asmx/src/org/objectweb/asm/ClassReader.java
+   - Writing to classfile for extended annotations only requires modifying
+       annotations/asmx/src/org/objectweb/asm/TypeAnnotationWriter.java
+   - Modify the asmx extended annotation interface:
+       annotations/asmx/src/org/objectweb/asm/TypeAnnotationVisitor.java
+       Making this change will reveal all the remaining places where other
+       changes might be necessary.
+   - Update the annotator (.jaif -> .java) to understand the new type:
+	    annotations/annotator

@@ -1,0 +1,767 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Type Annotations (JSR 308) Compiler README</title>
+  <link rel="icon" type="image/png" href="favicon-jsr308.png"></link>
+
+<!--
+<style type="text/css">
+body {
+    font-family: sans-serif
+}
+pre, blockquote {
+    background-color: lightgray;
+    margin-left: 2em; 
+    padding: 1em;
+}
+</style>
+-->
+</head>
+
+<body>
+
+<h1>Type Annotations (JSR 308) Compiler README</h1> <!-- omit from toc -->
+
+<h4 id="version">Version 1.3.0 (3 Jul 2012)</h4> <!-- omit from toc -->
+
+<p>For the latest version, see the
+  <a href="http://types.cs.washington.edu/jsr308/">Type Annotations (JSR 308) webpage</a>.
+</p>
+
+<p>Contents:</p>
+<!-- start toc.  do not edit; run html-update-toc instead -->
+    <ul>
+      <li><a href="#intro">Introduction</a></li>
+      <li><a href="#installing">Installing the Type Annotations compiler</a>
+        <ul>
+          <li><a href="#installing-source">Installing from source</a></li>
+        </ul></li>
+      <li><a href="#differences">Features of the Type Annotations compiler</a>
+        <ul>
+          <li><a href="#jsr308-features">Type Annotations (JSR 308) features</a></li>
+          <li><a href="#openjdk-differences">Differences from the OpenJDK compiler</a>
+            <ul>
+              <li><a href="#annotations-in-comments">Writing annotations in comments for forward compatibility</a>
+                <ul>
+                  <li><a href="#annotation-in-comment">Annotations in comments</a></li>
+                  <li><a href="#code-in-comments">Code in comments</a></li>
+                  <li><a href="#implicit-import">Implicit import statements</a></li>
+                </ul></li>
+              <li><a href="#diffs">Determining a diff against the OpenJDK distribution</a></li>
+            </ul></li>
+        </ul></li>
+      <li><a href="#Contributing">Contributing</a>
+        <ul>
+          <li><a href="#reporting-bugs">How to report bugs</a></li>
+          <li><a href="#credits">Credits</a></li>
+          <li><a href="#changelog">Changelog</a></li>
+          <li><a href="#release">Making a release (a distribution)</a></li>
+        </ul></li>
+    </ul>
+<!-- end toc -->
+
+
+<h2 id="intro">Introduction</h2>
+
+<p>
+(If you are impatient, you can skip to the
+<a href="#installing">installation instructions</a>.)
+</p>
+
+<p>
+The Type Annotations compiler is a version of the OpenJDK Java 8 compiler
+that supports some <a href="#openjdk-differences"><b>extra features</b></a>
+for type annotations.
+The OpenJDK Java 8 compiler will support the Type Annotations (JSR 308)
+syntax, which permits annotations to appear on
+types.  The extra features in the Type Annotations compiler
+make it possible for you write (and type-check) type annotations, while
+still permitting your code to be compiled with a Java 4/5/6/7 compiler.
+</p>
+
+
+
+<p>
+You may use the Type Annotations compiler as a replacement for the
+<a href="http://openjdk.java.net/groups/compiler/">OpenJDK <code>javac</code> compiler</a> or any other Java compiler.
+<!--
+, and you may use the JSR 308 <code>javap</code> tool
+serves as a drop-in replacement for the OpenJDK <code>javap</code> tool,
+and it can optionally disassemble both <a
+href="http://jcp.org/en/jsr/detail?id=175">JSR 175</a> and JSR 308
+annotations.
+-->
+</p>
+
+<p>
+Pluggable type-checking is made <em>possible</em> by the Type Annotations
+syntax.  Pluggable type-checking is made <em>easy</em> by the 
+<a href="http://types.cs.washington.edu/checker-framework/">Checker
+Framework</a>.  It includes several example type qualifiers that you can
+start using right away, and it enables you to create your own new compiler
+plug-ins that check user-defined type qualifiers.
+</p>
+
+<p>
+The <a href="#installing">&ldquo;Installing the Type Annotations
+compiler&rdquo;</a> section below contains
+instructions for installing, running, and testing the compiler.
+</p>
+
+<p>
+IntelliJ IDEA (Maia release)
+<a href="http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/">supports</a>
+the Type Annotations (JSR 308) syntax.  Other IDEs (such as Eclipse and
+NetBeans) are being updated to support the Type Annotations syntax.
+For Eclipse, write an <a
+href="http://ant.apache.org/">Ant</a> buildfile that compiles your project
+using the Type Annotations compiler (and maybe does
+<a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#ant-task">pluggable
+type-checking</a> too), then build by running Ant.  Problem markers
+will show up in the Eclipse IDE as normal.  (You will lose a few Eclipse
+features, such as error checking as you type, until Eclipse's internal
+compiler is updated for to support type annotations.)
+</p>
+
+
+<h2 id="installing">Installing the Type Annotations compiler</h2>
+
+<p>
+The <b>easiest</b> way to install the Type Annotations compiler, which is sufficient
+for most users, is to <a
+href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#installation">install
+the Checker Framework binary distribution</a>.
+</p>
+
+<p>
+The remainder of this section gives instructions for installing the Type
+Annotations compiler from source.
+</p>
+
+<p>
+Building from source is useful mainly for people who are
+developing compiler plug-ins or modifying the compiler itself.
+Also, if you use an Apple <b>Macintosh (Mac OS X)</b> computer, you must
+<a href="#installing-source">build the compiler from source</a>.
+</p>
+
+<p>
+Note that while these instructions install the Type Annotations compiler, you do not
+have to make it your default compiler.  For example, you
+could use the Type Annotations compiler only for running pluggable type-checkers.
+Also, you can use javac's <tt>-target</tt> argument to generate bytecodes
+that are compatible with earlier JVMs, so that you can work seamlessly with
+colleagues who are using an earlier version of Java.
+</p>
+
+
+<h3 id="installing-source">Installing from source</h3>
+
+<p>
+<b>Requirements:</b> These instructions assume that
+<!-- Need a version of Ant that supports the nested "condition" element
+  inside a <fail> directive.   Version 1.6 (Feb 2004) does not work. -->
+<a href="http://ant.apache.org/">Ant</a> (version 1.7 or later)
+and the JDK (version 6 or later) are installed.  Furthermore, the
+<code>JAVA_HOME</code> environment variable should be set to the location
+of your JDK installation.  Most likely it is already set for Ant to work.
+</p>
+
+<!--  Too much detail, so cut.
+<p>
+You will use your existing JDK 6 to compile OpenJDK,
+but will not use it thereafter.  You can get JDK 6 from
+<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle</a> or
+elsewhere.  If you use an Apple Macintosh (Mac OS X), then depending on
+your hardware and operating system, you can either use <a
+href="http://developer.apple.com/java/">Apple's implementation</a> or <a
+href="http://landonf.bikemonkey.org/static/soylatte/">SoyLatte</a>.
+</p>
+-->
+
+<ol>
+  <li>
+    Install a new copy of OpenJDK.  This new installation will be modified
+    later (but no other copy of OpenJDK will be modified).  You can
+    put the new installation anywhere you want; a common place is in a new
+    directory <code>~/jsr308</code>.  We will call that directory
+    <tt>$JSR308</tt>.
+    <ol type="a">
+      <li>
+	Download a JDK 7 or 8 <a
+	href="http://download.java.net/jdk7/binaries/">binary snapshot:
+	self-extracting JDK file</a>.
+	Choose JDK, not JRE or DEBUG, and choose a binary, not a source
+	distribution.  The rest of these instructions assume JDK 8, but
+        they work just as well with JDK 7.
+      </li>
+      <li>
+        Follow the installation instructions &mdash; essentially,
+	just run the <code>.exe</code>, <code>.sh</code>, or <code>.bin</code>
+	file that you downloaded and follow the directions.
+      </li>
+      <li>
+        Optionally set the default version of Java.  (At any time, you can run either the
+        default or the non-default version of Java.)
+      	<ul>
+	  <li>
+	For <b>Linux</b>:  
+	After installing, your old version of Java remains the default.
+        If you wish to make OpenJDK Java 8 the default, then
+	set your <code>JAVA_HOME</code> environment variable to the top-level
+	directory of the JDK 8 installation <code>/path/to/jdk1.8.0</code>, and
+	augment your <code>PATH</code> with
+	<code>/path/to/jdk1.8.0/bin</code>.  Example:
+<pre>
+export JSR308=$HOME/jsr308
+export JAVA_HOME=$JSR308/jdk1.8.0
+export PATH=$JAVA_HOME/bin:$PATH
+</pre>
+	The shell uses the <code>PATH</code> variable to locate <code>java</code>,
+	while Ant uses <code>JAVA_HOME</code>.
+	  </li>
+	  <li>
+        For <b>Windows</b>:
+	After installing, the OpenJDK Java 8 (at <code>c:\Program
+	Files\Java\jdk1.8.0\</code>) becomes the default.
+	If you wish to retain an older version of Java as the default, then
+	do the following:
+          <ol>
+	    <li>Install Java 8</li>
+	    <li>Copy the <tt>jdk1.8.0</tt> and <tt>jre1.8.0</tt> directories from <tt>Program Files\Java\</tt> to the desktop</li>
+            <li>Uninstall Java 8</li>
+	    <li>Move the <tt>jdk/jre</tt> directories back to <tt>Program Files\Java\</tt></li>
+          </ol>
+        If you want to be able to run javac from Cygwin, then set
+	environment variables as for Linux, above.
+        </li>
+	</ul>
+      </li>
+      <li>
+        Verify that your installation is correct: run
+	<code>javac -version</code>, and the output should be <code>javac
+	1.8.0-ea</code>.
+      </li>
+    </ol>
+
+
+  </li>
+  <li>
+    Download the <a href="http://types.cs.washington.edu/jsr308/#Download">Type
+    Annotations compiler</a>, and unpack it to create a
+    <code>jsr308-langtools</code> directory.  Do <em>not</em> do this inside the
+    JDK 8 installation (directory <code>jdk1.8.0</code>) that you
+    downloaded in the preceding step.
+    Example commands:
+<pre>
+mkdir ~/jsr308
+cd ~/jsr308
+wget http://types.cs.washington.edu/checker-framework/current/jsr308-langtools.zip
+unzip jsr308-langtools.zip
+</pre>
+  </li>
+  <li>
+	Compile the Type Annotations javac compiler and the javap tool, from
+	directory <code>jsr308-langtools/make</code>:
+    <pre>cd jsr308-langtools/make
+    ant clean build-javac build-javap</pre>
+	Add the <code>jsr308-langtools/dist/bin</code> directory to the front of your
+	<code>PATH</code> environment variable.
+
+    <p>
+    The effect of the above commands is that the <code>javac</code>
+    command invokes the Type Annotations Java compiler and the <code>javap</code>
+    command invokes the Type Annotations <code>javap</code>, but the Java 8 OpenJDK
+    is used for everything else.
+    </p>
+  </li>
+  <li>
+    Run
+<pre>
+javac -version
+</pre>
+    and confirm that the output contains the
+    string <code>jsr308</code>, such as <code>javac 1.8.0-jsr308-1.1.1</code>.
+    <br />
+    If the output is does not contain <code>jsr308</code> 
+    (e.g., <code>javac 1.8.0-ea</code>), but you are using the
+    correct <code>javac</code> binary (in <code>jsr308-langtools/dist/bin</code>), 
+    then it is possible that
+    <code>tools.jar</code> is on your classpath.  You should either remove
+    <code>tools.jar</code> from your classpath, or else put 
+    <code>jsr308-langtools/dist/lib/javac.jar</code> and/or 
+    <code>jsr308-langtools/dist/lib/javap.jar</code>
+    on your classpath before <code>tools.jar</code>.
+  </li>
+</ol>
+
+<p>
+When updating to a newer version of the Type Annotations compiler, you only have to
+follow steps 2, 3, and 4.  In other words, you only have to redo step 1 if
+you want a newer version of OpenJDK.
+</p>
+
+
+<h2 id="differences">Features of the Type Annotations compiler</h2>
+
+
+<h3 id="jsr308-features">Type Annotations (JSR 308) features</h3>
+
+<p>The new type annotations features (which appear in both OpenJDK and in
+  the Type Annotations compiler) are:
+</p>
+<ul>
+  <li>The compiler (which is located in
+    <code>jsr308-langtools/src/share/classes</code>) supports the Type Annotations
+    syntax.  This syntax
+    permits annotations to appear on any occurrence of a type, not just on
+    declarations as declaration annotation (also known as Java 5
+    annotations or JSR 175 annotations) do.  For details of the syntax,
+    see the Type Annotations (JSR 308) specification
+    (<a href="http://types.cs.washington.edu/jsr308/specification/java-annotation-design.pdf">PDF</a>,
+    <a href="http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html">HTML</a>).</li>
+  <li>javac has the ability to warn about redundant casts (when directed to
+   do so using a lint option).  If the target type of the cast contains an
+   annotation, then javac never issues a redundant cast warning, but leaves
+   that up to the annotation processor.  The processor should issue a
+   warning exactly if the cast is redundant with respect to the entire
+   annotated type:  that is, the unannotated type parts are redundant when
+   ignoring the annotations, and the annotations are also redundant.
+   (A potential problem is that if a type has multiple annotations that are
+   handled by different type processors, then no redundant cast warning
+   will ever be issued.)</li>
+</ul>
+
+
+<h3 id="openjdk-differences">Differences from the OpenJDK compiler</h3>
+
+<p>The Type Annotations distribution includes only the <code>langtools</code>
+portion of OpenJDK. The Type Annotations compiler
+makes no modifications in other parts of OpenJDK, and the
+remaining parts of OpenJDK are not necessary to build and use the
+Type Annotations tools.
+</p>
+
+<p>This Type Annotations distribution differs from the <code>langtools</code>
+portion of Oracle's OpenJDK distribution
+in the following ways:
+</p>
+
+<ul>
+  <li>This documentation file has been included.</li>
+  <li>A <tt>doc/</tt> subdirectory contains other design documentation.</li>
+  <li>
+    The 
+    compiler parses annotations written in <a
+    href="#annotations-in-comments">specially-formatted comments</a>,
+    which enables your code to both:
+    <ul>
+      <li>compile with earlier compilers, and</li>
+      <li>be type-checked by the Type Annotations compiler. </li>
+    </ul>
+  </li>
+  <li>
+    Bug fixes appear in this distribution before they
+    are incorporated in the OpenJDK.
+  </li>
+</ul>
+
+
+<h4 id="annotations-in-comments">Writing annotations in comments for forward compatibility</h4>
+
+<p>
+The UW version of the Type Annotations compiler supports writing
+annotations and code in comments, and implicitly importing packages.
+These are temporary features that make it easy to write code that contains
+type annotations but that also compiles when using earlier versions of Java.
+These features will not be supported by the Oracle OpenJDK compiler.
+</p>
+
+<p>
+In addition to the features described below, 
+the compiler accepts the <tt>-target 5</tt> command-line option
+even when the <tt>-source</tt> option is 8 or is omitted.  The compiler
+creates a <tt>.class</tt> file that is compatible with a Java 5 JVM, but
+that contains the type annotations.
+</p>
+
+<p>
+For additional information about these features, see the
+<a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#annotations-in-comments">Checker
+Framework Manual</a>.
+</p>
+
+
+<h5 id="annotation-in-comment">Annotations in comments</h5>
+
+<p>
+The Type Annotations compiler allows annotations to
+be written in &ldquo;<code>/* */</code>&rdquo; (C-style) comments, for example:
+</p>
+<pre>
+  List&lt;/*@NonNull*/ String&gt; strings;
+</pre>
+<p>
+There must be no whitespace at the beginning or end of the comment.
+</p>
+
+<p>
+These mechanism allows developers to use type
+annotations while maintaining the ability to compile their code with an
+unmodified Java compiler, including compilers for earlier versions of the
+Java language (such as Java 4, Java 5, Java 6, or Java 7).
+</p>
+ 
+
+<h5 id="code-in-comments">Code in comments</h5>
+
+<p>
+There is a more powerful mechanism that permits arbitrary code to be
+written in a comment that is formatted as 
+&ldquo;<code>/*>>> */</code>&rdquo;, with the first three characters of the
+comment being greater-than signs.
+As with annotations in comments, the commented code
+is ignored by ordinary compilers but is treated like ordinary code by the
+UW Type Annotations compiler.
+</p>
+
+<p>
+This mechanism is intended only to support writing import statements and
+the new  receiver (&ldquo;<tt>this</tt>&rdquo;) syntax, as in
+</p>
+<pre>
+public boolean getResult(/*>>> @ReadOnly TestRun this*/) { ... }
+</pre>
+<p>
+for a method that does not modify its receiver.
+</p>
+
+<p>
+It would be possible to abuse this mechanism to inject code only when using
+the Type Annotations compiler.  Doing so is not a sanctioned use of the
+mechanism.
+</p>
+
+
+<h5 id="implicit-import">Implicit import statements</h5>
+
+<p>
+A related mechanism, that also facilitates compatibility with compilers
+that do not support the Type Annotations syntax, is 
+the ability to specify imported packages from the command line.
+</p>
+
+
+<!--
+<p>
+The Java 8 language will not require compilers to support this temporary
+mechanism, and Oracle's javac compiler will not do so.
+</p>
+-->
+
+<!--
+javac support for the comment syntax may help to transition users gently to
+the new Java 8 features.  Java programmers delayed adopting Java 5 (e.g.,
+generics), primarily because of backward compatibility issues:  e.g., their
+coworkers/boss/customers didn't want to use Java 5.  But if we could give
+programmers the benefits of type annotations while not affecting backward
+compatibility, that might help more people adopt Java 8 sooner, thus
+increasing its momentum.
+-->
+
+
+
+<h4 id="diffs">Determining a diff against the OpenJDK distribution</h4>
+
+<p>The Type Annotations distribution is a modification of the 
+<code>langtools</code> portion of Oracle's
+<a href="http://openjdk.java.net/">OpenJDK</a>
+<code>javac</code> distribution.
+</p>
+
+<p>The following commands determine the differences between the Type Annotations compiler and the OpenJDK compiler.
+</p>
+
+<ol>
+  <li>If you do not have a clean checkout of the Type Annotations compiler source,
+  obtain one:
+
+  <pre><code>hg clone https://code.google.com/p/jsr308-langtools/ jsr308-langtools</code></pre>
+
+  If you already have one, then just pull all the changes, by running the
+  following command in the directory containing the Type Annotations
+  compiler source:
+  <pre><code>hg pull; hg up</code></pre>
+  </li>
+  
+  <li>Determine the identifier of the last changeset done by Oracle.  Run
+  "<code>hg log | less</code>" to find the last changeset with an author
+  other than <code>mahmood</code>, <code>mali</code>,
+  <code>mernst</code>, <code>notnoop</code>, <code>wdietl</code>, or <code>wmdietl</code>.  The changeset
+  identifier is in the format:
+  <pre><code>450:143956db282e</code></pre>
+  </li>
+  
+  <li> Use <code>hg diff</code> to generate the diff.
+  <pre><code>hg diff -r450:tip</code></pre>
+  </li>
+</ol>
+
+
+<h2 id="Contributing">Contributing</h2>
+
+<p>
+We welcome bug fixes, new features, type-checking plug-ins, and other
+improvements.
+<!-- The link to Peter Ahe's blog is dead, so comment the entire sentence.
+     Folks at Oracle say it's unlikely that the entry will be revived.
+-->
+<!--
+All contributions to <code>javac</code> (annotation-related or not) should follow the
+<a href="http://blogs.sun.com/ahe/entry/contributing_to_javac">guidelines
+for contributing to javac</a>.
+-->
+Any code contributed to javac or to the Type Annotations compiler is
+contributed to Oracle under Oracle's Contributor Agreement
+(<a href="http://openjdk.java.net/contribute/">SCA</a>).
+</p>
+
+
+<h3 id="reporting-bugs">How to report bugs</h3>
+
+<p>
+To report a bug, use the
+<a href="http://code.google.com/p/jsr308-langtools/issues/list">issue
+  tracking system</a>.<br/>
+Please see below for details that will help you submit an informative bug
+report to the <a href="#reporting-bugs-to-whom">right developers</a>, that
+is most likely to be accepted and fixed.<br/>
+Thank you for your bug report!
+</p>
+
+
+<h4>What bugs should you report?</h4> <!-- omit from toc -->
+
+<p>
+If you have any problems with the compiler, please let us know.
+We welcome bug reports and suggestions, and we want to help.
+We will fix all reported bugs in the Type Annotations compiler.
+Examples of bugs include:
+</p>
+
+<ul>
+  <li>Any inconsistency between the Type Annotations compiler and the
+      JSR 308 design (<a
+href="http://types.cs.washington.edu/jsr308/specification/java-annotation-design.pdf">PDF</a>,
+<a href="http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html">HTML</a>).
+  </li>
+  <li>Any annotation-related problem.
+  </li>
+  <li>Any problem that occurs with the Type Annotations compiler but does not occur
+      with the OpenJDK Java 8 compiler on which the Type Annotations compiler is based.
+  </li>
+</ul>
+
+<p>
+Whenever you get a message such as
+</p>
+<pre>
+  An exception has occurred in the compiler (1.8.0-jsr308-1.2.1). Please
+  report this bug so we can fix it.  For instructions, see
+  http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#reporting-bugs
+</pre>
+<p>
+then you should always report it.  However, there are three different
+places you might need to report the bug.  Please report it in the
+appropriate place, and it is more likely to be fixed.
+</p>
+
+
+<h4 id="reporting-bugs-to-whom">To whom should you report the bug?</h4> <!-- omit from toc -->
+
+<p>
+The Type Annotations compiler is built on Oracle's OpenJDK compiler, and
+annotation processors use the Type Annotations compiler.  If
+you find a bug while using the Type Annotations compiler:
+</p>
+
+<ul>
+  <li>It might be due to a bug in the OpenJDK compiler.<br/>
+      In this case, it should be reported to Oracle.
+  </li>
+  <li>It might be due to the Type Annotations modifications.<br/>
+      In this case, it should be reported to the Type Annotations compiler
+      developers.
+  </li>
+  <li>It might be due to an annotation processor you are running.  For
+      instance, you supplied a command line argument such as <code>-processor
+      checkers.nullness.NullnessChecker</code>, and the annotation
+      processor crashed which led to the compiler failure.<br/>
+      In this case, it should be reported to the author of the annotation
+      processor, such as the Checker Framework developers.
+  </li>
+</ul>
+
+<p>
+Please determine who is responsible for the bug (and where it should be reported)
+using this procedure:
+</p>
+
+<ol>
+  <li>If the error message contains text similar to
+    <pre>java.lang.Error: <i>NullnessSubchecker</i> processor threw unexpected exception when processing <i>MyFile.java</i></pre>
+    then the problem is with the annotation processor.  Report the bug to
+    the author of the annotation processor, such as
+    the
+    <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#reporting-bugs">Checker
+    Framework developers</a>.
+  </li>
+  <li>Try to reproduce the error without using an annotation processor.  If
+    you cannot reproduce the error, then the problem may be due to the
+    annotation processor.  Report the bug to
+    the author of the annotation processor, such as
+    the
+    <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#reporting-bugs">Checker
+    Framework developers</a>.
+  </li>
+  <li>Try to reproduce the error using the OpenJDK compiler, without the
+    Type Annotations enhancements.
+    <ol>
+      <li>
+        Obtain a copy of
+        the OpenJDK compiler, using the commands in the <a href="#diffs">diff
+        section</a> of this document.
+      </li>
+      <li>
+        Try your test case using the OpenJDK compiler.
+      </li>
+      <li>
+	If you can reproduce the problem, then search the
+	<a href="http://bugs.sun.com/bugdatabase/index.jsp">bug database</a> (use
+	the &ldquo;Java&rdquo; category).  If the problem is in the bug
+        database, then vote for it.
+        If the problem is not in the bug database, then
+	<a href="http://bugreport.sun.com/bugreport/index.jsp">report your
+	bug to Oracle</a>, using category &ldquo;Java&rdquo;
+	and subcategory &ldquo;compiler&rdquo;.
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<p>
+If the problem is present in the Type Annotations compiler, but not in the OpenJDK
+compiler, then please report it to us by creating a new issue in the
+<a href="http://code.google.com/p/jsr308-langtools/issues/list">issue tracking system</a>.
+(Search the issue tracker first, to avoid reporting a duplicate.  But feel
+free to augment an existing issue with more information.)
+The issue tracker is not intended for general support or questions.
+</p>
+
+
+<h4>How can you make a clear, complete bug report?</h4> <!-- omit from toc -->
+
+<p>
+Please ensure that your bug report is clear and that it is complete.
+Otherwise, we may be unable to understand it or to reproduce it, either of
+which would prevent us from fixing the bug.  Oracle has a description of
+<a
+href="http://java.sun.com/developer/technicalArticles/bugreport_howto/index.html">how
+to write a helpful bug report</a>.  Here are some crucial points:
+</p>
+
+<ul>
+  <li>Indicate exactly what you did.  Show the exact commands (don't merely
+      describe them in words).  Don't skip any steps.
+  </li>
+  <li>Include all files that are necessary to reproduce the problem.  This
+      includes every file that is used by any of the commands you reported, and
+      possibly other files as well.
+  </li>
+  <li>Indicate exactly what the result was (don't merely describe it in
+      words).
+      Also indicate what you expected the result to be &mdash; remember,
+      a bug is a difference between desired and actual outcomes.
+  </li>
+  <li>Indicate which version of the Type Annotations compiler you are using.
+      You can determine that by running <code>javac -version</code>.
+  </li>
+</ul>
+
+
+<h4>Thanks for reporting a bug</h4> <!-- omit from toc -->
+
+<p>
+Finally, thanks for reporting the bug!
+</p>
+
+
+<h3 id="credits">Credits</h3>
+
+<p>
+The Type Annotations compiler was implemented by Matthew M. Papi and
+Mahmood Ali as a modification
+of the Oracle <a href="http://openjdk.java.net/">OpenJDK compiler</a>.
+See above for <a href="#reporting-bugs">how to report bugs</a>.
+</p>
+
+
+<h3 id="changelog">Changelog</h3>
+
+<p>
+Differences from previous versions may be found
+in the <a href="changelog-jsr308.txt">changelog</a>.
+</p>
+
+
+<h3 id="release">Making a release (a distribution)</h3>
+
+<p>
+The Type Annotations compiler and the Checker Framework are typically
+released together; one set of instructions releases both.  See file
+<!-- This file is not linked on the web. -->
+<tt>checker-framework/release/README-maintainers.html</tt> in the Checker
+Framework.
+See that file also for information about the different repositories
+available in the jsr308-langtools project and about other development
+practices.
+</p>
+
+
+<hr />
+
+<p>
+<a href="http://types.cs.washington.edu/jsr308/">JSR 308 webpage</a>
+</p>
+
+</body>
+</html>
+
+<!-- TODO: link to the Oracle JDK langtools; but as of now there is no definitive place to link to -->
+<!--
+<p>The OpenJDK Java 8 compiler, which appears in the
+  <a href="http://hg.openjdk.java.net/jdk8/jdk8/langtools">&ldquo;langtools&rdquo;
+repository</a>.
+-->
+
+
+<!--  LocalWords:  OpenJDK NetBeans diff TODO SCA subcategory buildfile JRE pre
+ -->
+<!--  LocalWords:  changelog serif blockquote lightgray langtools javap NonNull
+ -->
+<!--  LocalWords:  README PDF HTML javac quals classpath cd tmp wget jsr Sep nv
+ -->
+<!--  LocalWords:  uninstall username Haack webpage Nullness bashrc Papi int
+ -->
+<!--  LocalWords:  ElementType enum HKEY JavaSoft CurrentVersion jarfile javaw
+ -->
+<!--  LocalWords:  BrowserJavaVersion exe SoyLatte IntelliJ javac's bytecodes
+ -->
+<!--  LocalWords:  jdk jre Cygwin mkdir NullnessSubchecker MyFile 2em 1em Maia
+ -->
+<!--  LocalWords:  JVMs JSR308 jsr308 subdirectory whitespace boolean getResult
+ -->
+<!--  LocalWords:  ReadOnly TestRun
+ -->
