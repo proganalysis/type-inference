@@ -1,0 +1,1208 @@
+\documentclass[10pt]{article}
+\usepackage{pslatex}
+\usepackage{fancyvrb}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{relsize}
+\usepackage{url}
+\usepackage{xspace}
+\usepackage[normalem]{ulem}
+\usepackage{hevea}
+%HEVEA \footerfalse    % Disable hevea advertisement in footer
+
+\title{Possible extensions to Java annotations}
+\author{Michael D. Ernst \\
+{\ttfamily mernst@cs.washington.edu}
+%HEVEA \\ \today
+}
+
+% At least 95% of every float page must be taken up by
+% floats; there will be no page with more than 5% white space.
+\def\topfraction{.95}
+\def\dbltopfraction{\topfraction}
+\def\floatpagefraction{\topfraction}     % default .5
+\def\dblfloatpagefraction{\topfraction}  % default .5
+\def\textfraction{.05}
+
+% Left and right curly braces and backslash, in tt font
+\newcommand{\ttlcb}{\texttt{\char "7B}}
+\newcommand{\ttrcb}{\texttt{\char "7D}}
+\newcommand{\ttbs}{\texttt{\char "5C}}
+
+\begin{document}
+
+\def\codesize{\smaller}
+%HEVEA \def\codesize{\relax}
+\newcommand{\code}[1]{\ifmmode{\mbox{\codesize\ttfamily{#1}}}\else{\codesize\ttfamily #1}\fi}
+\def\<#1>{\code{#1}}
+\newcommand{\myurl}[1]{{\codesize\url{#1}}}
+%HEVEA \def\myurl{\url}
+
+%NOT HEVEA \makeatletter
+%NOT HEVEA \newcommand{\sout}[1]{\@print{<STRIKE>}{}#1\@print{</STRIKE>}}
+%NOT HEVEA \makeatother
+
+%HEVEA \def\strut{\relax}
+
+%BEGIN LATEX
+\RecustomVerbatimEnvironment{Verbatim}{Verbatim}{fontsize=\smaller}
+%END LATEX
+
+% Add line between figure and text
+\makeatletter
+\def\topfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+\def\botfigrule{\kern-3\p@ \hrule \kern 2.6\p@} % the \hrule is .4pt high
+\def\dblfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+\makeatother
+
+\hyphenation{Pecht-chan-ski}
+
+\newcommand{\jlsURL}{http://java.sun.com/docs/books/jls/third_edition/html/}
+\urldef{\jlsEightEightFourURL}\url{http://java.sun.com/docs/books/jls/third_edition/html/classes.html#8.8.4}
+\urldef{\jlsNineSixURL}\url{http://java.sun.com/docs/books/jls/third_edition/html/interfaces.html#9.6}
+\urldef{\jlsNineSixOneThreeURL}\url{http://java.sun.com/docs/books/jls/third_edition/html/interfaces.html#9.6.1.3}
+\urldef{\jlsNineSevenURL}\url{http://java.sun.com/docs/books/jls/third_edition/html/interfaces.html#9.7}
+\urldef{\jlsFifteenNine}\url{http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.9}
+\urldef{\jlsFifteenNineFiveOneURL}\url{http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.9.5.1}
+\urldef{\jlsFifteenTwelveFourFiveURL}\url{http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.12.4.5}
+
+
+
+\maketitle
+
+This document is a companion to the Type Annotations Specification (JSR
+308).  This document discusses some potential enhancements to annotations
+that would be worthwhile, but were not included in JSR 308.
+The JSR 308 webpage is \myurl{http://types.cs.washington.edu/jsr308/}.
+
+
+
+%HEVEA This document is available in PDF format at \myurl{http://types.cs.washington.edu/jsr308/specification/java-annotation-design.pdf}.
+
+
+\tableofcontents
+
+%% Oracle folks suggest:
+% cfor each proposal, state its impact on
+%  * grammar
+%  * class file
+%  * reflection
+% If there is only impact on the grammar, it can be considered a desugaring.
+
+
+
+\section{Introduction\label{introduction}}
+
+The Type Annotations (JSR 308) specification extends Java's annotation
+syntax.  Java's annotations may be enhanced again in the future, both to
+improve type annotations and for other purposes.  It is a goal of the Type
+Annotations specification not to unnecessarily close off realistic future
+avenues of extension.
+
+This document (which was previously an appendix to the Type Annotations
+specification) gives examples of further extensions to Java's annotation
+system.
+Inclusion here is not an endorsement; this list is intended to be a
+resource for current and future language designers, explaining pros and
+cons of possible changes.
+
+Java has a massive worldwide user base, so the bar to modifying the Java
+language is quite high.  Any proposed modification requires both compelling
+use cases (for many users, not just a niche community) that are currently
+impossible, and it requires a convincing demonstration (not just a claim)
+that there are no negative consequences, such as undesirable interactions
+with current language features or tools.  Where possible, this section
+gives a brief discussion of benefits and potential problems as a starting
+point.  (Problems that potentially apply to all extensions, such as
+existing code that reflects over annotations encountering unexpected
+structures, are not repeated for each extension.)
+
+
+\section{Duplicate (multiple, repeated) annotations at a location\label{duplicate-annotations}}
+
+% This is in desperate need of good motivation; right now it is completely
+% lacking.
+
+It may be desirable for some
+% (but not all)
+annotations to be
+specified more than once at a single location.
+Currently, this is impossible: ``It is a compile-time
+error if a declaration is annotated with more than one annotation for a
+given annotation type''~\cite[\S9.7]{GoslingJSB2005}.
+(By contrast, C\# supports duplicate annotations on a given program element.)
+
+As a related motivation, array-valued annotations can be clumsy to write:
+
+\begin{Verbatim}
+  @Resources({
+      @Resource(name = "db1", type = DataSource.class)
+      @Resource(name = "db2", type = DataSource.class)
+  })
+  public class MyClass { ... }
+\end{Verbatim}
+
+A cleaner syntax is desirable for both purposes:
+
+\begin{Verbatim}
+  @Resource(name = "db1", type = DataSource.class)
+  @Resource(name = "db2", type = DataSource.class)
+  public class MyClass { ... }
+\end{Verbatim}
+
+We note two possible approaches to this problem:  desugaring into arrays,
+or adding a \<getAnnotations> method to two interfaces.
+Among the two proposals, the second is cleaner, more elegant, and easier
+for clients to use.  However, it requires either changing existing
+interfaces or creating new ones.
+
+For backward compatibility, in both approaches an annotation may be
+repeated only if its definition is meta-annotated with \code{@Repeatable}:
+
+\begin{Verbatim} 
+  public @interface Repeatable {
+    public boolean value() = true;
+  }
+\end{Verbatim}
+
+\noindent
+In the below, assume that the definitions of \<A> and \<B> are
+meta-annotated with \<@Repeatable>.
+
+% \noindent
+% For annotations not so meta-annotated, the compiler throws an
+% error/warning just as for Java SE 6.
+
+
+It is already possible in Java SE 6 for a location to have both an
+inherited and an explicit annotation of the same type.  The 
+\code{@Inherited} meta-annotation specification states that a
+\code{getAnnotation}[\code{s}] query returns only the
+explicit annotation.  This requirement should perhaps be relaxed, even if
+inheritance among annotations (Section~\ref{inheritance-among-annotations})
+is not permitted.  For some annotation
+processors, it is best to check that the explicit annotation is consistent
+with the overridden, inherited one and possibly merge information in the
+two annotations.  The current design makes that inconvenient to do.
+
+
+\subsection{Desugar into wrapper annotations\label{duplicate-annotations-desugar}}
+
+% Joe Darcy and Danny Coward have volunteered (in 2006 or 2007) to produce
+% a proposal on this, but they have been foot-dragging since early 2007,
+% and so I have given up on nagging and waiting.
+Desugar duplicate annotations into
+the current array syntax.  For instance, desugar
+
+\begin{Verbatim}
+  @A(1) @B @A(2) Object x;
+\end{Verbatim}
+
+\noindent
+into
+
+\begin{Verbatim}
+  @AContainer({@A(1), @A(2)}) @B Object x;
+\end{Verbatim}
+
+This approach treats duplicate annotations as purely a syntactic
+convenience; it does not change annotations in any deep way.  This approach
+is compatible with certain existing J2EE annotation processors that are
+already written to process both \code{@A} and \code{@AContainer}.
+
+This proposal would need to specify what happens if only one \code{@A}
+annotation is present.  Most likely, the desugaring
+would still place \code{@A} into a singleton \code{@AContainer} annotation.
+Otherwise, client code would become more complicated, since it would have
+to deal with the possibility of either an \code{@A} annotation or an
+\code{@AContainer} annotation.
+
+This proposal would need to specify what happens if both \code{@A} and
+\code{@AContainer} annotations are present.  Most likely, the desugaring
+would insert \code{@A} into the existing \code{@AContainer} annotation,
+either at the front or the back depending on whether the \<@A> or
+\<@AContainer> annotation came first.
+Otherwise, client code would become more complicated, since it would have
+to deal with the possibility of both an \code{@A} annotation or an
+\code{@AContainer} annotation, and with handling the relative order.
+
+This proposal would need to specify what happens if the user queries for
+annotation \code{@A}:  would that always throw an exception (probably the
+best choice), or succeed if one \code{@A} annotation is present, or succeed
+if an \code{@AContainer} annotation with a length-1 array is present, or
+return the first \code{@A} annotation?
+
+A problem with this proposal is that it requires defining an \code{@AContainer}
+annotation for each annotation \code{@A}, or else annotation \code{@A}
+cannot be duplicated.  It would be better not to burden programmers with
+writing and maintaining this boilerplate code.
+
+Another problem with this proposal is that it makes other possible
+extensions to annotations, such as inheritance among annotations
+(Section~\ref{inheritance-among-annotations}), more difficult and clumsy to
+implement and use.  JSR 308 should aim to preserve, not to preclude, future
+avenues of extension.
+
+A final, rather minor, problem is that this proposal loses the ordering of
+differently-named annotations (even if the ordering of same-named
+annotations is preserved within the container).  For example, it cannot
+distinguish these
+declarations:
+\begin{Verbatim}
+  @A(1) @B @A(2) Object x;
+  @A(1) @A(2) @B Object x;
+\end{Verbatim}
+
+
+%% More details from Joe Darcy, but I don't see that they add much to the
+%% shorter description above.
+% A new meta-annotation is introduced to allow an annotation type
+% to declare what its containing type should be:
+% 
+% @interface Container {
+%   Class<? extends Annotation> value();
+% }
+% 
+% so that the declaration
+% 
+% @Container(MyRepeatedAnnotationContainer.class)
+% @interface MyAnnotation()
+% 
+% would allow something like
+% 
+% @MyAnnotation(1) @MyAnnotation(2) @MyAnnotation(3)
+% public class Foo();
+% 
+% to be treated as
+% 
+% @MyRepeatedAnnotationContainer(
+%   {@MyAnnotation(1),
+%    @MyAnnotation(2),
+%    @MyAnnotation(3)})
+% public class Foo();
+% 
+% (I'm not sure what the exact syntactic sugar should be; it might be
+% beneficial to wrap the repeated annotations in "@{", "}" to emphasize
+% the grouping or to restrict the repeated annotations to be sequentially
+% applied.)
+% 
+% Declaring the container in the annotation type provides the compiler and
+% the runtime the information needed to construct or lookup the containing
+% type.  There could be a new method on AnnotatedElement like
+% 
+% <T extends Annotation> T[] getRepeatedAnnotation(Class<T> annotationClass)
+% 
+% or
+% 
+% <T extends Annotation> List<T> getRepeatedAnnotation(Class<T>
+% annotationClass)
+% 
+% This method could potentially handle some of the tricky cases like
+% returning the non-contained annotation if there is one, otherwise return
+% the contained annotation, etc.
+% 
+% The intention is to allow the @Container meta-annotation to be
+% retrofitted to existing wrapper annotations.
+
+
+\subsection{Add new \<getAnnotations> method\label{duplicate-annotations-getAnnotations}}
+
+Add a new \<getAnnotations> method, which returns multiple annotations,
+to two interfaces: \code{java.lang.reflect.AnnotatedElement} and
+\code{javax.lang.model.element.Element}.
+
+\begin{enumerate}
+
+\item
+Create a new method
+
+\begin{Verbatim}
+  <T extends Annotation> T[] getAnnotations(Class<T> annotationClass)
+\end{Verbatim}
+
+% This method returns an array and not a List for consistency with existing
+% methods getAnnotations and getDeclaredAnnotations.
+
+\noindent
+that returns all annotations for the specified annotation type that are
+present on the receiver element.  As with \code{getDeclaredAnnotations},
+the return value is never null but may have zero length.
+
+\item
+Slightly modify the specification of the existing method
+
+\begin{Verbatim}
+  <T extends Annotation> T getAnnotation(Class<T> annotationClass)
+\end{Verbatim}
+
+\noindent
+When duplicate annotations exist, method \code{getAnnotation} could either
+give the first one (convenient for backward compatibility) or throw an
+exception (convenient to prevent erroneous processing).  The latter seems
+like a better choice.
+
+% Classes:
+%   java.lang.Class.getAnnotation(java.lang.Class)
+%   java.lang.Package.getAnnotation(java.lang.Class)
+%   java.lang.reflect.AccessibleObject.getAnnotation(java.lang.Class)
+%   java.lang.reflect.Constructor.getAnnotation(java.lang.Class)
+%   java.lang.reflect.Field.getAnnotation(java.lang.Class)
+%   java.lang.reflect.Method.getAnnotation(java.lang.Class)
+% Interfaces:
+%   java.lang.reflect.AnnotatedElement.getAnnotation(java.lang.Class)
+%   javax.lang.model.element.Element.getAnnotation(java.lang.Class)
+
+\end{enumerate}
+
+The arrays returned by the methods \code{getAnnotations(Class)},  
+\code{getAnnotations()}, and \code{getDeclaredAnnotations()} are required
+to preserve the ordering of the annotations as they were declared in the
+original \code{.java} source file.
+
+No other changes would be necessary.  Existing code that uses
+some other workaround (like special \code{@AContainer} annotations) would
+continue to work.  Or, it could be converted to take advantage of this new
+mechanism.
+
+The problem with this proposal is that it requires adding a single method,
+\<getAnnotations>, to two interfaces.  While the changes would not break
+upward binary-compatibility, they would break source-compatibility:
+existing implementations of \<Element> and \<AnnotatedElement> could not
+be re-compiled under Java 8 without adding a \<getAnnotations> method.
+Oracle's policy generally frowns upon such changes that break
+source-compatibility, though Oracle sometimes makes them nonetheless.
+% Such changes have to be approved by the CCC (conformance change committee).
+For example, the
+SQL interfaces have far more implementations than the compiler or
+reflection APIs, but Java SE 6 added three methods to the
+\<java.sql.Statement> interface and made it extend \<Wrapper>.
+% This isn't even documented in the Java 6 Incompatibility Release notes
+% (http://www.oracle.com/technetwork/java/javase/compatibility-137541.html#incompatibilities; was http://java.sun.com/javase/6/webnotes/compatibility.html#incompatibilities).
+
+An alternative to changing the \<Element> (and \<AnnotatedElement>) interface is to create a new
+\<Element2> interface that augments \<Element> with the \<getAnnotations>
+method, and to mark \<Element> as deprecated.  Then, programmers should
+rewrite their existing code to use the \<Element2> interface instead of the
+\<Element> interface.  However, their code continues to compile until they
+make the change.  A problem with this change is that it requires making a
+copy (with names suffixed ``\<2>'') of the entire \<javax.lang.model>
+package, which is ugly.
+
+Another alternative is to change the \<Elements> utility interface.  The
+new \<getAnnotations> methods logically belong in \<Element>, but they can
+be added to the \<Elements> interface because it is explicitly documented
+with ``Compatibility Note: Methods may be added to this interface in future
+releases of the platform.''  Thus, adding static methods in \<Elements> is
+a path toward extending functionality without changing core
+interfaces/classes such as \<Element>.  A problem with this proposal is
+that clients must remember to use the methods of \<Elements> when
+functionality is not present in \<Element>.  A programmer browsing the
+\<Element> interface might not think to check for static methods in
+\<Elements>.
+
+
+\subsection{JSR 175 design justification\label{duplicate-annotations-jsr175-justification}}
+
+The JSR 175 Design FAQ~\cite{JSR175-PFD2} briefly addresses why this
+feature was not originally included:
+
+\begin{quote}
+Why is it illegal [to] annotate a single element repeatedly with the same annotation type?
+
+A similar effect is available by annotating once with an annotation type
+whose sole element is of an array type. The resulting system is simpler and
+cleaner: you don't have to worry about whether you're going to get back a
+single instance of the annotation type or multiple instances when you query
+an annotation. Also it's consistent with the usual restriction on
+modifiers.
+\end{quote}
+
+The argument that ``the resulting system is simpler and cleaner'' is
+perplexing.  A client must check for both the singular and plural versions
+of the annotation and must handle the case when both the singular and the
+plural versions are present.  By contrast to the stated claim, a system for
+duplicate annotations with an interface that always returns a list (or
+always returns an array) is what is needed to relieve the client of ``worry
+about whether you're going to get back a single instance''.
+
+
+\section{Locations for annotations\label{locations-for-annotations}}
+
+
+\subsection{Annotations on statements\label{statement-annotations}}
+
+Annotations on statements (or on some subset of statements, such as blocks
+or loops) would be useful for a variety of purposes, including
+atomicity/concurrency.  Supporting annotations on statements would require
+defining both Java syntax and a convention for storing the information in
+the class file.  See
+\myurl{http://code.google.com/p/jsr308-langtools/wiki/AnnotationsOnStatements} for a
+proposal that summarizes why statement annotations are desirable, and that
+proposes a Java syntax, a classfile storage format, and how other tools
+will accommodate them.  If you would like to help this feature become a
+reality, then please pitch in!  You can join the
+\code{jsr308-discuss@googlegroups.com} mailing list (via
+\myurl{http://groups.google.com/group/jsr308-discuss}),
+expand the partial design on the wiki, or work on the implementation.
+
+The JSR 175 Design FAQ~\cite{JSR175-PFD2} briefly addresses why this
+feature was not originally included:
+
+\begin{quote}
+  Why can't you annotate arbitrary program elements such as blocks
+    and individual statements?
+
+  This would greatly complicate the annotation syntax: We would have to
+  sacrifice the simplicity of saying that annotations are simply modifiers,
+  which can be used on declarations.
+\end{quote}
+
+
+\subsection{Expression annotations\label{expression-annotations}}
+
+Annotating an expression
+indicates some property of the computation, such as that it should
+be performed atomically, that it acquires no locks, or that it should be
+formatted specially by an IDE\@.  JSR 308 does not support expression
+annotations, because we have not yet discovered compelling use cases for
+them that cannot be equally well supported by statement annotations.  (A
+minor inconvenience is that the use of statement annotations may require
+the programmer to create a separate statement for the expression to be
+annotated.)
+Expression annotations are not type annotations and are different than
+annotating a type cast, which indicates a property of a value (the result
+of an expression).
+
+
+\subsection{Implicit Java types in casts\label{implicit-java-types-in-casts}}
+
+Arbitrary values can be annotated using an annotation on a cast:
+\begin{Verbatim}
+  (@Language("SQL") String) "select * from foo"
+\end{Verbatim}
+
+A possible shorthand would be to permit the Java type to be implicit:
+\begin{Verbatim}
+  (@Language("SQL")) "select * from foo"
+\end{Verbatim}
+This is not permitted, nor may a cast be omitted in a type test, as in
+``\code{x instanceof @NonNull}''.  There are several reasons for this
+decision:
+\begin{enumerate}
+\item Erasing the annotations should leave a valid Java program.
+\item Stating the type reinforces that the annotation is a
+type annotation rather than an expression annotation.
+\item Especially in a type test, stating the type reinforces that the run-time
+effect is to check and change the Java type.  In general, no run-time check
+of the annotation is possible.
+\item The benefit of omitting the type in the cast seems relatively minor.
+\end{enumerate}
+
+An even shorter shorthand would drop the parentheses:
+\begin{Verbatim}
+  @Language("SQL") "select * from foo"
+\end{Verbatim}
+In addition to the benefits and problems noted above, such an annotation is
+syntactically ambiguous with an expression annotation.
+Whether an annotation applies to expressions or to types is clear from the
+annotation's documentation and its \code{@Target} meta-annotation,
+similarly to how it is determined whether an annotation applies to a type
+or to a declaration.
+% (Section~\ref{disambiguating}).
+
+% But a problem remains.
+% If a within-brackets proposal for arrays
+% % (Section~\ref{array-syntax})
+% is
+% chosen, then \code{Object[@X 2]}
+% might mean that the array level has annotation \code{X} or that it's shorthand
+% for \code{Object[(@X int) 2]}; similar confusion might occur when the array
+% length is a more complex expression.
+
+% Possible problem: @Readonly means something different when applied to an
+% expression and to a type, though perhaps a different name would be better
+% for the expression.
+
+
+%       One advantage of the expression version is that casts in general
+%       shouldn't appear in code (and tools may raise warnings about them).
+%       But the same is true of annotation casts!
+%       Compilers shouldn't complain about redundant casts that are
+%       annotated (but annotation processors should).
+
+
+\subsection{Only certain statements\label{locations-subset-of-statements}}
+
+It would be possible to permit annotations only on blocks and/or loops, as
+a restricted special case of statements.  This is less general than
+permitting annotations on statements, and uses are more syntactically
+cluttered (for instance, this requires a statement to be converted into a
+block before it can be annotated).  Most declarations could not be
+annotated as statements because enclosing the declaration in a block to
+annotate it would change (and limit) the variable's scope.  This limitation
+in flexibility does yield the advantage that there would be no syntactic
+ambiguity between (say) statement annotations and declaration or type
+annotations.
+
+Similarly, permitting annotations on partial constructs (such as only the
+body of a loop) appears both more complex, and no more useful, than
+annotating complete constructs (such as a full statement).
+
+
+\section{Changes to the annotation type\label{changes-to-the-annotation-type}}
+
+
+\subsection{Inheritance among annotations (subclassing/subtyping annotations)\label{inheritance-among-annotations}}
+
+% Multiple inheritance (i.e., from interfaces) when subtyping annotations:
+% 
+% According to the Java Language Specification section 9.4.1:
+% 
+% > It is possible for an interface to inherit several methods with  
+% > override-equivalent signatures (§8.4.2). Such a situation does not  
+% > in itself cause a compile-time error. The interface is considered to  
+% > inherit all the methods. However, one of the inherited methods must  
+% > must be return type substitutable for any other inherited method;  
+% > otherwise, a compile-time error occurs (The throws clauses do not  
+% > cause errors in this case.)
+% 
+% Therefore, we would make a similar rule regarding the properties/ 
+% methods of annotation types.  Since all methods on annotation types  
+% take no arguments, their signatures are trivially override- 
+% equivalent.  Therefore, you can combine inherit multiple properties  
+% with the same name so long as one of them has a "most specific" return  
+% type that is substitutable for all the others.  I could not find the  
+% precise definition of when a type is "substitutable" for another,  
+% perhaps it refers to the return type substitution of 8.4.5?  I guess  
+% that here I would simply to reproduce the behavior of interfaces,  
+% which I believe must also resolve the return type of a multiply- 
+% inherited method in such a scenario.
+% 
+% However, there is one additional wrinkle that occurs with annotations  
+% that do not occur with interfaces: default values.  The simplest rule  
+% here would be to say that at most one inherited method can supply a  
+% default value.  Alternatively, any number can supply default values  
+% but they must all have the same type and value.
+% 
+% The same rule would then apply to "overriding" members declared in sub- 
+% annotation-types: in other words, you can redeclare a property from a  
+% supertype, but the return type and default value must be compatible as  
+% described above.
+
+
+% \label{subclassing-annotations}\label{subtyping-annotations}
+
+In Java SE 6, annotations cannot subclass one another, and an annotation is not allowed
+to extend/implement any interfaces.  These restrictions make it difficult
+to share behavior or to express similarities or relationships among
+annotation types.  For example, it is inconvenient to define annotations
+with choices in their structure, such as a discriminated union that uses
+field names that act as explicit tags.  It is impossible to create
+annotation processors or APIs that work with a specific set of annotations
+(say, all those with a given set of element names).
+
+Permitting inheritance among annotations would solve these problems.  (To
+work around the problem, one could meta-annotate an annotation as a
+``subannotation'' of another, and then the annotation processor could do
+all the work to interpret the meta-annotation.  This is clumsy and
+indirect.)
+
+A potential objection is that multiple annotation processors might try to
+claim the same annotation, one directly and one by claiming its supertype.
+This can be accommodated.  In general, annotation processor designers
+should, and can, avoid this situation by running one processor at a time
+for a family of annotations that are related by inheritance.
+
+
+%% This text is inaccurate; JLS 9.6 merely says that an member can have an
+%% annotation type, and elsewhere inheritance among annotations is prohibited.
+% Inheritance among annotations would slightly relax Java's current
+% restriction on annotations as annotation members, namely that an annotation
+% can have a member that is an annotation \emph{of a specific type}.
+
+Without other changes, inheritance among annotations would not enable
+recursive or self-referential annotations (see
+Section~\ref{annotations-as-members}).
+
+There are two general designs that permit inheritance among annotations:
+permitting annotations to subclass other annotations, or permitting
+annotations to extend/implement interfaces, or both.
+We briefly elaborate on the two designs.
+
+\paragraph{Subclassing annotations}
+
+Permitting inheritance among annotations requires that the \code{final}
+modifier on an annotation type declaration works just like for ordinary
+classes:  it prevents creation of subtypes of the given annotation.  A
+framework that defines annotation \code{@A} may not want to load an
+untrusted subclass \code{@B} of \code{@A} into the framework.
+
+The specification of the \code{getAnnotation(Class)} method must be
+updated.  Suppose that annotation types \code{Sub1} and \code{Sub2} are
+direct subtypes of \code{Super}, and \code{Super} has a \code{value} field
+of type \code{int}.  The specification must indicate the behavior of
+\code{getAnnotation(Super.class)} when called on locations with all
+possible combinations of the three annotations, with all possible
+combinations of arguments.  Here are a few examples:
+
+\begin{itemize}
+\item
+ a location that is annotated with \code{@Sub1(1)} but not annotated with
+ \code{@Super}
+\item
+ a location that is annotated with both \code{@Super(0)} and \code{@Sub1(1)}
+\item
+ a location that is annotated with both \code{@Sub1(0)} and
+ \code{@Sub2(0)}, but not annotated with \code{@Super}
+\item
+ a location that is annotated with \code{@Sub1(1)} and \code{@Sub2(2)}, but
+ not annotated with \code{@Super}
+\end{itemize}
+
+\noindent
+Reflection APIs may also need to be updated.
+
+As is clear from the examples above,
+subclassing annotations raises the possibility of multiple effective
+annotations applying at a location.
+Therefore, subclassing annotations makes most sense if the specification
+already permits duplicate annotations (see
+Section~\ref{duplicate-annotations}).
+In that case,
+the new \code{getAnnotations(Class)} method returns all of the annotations.
+(Then, the client can decide what to do with them, such as raise an
+error, merge the annotations, or take some other action.)
+
+
+The JSR 175 Design FAQ~\cite{JSR175-PFD2} briefly addresses why this
+feature was not originally included:
+
+\begin{quote}
+Why don't you support annotation subtyping (where one annotation type
+extends another)?
+
+It complicates the annotation type system, and makes it much more difficult
+to write ``Specific Tools''.
+
+\ldots
+
+``Specific Tools'' --- Programs that query known annotation types of
+arbitrary external programs. Stub generators, for example, fall into this
+category. These programs will read annotated classes without loading them
+into the virtual machine, but will load annotation interfaces.
+\end{quote}
+
+% My best guess is that the "specific tools" would need to look not just
+% for a specific annotation, but would have to check every annotation to
+% see whether it's a subclass of the one the tool is written for.  And, the
+% specific tool doesn't want to load untrusted annotations (or, for that
+% matter, all annotations) just to check whether they are a subclass of the
+% specific annotation.
+
+% Support for the "final" modifier may answer much of this objection.
+
+
+\paragraph{Extending/implementing interfaces}
+
+%% Joe Darcy says:
+% I would support allowing annotation type to extend interfaces, including
+% when those interfaces happened to be annotation types, keeping the current
+% restrictions on what methods can be declared in an annotation type.  There
+% would be no deeper annotation subtyping relation between annotation types
+% where one extended the other in terms of how they were processed, etc.
+
+
+Permitting annotation types to extend/implement interfaces is less
+powerful than subclassing among annotations.
+For example, interfaces can't define default values, nor is it possible
+to subclass an annotation to enhance functionality.
+An advantage of this approach is that there is no possibility of multiple
+annotations with a given supertype appearing at a location.
+
+One use case is marker interfaces.
+%
+In another use case, the interface could define several elements/methods.
+These could define a standard set of element names that are used by a set
+of specific annotations.  APIs that use the interface could work with any
+annotation from that set.
+
+The currently permitted annotation member types (``primitive types, String,
+Class and any invocation of Class, an enum type, an annotation type, or an
+array of one of the preceding types''~\cite[\S9.6]{GoslingJSB2005}) should
+be extended to include interfaces (or perhaps only interfaces that extend
+\code{java.lang.annotation.Annotation}).
+
+
+% Does this example belong here?
+%   @Units(value={@Meters}, dividedBy={@Seconds}
+
+
+
+
+\subsection{Potentially recursive annotations (annotations as members of annotations)\label{annotations-as-members}\label{annotations-as-arguments}\label{recursive-annotations}}
+
+% Annotations as members of annotations
+% 
+% There is no need to change the classfile format.  Here is an email exchange
+% where Joe Darcy says that a change is necessary, and Jonathan Aldrich
+% explains that it is not.
+% 
+% Joe Darcy says:
+% 
+% One implication of being about to 
+% return an arbitrary annotation is that the binary encoding of the 
+% annotation data in the class files would need to change.  The actual 
+% annotation objects returned at runtime are dynamic proxies implementing 
+% the annotation as an interface.  For example, in something like
+% 
+% @Constraint(
+%  trigger={"Child(ddl, this)", "Type(ddl, DropDownListCtrl.class)", 
+% "Equals(select, true)"},
+%  post={"!Selected(ddl)"}
+% )
+% 
+% the fact that an array of strings needs to be returned for "trigger" is 
+% gleaned from class definition of the Constraint annotation type.  If 
+% that reasoning path is changed, this type information needs to be stored 
+% somewhere else.  Such a change to the annotation encoding implies 
+% downstream tools that consume classfiles and manipulate annotations need 
+% to be updated too, etc.  So this change would actually be much more 
+% pervasive throughout the Java ecosystem than, say, a repeating 
+% annotation proposal which just desugars to a wrapper annotation with an 
+% array-valued member, as has been proposed to the list before.  (As an 
+% aside, changing the API to basically require instanceof checks is by 
+% default a bit suspect.)
+% 
+% Jonathan Aldrich responds:
+% 
+% Joe raised a great question 
+% about whether annotations taking other annotations as parameters would 
+% require changing the class file format as well.  As far as I can tell, 
+% from the specification of the Java 5 classfile format, it would not:
+% 
+% http://java.sun.com/docs/books/jvms/second_edition/ClassFileFormat-Java5.pdf
+% 
+% Specifically, annotations are stored in an "annotation" structure in the 
+% classfile.  This structure contains a type index (the type of the 
+% annotation) and a list of element_value_pairs.  The value in the 
+% element_value_pair is an element_value, which is a tagged union, and if 
+% the tag is "@" for annotation, then the union stores an "annotation" 
+% structure.  That's the annotation structure above--which in fact 
+% contains a type index, that in the case of "annotations taking arbitrary 
+% annotations" tells us what type the nested annotation is.  Ironically, 
+% in the current classfile format, this is wasted space, as it could be 
+% inferred from the surrounding annotation type, but it nicely supports 
+% this extension.  Thus, "annotations containing arbitrary annotations" 
+% need change neither the syntax of the language nor the classfile format. 
+
+
+In Java, an annotation can have a parameter (equivalently, a member) that is an
+annotation (JLS
+\ahref{\jlsNineSixURL}{\S9.6} and
+\ahref{\jlsNineSevenURL}{\S9.7}).
+JLS
+\ahref{\jlsNineSevenURL}{\S9.7}
+gives this example:
+
+\begin{Verbatim}
+  @Author(@Name(first = "Joe", last = "Hacker"))
+\end{Verbatim}
+
+However, an annotation type cannot have a member of its own type.
+``It is a compile-time error if an annotation type \emph{T} contains an
+element of type \emph{T}, either directly or
+indirectly''~\cite[\S9.6]{GoslingJSB2005}.
+(If inheritance among annotations is permitted (see
+Section~\ref{inheritance-among-annotations}), then the natural
+interpretation of this is that no element's declared type may be either the
+annotation itself or any supertype thereof.)
+
+As a particular example, it is not possible to define an annotation that
+takes an \emph{arbitrary} annotation as a parameter, as in
+
+\begin{Verbatim}
+  @DefaultAnnotation(@AnyAnnotation)
+\end{Verbatim}
+
+These limitations reduce the expressiveness of annotations.  Here are some
+examples:
+\begin{itemize}
+\item
+  It is impossible to define annotations that take an arbitrary annotation
+  as an argument.
+
+  Two examples of such annotations are the \code{@DefaultAnnotation}
+  example above, and an annotation that expresses that a method is
+  polymorphic over annotations (as opposed to polymorphic over types, as
+  generics do).
+
+  Another example is annotation parameters that do not correspond to a type
+  parameter.  Consider a container class that is designed to hold things of
+  a specific type (say, it interacts with the elements in domain-specific
+  ways), not of an arbitrary type.  The container has no type parameter,
+  but it may still make sense to have annotations on the contained thing.
+  Most examples of generics and arrays 
+  % from Section~\ref{generics-and-arrays}
+  also serve as examples here.  The
+  argument applies not just to container classes but also to algorithms
+  that process data of a specific type.
+
+  These examples require the annotation declaration to be potentially
+  recursive.  However, they do not require that any recursive annotation
+  ever be created in practice.  They could be achieved even if creation of
+  recursive annotation instances was prohibited.
+
+\item
+  % Need examples here; Jonathan Aldrich volunteered to provide them.
+  It is impossible to define annotations with recursive structure.
+
+  More generally, the kind of data that can be encoded in annotations is
+  limited.  It is generally possible to store data which has a fixed
+  structure, but it is much more difficult to encode more complex data,
+  including hierarchical data.  As the success of \ahref{http://www.w3.org/XML/}{XML}, \ahref{http://www.yaml.org/}{YAML}, and other such
+  technologies has shown, the ability to encode structured data is very
+  powerful for a wide variety of uses, many of which we cannot anticipate
+  today.  Today's annotations only fulfill a small piece of that potential.
+
+  To express the base case, recursive annotations also require either
+  inheritance among annotations
+  (Section~\ref{inheritance-among-annotations}), or nullable members
+  (Section~\ref{nullable-members}), or a requirement that recursion takes
+  place through an array (an empty array would terminate the recursion).
+
+\end{itemize}
+
+% - What about the behavior of existing code that reflects over annotation 
+% types and expects never to see recursively-typed members?
+
+
+A more modest approach that makes annotations somewhat more expressive
+would be to permit inheritance among annotations (see
+Section~\ref{inheritance-among-annotations}) without permitting possibly
+self-referential annotations.
+
+
+The JSR 175 Design FAQ~\cite{JSR175-PFD2} briefly addresses why this
+feature was not originally included:
+
+\begin{quote}
+  Why is it illegal for an annotation type to contain an element of the same type?
+
+At first glance it would appear that you could never annotate with such a type, so the prohibition might seem unnecessary, but you can get yourself into trouble if you also provide a default:
+
+\begin{Verbatim}
+@interface Foo {
+    Foo foo() default @Foo;
+}
+
+@Foo int i;
+\end{Verbatim}
+
+If this were legal, the resulting annotation would be self-referential (or
+infinite), as well as useless.
+\end{quote}
+
+
+\subsection{Null as an annotation field value (nullable fields)\label{nullable-members}}
+
+Currently, it is possible to choose/create a special value and to store
+that value in an annotation field.
+The proposal would permit use of \code{null} instead of an explicit
+user-specified value.
+
+The proposal makes some programming idioms slightly shorter.  For example,
+specifying the base case of a recursive data structure will require simply
+writing \code{null} instead of calling a constructor.  The proposal does
+not eliminate any substantial complexity when processing a data structure,
+but only converts a check against a given value into a check against null.
+
+We note some possible objections to the proposal.
+
+The proposal doesn't make anything possible that was not possible before.
+
+The programmer-defined special value provides better documentation than
+\code{null}, which might mean ``none'', ``uninitialized'', \code{null}
+itself, etc.
+
+The proposal is more error-prone.  It's much easier to forget checking
+against null than to forget checking for an explicit value.
+
+The proposal may make the standard idiom more verbose.  Currently only the
+users of an annotation need to check for its special values.  With the
+proposal, many tools that process annotations will have to check whether a
+field's value is null lest they throw a null pointer exception.
+
+
+\subsection{Positional arguments\label{positional-arguments}}
+
+Annotation types cannot have positional arguments (except for the
+\code{value} argument, when it is the only argument).  This limitation
+makes writing annotations with multiple arguments more verbose than
+necessary.
+
+% Suggestion from Bruce Chapman
+On a somewhat related topic, the ``SingleElementAnnotation'' form relies on
+the field name \code{value}.  This name is not always appropriate;
+designers who wish to permit the ``SingleElementAnnotation'' form are
+forced to give a member a confusing name.  It would be nice to permit the
+``SingleElementAnnotation'' form to initialize a different member than
+\code{value} (say, via a \code{@ValueMember} annotation).
+
+
+\section{Semantics of annotations\label{semantics}}
+
+\subsection{Annotations for specific purposes\label{no-defined-annotations}}
+
+JSR 308 does not define any annotations.
+%  nor take any position on their semantics.
+JSR 308 extends the Java and class file syntax to permit
+annotations to be written in more places, and thus makes existing and
+future annotations more useful to programmers.
+
+By contrast, JSR 305 ``Annotations for Software Defect Detection'' aims to
+define a small set of annotations.
+Examples include type annotations such as non-nullness
+(\code{@Nonnull}), signedness (\code{@Nonnegative}), tainting, and string
+format; and also declaration annotations such as whether a method's return
+value should always be checked by the caller.
+A programmer who cares about code quality will use both annotations
+defined in the JSR 305 ``standard library'', and also others that are
+defined by third parties or by the programmer himself.
+For more details about JSR 305, see
+\myurl{http://jcp.org/en/jsr/detail?id=305} and
+\myurl{http://groups.google.com/group/jsr-305/}.
+Since JSR 305 appears to be abandoned, this section is now primarily of
+historical interest.
+
+Any type annotation, including those defined by JSR 305, is of limited use
+without the JSR 308 syntax.  Without the JSR 308 annotation syntax, a
+static checker may lose track of type qualifiers whenever a program uses
+generic types (e.g., collection classes), whenever a method is invoked on
+an object, whenever a cast is performed, whenever a class is subclassed,
+etc.  From the point of code checking, using the old Java annotation syntax
+is even worse than the type unsoundness of pre-generics Java, when there
+was no compiler-enforced type correctness guarantee for collections
+classes.  Therefore, use of JSR 305 without JSR 308 is much less effective.
+
+% As of fall 2008,
+The JSR 305 team does not plan any reference implementation.
+This hinders both programmers who want to use the annotations,
+and also people trying to interpret the meaning of the specification.  By
+contrast, the JSR 308 reference implementation and the Checker Framework
+for compile-time type-checking have been available since January 2007.
+The Checker Framework contains checkers for many of the most useful
+annotations proposed in JSR 305.
+
+
+
+
+% For
+% instance, it is JSR 305's role to decide whether Java programmers will
+% write \code{@NonNull} or \code{@Nonnull} or \code{@NotNull}, and what it
+% means when they write it.
+
+
+\subsection{Annotation inheritance\label{annotation-inheritance}}
+
+(This section is \emph{not} about whether the definition of an annotation
+may inherit from other classes/interfaces.  Rather, it is about whether a
+class/interface inherits annotations from its superclasses/interfaces.)
+
+The annotation type
+\ahref{http://download.oracle.com/javase/6/docs/api/java/lang/annotation/Inherited.html}{\code{java.lang.annotation.Inherited}}
+(JLS \ahref{\jlsNineSixOneThreeURL}{\S9.6.1.3})
+indicates that annotations on a class \code{C} corresponding to a given
+annotation type are inherited by subclasses of \code{C}\@.  This implies
+that annotations on interfaces are not inherited, nor are annotations on
+members (methods, constructors, fields, etc.).
+
+It might be useful to permit methods, fields, etc.\ to inherit annotations.
+
+It might be useful to permit an annotation to be inherited from an
+interface as well as from a superclass.
+
+It might be useful to permit annotation inheritance to merge
+information from the current and inherited annotations, instead of always
+choosing the inherited one.
+
+% These semantic issues are out of the scope of JSR 308 but may be
+% taken up by JSR 305 (``Annotations for Software
+% Defect Detection''~\cite{JSR305}).
+
+
+
+% (An annotation
+% processor can issue a warning if annotations are inconsistent between
+% super- and sub-types.)
+
+%   <li>A dynamic proxy class is a class (created by
+%       <a href="http://download.oracle.com/javase/6/docs/api/java/lang/reflect/Proxy.html"><code>java.lang.reflect.Proxy</code></a>) that is created at run time and
+%       that implements a list of interfaces (that are also given at run
+%       time).  What annotations should appear on the methods of the proxy
+%       class?  Arguably, whichever annotations were on the methods of the
+%       given interfaces (when a method appears more than once, whatever
+%       annotations are on the method whose interface appears first in the
+%       list, which takes precedence).
+% 
+%       But whether an annotation should be transferred to a proxy
+%       class may depend on the annotation itself; should there be a way to
+%       indicate how it should be treated?  This feels related to the issue
+%       of inheritance and defaulting of annotations; perhaps any tool that
+%       processes the annotations should also look up the annotations on the
+%       interface(s) and use them, so it does not matter whether the
+%       generated class itself has the annotations or not.
+% 
+%       How does Java handle this currently?  Do we believe the
+%       current behavior is incorrect and needs to be amended in JSR 308?
+%   </li>
+
+\subsection{Default annotations\label{default-annotations}}
+
+Specifying a default for annotations can reduce code size and (when used
+carefully and sparingly) increase code readability.  For instance,
+% Figure~\ref{fig:example} uses
+a \code{@DefaultQualifier("NonNull")} can avoid the clutter of
+% 5
+multiple
+\code{@NonNull} annotations.  It would be nicer to have a general mechanism,
+such as
+\begin{Verbatim}
+  @DefaultAnnotation(NonNull.class, locations={ElementType.LOCAL_VARIABLE})
+\end{Verbatim}
+Defaults for annotations are a semantic issue that is
+out of the scope of JSR 308.  It could be taken up by JSR 305 (``Annotations
+for Software Defect Detection''~\cite{JSR305}).
+
+The defaulting syntax must also be able to specify the arguments to the
+default annotation (in the above example, the arguments to \code{@NonNull}).
+
+A better syntax would use an annotation, not a string or class literal, as the
+argument to \code{@DefaultAnnotation}, as in
+\begin{Verbatim}
+  @DefaultAnnotation(@MyAnnotation(arg="foo"))
+\end{Verbatim}
+In Java, it is not possible to define an annotation that takes an
+arbitrary annotation as a parameter; see
+Section~\ref{annotations-as-arguments}.
+
+
+An issue for JSR 260 (Javadoc) and JSR 305 (Annotation semantics) is how
+inherited and defaulted annotations are handled in Javadoc:  whether they
+are written out in full, or in some abbreviated form.  Just as too many
+annotations may clutter source code, similar clutter-reduction ideas may
+need to be applied to Javadoc.
+
+
+\section{Type abbreviations and typedefs\label{typedef}}
+
+An annotated type may be long and hard to read; compare \code{Map<String,
+  Object>} to \code{@NonNull Map<@NonNull String, @NonNull Object>}.  Class
+inheritance annotations and subclassing provides a partial solution;
+consider
+% , as noted
+% %BEGIN LATEX
+% on page~\pageref{class-inheritance-annotations}
+% %END LATEX
+% in Section~\ref{class-inheritance-annotations} with
+the following example:
+
+\begin{Verbatim}
+  final class MyStringMap extends
+    @Readonly Map<@NonNull String, @NonEmpty List<@NonNull @Readonly String>> {}
+\end{Verbatim}
+
+This approach limits reusability:  if a method is declared to take a
+\code{MyStringMap} parameter, then a \code{Map} (even of the right type,
+including annotations) cannot be passed to it.  (By contrast, a
+\code{MyStringMap} can always be used where a \code{Map} of the appropriate
+type is expected.)  Goetz~\cite{Goetz2006} recommends exploiting Java's
+type inference to avoid some (but not all) instances of the long type name.
+
+In summary, a built-in typedef mechanism might achieve both code
+readability and reusability.
+
+
+\section{Class file syntax\label{class-file-syntax}}
+
+Changes to the class file syntax are out of the scope of JSR 308, which,
+for backward compatibility, currently does not change the way that existing
+annotations are stored in the class file.
+Class file syntax changes require modification of
+compilers, JVMs, javap, and other class file tools.
+% (see Sections~\ref{class-file-tools} and~\ref{other-tools}).
+
+% However, some changes to the class file syntax may have significant
+% benefits.  
+
+
+\subsection{Type annotations for stack elements}
+
+The Java class file stores the types of stack elements, at entry to each
+basic block in the control flow graph (which may differ from the Java
+blocks in the program).  As a result, byte code verification need not
+perform type inference for local variables and stack elements.  The class
+file format should eventually similarly store the annotations on those
+types, to aid in annotation verification of class files.
+
+We will defer this change until after a maintenance review fixes some other
+issues in StackMap.  The fixes will make this enhancement much easier to
+implement.
+
+
+\subsection{Reducing class file size via use of the constant pool\label{constant-pool}}
+
+Annotations could be stored in the constant pool, and use constant pool
+references from the annotation points.  That would reduce class file size,
+especially if an annotation is used in many places in the same class, as is
+more likely once JSR 308 support is in place.
+% with the annotations enabled by JSR 308 and those proposed in
+% JSR 305.
+
+\subsection{Optional/default fields in annotations\label{optional-default-fields}}
+
+In order to reduce the size of the class file, some fields may be omitted
+from the \<.class> file, in which case any access of them returns their
+default value.
+
+
+\section{Access to method bodies in annotation processing API\label{out-of-scope-annotation-processing-api}}
+
+A type-checking compiler plug-in (annotation processor) must process
+annotations (including those in method bodies), and it also must check
+each use of a variable/method whose declared type is annotated.  For
+example, if a variable \code{x} is declared as \code{@NonNull Object x;},
+then every assignment to \code{x} must be checked, because any assignment
+\code{x = null;} would be illegal.
+
+The JSR 269 annotation processing API
+% specifies that the \code{process}
+% method is invoked on class, field, and method annotations.  It
+does not
+process annotations on local variables, as it is not designed to access
+method bodies.  This limitation makes JSR 269 insufficient for creating a
+type-checking compiler plug-in.
+
+An annotation and source code processing API for JSR 308 annotations could
+take advantage of JSR 198's Java Model.  The Java Model defines a parsed
+view into the contents of a source file that is intended for construction
+of IDE extensions that are portable across multiple IDEs --- precisely the
+situation with compiler plug-ins.  JSR 308 may be shipped without defining
+this API, but defining this API may be desirable in the future (say, in a
+later version of Java), particularly after more experience is gained with
+type annotation processors.
+
+In the absence of such an API, a type checker can be written using
+compiler-specific APIs.  This is how the Checker Framework
+(\myurl{http://types.cs.washington.edu/checker-framework/}) works.
+
+
+\bibliographystyle{alpha}
+\bibliography{bibstring-unabbrev,types,ernst,invariants,generals,alias,concurrency}
+
+\end{document}
+
+% LocalWords:  fontsize getAnnotations getAnnotation Desugar desugar EE wiki
+% LocalWords:  AContainer getDeclaredAnnotations AnnotatedElement classfile
+% LocalWords:  instanceof subannotation DefaultAnnotation YAML ValueMember
+% LocalWords:  SingleElementAnnotation Nonnull signedness Nonnegative typedefs
+% LocalWords:  DefaultQualifier MyStringMap javap StackMap ernst

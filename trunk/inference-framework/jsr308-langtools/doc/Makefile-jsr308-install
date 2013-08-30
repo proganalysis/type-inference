@@ -1,0 +1,196 @@
+## Makefile for installing the JSR 308 compiler and the Checker Framework.
+# This automates the instructions that are found in the manuals, available
+# from http://types.cs.washington.edu/jsr308/ .
+
+## 3 steps to install:
+# 1. Obtain this Makefile:
+#   cd
+#   wget -nv -N http://types.cs.washington.edu/jsr308/Makefile-jsr308-install
+# 2. Execute the following command, which installs the "langtools" and
+# "checkers" directories into JSR308 (by default, ~/jsr308).
+#   make -f Makefile-jsr308-install
+# 3. In your shell startup file (such as ~/.bashrc), set the environment
+# variables JAVA_HOME, PATH, and CLASSPATH; for instance, you could use
+# settings like the ones that appear later in this file.
+# Setting these variables will make the JSR 308 compiler your default javac;
+# if you do not wish to do so, then just set the appropriate variables when
+# you wish to use the JSR 308 compiler (e.g., in buildfiles and makefiles).
+
+
+## Notes:
+#  * This file assumes a 32-bit architecture.  If you have a 64-bit machine
+#    without multilib support, you will need to tweak the Makefile.
+#  * This has only been tested on Linux.
+#  * You should only run this script if you agree to the Oracle Java SE
+#    Development Kit (JDK) license.
+#  * If the installation fails, please report the problem at
+#      http://code.google.com/p/jsr308-langtools/issues/list .
+#    Then, follow the detailed installation instructions at
+#      http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing
+#      http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#installation
+#  * Except for the default target, this Makefile should be run in
+#    #${JSR308}, which defaults to ~/jsr308 .
+
+
+###########################################################################
+### Variables
+###
+
+## You may override these settings at the shell, e.g.:
+##   export JSR308=${HOME}/jsr308
+
+# The directory containing this file, Makefile-jsr308-install
+MAKEFILE_DIR ?= ${HOME}
+# The directory that will contain the "langtools" and "checkers" directories.
+JSR308 ?= ${HOME}/jsr308
+
+
+###
+### You should not need to set any variables below this line.
+### (But you may override these settings in your own personalization dotfiles.)
+###
+
+# Override to obtain a development release or a test release.
+JSR308_WEB ?= http://types.cs.washington.edu/checker-framework/current
+JSR308_BUILD := 1.3.0
+
+# export MAKEFILE_DIR
+export JSR308
+
+export JDK_7_BIN := jdk-7-ea-bin-bea-linux-i586-2009.bin
+export DARWIN_TAR_BASENAME := openjdk7-darwin-i386-20080820
+export DARWIN_TAR := ${DARWIN_TAR_BASENAME}.tar.bz2
+export MAKEFILE := ${MAKEFILE_DIR}/Makefile-jsr308-install
+
+export JAVA_HOME := ${JSR308}/jdk1.7.0
+export PATH := ${JAVA_HOME}/bin:${PATH}
+
+export CLASSPATH := ${CLASSPATH}:${JSR308}/jdk1.7.0/lib/tools.jar:${JSR308}/checker-framework/checkers/checkers.jar
+
+UNAME := $(shell uname)
+
+
+###########################################################################
+### Rules
+###
+
+
+.PHONY : chdir_then_install
+chdir_then_install : ${JSR308}
+	$(MAKE) -C ${JSR308} -f ${MAKEFILE} install
+
+# By default, do all downloads before any installation.
+install: download .install-jdk1.7.0 test-jdk1.7.0 .install-langtools .install-checkers test-checkers
+
+${JSR308}:
+	mkdir -p ${JSR308}
+
+###
+### Cleaning up
+###
+
+.PHONY : clean
+clean: clean-checkers clean-langtools 
+veryclean: clean-checkers clean-langtools clean-jdk1.7.0
+
+.PHONY : clean-checkers
+clean-checkers:
+	rm -rf checkers.zip checkers .install-checkers
+
+.PHONY : clean-langtools
+clean-langtools:
+	rm -rf jsr308-langtools.zip jsr308-langtools .install-langtools
+
+.PHONY : clean-jdk1.7.0
+clean-jdk1.7.0:
+	rm -rf jdk1.7.0 .install-jdk1.7.0
+
+###
+### Downloading
+###
+
+download: download-jdk1.7.0 download-jsr308-langtools download-checkers
+
+${JDK_7_BIN}:
+	$(MAKE) -f ${MAKEFILE} download-jdk1.7.0
+.PHONY : download-jdk1.7.0
+download-jdk1.7.0:
+ifeq ($(UNAME),Darwin)
+# As of 2008-09-18, binaries are only available for Intel x86, not PowerPC.
+# Users of PowerPC need to build OpenJDK themselves (if they can?).
+	wget -nv -N http://landonf.bikemonkey.org/static/soylatte/openjdk/${DARWIN_TAR}
+else
+	wget -O ${JDK_7_BIN} -nv http://types.cs.washington.edu/jsr308/latest-jdk.php
+endif
+
+jsr308-langtools.zip:
+	$(MAKE) -f ${MAKEFILE} download-jsr308-langtools
+.PHONY : download-jsr308-langtools
+download-jsr308-langtools:
+	wget -nv -N ${JSR308_WEB}/jsr308-langtools.zip
+
+checkers.zip:
+	$(MAKE) -f ${MAKEFILE} download--checkers
+.PHONY : download-checkers
+download-checkers:
+	wget -nv -N ${JSR308_WEB}/checkers.zip
+
+
+###
+### Installation and testing
+###
+
+# One reason for the indirection is that executing the binary or untarring
+# creates a directory with an older date than the file.
+jdk1.7.0:
+	$(MAKE) -f ${MAKEFILE} .install-jdk1.7.0
+
+ifeq ($(UNAME),Darwin)
+.install-jdk1.7.0: ${DARWIN_TAR}
+	tar xfj ${DARWIN_TAR}
+	ln -s -f ${DARWIN_TAR_BASENAME} jdk1.7.0
+	touch .install-jdk1.7.0
+else
+.install-jdk1.7.0: ${JDK_7_BIN}
+	chmod +x ${JDK_7_BIN}
+	yes | MORE='-1000 -l' ./${JDK_7_BIN}
+	touch .install-jdk1.7.0
+endif
+
+test-jdk1.7.0:
+	@echo javac version: `javac -version 2>&1`
+# The output should start with "javac 1.7.0"
+	javac -version 2>&1 | grep 'javac 1.7.0'
+
+langtools:
+	$(MAKE) -f ${MAKEFILE} .install-langtools
+.install-langtools: jsr308-langtools.zip
+	$(MAKE) -f ${MAKEFILE} test-jdk1.7.0
+	unzip -q -o jsr308-langtools.zip
+	cd jsr308-langtools/binary && yes | ant install
+	touch .install-langtools
+
+test-langtools:
+	@echo javac version: `javac -version 2>&1`
+	/usr/bin/test "`javac -version 2>&1`" = "javac 1.7.0-jsr308-${JSR308_BUILD}"
+
+checkers:
+	$(MAKE) -f ${MAKEFILE} .install-checkers
+.install-checkers: checkers.zip
+	$(MAKE) -f ${MAKEFILE} test-langtools
+	unzip -q -o checkers.zip
+#	perl -pi -e 's/^(compiler.lib=.*)$/\# \1\ncompiler.lib=..\/jsr308-langtools\/binary\/javac.jar/g' checkers/build.properties
+	touch .install-checkers
+
+test-checkers:
+	cd checkers && ant all-tests
+	cd checkers && javac -processor checkers.nullness.NullnessChecker examples/NullnessExample.java
+	@echo "The following command is expected to issue warnings."
+	-cd checkers && javac -processor checkers.nullness.NullnessChecker examples/NullnessExampleWithWarnings.java
+	@echo "The previous command was expected to issue warnings."
+
+###
+### Additional tests (most users shouldn't have to run these)
+###
+
+## Todo:  check that the compiler processes Daikon and FreePastry.

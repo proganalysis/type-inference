@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
+  <title>Type Annotations</title>
+  <link rel="icon" type="image/png" href="favicon-jsr308.png" />
+</head>
+
+<!-- This is the webpage that is installed at
+     http://openjdk.java.net/projects/type-annotations/
+-->
+
+<body>
+
+<h1>Type Annotations</h1>
+
+<p>
+The Java 6 annotation syntax is useful but limited.  The Type Annotations
+syntax permits annotations to be written in more places, such as generic
+type arguments: <code>List&lt;<u>@NonNull</u> Object&gt;</code>.
+Programmers can use type annotations to write more informative types, and
+then tools such as type-checkers can detect and prevent more errors.
+</p>
+
+<p>
+This project is sponsored by the OpenJDK <a
+href="http://openjdk.java.net/groups/compiler/">Compiler Group</a> and is 
+targeted for inclusion in the Java SE 8 platform.
+</p>
+
+
+
+
+<h2 id="documents">Specification</h2>
+
+<p>
+The Type Annotations specification indicates changes to the Java
+language and platform.
+</p>
+<ul>
+  <li>
+    <a href="http://types.cs.washington.edu/jsr308/specification/java-annotation-design.pdf">PDF</a>
+  </li>
+  <li>
+    <a href="http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html">HTML</a>
+  </li>
+</ul>
+
+
+<h2 id="implementation">Implementation</h2>
+
+<p>
+<!--
+The OpenJDK compiler supports the Type Annotations syntax (since build
+<a href="http://openjdk.java.net/projects/jdk7/milestones/">M4</a>).
+-->
+The Type Annotations compiler has a few small enhancements over what will
+be in the the OpenJDK
+compiler; see its documentation (linked below) for details.
+</p>
+
+<ul>
+  <li><a href="http://types.cs.washington.edu/checker-framework/current/jsr308-langtools.zip">Download</a>
+    (includes source, platform-independent binary, and documentation)
+  </li>
+  <li>
+    <a href="http://types.cs.washington.edu/checker-framework/current/README-jsr308.html">Documentation</a><br />
+    (included in the distribution; includes <a href="http://types.cs.washington.edu/checker-framework/current/README-jsr308.html#installing">installation instructions</a>)
+  </li>
+  <li>
+    <a href="http://types.cs.washington.edu/checker-framework/current/changelog-jsr308.txt">Changelog</a>
+  </li>
+  <li>
+    <a href="http://code.google.com/p/jsr308-langtools/source/checkout">Mercurial repository</a>
+  </li>
+</ul>
+
+
+<h2 id="tools">Other tools that use type annotations</h2>
+
+<p>Several other tools already use the type annotation syntax.</p>
+
+<ul>
+  <li>The <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a> makes it easy to write and use compiler
+      plug-ins that implement a custom type system.  The compiler plug-in
+      enables a programmer to find bugs or to verify their absence.  The
+      Checker Framework comes with several type-checking plug-ins that you
+      can try right away.
+  </li>
+
+      <!-- This text appears identically at jsr308-webpage.html -->
+      <li>Inference tools automatically add annotations to your code,
+          making it even easier to start using the checkers.  You must
+          download these tools separately.
+        <ul>
+          <li>
+	    To infer the <tt>@Nullable</tt> type qualifier, use <a
+	    href="http://groups.csail.mit.edu/pag/daikon/download/doc/daikon.html#AnnotateNullable">Daikon</a>
+          </li>
+          <li>
+            To infer the <code>@NonNull</code> type qualifier, use the
+            <a href="http://julia.scienze.univr.it/">Julia
+            Analyzer</a>, <a href="http://nit.gforge.inria.fr/">Nit</a>, or <a
+            href="http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/">JastAdd</a>
+          </li>
+          <li>
+            To infer the <code>@ReadOnly</code> type qualifier, use <a
+            href="http://types.cs.washington.edu/javari/javarifier/">Javarifier</a>
+          </li>
+        </ul>
+      </li>
+
+  <li><a href="http://types.cs.washington.edu/annotation-file-utilities/annotation-tools.zip">Annotation file utilities</a>
+      extract annotations from, and write annotations to,
+      <code>.java</code> and <code>.class</code> files.
+  </li>
+</ul>
+
+
+
+
+<h2 id="Community">Community and getting help</h2>
+
+<ul>
+  <li>
+    <a href="http://types.cs.washington.edu/jsr308/">Webpage</a>
+  </li>
+  <li>
+    <a href="http://groups.google.com/group/jsr308-discuss">Mailing list</a>    
+  </li>
+</ul>
+
+
+
+<h2 id="awards">Awards</h2>
+
+<ul>
+  <li>
+    Won the <a href="http://jcp.org/en/press/news/2007award_winners/">Most Innovative Java
+SE/EE JSR of the Year</a> award in 2007.
+  </li>
+  <li>
+    Nominated for the <a href="http://jcp.org/en/press/news/2008JavaOnePR">Most
+    Outstanding Spec Lead for Java SE/EE</a> award in 2008.
+  </li>
+  <li>
+    Won a Java
+    <a href="http://java.sun.com/javaone/2009/rockstars.jsp">Rock Star</a> award
+    for a presentation at JavaOne 2009 .
+  </li>
+</ul>
+
+
+
+</body>
+</html>
+
+<!--  LocalWords:  Nullable EE
+ -->

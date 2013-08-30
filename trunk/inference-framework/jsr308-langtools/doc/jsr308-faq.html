@@ -1,0 +1,594 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>Type annotations FAQ</title>
+  <link rel="icon" type="image/png" href="favicon-jsr308.png" />
+</head>
+<body>
+
+<h1>Type annotations FAQ</h1>
+
+<p>
+These are some common questions about the <a href="./">Type Annotations
+(JSR 308)</a> extension to Java.  Feel free to
+<a href="./#Support">suggest</a> improvements to the answers, or other
+questions to include here.
+</p>
+
+<p>
+<b>Before you read this FAQ</b>, please read either the
+<a href="specification/java-annotation-design.html">Type Annotations
+Specification</a> (if you are most interested in the language syntax) or
+the
+<a href="../checker-framework/current/checkers-manual.html">Checker Framework Manual</a>
+(if you are most interested in pluggable type-checking).  Then, if you
+still have questions, you can see whether this FAQ answers them.
+</p>
+
+<p>
+There is a separate 
+<a href="../checker-framework/current/checkers-manual.html#faq">FAQ for pluggable type-checking</a>.
+</p>
+
+<!--
+  Most answers should be short and should point people at the specification,
+  so that we don't have to maintain two versions of an explanation.  This FAQ
+  is useful for people who like to read them and in some sense it serves as
+  an index into the specification, especially for things that don't have an
+  obvious and easy-to-find place in the specification.
+-->
+
+<p>Contents:</p>
+<!-- start toc.  do not edit; run html-update-toc instead -->
+    <ul>
+      <li><a href="#use">Usability of type annotations</a>
+        <ul>
+          <li><a href="#usefulness">What are type annotations good for?</a></li>
+          <li><a href="#ease-of-use">Are type annotations easy to read and write?</a></li>
+          <li><a href="#clutter">Will my code become cluttered with type annotations?</a></li>
+        </ul></li>
+      <li><a href="#pluggable-types">Pluggable type-checking</a></li>
+      <li><a href="#language">Java language status</a>
+        <ul>
+          <li><a href="#inclusion-in-java">Are type annotations part of the Java language?</a></li>
+          <li><a href="#checkers-in-java">Is pluggable type-checking (such as supported by the Checker Framework) included in JSR 308 or the Java language?</a></li>
+          <li><a href="#license">What is the license for the Type Annotations specification?</a></li>
+        </ul></li>
+      <li><a href="#tools">Tool support</a>
+        <ul>
+          <li><a href="#backward-compatibility">Can I use type annotations even though my coworkers/boss/users don't use type annotations or Java 8?</a></li>
+          <li><a href="#openjdk">What is the relationship between the Type Annotations compiler and the OpenJDK compiler?</a></li>
+          <li><a href="#platforms">Do the Type Annotations tools run on Linux?  MacOS?  Windows?</a></li>
+          <li><a href="#eclipse">Do IDEs like Eclipse and IntelliJ IDEA support type annotations?</a></li>
+          <li><a href="#bug-reporting">How do I file a bug report?</a></li>
+        </ul></li>
+      <li><a href="#syntax">Syntax of type annotations</a>
+        <ul>
+          <li><a href="#return-type">Does an annotation before a method refer to the return type or to the method?</a></li>
+          <li><a href="#array-syntax-meaning">What is the meaning of array annotations such as <tt>@NonNull Object @Nullable []</tt>?</a></li>
+          <li><a href="#array-syntax">I don't like array and receiver annotations.</a></li>
+        </ul></li>
+      <li><a href="#features">Features in the Type Annotations specification</a>
+        <ul>
+          <li><a href="#type-of-an-object">How do I determine the annotation on an object?</a></li>
+          <li><a href="#statement_annotations">Is there a way to annotate statements?</a></li>
+          <li><a href="#feature-x">Should the Type Annotations specification support feature <em>X</em>?</a></li>
+          <li><a href="#specific-annotations">Why doesn't the Type Annotations specification define annotations such as <tt>@NonNull</tt>?</a></li>
+          <li><a href="#jsr305">What is the relationship between JSR 308 and JSR 305?</a></li>
+          <li><a href="#modifying-the-specification">Is the Type Annotations specification set in stone?</a></li>
+        </ul></li>
+      <li><a href="#misc">Miscellaneous</a>
+        <ul>
+          <li><a href="#jsr">What does &ldquo;JSR&rdquo; mean?</a></li>
+        </ul></li>
+    </ul>
+<!-- end toc -->
+
+
+<h2 id="use">Usability of type annotations</h2>
+
+
+<h3 id="usefulness">What are type annotations good for?</h3>
+
+<p>
+Type annotations make Java's annotation system more expressive and uniform.
+Thus, they can be used for many of the same purposes as Java 5's
+declaration annotations.
+A new use is as type qualifiers.  Programmers can write these type
+qualifiers in their programs, and then a compiler plug-in automatically
+finds bugs.
+</p>
+
+<p>
+No tool will solve all your problems, but pluggable type-checkers have been
+shown to help programmers to rid their programs of certain important
+classes of bugs, including null pointer errors, incorrect side effects,
+incorrect equality tests, and more.
+Users of the Checker Framework keep noticing new ways that pluggable
+type-checkers are useful, and you probably will too.
+</p>
+
+<p>
+For more details, see the
+<a href="../checker-framework/current/checkers-manual.html">Checker Framework Manual</a> and
+also section
+<a href="specification/java-annotation-design.html#type-qualifiers">Example
+use of type annotations:  Type qualifiers</a> in the Type Annotations
+Specification.
+</p>
+
+
+<h3 id="ease-of-use">Are type annotations easy to read and write?</h3>
+
+<p>
+The paper
+<a href="http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html">Practical
+pluggable types for Java</a> discusses case studies in which programmers
+found type annotations to be natural to read and write.  The code
+continued to feel like Java, and the type-checking errors were easy to
+comprehend and often led to real bugs.
+</p>
+
+<p>
+You don't have to take our word for it, though.  You can try the
+<a href="../checker-framework/current/checkers-manual.html">Checker Framework</a> for yourself.
+</p>
+
+<p>
+The difficulty of adding and verifying annotations depends on your program.
+If your program is well-designed and -documented, then skimming the
+existing documentation and writing type annotations is extremely easy.
+Otherwise, you may find yourself spending a lot of time trying to
+understand, reverse-engineer, or fix bugs in your program, and then just a
+moment writing a type annotation that describes what you discovered.  This
+process inevitably improves your code.  You must decide whether it is a
+good use of your time.  For code that is not causing trouble now and is
+unlikely to do so in the future (the code is bug-free, and you do not
+anticipate changing it or using it in new contexts), then the
+effort of writing type annotations for it may not be justified.
+</p>
+
+
+<h3 id="clutter">Will my code become cluttered with type annotations?</h3>
+
+<!--
+This FAQ also appears in the Checker Framework FAQ.
+When I update one, also update the other.
+-->
+
+<p>
+As with any language feature, it is possible to write ugly code that
+over-uses annotations.  However, in normal use, very few annotations need
+to be written.  Figure 1 of the paper
+<a href="http://www.cs.washington.edu/homes/mernst/pubs/pluggable-checkers-issta2008-abstract.html">Practical
+pluggable types for Java</a> reports data for over 350,000 lines of
+type-annotated code:
+</p>
+<ul>
+  <li>
+    1 annotation per 62 lines for nullness annotations (<tt>@NonNull</tt>, <tt>@Nullable</tt>, etc.)
+    <!-- (/ (+ 4640 3961 10798) (+ 107 35 167)) -->
+  </li>
+  <li>
+    1 annotation per 1736 lines for interning annotations (<tt>@Interned</tt>)
+    <!-- (/ 224048 129) -->
+  </li>
+  <li>
+    1 annotation per 27 lines for immutability annotations (IGJ type system)
+    <!-- (/ (+ 6236 18159 30507 8691 59221 26828) (+ 315 1125 1386 384 1815 450)) -->
+  </li>
+</ul>
+<p>
+These numbers are for annotating existing code.  New code that
+is written with the type annotation system in mind is cleaner and more
+correct, so it requires even fewer annotations.
+</p>
+
+<p>
+Each annotation that a programmer writes replaces a sentence or phrase of
+English descriptive text that would otherwise have been written in the
+Javadoc.  So, use of annotations actually reduces the overall size of the
+documentation, at the same time as making it less ambiguous and
+machine-processable.
+</p>
+
+<p>
+In summary:  annotations do not clutter code; they are used much
+less frequently than generic types, which Java programmers find acceptable;
+and they reduce the overall volume of documentation that a codebase needs.
+</p>
+
+
+<h2 id="pluggable-types">Pluggable type-checking</h2>
+
+
+<p>
+Pluggable type-checking is a motivating application for type annotations.
+The Java specification for type annotations does not define any pluggable
+type-checkers; a pluggable type-checker is a separate tool.
+</p>
+
+<p>
+There is a separate 
+<a href="../checker-framework/current/checkers-manual.html#faq">FAQ for pluggable type-checking</a>.
+</p>
+
+
+<h2 id="language">Java language status</h2>
+
+
+<h3 id="inclusion-in-java">Are type annotations part of the Java language?</h3>
+
+<p>
+Type annotations are planned as part of Java SE 8.
+<!-- a future version of the Java language. -->
+</p>
+
+<p>
+The Type Annotations Specification (also known by its JCP codename "JSR
+308") has not yet received official final approval.
+<!-- 
+  That is a formality:
+language JSRs are never approved until the last moment before a Java
+language release, just in case they need to change.  (It is very difficult
+to change a language JSR once it has been officially approved.)  
+-->
+There is no absolute guarantee that it or any other
+feature will be included.
+The Type
+Annotations Specification is already quite stable, and explicitly notes the
+few places where expansion or enhancement is needed.
+</p>
+
+<!--
+<p>
+An indication of Oracle's support of type annotations is that
+as of build b64 (publicly released on July 9, 2009), Oracle's OpenJDK supports
+type annotations.
+<a href="http://openjdk.java.net/projects/jdk7/milestones/">M4</a> was the first milestone release that contained this support.
+(The Type Annotations Compiler is a variant of the OpenJDK compiler with
+some extra features for compatibility with non-Java-8 compilers.  It is
+distributed <a href="./">standalone</a> or as part of the
+<a href="../checker-framework/">Checker Framework</a>.)
+</p>
+-->
+
+
+<h3 id="checkers-in-java">Is pluggable type-checking (such as supported by the Checker Framework) included in JSR 308 or the Java language?</h3>
+
+<p>
+The Java language defines an annotation processing capability (JSR 269).
+Using this capability, it is possible to write annotation processors that
+read and process all sorts of annotations, including type annotations.
+Pluggable type-checking is one sort of annotation processing.
+</p>
+
+<p>
+Pluggable type-checking would be impractical without the Type Annotations
+(JSR 308) language syntax.  Given the new syntax, pluggable type-checking
+can be implemented entirely by libraries, and there is no need for it to be
+an official part of the Java language.  The
+<a href="../checker-framework/current/checkers-manual.html">Checker Framework</a> is an example
+of a library that enables you to create and use pluggable type-checkers.
+</p>
+
+<p>
+The Checker Framework is an independent tool and
+not a part of the Type Annotations proposal.  The Checker Framework
+distribution includes the Type Annotations compiler for convenience, so
+that users only have to download and install one file.
+</p>
+
+
+<h3 id="license">What is the license for the Type Annotations specification?</h3>
+
+<p>
+The Type Annotations specification is freely available without any license,
+from the <a href="http://types.cs.washington.edu/jsr308/">Type Annotations
+webpage</a>.  The specification places no restriction on compliant
+implementations.
+</p>
+
+<p>
+An <a href="http://jcp.org/aboutJava/communityprocess/edr/jsr308/">earlier
+version</a> of the Type Annotations specification was published during an
+Early Draft Review (EDR) of JSR 308.  The license used for the EDR contains
+certain restrictions.  Obtaining the specification from the
+<a href="http://types.cs.washington.edu/jsr308/">Type Annotations
+webpage</a> does not impose any restrictions.
+Furthermore, it is more up-to-date than the EDR version, which is dated
+November 5, 2007.
+</p>
+
+
+
+<h2 id="tools">Tool support</h2>
+
+
+<h3 id="backward-compatibility">Can I use type annotations even though my coworkers/boss/users don't use type annotations or Java 8?</h3>
+
+<p>
+You can use type annotations and custom type-checkers even if your
+coworkers and users do not use custom type-checkers or the Type Annotations
+compiler.  You simply write the annotations in comments and use the Type
+Annotations compiler, which recognizes comments containing type
+annotations.  Other developers can compile the annotated code using any
+Java compiler, which will ignore the type annotations.  The Type
+Annotations compiler produces bytecodes that are identical to those
+produced by javac, so the <tt>.class</tt> files can be used in any JVM.
+This also gives you an easy way to convince your colleagues to try type
+annotations and the Checker Framework, or to use the framework and the
+checkers even if your colleagues do not want to.
+For more details, see section
+<a href="../checker-framework/current/checkers-manual.html#annotations-in-comments">Writing
+annotations in comments for backward compatibility</a> in the Checker
+Framework Manual.
+</p>
+
+
+<h3 id="openjdk">What is the relationship between the Type Annotations compiler and the OpenJDK compiler?</h3>
+
+<p>
+Oracle's announced plan is to incorporate all of the changes in the Type
+Annotations compiler into the OpenJDK compiler, with the exception of the
+<a href="README-jsr308.html#annotations-in-comments">annotations in comments
+  feature</a>.  The Oracle process for incorporating changes into OpenJDK is
+a lengthy one, so sometimes it takes a while before improvements to the
+Type Annotations compiler appear in OpenJDK.
+</p>
+
+<p>
+Periodically, all public changes to the OpenJDK compiler are merged into
+the Type Annotations compiler.  This can be done relatively easily, and
+without corporate approval required.
+</p>
+
+<p>
+As a result, at any moment each compiler may have features the other one
+lacks.  In general, you are better off using the Type Annotations compiler,
+particularly if you are interested in writing and checking type annotations.
+</p>
+
+<p>
+For a more detailed description of the differences between the two
+compilers, see the <a href="README-jsr308.html#openjdk-differences">Type
+    Annotations compiler README file</a>.
+</p>
+
+
+<h3 id="platforms">Do the Type Annotations tools run on Linux?  MacOS?  Windows?</h3>
+
+<p>
+We have had successful reports from users of Linux, MacOS, and Windows.  If you
+have trouble installing or running the tools, please report a bug.  The
+<a href="./#Support">Support</a> section of the <a href="./">Type
+Annotations webpage</a> explains how.
+</p>
+
+
+<h3 id="eclipse">Do IDEs like Eclipse and IntelliJ IDEA support type annotations?</h3>
+
+<p>
+Yes, several IDEs support type annotations, and more IDEs are being
+extended to support type annotations.  See the 
+<a href="../checker-framework/current/checkers-manual.html#running">Running a checker</a> section of the
+Checker Framework Manual.
+</p>
+
+
+<h3 id="bug-reporting">How do I file a bug report?</h3>
+
+<p>
+See the <a href="./#Support">Support</a> section of the <a href="./">Type
+Annotations webpage</a>.
+</p>
+
+
+<!-- This is duplicated in the Checker Framework FAQ. -->
+<h2 id="syntax">Syntax of type annotations</h2>
+
+
+<h3 id="return-type">Does an annotation before a method refer to the return type or to the method?</h3>
+
+<p>
+An annotation before a method sometimes refers to the return type, and
+sometimes to the method itself.  There is never any ambiguity regarding
+which is intended.  See section <a
+href="specification/java-annotation-design.html#target-meta-annotation">Target meta-annotations for type annotations</a> in the Type Annotations specification.
+</p>
+
+
+<h3 id="array-syntax-meaning">What is the meaning of array annotations such as <tt>@NonNull Object @Nullable []</tt>?</h3>
+
+<p>
+<tt>@NonNull Object @Nullable []</tt> is a possibly-null array of non-null
+objects.  Note that even though the first token in the type is
+&ldquo;<tt>@NonNull</tt>&rdquo;, that annotation applies to the element
+type <tt>Object</tt>.  The annotation <tt>@Nullable</tt> applies to the
+array (<tt>[]</tt>).
+</p>
+
+<p>
+Similarly,
+<tt>@Nullable Object @NonNull []</tt> is a non-null array of possibly-null
+objects.
+</p>
+
+
+<h3 id="array-syntax">I don't like array and receiver annotations.</h3>
+
+<p>
+If you are skeptical of the <em>usefulness</em> of the annotations, see
+section <a
+href="specification/java-annotation-design.html#type-annotation-use-cases">Uses
+for annotations on types</a> in the Type Annotations specification.
+Also, section <a
+href="specification/java-annotation-design.html#receivers">Receivers</a> in
+the Type Annotations explains that receiver annotations have been necessary
+in every type system built to date.
+</p>
+
+<p>
+If you are skeptical of the <em>syntax</em> of <em>array annotations</em>, then
+perhaps you really don't like Java's array syntax.  The annotation
+extension is a logical extension of Java's syntax; see section <a
+href="specification/java-annotation-design.html#array-syntax">Syntax of
+array annotations</a> in the Type Annotations specification.
+</p>
+
+<p>    
+If you are skeptical of the <em>syntax</em> of <em>receiver annotations</em>,
+then you may be interested to learn that in a controlled experiment, the
+chosen receiver annotation syntax was nearly
+twice as understandable to beginners as the next best alternative.
+<!-- see an email titled
+<a href="https://groups.google.com/forum/?fromgroups#!topic/jsr308-discuss/rDklRXNM374">"Receiver
+  annotation syntax: experimental evaluation"</a>, -->
+</p>
+
+<p>
+While array and receiver annotations are critical in important
+circumstances, they are fairly rare in well-written code.  And
+<em>you</em> don't have to use them if you don't want to.
+</p>
+
+
+<h2 id="features">Features in the Type Annotations specification</h2>
+
+
+<h3 id="type-of-an-object">How do I determine the annotation on an object?</h3>
+
+<p>
+Objects are not annotated &mdash; types or declarations are.
+Java has no run-time representation of the types of the variables that
+refer to an object.  The Type Annotations specification (JSR 308) enriches
+types, but it does not change that fundamental property.  Type annotations
+as implemented in JSR 308 have no run-time representation.  This means that
+they impose no run-time burden on Java programs that use them.
+</p>
+
+<p>
+Reflective calls can query the class of an object, or can query the type
+annotations on source code.
+</p>
+
+
+<h3 id="statement_annotations">Is there a way to annotate statements?</h3>
+
+<p>
+Statement annotations are within the scope of JSR 308.
+However, this feature will not be a part of the initial version of JSR 308.
+A future revision could add them.
+<!--  See the section <a
+href="specification/java-annotation-design.html#statement-annotations">Annotations on Statements</a> in the Type Annotations specification.
+-->
+</p>
+
+<h3 id="feature-x">Should the Type Annotations specification support feature <em>X</em>?</h3>
+
+<p>
+Perhaps it should.  
+<!-- See section <a
+href="specification/java-annotation-design.html#other-annotations">Other
+possible extensions to Java annotations</a> in the Type Annotations
+Specification.
+-->
+Feel free to suggest modifications or additions to that
+section.  Your edits should correct factual errors, or should be
+well-motivated by compelling use-cases that cannot be achieved by other
+means.
+</p>
+
+
+<h3 id="specific-annotations">Why doesn't the Type Annotations specification define annotations such as <tt>@NonNull</tt>?</h3>
+
+<p>
+Defining annotations is beyond the scope of the Type Annotations
+Specification, whose purpose is to lay the groundwork so that others can
+define such types.
+</p>
+
+
+<h3 id="jsr305">What is the relationship between JSR 308 and JSR 305?</h3>
+
+<p>
+Type Annotations (JSR 308) is a language extension that makes existing and
+future annotations more useful to programmers.  By contrast, Annotations
+for Software Defect Detection (JSR 305) defines some specific annotations,
+such as <tt>@Nonnull</tt> and <tt>@Positive</tt>.  The JSR 305 annotations
+are most useful if they can be written on types, so JSR 305 needs JSR 308
+to achieve its full potential.
+<!--  For a more detailed comparison, see section
+<a href="specification/java-annotation-design.html#semantics">Semantics of
+annotations</a> in the Type Annotations specification.
+-->
+</p>
+
+
+<!--
+ Perhaps discuss other tools:  JastAdd, JavaCOP, etc.  The problem is
+ that none of them scales, and thus none of them is of practical use at
+ present.  But I don't really want to criticize them in this document, for
+ political reasons.
+-->
+
+
+<h3 id="modifying-the-specification">Is the Type Annotations specification set in stone?</h3>
+
+<p>
+The Type Annotations (JSR 308) expert group gladly welcomes suggestions for improvements to
+the Type Annotations specification, and to the tools that support it.
+<!--  See
+section <a
+href="specification/java-annotation-design.html#other-annotations">Other
+possible extensions to Java annotations</a> in the Type Annotations
+Specification.
+-->
+</p>
+
+
+<h2 id="misc">Miscellaneous</h2>
+
+<h3 id="jsr">What does &ldquo;JSR&rdquo; mean?</h3>
+
+<p>
+A JSR, or Java Specification Request, is a proposed specification for some
+aspect of the Java platform &mdash; the Java language, virtual machine,
+libraries, etc.  For more details, see the
+<a href="http://jcp.org/en/introduction/faq">Java Community Process
+FAQ</a>.  Many people refer to the Type Annotations specification by its
+JCP codename, &ldquo;JSR 308&rdquo;.
+</p>
+
+
+
+<hr />
+
+<p>
+Last updated: July 3, 2012.
+</p>
+
+<p>
+Back to the <a href="./">Type annotations (JSR 308) webpage</a>.
+</p>
+
+</body>
+</html>
+<!--
+Local Variables:
+time-stamp-start: "^Last updated: "
+time-stamp-end: "\\.?$"
+time-stamp-format: "%:b %:d, %:y"
+time-stamp-line-limit: -50
+End:
+-->
+
+
+<!--  LocalWords:  MacOS nullness NonNull Nullable IGJ bytecodes webpage javac
+ -->
+<!--  LocalWords:  codename Nonnull IntelliJ EAP TypeQualifier SubtypeOf JLint
+ -->
+<!--  LocalWords:  FindBugs PMD toolset standalone JSRs EDR JCP README
+ -->

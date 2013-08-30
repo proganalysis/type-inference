@@ -1,0 +1,354 @@
+An advantage of prefix is that it maps nicely to English, in which
+adjectives (annotations) precede nouns (types).
+
+
+\subsection{Syntax of array annotations}
+\label{sec:array-syntax}
+
+As discussed in Section~\ref{sec:type-annotation-use-cases}, it is
+desirable to be able to independently annotate both the element type and
+each distinct level of a nested array.
+Forbidding annotations on arbitrary levels of an array would simplify the
+annotation system, though it would reduce expressiveness.
+The syntax of array types is rather different than the syntax of other
+Java types, so the annotation syntax must also be different.
+(Arrays are not very commonly used in Java, so perhaps the syntax need not
+be perfect, so long as it is usable and expressive.)
+
+This section presents several proposals for array syntax.
+
+For the array syntax, there are two choices to make.  First, where should 
+array annotations appear?
+\begin{itemize}
+  \item within the brackets (\code{[]}) of the array syntax:
+    \code{@NonNull Document[@Readonly]}
+  \item outside the brackets in prefix notation (before the brackets):
+    \code{@NonNull Document @Readonly []}
+  \item outside the brackets in postfix notation (after the brackets):
+    \code{@NonNull Document[] @Readonly} \\ or, if postfix syntax is adopted
+    for all type annotations: \code{Document @NonNull [] @Readonly}
+\end{itemize}
+\noindent
+Second, should an annotation on a set of brackets refer to the array or the
+elements?  Taking the within-the-brackets syntax as an example, would
+\code{@NonNull Document[@Readonly]} mean that the array is \code{@Readonly}
+and contains \code{@NonNull} elements, or that the array is \code{@NonNull} and
+contains \code{@Readonly} elements?
+(For the fully postfix syntax, the second question is moot:  the only sensible
+choice is for the annotation on the brackets to refer to the array, not the
+elements.)
+
+Here are some (mutually incompatible) principles that an ideal syntax would satisfy.
+
+\newcommand{\arrayAddLevelsPrinciple}{P1}
+\newcommand{\multipleVariablesPrinciple}{P2}
+\newcommand{\wholeTypePrinciple}{P3}
+\begin{description}
+  \item[\arrayAddLevelsPrinciple]
+    Adding array levels should not change the meaning of existing
+    annotations.  For example, it would be confusing to have a syntax in
+    which
+\begin{Verbatim}
+  @A List<@B Object>        // @A refers to List
+  @A List<@B Object>[@C]    // @A refers to array, @C refers to List
+\end{Verbatim}
+Another way of stating this principle is that a textual subpart of a declaration
+should describe a type that is part of the declared type.  Stating a
+subpart of the given type should not require shuffling around the
+annotations.
+
+  \item[\multipleVariablesPrinciple]
+    When two variables appear in a variable declaration, the annotations
+    should mean the same thing for both variables.
+    In Java, arrays can be declared with brackets after the type, after
+    the identifier, or both, as in \code{String[] my2dArray[];}.  For
+    example, \code{arr1} should have the same annotations
+    as the elements of \code{arr2}:
+\begin{Verbatim}
+  @A T[@B] arr1, arr2[@C];
+\end{Verbatim}
+\noindent
+Likewise, the \code{T}s should have the same annotations for \code{v3} and \code{arr4}:
+\begin{Verbatim}
+  @A T v3, arr4[@B][@C];
+\end{Verbatim}
+\noindent
+And, these three declarations should mean the same thing:
+\begin{Verbatim}
+  @A T[@B] arr5[@C];
+  @A T[@B][@C] arr6;
+  @A T arr7[@B][@C];
+\end{Verbatim}
+
+  \item[\wholeTypePrinciple]
+    Type annotations before a declaration refer to the full type, just as
+    variable annotations (which occur in the same position --- at the very
+    beginning of the declaration) refer to the entire variable.  This is
+    also consistent with annotations on generics (though the syntax of
+    generics and arrays is quite different in other ways), where
+    \code{@NonNull List<String>} is a non-null \code{List} of possibly-null
+    \code{String}s.  This principle is inconsistent with principles
+    \arrayAddLevelsPrinciple{} and
+    \multipleVariablesPrinciple{}, unless type annotations are
+    forbidden before a declaration.
+
+\end{description}
+
+If an annotation on brackets refers to the array, then the syntax violates
+principle \wholeTypePrinciple{}.  If an annotation on brackets refers
+to the elements, then the syntax violates principles
+\arrayAddLevelsPrinciple{} and \multipleVariablesPrinciple{}.
+
+
+Here are several proposals for the syntax of such array annotations.
+
+The examples below use the following variables:
+
+\begin{description}
+%BEGIN LATEX
+\itemsep 0pt \parskip 0pt
+%END LATEX
+\item{\code{array\_of\_rodocs}}
+  a mutable one-dimensional array of immutable \code{Document}s
+\item{\code{roarray\_of\_docs}}
+  an immutable one-dimensional array of mutable \code{Document}s
+\item{\code{array\_of\_array\_of\_rodocs}}
+  a mutable array, whose elements are mutable
+  one-dimensional arrays of immutable \code{Document}s
+\item{\code{array\_of\_roarray\_of\_docs}}
+  an immutable array, whose elements are mutable
+  one-dimensional arrays of mutable \code{Document}s
+\item{\code{roarray\_of\_array\_of\_docs}}
+  a mutable array, whose elements are immutable
+  one-dimensional arrays of mutable \code{Document}s
+\end{description}
+
+
+\begin{enumerate}
+  \item{Within brackets, refer to the array being accessed}
+
+An annotation before the entire array type binds to the member type that it
+abuts;
+\code{@Readonly Document[][]} can be interpreted as
+\code{(@Readonly Document)[][]}.
+
+An annotation within brackets refers to the \emph{array} that is accessed
+using those brackets.
+
+The type of elements of \code{@A Object[@B][@C]} is \code{@A Object[@C]}.
+
+The example variables would be declared as follows:
+
+\begin{Verbatim}
+  @Readonly Document[] array_of_rodocs;
+  Document[@Readonly] roarray_of_docs;
+  @Readonly Document[][] array_of_array_of_rodocs = new Document[2][12];
+  Document[@Readonly][] array_of_roarray_of_docs = new Document[@Readonly 2][12];
+  Document[][@Readonly] roarray_of_array_of_docs = new Document[2][@Readonly 12];
+\end{Verbatim}
+
+  \item{Within brackets, refer to the elements being accessed}
+
+An annotation before the entire array type refers to the (reference to the)
+top-level array
+itself; \code{@Readonly Document[][] docs4} indicates that the array is
+non-modifiable (not that the \code{Document}s in it are non-modifiable).
+
+An annotation within brackets applies to the \emph{elements} that are
+accessed using those brackets.
+
+The type of elements of \code{@A Object[@B][@C]} is \code{@B Object[@C]}.
+
+The example variables would be declared as follows:
+
+\begin{Verbatim}
+  Document[@Readonly] array_of_rodocs;
+  @Readonly Document[] roarray_of_docs;
+  Document[][@Readonly] array_of_array_of_rodocs = new Document[2][@Readonly 12];
+  Document[@Readonly][] array_of_roarray_of_docs = new Document[@Readonly 2][12];
+  @Readonly Document[][] roarray_of_array_of_docs = new Document[2][12];
+\end{Verbatim}
+
+  \item{Outside brackets, prefix}
+
+The type of elements of \code{@A Object @B [] @C []} is \code{@B Object @C []}.
+
+The example variables would be declared as follows:
+
+\begin{Verbatim}
+  Document @Readonly [] array_of_rodocs;
+  @Readonly Document[] roarray_of_docs;
+  @Readonly Document[][] array_of_array_of_rodocs = new Document[2][12];
+  Document[] @Readonly [] array_of_roarray_of_docs = new Document[2] @Readonly [12];
+  Document @Readonly [][] roarray_of_array_of_docs = new Document @Readonly [2][12];
+\end{Verbatim}
+
+  \item{Outside brackets, postfix}
+
+The type of elements of \code{@A Object[] @B [] @C} is \code{@B Object[] @C}.
+
+In Java, array types are constructed using postfix syntax, so postfix
+annotation syntax for them is appealing.
+
+Possible disadvantage:  Prefix notation may be more natural to Java
+programmers, as it is used in other places in the Java syntax.
+
+The example variables would be declared as follows:
+
+\begin{Verbatim}
+  Document[] @Readonly array_of_rodocs;
+  @Readonly Document[] roarray_of_docs;
+  Document[][] @Readonly array_of_array_of_rodocs = new Document[2][12] @Readonly;
+  Document[] @Readonly [] array_of_roarray_of_docs = new Document[2] @Readonly [12];
+  @Readonly Document[][] roarray_of_array_of_docs = new Document[2][12];
+\end{Verbatim}
+
+or, in a fully postfix syntax:
+
+\begin{Verbatim}
+  Document @Readonly [] array_of_rodocs;
+  Document[] @Readonly roarray_of_docs;
+  Document @Readonly [][] array_of_array_of_rodocs = new Document[2][12] @Readonly;
+  Document[] @Readonly [] array_of_roarray_of_docs = new Document[2] @Readonly [12];
+  Document[][] @Readonly roarray_of_array_of_docs = new Document[2][12];
+\end{Verbatim}
+
+
+%BEGIN LATEX
+\newcounter{saveenumi}
+\setcounter{saveenumi}{\theenumi}
+%END LATEX
+\end{enumerate}
+
+The within-the-brackets syntax has problems with ambiguity, when an
+explicit size is provided in a \code{new} array construction expression.
+In this example the annotated element could be the array or the type \code{Y}:
+\begin{Verbatim}
+  new X[@ReadOnly Y.class.getMethods().length]
+\end{Verbatim}
+And in this example, the annotated element is the array, but the annotation could
+be the marker annotation \code{@ReadOnly} with a parenthesized expression \code{(2)} or
+could be the annotation \code{@ReadOnly(2)}.
+\begin{Verbatim}
+  new X[2][@ReadOnly (2) ]
+\end{Verbatim}
+
+
+It is also possible to imagine array annotations that do not require new
+locations for the annotations.  The advantage of this is that there is no
+new syntax.  A disadvantage is that the array level annotations are
+syntactically separated from the array levels themselves, so the meaning
+may not be as clear.
+
+\begin{enumerate}
+%% Problem: the numbering starts over in HTML.
+%BEGIN LATEX
+\setcounter{enumi}{\thesaveenumi}
+%END LATEX
+\item Use an array-valued annotation that gives the annotations for the
+  different dimensions.  It could give the dimensions explicitly:
+\begin{Verbatim}
+   // dimension 1 and 2 of the array are annotated
+   @ArrayAnnots({
+     @ArrayAnnot(i=1, value={Readonly.class}),
+     @ArrayAnnot(i=2, value={Readonly.class})
+   })
+   Object[][][] arr;
+\end{Verbatim}
+or use the order in which the annotations are given.
+\begin{Verbatim}
+   @ArrayAnnots({
+     @ArrayAnnot({Readonly.class}),
+     @ArrayAnnot({Readonly.class})
+   })
+   Object[][] arr2;
+
+   @ArrayAnnots({
+     @Readonly,
+     @Readonly
+   })
+   Object[][] arr2;
+\end{Verbatim}
+The latter syntax is less convenient when not every level of the array is
+being annotated, or when multiple annotations are put on an array.
+(This document should give examples of those situations.)
+
+\item
+Use an annotation that lists the dimensions that have a property:
+\begin{Verbatim}
+   // In each case, the elements in the array are readonly
+   // dimension 0 has no annotation
+   // dimensions 1 and 2 are also readonly
+
+   @ReadonlyDims({1,2}) @Readonly Object[][][] roa;
+   @Dims({1,2}, @Readonly) @Readonly Object[][][] roa;
+\end{Verbatim}
+One advantage of this syntax over the one that gives an array of
+annotations is that each annotation is given independently, so it will be
+easier for tools to insert, delete, or conditionally display a given
+annotation.  However, the array of annotations more closely mirrors the
+syntax of the array declaration itself.
+
+\end{enumerate}
+
+
+%% This is the full example from Werner Dietl
+% // additional annotation for arrays
+% @interface ArrayAnnots {
+%   ArrayAnnot[] value();
+% }
+% 
+% // identify some data with one array dimension
+% @interface ArrayAnnot {
+%   // which dimension of the array
+%   int i() default 0;
+% 
+%   // some annotation for that dimension
+% 
+%   // it would be nice if we could allow any
+%   // annotation type, but this did not compile  
+%   // java.lang.annotation.Annotation[] value();
+% 
+%   // if we already have an annotation supertype
+%   // we could use that
+%   // MyAnnotation[] value();
+% 
+%   // but the most general is to allow class literals
+%   java.lang.Class[] value();
+% }
+% 
+% // annotate the dimensions that should be readonly
+% @interface ReadonlyDims {
+%   int[] value();
+% }
+% 
+% @interface Readonly {}
+% 
+% public class Array {
+% 
+%   // dimension 1 and 2 of the array are annotated
+%   @ArrayAnnots({
+%     @ArrayAnnot(i=1, value={Readonly.class}),
+%     @ArrayAnnot(i=2, value={Readonly.class})
+%   })
+%   Object[][][] arr;
+% 
+%   // no dimension given so the order is used
+%   @ArrayAnnots({
+%     @ArrayAnnot({Readonly.class}),
+%     @ArrayAnnot({Readonly.class})
+%   })
+%   Object[][] arr2;
+% 
+%   // the elements in the array are readonly
+%   // dimension 0 has no annotation
+%   // dimensions 1 and 2 are also readonly
+%   @ReadonlyDims({1,2}) @Readonly Object[][][] roa;
+% }
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
