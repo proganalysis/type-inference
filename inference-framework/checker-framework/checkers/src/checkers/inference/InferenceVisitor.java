@@ -1109,7 +1109,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			return Reference.createMethodAdaptReference(rcvRef, declRef);
 		case ASSIGNTO:
 			// If assignTo is primitive, then return directly
-			// FIXME: But it is not true for ReimFlow. We now ignore
+			// FIXME: But it is not true for SFlow. We now ignore
 			// it by overriding 
 			if (assignToRef instanceof PrimitiveReference)
 				return declRef;

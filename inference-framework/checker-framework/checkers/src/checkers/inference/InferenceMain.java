@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import checkers.inference.reimflow.InferenceMainReimFlow;
+import checkers.inference.sflow.InferenceMainSFlow;
 import checkers.util.CheckerMain;
 
 import com.sun.tools.javac.main.Main;
@@ -51,7 +51,7 @@ public class InferenceMain {
     	synchronized (InferenceMain.class) {
     		if (inferenceMain == null)
 //    			inferenceMain = new InferenceMain();
-    			inferenceMain = new InferenceMainReimFlow();
+    			inferenceMain = new InferenceMainSFlow();
 		}
     	return inferenceMain;
     }
