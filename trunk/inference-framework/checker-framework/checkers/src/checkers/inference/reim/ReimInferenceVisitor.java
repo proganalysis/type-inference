@@ -43,7 +43,7 @@ public class ReimInferenceVisitor extends InferenceVisitor {
 
 	@Override
 	protected void handleFieldRead(Reference lhsRef, Reference rcvRef, Reference fieldRef) {
-		// WEI: For ReimFlow, we only enforce fieldRef <: lhsRef (UNSAFE!!!)
+		// WEI: For SFlow, we only enforce fieldRef <: lhsRef (UNSAFE!!!)
 		// FIXME:
 		Element fieldElt = fieldRef.getElement();
 		super.handleFieldRead(lhsRef, rcvRef, fieldRef);

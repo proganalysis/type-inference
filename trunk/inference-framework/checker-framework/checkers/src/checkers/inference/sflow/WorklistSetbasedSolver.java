@@ -1,53 +1,42 @@
-/**
- * 
- */
-package checkers.inference;
+package checkers.inference.sflow;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.type.TypeKind;
 
+import checkers.inference.Constraint;
+import checkers.inference.Constraint.EmptyConstraint;
 import checkers.inference.Constraint.EqualityConstraint;
 import checkers.inference.Constraint.IfConstraint;
 import checkers.inference.Constraint.SubtypeConstraint;
 import checkers.inference.Constraint.UnequalityConstraint;
+import checkers.inference.ConstraintSolver;
+import checkers.inference.InferenceChecker;
 import checkers.inference.InferenceChecker.FailureStatus;
+import checkers.inference.InferenceMain;
+import checkers.inference.InferenceUtils;
+import checkers.inference.Reference;
 import checkers.inference.Reference.AdaptReference;
 import checkers.inference.Reference.FieldAdaptReference;
-import checkers.inference.sflow.SFlowChecker;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
+import checkers.inference.SetbasedSolver.SetbasedSolverException;
+import checkers.util.AnnotationUtils;
 
-
-/**
- * @author huangw5
- *
- */
-public class SetbasedSolver implements ConstraintSolver {
-	
-	public static class SetbasedSolverException extends Exception {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -7773156808761868415L;
-
-		public SetbasedSolverException(String string) {
-			super(string);
-		}
-		
-	}
+public class WorklistSetbasedSolver implements ConstraintSolver {
 	
 	private InferenceChecker inferenceChecker;
 	
@@ -55,24 +44,35 @@ public class SetbasedSolver implements ConstraintSolver {
 	
 	private List<Constraint> constraints;
 	
-	public SetbasedSolver(InferenceChecker inferenceChecker, 
+	private Map<Integer, List<Constraint>> refToConstraints; 
+	
+	public WorklistSetbasedSolver(InferenceChecker inferenceChecker, 
 			List<Reference> exprRefs, List<Constraint> constraints) {
 		this.inferenceChecker = inferenceChecker;
 		this.exprRefs = exprRefs;
 		this.constraints = constraints;
+		this.refToConstraints = new HashMap<Integer, List<Constraint>>();
+		this.secretSet = new LinkedHashSet<Constraint>(constraints.size());
+		this.taintedSet = new LinkedHashSet<Constraint>(constraints.size() / 10);
 		inferenceChecker.fillAllPossibleAnnos(exprRefs);
 	}
 	
 	private Constraint currentConstraint; // For debug
 	
+	private Reference currentCause; // For debug
+	
 	private FileWriter tracePw; // For debug
 	
 	private static boolean isSameRun = false; // for debug
 	
+	private boolean preferSecret = false;
+	
+	private Set<Constraint> secretSet;
+	
+	private Set<Constraint> taintedSet;
+	
 	@Override
 	public List<Constraint> solve() {
-//		System.out.println("INFO: Using " + this.getClass());
-		// FIXME: output constraints
 		if (InferenceChecker.DEBUG) {
 			try {
 				if (!isSameRun) { 
@@ -89,31 +89,42 @@ public class SetbasedSolver implements ConstraintSolver {
 			}
 		}
 		
+		for (Constraint c : constraints) {
+			if (!(c instanceof EmptyConstraint))
+				secretSet.add(c);
+		}
+		
 		Set<Constraint> warnConstraints = new HashSet<Constraint>();
-		List<Constraint> conflictConstraints;
+		Set<Constraint> conflictConstraints = new HashSet<Constraint>();
 		boolean hasUpdate = false;
-//		boolean hasError = false;
-		do {
-			conflictConstraints = new LinkedList<Constraint>();
-			hasUpdate = false;
-			for (Constraint c : constraints) {
-				try {
-					hasUpdate = handleConstraint(c) || hasUpdate;
-				} catch (SetbasedSolverException e) {
-					FailureStatus fs = inferenceChecker.getFailureStatus(c);
-					if (fs == FailureStatus.ERROR) {
-						hasUpdate = false;
-						conflictConstraints.add(c);
-					} else if (fs == FailureStatus.WARN) {
-						if (!warnConstraints.contains(c)) {
-							System.out.println("WARN: handling constraint " + c + " failed.");
-							warnConstraints.add(c);
-						}
+		buildRefToConstraintMapping();
+		while (!secretSet.isEmpty() || !taintedSet.isEmpty()) {
+			Constraint c = null;
+			if (!secretSet.isEmpty()) {
+				c = secretSet.iterator().next();
+				secretSet.remove(c);
+				preferSecret = true; 
+			} else if (!taintedSet.isEmpty()) {
+//				System.out.println("There are " + taintedSet.size() + " tainted constraints");
+				c = taintedSet.iterator().next();
+				taintedSet.remove(c);
+				preferSecret = false; 
+			}
+			try {
+				hasUpdate = handleConstraint(c) || hasUpdate;
+			} catch (SetbasedSolverException e) {
+				FailureStatus fs = inferenceChecker.getFailureStatus(c);
+				if (fs == FailureStatus.ERROR) {
+					hasUpdate = false;
+					conflictConstraints.add(c);
+				} else if (fs == FailureStatus.WARN) {
+					if (!warnConstraints.contains(c)) {
+						System.out.println("WARN: handling constraint " + c + " failed.");
+						warnConstraints.add(c);
 					}
 				}
 			}
-		} while (hasUpdate);
-//		} while (hasUpdate && !hasError);
+		}
 		
 		if (InferenceChecker.DEBUG) {
 			if (tracePw != null)
@@ -128,8 +139,6 @@ public class SetbasedSolver implements ConstraintSolver {
 				PrintWriter pw2 = new PrintWriter(InferenceMain.outputDir
 						+ File.separator + "all-refs.log");
 				for (Reference ref : exprRefs) {
-					if (ref.getIdentifier() == null)
-						continue;
 					String s = ref.getId()
 							+ "|"
 							+ ref.toString().replace("\n", " ")
@@ -145,10 +154,21 @@ public class SetbasedSolver implements ConstraintSolver {
 				e.printStackTrace();
 			}
 		}
-		return conflictConstraints;
+		ArrayList<Constraint> list = new ArrayList<Constraint>(conflictConstraints);
+		Collections.sort(list, new Comparator<Constraint>() {
+			@Override
+			public int compare(Constraint o1, Constraint o2) {
+				int res = o1.getLeft().getFullRefName().compareTo(o2.getLeft().getFullRefName());
+				if (res == 0)
+					res = o1.getRight().getFullRefName().compareTo(o2.getRight().getFullRefName());
+				return res;
+			}
+		});
+//		return new ArrayList<Constraint>(conflictConstraints);
+		return list;
 	}
 	
-	protected boolean handleConstraint(Constraint c) throws SetbasedSolverException {
+	public boolean handleConstraint(Constraint c) throws SetbasedSolverException {
 		currentConstraint = c;
 		boolean hasUpdate = false;
 		if (c instanceof SubtypeConstraint) {
@@ -180,8 +200,11 @@ public class SetbasedSolver implements ConstraintSolver {
 		Set<AnnotationMirror> subAnnos = getAnnotations(subRef);
 		Set<AnnotationMirror> supAnnos = getAnnotations(supRef);
 		
-//		if (c.id == 26951 && supAnnos.size() == 1)
-//			System.out.println();
+		// For tracing
+		Set<AnnotationMirror> oldSubAnnos = AnnotationUtils.createAnnotationSet();
+		oldSubAnnos.addAll(subAnnos);
+		Set<AnnotationMirror> oldSupAnnos = AnnotationUtils.createAnnotationSet();
+		oldSupAnnos.addAll(supAnnos);
 		
 		// First update the left: If a left annotation is not 
 		// subtype of any right annotation, then remove it. 
@@ -224,6 +247,23 @@ public class SetbasedSolver implements ConstraintSolver {
 			throw new SetbasedSolverException("ERROR: solve " + c 
 					+ " failed becaue of an empty set.");
 		
+		if (InferenceChecker.DEBUG) {
+			currentCause = null;
+			if (oldSubAnnos.size() == subAnnos.size())
+				currentCause = subRef;
+			else if (oldSupAnnos.size() == supAnnos.size())
+				currentCause = supRef;
+//			else
+//				currentCause = null;
+//			if (c.getID() == 21517) {
+//				System.out.println("oldSubAnnos = " + oldSubAnnos);
+//				System.out.println("subAnnos = " + subAnnos);
+//				System.out.println("oldSupAnnos = " + oldSupAnnos);
+//				System.out.println("supAnnos = " + supAnnos);
+//				System.out.println("currentCause = " + currentCause);
+//			}
+		}
+		
 		hasUpdate = setAnnotations(subRef, subAnnos)
 				|| setAnnotations(supRef, supAnnos) || hasUpdate;
 		
@@ -242,9 +282,12 @@ public class SetbasedSolver implements ConstraintSolver {
 		Set<AnnotationMirror> leftAnnos = getAnnotations(left);
 		Set<AnnotationMirror> rightAnnos = getAnnotations(right);
 		
-//		if (c.id == 93 && leftAnnos.size() == 1)
-//			System.out.println();
-	
+		// For tracing
+		Set<AnnotationMirror> oldLeftAnnos = AnnotationUtils.createAnnotationSet();
+		oldLeftAnnos.addAll(leftAnnos);
+		Set<AnnotationMirror> oldRightAnnos = AnnotationUtils.createAnnotationSet();
+		oldRightAnnos.addAll(rightAnnos);
+		
 		// The default intersection of Set doesn't work well
 		Set<AnnotationMirror> interAnnos = InferenceUtils.intersectAnnotations(
 				leftAnnos, rightAnnos);
@@ -253,6 +296,23 @@ public class SetbasedSolver implements ConstraintSolver {
 			throw new SetbasedSolverException("ERROR: solve " + c 
 					+ " failed becaue of an empty set.");
 		}
+		
+		if (InferenceChecker.DEBUG) {
+			currentCause = null;
+			if (oldLeftAnnos.size() == interAnnos.size())
+				currentCause = left;
+			else if (oldRightAnnos.size() == interAnnos.size())
+				currentCause = right;
+//			if (c.getID() == 24890) {
+//				System.out.println("oldSubAnnos = " + oldLeftAnnos);
+//				System.out.println("subAnnos = " + leftAnnos);
+//				System.out.println("oldSupAnnos = " + oldRightAnnos);
+//				System.out.println("supAnnos = " + rightAnnos);
+//				System.out.println("currentCause = " + currentCause);
+//			}
+		
+		}
+		
 		// update both
 		return setAnnotations(left, interAnnos)
 				|| setAnnotations(right, interAnnos)
@@ -267,6 +327,12 @@ public class SetbasedSolver implements ConstraintSolver {
 		// Get the annotations
 		Set<AnnotationMirror> leftAnnos = getAnnotations(left);
 		Set<AnnotationMirror> rightAnnos = getAnnotations(right);
+		
+		// For tracing
+		Set<AnnotationMirror> oldLeftAnnos = AnnotationUtils.createAnnotationSet();
+		oldLeftAnnos.addAll(leftAnnos);
+		Set<AnnotationMirror> oldRightAnnos = AnnotationUtils.createAnnotationSet();
+		oldRightAnnos.addAll(rightAnnos);
 	
 		// The default intersection of Set doesn't work well
 		Set<AnnotationMirror> differAnnos = InferenceUtils.differAnnotations(
@@ -276,10 +342,20 @@ public class SetbasedSolver implements ConstraintSolver {
 			throw new SetbasedSolverException("ERROR: solve " + c 
 					+ " failed becaue of an empty set.");
 		}
+		
+		if (InferenceChecker.DEBUG) {
+			if (oldLeftAnnos.equals(leftAnnos))
+				currentCause = left;
+			else if (oldRightAnnos.equals(rightAnnos))
+				currentCause = right;
+			else
+				currentCause = null;
+		}
 		// Update the left
-	return setAnnotations(left, differAnnos);
+		return setAnnotations(left, differAnnos);
 	}
 	
+	@Deprecated
 	protected boolean handleIfConstraint(IfConstraint c) throws SetbasedSolverException {
 		boolean hasUpdate = false;
 		Constraint condition = c.getCondition();
@@ -330,15 +406,31 @@ public class SetbasedSolver implements ConstraintSolver {
 	 */
 	protected boolean setAnnotations(Reference ref, Set<AnnotationMirror> annos)
 			throws SetbasedSolverException {
+		Set<AnnotationMirror> oldAnnos = ref.getAnnotations();
 		if (ref instanceof AdaptReference)
 			return setAnnotations((AdaptReference) ref, annos);
-		if (ref.getAnnotations().equals(annos))
+		if (oldAnnos.equals(annos))
 			return false;
 		
-//		if (ref.getId() == 24463) {
-//			System.out.println("Setting " + ref.toAnnotatedString() + " to "
-//					+ annos + " DEBUG: " + InferenceChecker.DEBUG);
+//		if (ref.getId() == 308802) {
+//			System.out.println((preferSecret ? "Forward" : "Backward") + " to: " + currentConstraint);
 //		}
+//		if (ref.getId() == 308863) {
+//			System.out.println((preferSecret ? "Forward" : "Backward") + " to: " + currentConstraint);
+//		}
+		
+		if (preferSecret && annos.size() == 1 && annos.contains(SFlowChecker.TAINTED)
+//				|| preferSecret && annos.size() == 1 && annos.contains(SFlowChecker.POLY) 
+//					&& oldAnnos.size() >= 2 && !oldAnnos.contains(SFlowChecker.TAINTED)
+				|| preferSecret && annos.size() == 2 && !annos.contains(SFlowChecker.SECRET)) {
+//		if (preferSecret && (oldAnnos.contains(SFlowChecker.SECRET) && !annos.contains(SFlowChecker.SECRET)
+//				|| !oldAnnos.contains(SFlowChecker.SECRET) && annos.contains(SFlowChecker.TAINTED))) {
+			if (currentConstraint != null) {
+				taintedSet.remove(currentConstraint);
+				taintedSet.add(currentConstraint);
+			}
+			return false;
+		}
 		
 		// FIXME: Check whether to propagate or not 
 		boolean hasUpdate = false;
@@ -352,8 +444,6 @@ public class SetbasedSolver implements ConstraintSolver {
 			}
 			else {
 				// Skip
-//				if (ref.toString().contains("new "))
-//					System.out.println("Taintable? " + ((SFlowChecker) inferenceChecker).isTaintableRef(ref) + ": " + ref.toString());
 			}
 		}
 		else {
@@ -369,6 +459,26 @@ public class SetbasedSolver implements ConstraintSolver {
 			sb.append("{" + InferenceUtils.formatAnnotationString(ref.getAnnotations()) + "}|");
 			sb.append("{" + InferenceUtils.formatAnnotationString(annos) + "}|");
 			sb.append(currentConstraint.toString().replace("\r", "").replace("\n", "").replace('|', ' '));
+			sb.append("|" + (currentCause != null ? currentCause.toAnnotatedString().replace("\r", "").replace("\n", "").replace('|', ' ') : "NONE") 
+					+ " (" + (preferSecret ? "forward" : "backward") + ")");
+			sb.append("|");
+			if (currentCause != null) {
+				if (currentCause instanceof AdaptReference) {
+					Reference contextRef = ((AdaptReference) currentCause).getContextRef();
+					Reference declRef = ((AdaptReference) currentCause).getDeclRef();
+					if (contextRef.getId() == ref.getId())
+						sb.append(declRef.getId());
+					else {
+//						if (declRef.getAnnotations().size() == 1 && declRef.toString().startsWith("zLIB"))
+//							sb.append(declRef.getId());
+//						else
+							sb.append(currentCause.getId());
+					}
+				} else
+					sb.append(currentCause.getId());
+			}
+			else 
+				sb.append("0");
 			try {
 				if (tracePw == null) {
 					tracePw = new FileWriter(new File(InferenceMain.outputDir
@@ -383,12 +493,21 @@ public class SetbasedSolver implements ConstraintSolver {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-//			if (ref.id == 24590 || ref.id == 24575)
-//				System.out.println("BUG: setting " + ref.toAnnotatedString() + " to " + annos);
 		}
 		
-		if (hasUpdate)
+		if (hasUpdate) {
 			ref.setAnnotations(annos);
+			// put the related constraints
+			List<Constraint> list = refToConstraints.get(ref.getId());
+			if (list != null)
+				for (Constraint c : list) {
+					secretSet.remove(c);
+					secretSet.add(c);
+//					if (ref.getId() == 308802) {
+//						System.out.println("Adding: " + c);
+//					}
+				}
+		}	
 
 		return hasUpdate;
 	}
@@ -449,108 +568,37 @@ public class SetbasedSolver implements ConstraintSolver {
 				|| setAnnotations(declRef, declAnnos);
 	}
 	
-//	/**
-//	 * Build the maximal solution
-//	 */
-//	protected void buildMaximalSolution() {
-//		if (maximalSolution != null)
-//			return;
-//		maximalSolution = new HashMap<String, Reference>();
-//		for (Reference ref : exprRefs) {
-//			String identifier = ref.getIdentifier();
-//			if (identifier != null) {
-//				Reference maxRef = getMaximal(ref);
-//				maximalSolution.put(identifier, maxRef);
-//			}
-//		}
-//		if (InferenceChecker.DEBUG) {
-//			try {
-//				PrintWriter pw = new PrintWriter(InferenceMain.outputDir
-//						+ File.separator + "maximalsolution.log");
-//				for (Entry<String, Reference> entry : maximalSolution.entrySet()) {
-//					Reference ref = entry.getValue();
-//					pw.println(entry.getKey() + ": " + ref.toString() + ref.formatAnnotations());
-//				}
-//				pw.close();
-//			} catch (Exception e) {
-//			}
-//		}
-//	}
 	
-//	/**
-//	 * Get a copy of {@code ref} with only the maximal annotation left
-//	 * @param ref
-//	 * @return
-//	 */
-//	protected Reference getMaximal(Reference ref) {
-//		return inferenceChecker.getMaximal(ref);
-//	}
-//	
-//	@Override
-//	public void annotateInferredType(Element elt, AnnotatedTypeMirror type) {
-//		if (elt.getKind() == ElementKind.METHOD 
-//				|| elt.getKind() == ElementKind.CONSTRUCTOR) {
-//			if (type.getKind() != TypeKind.EXECUTABLE)
-//				throw new RuntimeException("Incompatible method type!");
-//			ExecutableElement methodElt = (ExecutableElement) elt;
-//			AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
-//			assert methodElt.getParameters().size() == methodType.getParameterTypes().size();
-//			// Parameters
-//			for (Iterator<? extends VariableElement> itParamElt = methodElt
-//					.getParameters().iterator(); itParamElt.hasNext();) {
-//				for (Iterator<AnnotatedTypeMirror> itParamType = methodType
-//						.getParameterTypes().iterator(); itParamType.hasNext();) {
-//					annotateInferredType(itParamElt.next(), itParamType.next());
-//				}
-//			}
-//			String methodSig = InferenceUtils.getElementSignature(elt);
-//			ExecutableReference methodRef = (ExecutableReference) maximalSolution.get(methodSig);
-//			if (methodRef != null) {
-//				// Return
-//				InferenceUtils.annotateReferenceType(methodType.getReturnType(), 
-//						methodRef.getReturnRef());
-//				// Receiver
-//				InferenceUtils.annotateReferenceType(methodType.getReceiverType(), 
-//						methodRef.getReceiverRef());
-//			}
-//		} else
-//			annotateInferredType(InferenceUtils.getElementSignature(elt), type);
-//	}
-
-//	@Override
-//	public void annotateInferredType(String identifier, AnnotatedTypeMirror type) {
-//		if (maximalSolution == null)
-//			throw new RuntimeException("Should have called buildMaximalSolution()"
-//					+ " before retrieving the inferrred type!");
-//		Reference ref = maximalSolution.get(identifier);
-//		if (ref != null) {
-//			InferenceUtils.annotateReferenceType(type, ref);
-//		}
-//	}
-	
-//	@Override
-//	public Reference getInferredReference(String identifier) {
-//		if (maximalSolution == null)
-//			throw new RuntimeException("Should have called buildMaximalSolution()"
-//					+ " before retrieving the inferrred type!");
-//		Reference ref = maximalSolution.get(identifier);
-//		return ref;
-//	}
-
-//	@Override
-//	public List<Reference> getInferredReferences() {
-//		if (maximalSolution == null)
-//			throw new RuntimeException("Should have called buildMaximalSolution()"
-//					+ " before retrieving the inferrred type!");
-//		return new ArrayList<Reference>(maximalSolution.values());
-//	}
-
-
-	
-	
-//	@Override
-//	public void printAllVariables(PrintWriter out) {
-//		inferenceChecker.printResult(maximalSolution, out);
-//	}
+	private void buildRefToConstraintMapping() {
+		for (Constraint c : constraints) {
+			Reference left = null, right = null; 
+			if (c instanceof SubtypeConstraint
+					|| c instanceof EqualityConstraint
+					|| c instanceof UnequalityConstraint) {
+				left = c.getLeft();
+				right = c.getRight();
+			}
+			if (left != null && right != null) {
+				Reference[] refs = {left, right};
+				for (Reference ref : refs) {
+					int[] ids = null;
+					if (ref instanceof AdaptReference) {
+						ids = new int[] {
+								((AdaptReference) ref).getDeclRef().getId(),
+								((AdaptReference) ref).getContextRef().getId() };
+					} else 
+						ids = new int[] {ref.getId()};
+					for (int id : ids) {
+						List<Constraint> l = refToConstraints.get(id);
+						if (l == null) {
+							l = new ArrayList<Constraint>(5);
+							refToConstraints.put(id, l);
+						}
+						l.add(c);
+					}
+				}
+			}
+		}
+	}
 
 }

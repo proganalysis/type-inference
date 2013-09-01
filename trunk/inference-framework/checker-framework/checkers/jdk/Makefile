@@ -5,9 +5,9 @@
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 # RTJAR ?= $(JAVA_HOME)/../Classes/classes.jar
 
-# CHECKER_DIRS = reimflow igj javari
+# CHECKER_DIRS = sflow igj javari
 # CHECKER_DIRS = javari
-CHECKER_DIRS = reimflow
+CHECKER_DIRS = sflow
 
 JAVAEE_JAR ?= $(CHECKER_DIRS)/javaee-api-6.0.jar
 STRUTS_JAR ?= $(CHECKER_DIRS)/struts-1.1.jar
@@ -35,7 +35,7 @@ ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
 # All class files that contain some annotation, possibly with duplicates.
 # These, and only these, need to be extracted from $(RTJAR).
 ANNOTATED_CLASSES = \
-	$(patsubst reimflow/build/%.class,annotated/%.class, \
+	$(patsubst sflow/build/%.class,annotated/%.class, \
 	  $(patsubst igj/build/%.class,annotated/%.class, \
 	    $(patsubst javari/build/%.class,annotated/%.class, \
 			$(patsubst reim/build/%.class,annotated/%.class, \
