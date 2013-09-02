@@ -3,11 +3,11 @@ import checkers.inference.sflow.quals.Tainted;
 import checkers.inference.reim.quals.*;
 
 public class FileWriter extends OutputStreamWriter {
-    public FileWriter(/*@Tainted*/ String fileName) throws IOException {
+    public FileWriter(/*-@Tainted*/ String fileName) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public FileWriter(/*@Tainted*/ String fileName, boolean append) throws IOException {
+    public FileWriter(/*-@Tainted*/ String fileName, boolean append) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

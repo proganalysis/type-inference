@@ -14,25 +14,25 @@ public class JspWriter extends Writer {
     protected boolean autoFlush;
     protected JspWriter(int arg0, boolean arg1) { throw new RuntimeException("skeleton method"); }
     public void newLine() throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Tainted*/ boolean arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Tainted*/ char arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Tainted*/ int arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Tainted*/ long arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Tainted*/ float arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Tainted*/ double arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Poly*/ char /*@Tainted*/ [] arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Tainted*/ String arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void print(/*@Tainted*/ Object arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*-@Tainted*/ boolean arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*-@Tainted*/ char arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*-@Tainted*/ int arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*-@Tainted*/ long arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*-@Tainted*/ float arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*-@Tainted*/ double arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*@Poly*/ char /*-@Tainted*/ [] arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*-@Tainted*/ String arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void print(/*-@Tainted*/ Object arg0) throws IOException { throw new RuntimeException("skeleton method"); }
     public void println() throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Tainted*/ boolean arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Tainted*/ char arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Tainted*/ int arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Tainted*/ long arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Tainted*/ float arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Tainted*/ double arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Poly*/ char /*@Tainted*/ [] arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Tainted*/ String arg0) throws IOException { throw new RuntimeException("skeleton method"); }
-    public void println(/*@Tainted*/ Object arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*-@Tainted*/ boolean arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*-@Tainted*/ char arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*-@Tainted*/ int arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*-@Tainted*/ long arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*-@Tainted*/ float arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*-@Tainted*/ double arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*@Poly*/ char /*-@Tainted*/ [] arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*-@Tainted*/ String arg0) throws IOException { throw new RuntimeException("skeleton method"); }
+    public void println(/*-@Tainted*/ Object arg0) throws IOException { throw new RuntimeException("skeleton method"); }
     public void clear() throws IOException { throw new RuntimeException("skeleton method"); }
     public void clearBuffer() throws IOException { throw new RuntimeException("skeleton method"); }
     public int getBufferSize() { throw new RuntimeException("skeleton method"); }
