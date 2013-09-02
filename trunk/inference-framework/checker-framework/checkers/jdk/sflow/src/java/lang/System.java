@@ -106,11 +106,11 @@ public final class System {
         throw new RuntimeException("skeleton method");
     }
 
-    public static void load(/*@Tainted*/ String filename) {
+    public static void load(/*-@Tainted*/ String filename) {
         throw new RuntimeException("skeleton method");
     }
 
-    public static void loadLibrary(/*@Tainted*/ String libname) {
+    public static void loadLibrary(/*-@Tainted*/ String libname) {
         throw new RuntimeException("skeleton method");
     }
 

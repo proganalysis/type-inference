@@ -2,8 +2,8 @@ package java.sql;
 import checkers.inference.sflow.quals.*;
 
 public interface Statement extends Wrapper {
-    ResultSet executeQuery(/*@Tainted*/ String arg0) throws SQLException;
-    int executeUpdate(/*@Tainted*/ String arg0) throws SQLException;
+    ResultSet executeQuery(/*-@Tainted*/ String arg0) throws SQLException;
+    int executeUpdate(/*-@Tainted*/ String arg0) throws SQLException;
     void close() throws SQLException;
     int getMaxFieldSize() throws SQLException;
     void setMaxFieldSize(int arg0) throws SQLException;
@@ -16,7 +16,7 @@ public interface Statement extends Wrapper {
     SQLWarning getWarnings() throws SQLException;
     void clearWarnings() throws SQLException;
     void setCursorName(String arg0) throws SQLException;
-    boolean execute(/*@Tainted*/ String arg0) throws SQLException;
+    boolean execute(/*-@Tainted*/ String arg0) throws SQLException;
     ResultSet getResultSet() throws SQLException;
     int getUpdateCount() throws SQLException;
     boolean getMoreResults() throws SQLException;
@@ -26,18 +26,18 @@ public interface Statement extends Wrapper {
     int getFetchSize() throws SQLException;
     int getResultSetConcurrency() throws SQLException;
     int getResultSetType() throws SQLException;
-    void addBatch(/*@Tainted*/ String arg0) throws SQLException;
+    void addBatch(/*-@Tainted*/ String arg0) throws SQLException;
     void clearBatch() throws SQLException;
     int[] executeBatch() throws SQLException;
     Connection getConnection() throws SQLException;
     boolean getMoreResults(int arg0) throws SQLException;
     ResultSet getGeneratedKeys() throws SQLException;
-    int executeUpdate(/*@Tainted*/ String arg0, int arg1) throws SQLException;
-    int executeUpdate(/*@Tainted*/ String arg0, int[] arg1) throws SQLException;
-    int executeUpdate(/*@Tainted*/ String arg0, String[] arg1) throws SQLException;
-    boolean execute(/*@Tainted*/ String arg0, int arg1) throws SQLException;
-    boolean execute(/*@Tainted*/ String arg0, int[] arg1) throws SQLException;
-    boolean execute(/*@Tainted*/ String arg0, String[] arg1) throws SQLException;
+    int executeUpdate(/*-@Tainted*/ String arg0, int arg1) throws SQLException;
+    int executeUpdate(/*-@Tainted*/ String arg0, int[] arg1) throws SQLException;
+    int executeUpdate(/*-@Tainted*/ String arg0, String[] arg1) throws SQLException;
+    boolean execute(/*-@Tainted*/ String arg0, int arg1) throws SQLException;
+    boolean execute(/*-@Tainted*/ String arg0, int[] arg1) throws SQLException;
+    boolean execute(/*-@Tainted*/ String arg0, String[] arg1) throws SQLException;
     int getResultSetHoldability() throws SQLException;
     boolean isClosed() throws SQLException;
     void setPoolable(boolean arg0) throws SQLException;

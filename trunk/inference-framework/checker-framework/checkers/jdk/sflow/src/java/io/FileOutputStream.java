@@ -5,11 +5,11 @@ import checkers.inference.sflow.quals.*;
 import java.nio.channels.FileChannel;
 
 public class FileOutputStream extends OutputStream {
-    public FileOutputStream(/*@Tainted*/ String name) throws FileNotFoundException {
+    public FileOutputStream(/*-@Tainted*/ String name) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 
-    public FileOutputStream(/*@Tainted*/ String name, boolean append) throws FileNotFoundException {
+    public FileOutputStream(/*-@Tainted*/ String name, boolean append) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 
