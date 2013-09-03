@@ -296,6 +296,17 @@ public class SFlowChecker extends InferenceChecker {
 		return true;
 	}
 
+
+    @Override
+	public boolean isAnnotated(Reference ref) {
+		if (ref.getAnnotations().isEmpty())
+            return false;
+		if (InferenceUtils.intersectAnnotations(sourceAnnos,
+				ref.getAnnotations()).isEmpty())
+			return false;
+		return true;
+	}
+
 	/**
 	 * We need to override this method because we need to distinguish primitive
 	 * and reference
@@ -319,9 +330,11 @@ public class SFlowChecker extends InferenceChecker {
 			if (InferenceUtils.intersectAnnotations(sflowSet, annos).isEmpty()) {
 				// WEI: move from annotateMethod on Mar 30, 2013
 				Element elt = ref.getElement();
-				if (elt != null && isFromLibrary(elt) && (elt.getKind() == ElementKind.METHOD 
-						|| elt.getKind() == ElementKind.CONSTRUCTOR 
-						|| elt.getKind() == ElementKind.PARAMETER)) {
+				if (elt != null && isFromLibrary(elt) 
+                        && isPolyLibrary()
+                        && (elt.getKind() == ElementKind.METHOD 
+                            || elt.getKind() == ElementKind.CONSTRUCTOR 
+                            || elt.getKind() == ElementKind.PARAMETER)) {
 					annos.add(POLY);
 				}
 				else

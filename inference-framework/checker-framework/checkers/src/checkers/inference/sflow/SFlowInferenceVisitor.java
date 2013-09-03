@@ -346,7 +346,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	protected void handleArrayRead(Reference lhsRef, Reference exprRef, Reference componentRef) {
 		super.handleArrayRead(lhsRef, exprRef, componentRef);
 		// The componentRef cannot be TAINTED
-		if (componentRef.getAnnotations().isEmpty()) {
+		if (!checker.isAnnotated(componentRef)) {
 			addInequalityConstraint(componentRef,
 					Reference.createConstantReference(checker.TAINTED));
 		}
@@ -370,7 +370,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		super.handleArrayWrite(exprRef, componentRef, rhsRef);
 		// The componentRef cannot be TAINTED
 		// WEI: now we allow it
-		if (componentRef.getAnnotations().isEmpty()) {
+		if (!checker.isAnnotated(componentRef)) {
 			addInequalityConstraint(componentRef,
 					Reference.createConstantReference(checker.TAINTED));
 		}

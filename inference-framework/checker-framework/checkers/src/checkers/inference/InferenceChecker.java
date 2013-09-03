@@ -543,6 +543,10 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		return type.isAnnotated();
 	}
 
+	public boolean isAnnotated(Reference ref) {
+		return !ref.getAnnotations().isEmpty();
+	}
+
 	
 	/**
 	 * Decide if {@code methodElt} is a pure library method. It reads pure
