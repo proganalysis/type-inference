@@ -225,7 +225,7 @@ public class InferenceMainSFlow extends InferenceMain {
 		return currentExtractor.getInferredReferences();
 	}
 	
-	public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
+//    public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
 //		System.setProperty("sun.boot.class.path",
 //				jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
 //		List<String> argList = new ArrayList<String>(args.length + 10);
@@ -241,7 +241,7 @@ public class InferenceMainSFlow extends InferenceMain {
 //        if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
 //        	return false;
 //        }
-		System.out.println("INFO: Skip checking");
-        return true;
-	}
+//        System.out.println("INFO: Skip checking");
+//        return true;
+//    }
 }
