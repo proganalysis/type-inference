@@ -34,6 +34,8 @@ public class InferenceMain {
     public static final String outputDir = "infer-output";
     
     private static InferenceMain inferenceMain = null;
+
+		protected boolean needCheck = true;
     
     protected InferenceChecker inferenceChecker; 
     
@@ -51,7 +53,7 @@ public class InferenceMain {
         synchronized (InferenceMain.class) {
             if (inferenceMain == null) {
                 String mainClass = System.getProperty("mainClass");
-                if (mainClass == null) {
+                if (mainClass != null) {
                     inferenceMain = new InferenceMainSFlow();
                     try {
                         inferenceMain = (InferenceMain) Class.forName(mainClass).newInstance();
@@ -62,6 +64,7 @@ public class InferenceMain {
                 }
                 else
                     inferenceMain = new InferenceMain();
+                inferenceMain.needCheck = (System.getProperty("noCheck") == null);
             }
         }
     	return inferenceMain;
@@ -146,31 +149,30 @@ public class InferenceMain {
 		return currentExtractor.getInferredReferences();
 	}
 	
-	public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
-		System.setProperty("sun.boot.class.path",
-				jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
-		List<String> argList = new ArrayList<String>(args.length + 10);
-		argList = new ArrayList<String>(args.length + 10);
-        for (String arg : args) 
-        	argList.add(arg);
+  public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
+      System.setProperty("sun.boot.class.path",
+          jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
+      List<String> argList = new ArrayList<String>(args.length + 10);
+      argList = new ArrayList<String>(args.length + 10);
+      for (String arg : args) 
+        argList.add(arg);
 
-        argList.add("-Xbootclasspath/p:" + jdkBootPaths);
-        argList.add("-Achecking");
-        argList.add("-Awarns");
-        argList.add("-proc:only");
-        com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
-        if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
-        	return false;
-        }
-        return true;
-	}
+      argList.add("-Xbootclasspath/p:" + jdkBootPaths);
+      argList.add("-Achecking");
+      argList.add("-Awarns");
+      argList.add("-proc:only");
+      com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
+      if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
+        return false;
+      }
+      return true;
+  }
 	
     
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		boolean needCheck = true;
 //		String jdkBootPaths = "";
 		String jdkBootPaths = findPathJar(InferenceMain.class);
 		if (jdkBootPaths == "" || !jdkBootPaths.contains("jdk.jar"))
@@ -215,15 +217,15 @@ public class InferenceMain {
 				+ String.format("%6.1f seconds",
 						(float) (System.currentTimeMillis() - startTime) / 1000));
 		
-		if (needCheck) {
-			startTime = System.currentTimeMillis();
-			inferenceMain.check(args, jdkBootPaths, new PrintWriter(System.err, true));
-			System.out.println("INFO: Checking finished");
-			System.out.println("INFO: checking_time:\t"
-					+ String.format("%6.1f seconds",
-						(float)(System.currentTimeMillis() - startTime) / 1000));
-		} else 
-			System.out.println("INFO: Skip checking");
+    if (inferenceMain.needCheck) {
+      startTime = System.currentTimeMillis();
+      inferenceMain.check(args, jdkBootPaths, new PrintWriter(System.err, true));
+      System.out.println("INFO: Checking finished");
+      System.out.println("INFO: checking_time:\t"
+          + String.format("%6.1f seconds",
+            (float)(System.currentTimeMillis() - startTime) / 1000));
+    } else 
+      System.out.println("INFO: Skip checking");
 	}
 	
 	
