@@ -75,7 +75,7 @@ import com.sun.tools.javac.code.Type.WildcardType;
  * @author huangw5
  * 
  */
-@SupportedOptions({ "warn", "checking", "insertAnnos", "debug", "inferLibrary", "polyLibrary", "sourceSinkOnly" })
+@SupportedOptions({ "warn", "checking", "insertAnnos", "debug", "noReim", "inferLibrary", "polyLibrary", "sourceSinkOnly" })
 @TypeQualifiers({ Uncheck.class, Readonly.class, Polyread.class, Mutable.class,
 		Poly.class, Secret.class, Tainted.class, Bottom.class })
 public class SFlowChecker extends InferenceChecker {
@@ -93,7 +93,7 @@ public class SFlowChecker extends InferenceChecker {
 
 	private List<Pattern> specialMethodPatterns = null;
 	
-	private boolean useReim = false;
+	private boolean useReim = true;
 	
 	private boolean polyLibrary = true;
 	
@@ -151,16 +151,17 @@ public class SFlowChecker extends InferenceChecker {
 				"sourceSinkOnly")) {
 			sourceSinkOnly = true;
 		}
-//		if (getProcessingEnvironment().getOptions().containsKey(
-//				"notResolveConflict")) {
-//			resolveConflict = false;
-//		}
-		
-		System.out.println("INFO: useReim = " + useReim);
-		System.out.println("INFO: polyLibrary = " + polyLibrary);
-		System.out.println("INFO: inferLibrary = " + inferLibrary);
-		System.out.println("INFO: sourceSinkOnly = " + sourceSinkOnly);
-//		System.out.println("INFO: resolveConflict = " + resolveConflict);
+		if (getProcessingEnvironment().getOptions().containsKey(
+				"noReim")) {
+			useReim = false;
+		}
+        
+        if (InferenceChecker.DEBUG) {
+            System.out.println("INFO: useReim = " + useReim);
+            System.out.println("INFO: polyLibrary = " + polyLibrary);
+            System.out.println("INFO: inferLibrary = " + inferLibrary);
+            System.out.println("INFO: sourceSinkOnly = " + sourceSinkOnly);
+        }
 	}
 	
 	

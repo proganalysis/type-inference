@@ -93,10 +93,11 @@ done
 unset DUALCASE
 
 toolOpts=$toolOpts$nl" -processor checkers.inference.sflow.SFlowChecker "
-mainClass=" checkers.inference.InferenceMain "
-javaOpts=$javaOpts" -Xmx2048m"
+main=" checkers.inference.InferenceMain "
+mainClass="checkers.inference.sflow.InferenceMainSFlow"
+javaOpts=$javaOpts" -Xmx2048m -DmainClass="$mainClass" "
 
 IFS=$nl
 #eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} -jar "${mydir}"/jsr308-all.jar ${cpOpt} ${toolOpts}
-echo "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${mainClass} ${cpOpt} ${toolOpts}
-eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${mainClass} ${cpOpt} ${toolOpts}
+echo "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${main} ${cpOpt} ${toolOpts}
+eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${main} ${cpOpt} ${toolOpts}
