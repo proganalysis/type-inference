@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Comparator;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -177,18 +178,20 @@ public class InferenceMainSFlow extends InferenceMain {
 			typeErrors = conflictConstraints;
 			beforeResolve = true;
 		}
-//		if (!typeErrors.isEmpty()) {
-//		BufferedWriter bw = null;
+        // Sort typeErrors
+        Collections.sort(typeErrors, new Comparator<Constraint>() {
+            @Override
+            public int compare(Constraint o1, Constraint o2) {
+                return o1.getID() - o2.getID();
+            }
+        });
 		try {
-//			bw = new BufferedWriter(new FileWriter(InferenceMain.outputDir
-//					+ File.separator + "type-errors.txt"));
 			pw = new PrintWriter(InferenceMain.outputDir
 					+ File.separator + "type-errors.txt");
 			String s = "There are " + typeErrors.size() + " type errors "
 					+ (beforeResolve ? "BEFORE" : "AFTER") + " resolution:";
 			System.out.println(s);
 			pw.println(s + "\n");
-//			pw.flush();
 			int count = 0;
 			Constraint pre = null;
 			for (Constraint c : typeErrors) {
@@ -196,14 +199,11 @@ public class InferenceMainSFlow extends InferenceMain {
 					count++;
 //					System.out.println("\n" + count + ": ");
 					pw.println("\n" + count + ": ");
-//					pw.flush();
 				}
 //				System.out.println(c);
 				pw.println(c);
 				pre = c;
-//				pw.flush();
 			}
-//			count++;
 			System.out.println("\nThere are " + count + " errors after merging similar ones");
 			pw.println("\nThere are " + count + " errors after merging similar ones");
 			pw.close();

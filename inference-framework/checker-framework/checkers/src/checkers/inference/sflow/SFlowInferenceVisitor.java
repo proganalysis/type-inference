@@ -193,11 +193,6 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 					&& methodStr.equals("put(java.lang.String,java.lang.Object)"))
 					) {
 				ExpressionTree expr = TreeUtils.skipParens(arguments.get(0));
-//				if (getCurrentPath().getLeaf().toString().contains("m_props.put(")) {
-//					System.out.println("ownerStr = " + ownerStr + "\nmethodStr = " + methodStr
-//						+ "\n" + getCurrentPath().getLeaf().toString()
-//						+ "\n" + "expr = " + expr + " type = " + expr.getClass());
-//				}
 			
 			if (expr instanceof LiteralTree && expr.getKind() != Kind.NULL_LITERAL
 				|| (elt = TreeUtils.elementFromUse(expr)) != null 
@@ -362,7 +357,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	protected void handleFieldRead(Reference lhsRef, Reference rcvRef, Reference fieldRef) {
 		super.handleFieldRead(lhsRef, rcvRef, fieldRef);
 		// The instant field cannot be Tainted
-		// WEI: now we allow it
+		// WEI: now we enforce it in SFlowAnnotatedTypeFactory
 //		Element fieldElt = fieldRef.getElement();
 //		if (!ElementUtils.isStatic(fieldElt) && fieldRef.getAnnotations().isEmpty())
 //			addInequalityConstraint(fieldRef,
@@ -386,7 +381,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	protected void handleFieldWrite(Reference rcvRef, Reference fieldRef, Reference rhsRef) {
 		super.handleFieldWrite(rcvRef, fieldRef, rhsRef);
 		// The instant field cannot be Tainted
-		// WEI: now we allow it
+		// WEI: now we enforce it in SFlowAnnotatedTypeFactory
 //		Element fieldElt = fieldRef.getElement();
 //		if (!ElementUtils.isStatic(fieldElt) && fieldRef.getAnnotations().isEmpty())
 //			addInequalityConstraint(fieldRef,

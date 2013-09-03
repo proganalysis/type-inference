@@ -48,11 +48,22 @@ public class InferenceMain {
     }
     
     public static InferenceMain getInstance() {
-    	synchronized (InferenceMain.class) {
-    		if (inferenceMain == null)
-//    			inferenceMain = new InferenceMain();
-    			inferenceMain = new InferenceMainSFlow();
-		}
+        synchronized (InferenceMain.class) {
+            if (inferenceMain == null) {
+                String mainClass = System.getProperty("mainClass");
+                if (mainClass == null) {
+                    inferenceMain = new InferenceMainSFlow();
+                    try {
+                        inferenceMain = (InferenceMain) Class.forName(mainClass).newInstance();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+                }
+                else
+                    inferenceMain = new InferenceMain();
+            }
+        }
     	return inferenceMain;
     }
     
