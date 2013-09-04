@@ -97,20 +97,6 @@ public class InferenceMainSFlow extends InferenceMain {
 			System.out.println("WARN: No constraints generated.");
 			return null;
 		}
-//		if (InferenceChecker.DEBUG) {
-//			PrintWriter pw;
-//			try {
-//				pw = new PrintWriter(InferenceMainSFlow.outputDir
-//						+ File.separator + "tf-constraints.log");
-//                for (Constraint c : constraints) {
-//                    pw.println(c.toString());
-//                }
-//				pw.close();
-//				
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
 		ConstraintSolver solver = new SetbasedSolver(inferenceChecker, Reference.getExpReferences(), constraints);
 		List<Constraint> conflictConstraints = solver.solve();
 		currentExtractor = new MaximalTypingExtractor(inferenceChecker, Reference.getExpReferences(), constraints);
@@ -141,7 +127,6 @@ public class InferenceMainSFlow extends InferenceMain {
 			System.out.println("WARN: No constraints generated.");
 			return null;
 		}
-//		solver = new SecretFirstSetbasedSolver(inferenceChecker, Reference.getExpReferences(), constraints);
 //		solver = new SetbasedSolver(inferenceChecker, Reference.getExpReferences(), constraints);
 		solver = new WorklistSetbasedSolver(inferenceChecker, Reference.getExpReferences(), constraints);
 		// FIXME: output constraints
@@ -178,13 +163,6 @@ public class InferenceMainSFlow extends InferenceMain {
 			typeErrors = conflictConstraints;
 			beforeResolve = true;
 		}
-        // Sort typeErrors
-        Collections.sort(typeErrors, new Comparator<Constraint>() {
-            @Override
-            public int compare(Constraint o1, Constraint o2) {
-                return o1.getID() - o2.getID();
-            }
-        });
 		try {
 			pw = new PrintWriter(InferenceMain.outputDir
 					+ File.separator + "type-errors.txt");
@@ -197,10 +175,10 @@ public class InferenceMainSFlow extends InferenceMain {
 			for (Constraint c : typeErrors) {
 				if (pre == null || !c.isSimilar(pre)) {
 					count++;
-//					System.out.println("\n" + count + ": ");
+					System.out.println("\n" + count + ": ");
 					pw.println("\n" + count + ": ");
 				}
-//				System.out.println(c);
+				System.out.println(c);
 				pw.println(c);
 				pre = c;
 			}
@@ -208,8 +186,8 @@ public class InferenceMainSFlow extends InferenceMain {
 			pw.println("\nThere are " + count + " errors after merging similar ones");
 			pw.close();
 		} catch (Exception e) {
+            e.printStackTrace();
 		}
-//		} 
 		
 		// Now we merge the maximal typing for SFlow and ReIm 
 		Map<String, Reference> reimFlowMaxTyping = currentExtractor.getInferredSolution();

@@ -155,16 +155,17 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 			}
 		}
 		ArrayList<Constraint> list = new ArrayList<Constraint>(conflictConstraints);
-		Collections.sort(list, new Comparator<Constraint>() {
-			@Override
-			public int compare(Constraint o1, Constraint o2) {
-				int res = o1.getLeft().getFullRefName().compareTo(o2.getLeft().getFullRefName());
-				if (res == 0)
-					res = o1.getRight().getFullRefName().compareTo(o2.getRight().getFullRefName());
-				return res;
-			}
-		});
-//		return new ArrayList<Constraint>(conflictConstraints);
+        Collections.sort(list, new Comparator<Constraint>() {
+            @Override
+            public int compare(Constraint o1, Constraint o2) {
+                int res = o1.getLeft().getFullRefName().compareTo(o2.getLeft().getFullRefName());
+                if (res == 0)
+                    res = o1.getRight().getFullRefName().compareTo(o2.getRight().getFullRefName());
+                if (res == 0)
+                    res = o1.getID() - o2.getID();
+                return res;
+            }
+        });
 		return list;
 	}
 	

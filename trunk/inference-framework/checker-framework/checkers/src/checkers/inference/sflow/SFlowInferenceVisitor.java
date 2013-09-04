@@ -346,7 +346,8 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	protected void handleArrayRead(Reference lhsRef, Reference exprRef, Reference componentRef) {
 		super.handleArrayRead(lhsRef, exprRef, componentRef);
 		// The componentRef cannot be TAINTED
-		if (!checker.isAnnotated(componentRef)) {
+//        if (componentRef.getAnnotations().isEmpty()) {
+        if (!checker.isAnnotated(componentRef)) {
 			addInequalityConstraint(componentRef,
 					Reference.createConstantReference(checker.TAINTED));
 		}
@@ -369,8 +370,8 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	protected void handleArrayWrite(Reference exprRef, Reference componentRef, Reference rhsRef) {
 		super.handleArrayWrite(exprRef, componentRef, rhsRef);
 		// The componentRef cannot be TAINTED
-		// WEI: now we allow it
-		if (!checker.isAnnotated(componentRef)) {
+//        if (componentRef.getAnnotations().isEmpty()) {
+        if (!checker.isAnnotated(componentRef)) {
 			addInequalityConstraint(componentRef,
 					Reference.createConstantReference(checker.TAINTED));
 		}
@@ -472,8 +473,12 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				&& !methodStr.equals("setAttribute(java.lang.String,java.lang.Object)")
 				&& !((ExecutableReference) methodRef).getReturnRef().getAnnotations().contains(checker.SECRET)
 				) {
-			// FIXME: 
-			// Generate constraints for actual arguments
+			// FIXME:  Special-case for non-secrect-return methods in
+            // *ServletRequest. This is to prevent a @Secret/@Tainted 
+            // request from making all of its methods return
+            // @Secret/@Tainted values
+            // We only generate constraints for actual arguments,
+            // ignoring return values
 			int size = arguments.size();
 			for (int i = 0; i < size; i++) {
 				ExpressionTree argTree = arguments.get(i);
@@ -489,9 +494,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 						|| ownerStr.equals("java.util.Collections")) 
 						&& methodElt.toString().contains("sort("))
 				) {
-	 		// SKIP
-//			if (currentInvocation != null)
-//				System.out.println("INFO: Skip hanlding " + currentInvocation);
+	 		// SKIP sort method
 		}
 		else if (isLeftViewpointInstanceMethod(methodElt)) {
 			// We may want to special-case some instance methods with viewpoint on
@@ -499,8 +502,6 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 			super.handleMethodCall(methodElt, arguments, null, lhsRef);
 		}
 		else {
-			if (methodElt.toString().contains("sort"))
-					System.out.println("KEEP SORT: " + ownerStr + " " + methodElt);
 			super.handleMethodCall(methodElt, arguments, rcvRef, lhsRef);
 		}
 	}

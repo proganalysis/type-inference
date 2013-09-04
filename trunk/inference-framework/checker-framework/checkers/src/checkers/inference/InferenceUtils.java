@@ -59,60 +59,6 @@ import com.sun.tools.javac.tree.TreeInfo;
 public class InferenceUtils {
 	
 	/**
-	 * make deep copy of <code>inType</code>
-	 * @param inType The type to be copied
-	 * @param copyAnnotations  Indicates if the annotations are copied
-	 * @return
-	 */
-//	public static AnnotatedTypeMirror getDeepCopy(AnnotatedTypeMirror inType, 
-//			boolean copyAnnotations) {
-//		if (inType == null) {
-//			System.err.println("Null type!");
-//		}
-//		AnnotatedTypeMirror outType = inType.getCopy(copyAnnotations);
-//		if (outType.getKind() == TypeKind.ARRAY) {
-//			((AnnotatedArrayType) outType).setComponentType(getDeepCopy(
-//					((AnnotatedArrayType) inType).getComponentType(),
-//					copyAnnotations));
-//		}
-//		else if (outType.getKind() == TypeKind.EXECUTABLE) {
-//			AnnotatedExecutableType aType = (AnnotatedExecutableType) outType;
-//			List<AnnotatedTypeMirror> parameterTypes = aType.getParameterTypes();
-//			List<AnnotatedTypeMirror> newParameterTypes = new ArrayList<AnnotatedTypeMirror>(
-//					parameterTypes.size());
-//			for (AnnotatedTypeMirror pt : parameterTypes) {
-//				newParameterTypes.add(getDeepCopy(pt, copyAnnotations));
-//			} 
-//			aType.setParameterTypes(newParameterTypes);
-//			AnnotatedTypeMirror newReturnType = getDeepCopy(aType.getReturnType(), copyAnnotations);
-//			aType.setReturnType(newReturnType);
-//			AnnotatedDeclaredType newRcvType  = (AnnotatedDeclaredType) 
-//					getDeepCopy(aType.getReceiverType(), copyAnnotations);
-//			aType.setReceiverType(newRcvType);
-//		}
-//		else if (outType.getKind() == TypeKind.DECLARED) {
-//		    List<AnnotatedTypeMirror> oldTypeArgs = ((AnnotatedDeclaredType) inType).getTypeArguments();
-//		    List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<AnnotatedTypeMirror>();
-//		    for (AnnotatedTypeMirror at : oldTypeArgs) {
-//		        newTypeArgs.add(getDeepCopy(at, copyAnnotations));
-//		    }
-//		    ((AnnotatedDeclaredType) outType).setTypeArguments(newTypeArgs);
-//		}
-//		else if (outType.getKind() == TypeKind.TYPEVAR) {
-//		    AnnotatedTypeVariable aType = (AnnotatedTypeVariable) outType;
-//		    AnnotatedTypeMirror upperBound = aType.getUpperBound().getCopy(copyAnnotations);
-//		    aType.setUpperBound(upperBound);
-//		}
-//		else if (outType.getKind() == TypeKind.WILDCARD) {
-//		    AnnotatedWildcardType aType = (AnnotatedWildcardType) outType;
-//		    AnnotatedTypeMirror upperBound = aType.getExtendsBound().getCopy(copyAnnotations);
-//		    aType.setExtendsBound(upperBound);
-//		}
-//		return outType;
-//	}
-	
-
-	/**
 	 * Return a copy of <code>inType</code> with only the "maximal" annotation
 	 * remaining. The "maximal" is determined by the <code>comparator</code>
 	 * @param inType
