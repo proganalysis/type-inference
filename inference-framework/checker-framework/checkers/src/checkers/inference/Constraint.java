@@ -4,6 +4,7 @@
 package checkers.inference;
 
 import com.sun.source.tree.Tree;
+import checkers.inference.Reference.AdaptReference;
 
 /**
  * There are three types of constraints currently
@@ -57,7 +58,16 @@ public abstract class Constraint {
 		@Override
 		public boolean isSimilar(Constraint c) {
 			if (c instanceof SubtypeConstraint) {
-				return (left.isSimilar(c.left) && right.isSimilar(c.right));
+				if (left.isSimilar(c.left) && right.isSimilar(c.right))
+                    return true;
+                else if ((left instanceof AdaptReference) && left.isSimilar(c.left)
+                        && right.getType().getUnderlyingType().equals(c.right.getType()
+                            .getUnderlyingType()))
+                    return true;
+                else if ((right instanceof AdaptReference) && right.isSimilar(c.right)
+                        && left.getType().getUnderlyingType().equals(c.left.getType()
+                            .getUnderlyingType()))
+                    return true;
 			}
 			return false;
 		}
@@ -77,7 +87,16 @@ public abstract class Constraint {
 		@Override
 		public boolean isSimilar(Constraint c) {
 			if (c instanceof EqualityConstraint) {
-				return (left.isSimilar(c.left) && right.isSimilar(c.right));
+				if (left.isSimilar(c.left) && right.isSimilar(c.right))
+                    return true;
+                else if ((left instanceof AdaptReference) && left.isSimilar(c.left)
+                        && right.getType().getUnderlyingType().equals(c.right.getType()
+                            .getUnderlyingType()))
+                    return true;
+                else if ((right instanceof AdaptReference) && right.isSimilar(c.right)
+                        && left.getType().getUnderlyingType().equals(c.left.getType()
+                            .getUnderlyingType()))
+                    return true;
 			}
 			return false;
 		}
@@ -98,7 +117,16 @@ public abstract class Constraint {
 		@Override
 		public boolean isSimilar(Constraint c) {
 			if (c instanceof UnequalityConstraint) {
-				return (left.isSimilar(c.left) && right.isSimilar(c.right));
+				if (left.isSimilar(c.left) && right.isSimilar(c.right))
+                    return true;
+                else if ((left instanceof AdaptReference) && left.isSimilar(c.left)
+                        && right.getType().getUnderlyingType().equals(c.right.getType()
+                            .getUnderlyingType()))
+                    return true;
+                else if ((right instanceof AdaptReference) && right.isSimilar(c.right)
+                        && left.getType().getUnderlyingType().equals(c.left.getType()
+                            .getUnderlyingType()))
+                    return true;
 			}
 			return false;
 		}

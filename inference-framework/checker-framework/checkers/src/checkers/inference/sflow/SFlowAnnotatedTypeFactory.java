@@ -157,16 +157,16 @@ public class SFlowAnnotatedTypeFactory extends
          *  make sense because there is no state for a static method. 
 		 */
 		// FIXME: added on Mar 28, 2013
-//		if (ElementUtils.isStatic(methodElt) && 
-//					!methodElt.getModifiers().contains(Modifier.PRIVATE)) {
-//			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-//			set.add(checker.POLY);
-//			set.add(checker.TAINTED); 
-//			for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
-//				if (!checker.isAnnotated(paramType)) 
-//					annotateConstants(paramType, set);
-//			}
-//		}
+		if (ElementUtils.isStatic(methodElt) && 
+					!methodElt.getModifiers().contains(Modifier.PRIVATE)) {
+			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+			set.add(checker.POLY);
+			set.add(checker.TAINTED); 
+			for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
+				if (!checker.isAnnotated(paramType)) 
+					annotateConstants(paramType, set);
+			}
+		}
 	}
 
 	
