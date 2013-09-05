@@ -109,24 +109,6 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		return false;
 	}
 	
-//	private boolean containsReadonly(Set<AnnotationMirror> annos) {
-//		return false;
-//	}
-	
-//	private void filterReimQuals(Reference ref) {
-//		if (ref instanceof AdaptReference) {
-//			filterReimQuals(((AdaptReference) ref).getContextRef());
-//			filterReimQuals(((AdaptReference) ref).getDeclRef());
-//		} else {
-//			if (ref instanceof ArrayReference) {
-//				filterReimQuals(((ArrayReference) ref).getComponentRef());
-//			}
-//			Set<AnnotationMirror> set = InferenceUtils
-//					.differAnnotations(ref.getAnnotations(), reimQuals);
-//			ref.setAnnotations(set);
-//		}
-//	}
-	
 	private String getArgumentSignature(ExpressionTree expr) {
 		while (expr.getKind() == Kind.TYPE_CAST 
 				|| expr.getKind() == Kind.PARENTHESIZED) {
@@ -134,10 +116,8 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 			if (expr.getKind() == Kind.TYPE_CAST)
 				expr = ((ParenthesizedTree) expr).getExpression();
 		}
-		String key = "";
+		String key = null;
 		Element elt = TreeUtils.elementFromUse(expr);
-//		if (elt == null)
-//			System.out.println("expr = " + expr + "\n" + getCurrentPath().getLeaf().toString());
 		if (expr instanceof LiteralTree)
 			key = expr.toString();
 		else if (elt.getKind() !=  ElementKind.LOCAL_VARIABLE){
@@ -148,6 +128,8 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 					+ TreeInfo.getStartPos((JCTree) decl) + ":"
 					+ decl.toString();
 		}
+        if (key == null) 
+            throw new RuntimeException("Null key!");
 		return key;
 	}
 	
@@ -202,16 +184,13 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				return new IndexEntry(0, 1);
 			}
 		}
-		else if (
-				ownerStr.equals("javax.servlet.jsp.jstl.core.Config")
-				&& methodStr.startsWith("set(")
-				) {
+		else if (ownerStr.equals("javax.servlet.jsp.jstl.core.Config")
+                    && methodStr.startsWith("set(")) {
 			ExpressionTree expr = TreeUtils.skipParens(arguments.get(1));
 			if (expr instanceof LiteralTree && expr.getKind() != Kind.NULL_LITERAL
-				|| (elt = TreeUtils.elementFromUse(expr)) != null 
-				&& elt.getModifiers().contains(Modifier.FINAL)
+                    || (elt = TreeUtils.elementFromUse(expr)) != null 
+                        && elt.getModifiers().contains(Modifier.FINAL)
 				)
-//				System.out.println("Skip " + methodElt);
 				return new IndexEntry(1, 2);
 		}
 			
@@ -232,22 +211,22 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				&& methodStr.equals("getAttribute(java.lang.String)")
 				)
 				||
-		(ownerStr.equals("java.util.Properties")
-				&& (methodStr.startsWith("getProperty(java.lang.String")
-					|| methodStr.startsWith("get(")))
-				||
-		((ownerStr.equals("java.util.Map")
-				|| ownerStr.equals("java.util.Hashtable")				
-				|| ownerStr.equals("java.util.HashMap"))
-				&& methodStr.startsWith("get("))
-				||
-		(((ownerStr.equals("javax.servlet.jsp.JspContext")
-				|| ownerStr.equals("javax.servlet.jsp.PageContext"))
-				&& (methodStr.startsWith("getAttribute(java.lang.String")
-					|| methodStr.equals("findAttribute(java.lang.String)"))))
-				||
-		(ownerStr.equals("org.apache.velocity.context.Context")
-				&& methodStr.equals("get(java.lang.String)"))) {
+            (ownerStr.equals("java.util.Properties")
+                    && (methodStr.startsWith("getProperty(java.lang.String")
+                        || methodStr.startsWith("get(")))
+                    ||
+            ((ownerStr.equals("java.util.Map")
+                    || ownerStr.equals("java.util.Hashtable")				
+                    || ownerStr.equals("java.util.HashMap"))
+                    && methodStr.startsWith("get("))
+                    ||
+            (((ownerStr.equals("javax.servlet.jsp.JspContext")
+                    || ownerStr.equals("javax.servlet.jsp.PageContext"))
+                    && (methodStr.startsWith("getAttribute(java.lang.String")
+                        || methodStr.equals("findAttribute(java.lang.String)"))))
+                    ||
+            (ownerStr.equals("org.apache.velocity.context.Context")
+                    && methodStr.equals("get(java.lang.String)"))) {
 			ExpressionTree expr = TreeUtils.skipParens(arguments.get(0));
 			if (expr instanceof LiteralTree && expr.getKind() != Kind.NULL_LITERAL
 				|| (elt = TreeUtils.elementFromUse(expr)) != null 
@@ -293,8 +272,6 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 							|| sup.getElement().getKind() == ElementKind.INTERFACE))
 				hasReadonlySup = true;
 			
-//			filterReimQuals(sub);
-//			filterReimQuals(sup);
 			if (!hasReadonlySup)
 				super.addEqualityConstraint(sub, sup);
 			else
@@ -313,8 +290,6 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 							|| sup.getElement().getKind() == ElementKind.INTERFACE))
 				hasReadonlySup = true;
 			
-//			filterReimQuals(sub);
-//			filterReimQuals(sup);
 			if (!hasReadonlySup) {
 				super.addEqualityConstraint(sub, sup);
 			} else
@@ -324,21 +299,16 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	
 	@Override
 	protected void addEqualityConstraint(Reference left, Reference right) {
-//		filterReimQuals(left);
-//		filterReimQuals(right);
 		super.addEqualityConstraint(left, right);
 	}
 	
 	@Override
 	protected void addInequalityConstraint(Reference left, Reference right) {
-//		filterReimQuals(left);
-//		filterReimQuals(right);
 		super.addInequalityConstraint(left, right);
 	}
 	
 	@Override
 	protected void addEmptyConstraint(Reference ref) {
-//		filterReimQuals(ref);
 		super.addEmptyConstraint(ref);
 	}
 
