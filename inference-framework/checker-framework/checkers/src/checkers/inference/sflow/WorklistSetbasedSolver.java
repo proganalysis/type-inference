@@ -413,27 +413,17 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 		if (oldAnnos.equals(annos))
 			return false;
 		
-//		if (ref.getId() == 308802) {
-//			System.out.println((preferSecret ? "Forward" : "Backward") + " to: " + currentConstraint);
-//		}
-//		if (ref.getId() == 308863) {
-//			System.out.println((preferSecret ? "Forward" : "Backward") + " to: " + currentConstraint);
-//		}
-		
+        // Skip for the following cases
 		if (preferSecret && annos.size() == 1 && annos.contains(SFlowChecker.TAINTED)
-//				|| preferSecret && annos.size() == 1 && annos.contains(SFlowChecker.POLY) 
-//					&& oldAnnos.size() >= 2 && !oldAnnos.contains(SFlowChecker.TAINTED)
 				|| preferSecret && annos.size() == 2 && !annos.contains(SFlowChecker.SECRET)) {
-//		if (preferSecret && (oldAnnos.contains(SFlowChecker.SECRET) && !annos.contains(SFlowChecker.SECRET)
-//				|| !oldAnnos.contains(SFlowChecker.SECRET) && annos.contains(SFlowChecker.TAINTED))) {
 			if (currentConstraint != null) {
 				taintedSet.remove(currentConstraint);
 				taintedSet.add(currentConstraint);
 			}
 			return false;
 		}
-		
-		// FIXME: Check whether to propagate or not 
+		// FIXME: Check whether to propagate or not. This is for
+        // inferLibary only
 		boolean hasUpdate = false;
 		if (inferenceChecker instanceof SFlowChecker 
 				&& ((SFlowChecker) inferenceChecker).isInferLibrary()
@@ -470,10 +460,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 					if (contextRef.getId() == ref.getId())
 						sb.append(declRef.getId());
 					else {
-//						if (declRef.getAnnotations().size() == 1 && declRef.toString().startsWith("zLIB"))
-//							sb.append(declRef.getId());
-//						else
-							sb.append(currentCause.getId());
+                        sb.append(currentCause.getId());
 					}
 				} else
 					sb.append(currentCause.getId());
@@ -504,9 +491,6 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 				for (Constraint c : list) {
 					secretSet.remove(c);
 					secretSet.add(c);
-//					if (ref.getId() == 308802) {
-//						System.out.println("Adding: " + c);
-//					}
 				}
 		}	
 
