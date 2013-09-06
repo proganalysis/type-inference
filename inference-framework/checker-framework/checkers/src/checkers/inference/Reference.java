@@ -815,11 +815,8 @@ public static abstract class AdaptReference extends Reference {
 	public boolean isSimilar(Reference ref) {
 		if (ref instanceof AdaptReference) {
 			AdaptReference aref = (AdaptReference) ref;
-			if(this.declRef.isSimilar(aref.getDeclRef())) {
-                // If contextRefs are of same type, they are similar
-                return this.contextRef.getType().getUnderlyingType().equals(
-                        aref.getContextRef().getType().getUnderlyingType());
-            }
+            return this.declRef.isSimilar(aref.getDeclRef())
+                && this.contextRef.isSimilar(aref.getContextRef());
 		}
 		return false;
 	}
