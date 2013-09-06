@@ -442,11 +442,9 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		}
 		else if ((ownerStr.equals("javax.servlet.ServletRequest")
 				|| ownerStr.equals("javax.servlet.http.HttpServletRequest"))
-				&& !methodStr.equals("getAttribute(java.lang.String)")
-				&& !methodStr.equals("setAttribute(java.lang.String,java.lang.Object)")
-				&& !((ExecutableReference) methodRef).getReturnRef().getAnnotations().contains(checker.SECRET)
+				
 				) {
-			// FIXME:  Special-case for non-secrect-return methods in
+			// FIXME:  Special-case for methods in
             // *ServletRequest. This is to prevent a @Secret/@Tainted 
             // request from making all of its methods return
             // @Secret/@Tainted values
@@ -459,6 +457,13 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				// Recursively generate constraints 
 				generateConstraint(argRef, argTree);
 			}
+            // If the return value is Secret, we simply enforce RET <:
+            // LHS without adaptation (which is not necessary)
+            if (((ExecutableReference) methodRef).getReturnRef().getAnnotations()
+                    .contains(checker.SECRET)) {
+                addSubtypeConstraint(((ExecutableReference) methodRef).getReturnRef(), 
+                        lhsRef);
+            }
 		}
 		else if (ElementUtils.isStatic(methodElt)
 				&& methodElt.getReturnType().getKind() == TypeKind.VOID
