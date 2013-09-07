@@ -661,8 +661,8 @@ ${build.version} of the 'javac.jar' library."/>
       <jar destfile="${checkers.jar.file}" basedir="${build}"/>
 <!--      <delete dir="${temp.dir}"/>-->
       <unjar src="${checkers.lib}" dest="${temp.dir}"/>
-<!--      <unjar src="${javac.lib}" dest="${temp.dir}"/>-->
-<!--      <unjar src="${jna.lib}" dest="${temp.dir}"/>-->
+      <unjar src="${javac.lib}" dest="${temp.dir}"/>
+      <unjar src="${jna.lib}" dest="${temp.dir}"/>
       <copy file="jdk/jdk.jar" todir="${temp.dir}"/>
       <jar destfile="${bindist.file}" basedir="${temp.dir}">
           <manifest>
