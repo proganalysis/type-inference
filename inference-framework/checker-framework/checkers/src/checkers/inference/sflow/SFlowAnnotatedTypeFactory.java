@@ -153,10 +153,11 @@ public class SFlowAnnotatedTypeFactory extends
 		 *  SUB-467018: ServletContextResource.java:73(580115):EXP_path{@Poly @Secret}  
 		 *  <:  (ServletContextResource.java:73(580114):EXP_StringUtils.cleanPath(path){@Tainted} 
          *  			=m=> StringUtils.java:579(418091):VAR_path{@Poly @Secret})
-         *  Here, the parameter VAR_path is forced to be Secret, which doesn't 
-         *  make sense because there is no state for a static method. 
+         *  Here, the parameter VAR_path is forced to be Secret, which
+         *  is not good. See Issue-3
 		 */
 		// FIXME: added on Mar 28, 2013
+        // The following is commented out. See Issue-3
 		if (ElementUtils.isStatic(methodElt) && 
 					!methodElt.getModifiers().contains(Modifier.PRIVATE)) {
 			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
