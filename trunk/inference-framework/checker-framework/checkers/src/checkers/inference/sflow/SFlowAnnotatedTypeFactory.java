@@ -158,7 +158,7 @@ public class SFlowAnnotatedTypeFactory extends
 		 */
 		// FIXME: added on Mar 28, 2013
         // The following is commented out. See Issue-3
-		if (ElementUtils.isStatic(methodElt) && 
+		/*if (ElementUtils.isStatic(methodElt) && 
 					!methodElt.getModifiers().contains(Modifier.PRIVATE)) {
 			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
 			set.add(checker.POLY);
@@ -167,7 +167,7 @@ public class SFlowAnnotatedTypeFactory extends
 				if (!checker.isAnnotated(paramType)) 
 					annotateConstants(paramType, set);
 			}
-		}
+		}*/
 	}
 
 	

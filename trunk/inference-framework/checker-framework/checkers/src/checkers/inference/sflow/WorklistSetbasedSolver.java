@@ -432,7 +432,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         // For Issue-3:
         // Skip if setting the parameter of a non-private static methods
         // to Secret by viewpoint adaptation. 
-/*        Element elt = null;
+        Element elt = null;
         if ((elt = ref.getElement()) != null && elt.getKind() == ElementKind.PARAMETER
                 && currentConstraint != null && (currentConstraint.getRight() instanceof MethodAdaptReference)
                 && annos.size() == 1 && annos.contains(SFlowChecker.SECRET)) {
@@ -445,7 +445,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                     && !methodElt.getModifiers().contains(Modifier.PRIVATE))
                 System.out.println("skip static parameter: " + currentConstraint);
                 return false;
-        } */
+        } 
 
 		
 		// FIXME: Check whether to propagate or not. This is for
