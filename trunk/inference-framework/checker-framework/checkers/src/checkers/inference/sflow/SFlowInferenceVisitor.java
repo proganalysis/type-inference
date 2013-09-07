@@ -24,6 +24,8 @@ import checkers.inference.Reference.AdaptReference;
 import checkers.inference.Reference.ArrayReference;
 import checkers.inference.Reference.ExecutableReference;
 import checkers.inference.Reference.FieldAdaptReference;
+import checkers.inference.Reference.FieldAdaptReference;
+import checkers.inference.Reference.MethodAdaptReference;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
@@ -362,7 +364,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 
 	@Override
 	protected void handleMethodCall(ExecutableElement methodElt,
-			List<? extends ExpressionTree> arguments, Reference rcvRef, Reference lhsRef) {
+			List<? extends ExpressionTree> arguments, Reference rcvRef, Reference lhsRef, Tree tree) {
 		// FIXME: Special-case for System.arraycopy and Memory.memmove: 
 		// We only enforce the constraint that src <: dst
 		String classStr = methodElt.getEnclosingElement().toString();
@@ -477,10 +479,10 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		else if (isLeftViewpointInstanceMethod(methodElt)) {
 			// We may want to special-case some instance methods with viewpoint on
 			// the left. 
-			super.handleMethodCall(methodElt, arguments, null, lhsRef);
+			super.handleMethodCall(methodElt, arguments, null, lhsRef, tree);
 		}
 		else {
-			super.handleMethodCall(methodElt, arguments, rcvRef, lhsRef);
+			super.handleMethodCall(methodElt, arguments, rcvRef, lhsRef, tree);
 		}
 	}
 
@@ -627,6 +629,25 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		System.out.println("ERROR: No adapt context is found!");
 		return null;
 	}
+
+    @Override
+	protected Reference getFieldAdaptReference(Reference rcvRef, 
+			Reference fieldRef, Reference assignToRef, Tree tree) {
+        Reference ref = getFieldAdaptReference(rcvRef, fieldRef, assignToRef);
+        if (ref != null && (ref instanceof FieldAdaptReference))
+            ((FieldAdaptReference) ref).setTree(tree);
+        return ref;
+    }
+
+
+    @Override
+	protected Reference getMethodAdaptReference(Reference rcvRef, 
+			Reference declRef, Reference assignToRef, Tree tree) {
+        Reference ref = getMethodAdaptReference(rcvRef, declRef, assignToRef);
+        if (ref != null && (ref instanceof MethodAdaptReference))
+            ((MethodAdaptReference) ref).setTree(tree);
+        return ref;
+    }
 
 	/* (non-Javadoc)
 	 * @see checkers.inference.InferenceVisitor#getFieldAdaptContext(checkers.inference_new.Reference, checkers.inference_new.Reference, checkers.inference_new.Reference)

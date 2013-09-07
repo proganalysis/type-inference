@@ -827,6 +827,10 @@ public static class FieldAdaptReference extends AdaptReference {
 	public FieldAdaptReference(Reference contextRef, Reference declRef) {
 		super(contextRef, declRef);
 	}
+
+    public void setTree(Tree tree) {
+        this.tree = tree;
+    }
 	
 	@Override
 	public String toString() {
@@ -859,6 +863,10 @@ public static class MethodAdaptReference extends AdaptReference {
 	public MethodAdaptReference(Reference contextRef, Reference declRef) {
 		super(contextRef, declRef);
 	}
+
+    public void setTree(Tree tree) {
+        this.tree = tree;
+    }
 	
 	@Override
 	public String toString() {

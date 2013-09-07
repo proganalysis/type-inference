@@ -18,6 +18,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+
+import com.sun.source.tree.*;
 
 import checkers.inference.Constraint;
 import checkers.inference.Constraint.EmptyConstraint;
@@ -33,8 +39,9 @@ import checkers.inference.InferenceUtils;
 import checkers.inference.Reference;
 import checkers.inference.Reference.AdaptReference;
 import checkers.inference.Reference.FieldAdaptReference;
+import checkers.inference.Reference.MethodAdaptReference;
 import checkers.inference.SetbasedSolver.SetbasedSolverException;
-import checkers.util.AnnotationUtils;
+import checkers.util.*;
 
 public class WorklistSetbasedSolver implements ConstraintSolver {
 	
@@ -422,6 +429,25 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 			}
 			return false;
 		}
+        // For Issue-3:
+        // Skip if setting the parameter of a non-private static methods
+        // to Secret by viewpoint adaptation. 
+/*        Element elt = null;
+        if ((elt = ref.getElement()) != null && elt.getKind() == ElementKind.PARAMETER
+                && currentConstraint != null && (currentConstraint.getRight() instanceof MethodAdaptReference)
+                && annos.size() == 1 && annos.contains(SFlowChecker.SECRET)) {
+            MethodAdaptReference mref = (MethodAdaptReference) currentConstraint.getRight();
+            Tree tree = null;
+            ExecutableElement methodElt = null;
+            if ((tree = mref.getTree()) != null && (tree instanceof MethodInvocationTree)
+                    && (methodElt = TreeUtils.elementFromUse((MethodInvocationTree) tree)) != null
+                    && ElementUtils.isStatic(methodElt) 
+                    && !methodElt.getModifiers().contains(Modifier.PRIVATE))
+                System.out.println("skip static parameter: " + currentConstraint);
+                return false;
+        } */
+
+		
 		// FIXME: Check whether to propagate or not. This is for
         // inferLibary only
 		boolean hasUpdate = false;

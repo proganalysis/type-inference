@@ -22,6 +22,8 @@ import checkers.inference.Reference.ConstantReference;
 import checkers.inference.Reference.DeclaredReference;
 import checkers.inference.Reference.ExecutableReference;
 import checkers.inference.Reference.PrimitiveReference;
+import checkers.inference.Reference.FieldAdaptReference;
+import checkers.inference.Reference.MethodAdaptReference;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -353,7 +355,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			if (methodElt.getReturnType().getKind() != TypeKind.VOID) {
 				assignTo = Reference.createReference(node, factory);
 			}
-			handleMethodCall(methodElt, node.getArguments(), rcvRef, assignTo); // WEI: July 7
+			handleMethodCall(methodElt, node.getArguments(), rcvRef, assignTo, node); // WEI: July 7
     	}
 		return super.visitMethodInvocation(node, p);
 	}
@@ -380,7 +382,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			List<? extends ExpressionTree> arguments = node.getArguments();
 			Reference rcvRef = Reference.createReference(node, factory);
 			// TODO: lhsRef passed to  generateMethodCallConstraints() is null
-			handleMethodCall(TreeUtils.elementFromUse(node), arguments, rcvRef, null);
+			handleMethodCall(TreeUtils.elementFromUse(node), arguments, rcvRef, null, node);
     	}
 		return super.visitNewClass(node, p);
 	}
@@ -507,7 +509,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			Reference rcvRef = Reference.createReference(ncTree, factory);
 			// Recursively
 			// TODO: lhsRef passed to  generateMethodCallConstraints() is null
-			handleMethodCall(methodElt, ncTree.getArguments(), rcvRef, lhsRef);
+			handleMethodCall(methodElt, ncTree.getArguments(), rcvRef, lhsRef, rhsTree);
 			break;
 		case METHOD_INVOCATION:
 			MethodInvocationTree miTree = (MethodInvocationTree) rhsTree;
@@ -533,7 +535,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 				}
 			} else 
 				iRcvRef = null;
-			handleMethodCall(iMethodElt, miTree.getArguments(), iRcvRef, lhsRef);
+			handleMethodCall(iMethodElt, miTree.getArguments(), iRcvRef, lhsRef, rhsTree);
 			break;
 		case MEMBER_SELECT:
 			MemberSelectTree mTree = (MemberSelectTree) rhsTree;
@@ -937,7 +939,8 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 	 * null. We can assume it is assigned to {ALL POSSIBLE QUALIFIERS}
 	 */
 	protected void handleMethodCall(ExecutableElement methodElt, 
-			List<? extends ExpressionTree> arguments, Reference rcvRef, Reference lhsRef) {
+			List<? extends ExpressionTree> arguments, Reference rcvRef, 
+            Reference lhsRef, Tree tree) {
 		if (lhsRef == null) {
 			// WEI: Added on Dec 9, 2012
 			lhsRef = Reference.createConstantReference(checker.getSourceLevelQualifiers(), "DummyLHS");
@@ -951,7 +954,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			Reference thisRef = ((ExecutableReference) methodRef).getReceiverRef();
 			// Construct the adapt reference
 			Reference adaptRef = getMethodAdaptReference(rcvRef, 
-					thisRef, lhsRef);
+					thisRef, lhsRef, tree);
 			addSubtypeConstraint(rcvRef, adaptRef);
 		}
 			
@@ -969,7 +972,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			
 			// rcvRef is null if the method is static 
 			Reference adaptRef = getMethodAdaptReference(rcvRef, 
-					paramRef, lhsRef);
+					paramRef, lhsRef, tree);
 			addSubtypeConstraint(argRef, adaptRef);
 		}
 		if (lhsRef != null && !(lhsRef instanceof ConstantReference)) {
@@ -977,7 +980,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 				// Generate constraints for returns: |> t_return <: t_lhs
 				Reference returnRef = ((ExecutableReference) methodRef).getReturnRef();
 				Reference adaptRef = getMethodAdaptReference(rcvRef, 
-						returnRef, lhsRef);
+						returnRef, lhsRef, tree);
 				addSubtypeConstraint(adaptRef, lhsRef);
 			} else if (isConstructor(methodElt)){
 				// It is a constructor, we connect rcvRef and lhsRef
@@ -985,6 +988,12 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			}
 		}
 	}
+
+	protected void handleMethodCall(ExecutableElement methodElt, 
+			List<? extends ExpressionTree> arguments, Reference rcvRef, 
+            Reference lhsRef) {
+        handleMethodCall(methodElt, arguments, rcvRef, lhsRef, null);
+    }
 	
 	/**
 	 * Generate constraints for method overriding
@@ -1094,6 +1103,14 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 		System.out.println("ERROR: No adapt context is found!");
 		return null;
 	}
+
+	protected Reference getFieldAdaptReference(Reference rcvRef, 
+			Reference fieldRef, Reference assignToRef, Tree tree) {
+        Reference ref = getFieldAdaptReference(rcvRef, fieldRef, assignToRef);
+        if (ref != null && (ref instanceof FieldAdaptReference))
+            ((FieldAdaptReference) ref).setTree(tree);
+        return ref;
+    }
 	
 	protected Reference getMethodAdaptReference(Reference rcvRef, 
 			Reference declRef, Reference assignToRef) {
@@ -1119,6 +1136,14 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 		System.out.println("ERROR: No adapt context is found!");
 		return null;
 	}
+
+	protected Reference getMethodAdaptReference(Reference rcvRef, 
+			Reference declRef, Reference assignToRef, Tree tree) {
+        Reference ref = getMethodAdaptReference(rcvRef, declRef, assignToRef);
+        if (ref != null && (ref instanceof MethodAdaptReference))
+            ((MethodAdaptReference) ref).setTree(tree);
+        return ref;
+    }
 	
 	/**
 	 * Get the adapt context for field access
