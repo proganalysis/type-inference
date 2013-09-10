@@ -15,6 +15,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
 import checkers.inference.Reference.ExecutableReference;
+import checkers.inference.sflow.SFlowChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -88,6 +89,15 @@ public class InferenceAnnotatedTypeFactory extends AnnotatedTypeFactory {
 //	}
     
 
+    public ExecutableElement getCurrentMethodElt() {
+        MethodTree methodTree = this.getVisitorState().getMethodTree();
+        if (methodTree != null) {
+            ExecutableElement currentMethod = TreeUtils.elementFromDeclaration(methodTree);
+            return currentMethod;
+        }
+        return null;
+    }
+
     /**
      * The implementation in {@link AnnotatedTypeFactory} cannot recognize the 
      * correct annotations when invoking the Main.compile() in the second time
@@ -159,17 +169,7 @@ public class InferenceAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
 	@Override
 	public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-//		if (tree.getKind() == Kind.CONDITIONAL_EXPRESSION
-//				&& tree.toString().contains("collection == this"))
-//			System.out.println();
-		AnnotatedTypeMirror type  = null;
-//		try {
-			type = super.getAnnotatedType(tree);
-//		} catch (RuntimeException e) {
-//			System.out.println("ERROR: visiting " + tree.toString());
-//			e.printStackTrace();
-//			throw e;
-//		}
+		AnnotatedTypeMirror type = super.getAnnotatedType(tree);
 		if (tree instanceof ExpressionTree)
 			tree = TreeUtils.skipParens((ExpressionTree) tree);
 		
@@ -183,7 +183,6 @@ public class InferenceAnnotatedTypeFactory extends AnnotatedTypeFactory {
 				for (AnnotationTree anno : annos) {
 					if (anno instanceof JCTypeAnnotation) {
 						TypeCompound attribute_field = ((JCTypeAnnotation) anno).attribute_field;
-//						String annoStr = anno.getAnnotationType().toString();
 						String annoStr = attribute_field.toString();
 						if (annoStr.startsWith("@"))
 							annoStr = annoStr.substring(1);
@@ -195,7 +194,10 @@ public class InferenceAnnotatedTypeFactory extends AnnotatedTypeFactory {
 			}
 		}
 		
-		if (checker.isChecking()) {
+        // FIXME: Incrementally fix the following. Start from
+        // SFlowChecker
+        // Should move them to subclasses
+		if (checker.isChecking() && !(checker instanceof SFlowChecker)) {
 			switch (tree.getKind()) {
 			case NEW_ARRAY:
 			case NEW_CLASS:
