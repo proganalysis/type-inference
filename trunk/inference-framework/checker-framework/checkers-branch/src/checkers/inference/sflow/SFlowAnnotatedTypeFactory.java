@@ -20,8 +20,11 @@ import checkers.inference.InferenceAnnotatedTypeFactory;
 import checkers.inference.InferenceChecker;
 import checkers.inference.InferenceMain;
 import checkers.inference.TypingExtractor;
+import checkers.inference.*;
+import checkers.inference.Reference.*;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -44,6 +47,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 
 /**
  * @author huangw5
@@ -190,16 +194,6 @@ public class SFlowAnnotatedTypeFactory extends
 	@Override
 	public AnnotatedTypeMirror getAnnotatedType(Element elt) {
 		AnnotatedTypeMirror type = super.getAnnotatedType(elt);
-//		if (checker.isChecking()
-//				&& !checker.isAnnotated(type)/*type.isAnnotated()*/
-//				&& (elt.getKind() == ElementKind.FIELD
-//						|| elt.getKind() == ElementKind.LOCAL_VARIABLE
-//						|| elt.getKind() == ElementKind.METHOD
-//						|| elt.getKind() == ElementKind.CONSTRUCTOR 
-//						|| elt.getKind() == ElementKind.PARAMETER)) {
-//			InferenceMain.getInstance().getCurrentExtractor().addInferredType(getIdentifier(elt), type);
-//		}
-		
 		if (!checker.isChecking()) {
 			// If it is doing inference, try to get ReIm type
 			TypingExtractor currentExtractor = InferenceMain.getInstance().getCurrentExtractor();
@@ -222,59 +216,7 @@ public class SFlowAnnotatedTypeFactory extends
 			}
 			// Consider moving the following IDENTIFIER and VARIABLE 
 			// to InferenceAnnotatedTypeFactory
-			if (tree.getKind() == Kind.IDENTIFIER) {
-				Element elt = TreeUtils.elementFromUse((IdentifierTree) tree);
-				if (checker.isChecking() && elt.getKind() == ElementKind.FIELD) {
-					// We need to adapt it from PoV of THIS
-					MethodTree methodTree = this.getVisitorState().getMethodTree();
-					if (methodTree != null) {
-						ExecutableElement currentMethod = TreeUtils
-								.elementFromDeclaration(methodTree);
-						AnnotatedExecutableType methodType = getAnnotatedType(currentMethod);
-						Set<AnnotationMirror> set = checker.adaptFieldSet(methodType
-								.getReceiverType().getAnnotations(), type.getAnnotations());
-						if (!set.isEmpty()) {
-							type.clearAnnotations();
-							type.addAnnotations(set);
-						}
-					} else {
-						// This happen in the static initializer 
-						ClassTree classTree = this.getVisitorState().getClassTree();
-					}
-				}
-			} else if (tree.getKind() == Kind.VARIABLE) {
-				// If there is an initialization for field, we need adapt it from 
-				// ClassTree type
-				Element elt = TreeUtils.elementFromDeclaration((VariableTree) tree);
-				if (elt.getKind().isField() && !ElementUtils.isStatic(elt)) {
-					ClassTree classTree = this.getVisitorState().getClassTree();
-					TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
-					AnnotatedDeclaredType defConstructorType = getAnnotatedType(classElt);
-					InferenceMain.getInstance().getCurrentExtractor()
-						.annotateInferredType(getIdentifier(classElt), defConstructorType);
-					Set<AnnotationMirror> set = checker.adaptFieldSet(defConstructorType
-							.getAnnotations(), type.getAnnotations());
-					if (!set.isEmpty()) {
-						type.clearAnnotations();
-						type.addAnnotations(set);
-					}
-				}
-			} else if (tree instanceof BinaryTree && !checker.isAnnotated(type)) {
-				ExpressionTree left = ((BinaryTree)tree).getLeftOperand();
-				ExpressionTree right = ((BinaryTree)tree).getRightOperand();
-				AnnotatedTypeMirror leftType = getAnnotatedType(left);
-				AnnotatedTypeMirror rightType = getAnnotatedType(right);
-				Set<AnnotationMirror> leftSet = leftType.getAnnotations();
-				Set<AnnotationMirror> rightSet = rightType.getAnnotations();
-				Set<AnnotationMirror> set = qualHierarchy.leastUpperBound(leftSet, rightSet);
-				type.addAnnotations(set);
-			} else if (tree.getKind() == Kind.MEMBER_SELECT
-					&& !checker.isAnnotated(type)) {
-				MemberSelectTree mTree = (MemberSelectTree) tree;
-	            Element fieldElt = TreeUtils.elementFromUse(mTree);
-	            if (fieldElt.getSimpleName().contentEquals("class"))
-	            	type.addAnnotation(checker.BOTTOM);
-			}
+            annotateInferredType(tree, type);
 		} else {
 			if (tree instanceof ExpressionTree) {
 				ExpressionTree t = TreeUtils.skipParens((ExpressionTree) tree);
@@ -312,79 +254,186 @@ public class SFlowAnnotatedTypeFactory extends
 			}
 		}
 		
-//		if (tree.getKind() == Kind.IDENTIFIER) {
-//			Element elt = TreeUtils.elementFromUse((IdentifierTree) tree);
-//			if (checker.isChecking() && elt.getKind() == ElementKind.FIELD) {
-//				// We need to adapt it from PoV of THIS
-//				MethodTree methodTree = this.getVisitorState().getMethodTree();
-//				if (methodTree != null) {
-//					ExecutableElement currentMethod = TreeUtils
-//							.elementFromDeclaration(methodTree);
-//					AnnotatedExecutableType methodType = getAnnotatedType(currentMethod);
-//					Set<AnnotationMirror> set = checker.adaptFieldSet(methodType
-//							.getReceiverType().getAnnotations(), type.getAnnotations());
-//					type.clearAnnotations();
-//					type.addAnnotations(set);
-//				}
-//			}
-//		}
-//		if (tree instanceof ExpressionTree) {
-//			ExpressionTree t = TreeUtils.skipParens((ExpressionTree) tree);
-//			if (!checker.isChecking() && 
-//					(t.getKind() == Kind.METHOD_INVOCATION
-//						|| t.getKind() == Kind.CONDITIONAL_EXPRESSION 
-//						|| t.getKind() == Kind.MEMBER_SELECT)) {
-//				// If it is doing inference, we don't want any annotations of the 
-//				// evaluation
-//				type = type.getCopy(false);
-//			} else if (checker.isChecking() && !checker.isAnnotated(type)/*type.isAnnotated()*/) {
-//				if (t instanceof BinaryTree) {
-//					ExpressionTree left = ((BinaryTree)t).getLeftOperand();
-//					ExpressionTree right = ((BinaryTree)t).getRightOperand();
-//					AnnotatedTypeMirror leftType = getAnnotatedType(left);
-//					AnnotatedTypeMirror rightType = getAnnotatedType(right);
-//					Set<AnnotationMirror> leftSet = leftType.getAnnotations();
-//					Set<AnnotationMirror> rightSet = rightType.getAnnotations();
-//					Set<AnnotationMirror> set = null;
-//					if (leftSet.size() == 1 && leftSet.contains(checker.BOTTOM))
-//						set = rightSet;
-//					else if (rightSet.size() == 1 && rightSet.contains(checker.BOTTOM))
-//						set = leftSet;
-//					else
-//						set = InferenceUtils.intersectAnnotations(leftSet,
-//								rightSet);
-//					type.addAnnotations(set);
-//				}
-//			}
-//		}
-//		
-//		if (!checker.isChecking()) {
-//			// If it is doing inference, try to get ReIm type
-//			TypingExtractor currentExtractor = InferenceMain.getInstance().getCurrentExtractor();
-//			if (currentExtractor != null) {
-//				Element elt = null;
-//				switch (tree.getKind()) {
-//				case VARIABLE:
-//					elt = TreeUtils.elementFromDeclaration((VariableTree) tree);
-//					break;
-//				case METHOD:
-//					elt = TreeUtils.elementFromDeclaration((MethodTree) tree);
-//					break;
-//				default:
-//					break;
-//				}
-//				Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
-//				annos.addAll(type.getAnnotations());
-//				if (elt != null)
-//					currentExtractor.annotateInferredType(getIdentifier(elt), type);
-//				else
-//					currentExtractor.annotateInferredType(getIdentifier(tree), type);
-//				type.addAnnotations(annos);
-//			}
-//		}
-		
 		return type;
 	}
+
+    private void annotateInferredType(Tree tree, AnnotatedTypeMirror type) {
+        switch (tree.getKind()) {
+        case NEW_ARRAY:
+        case NEW_CLASS:
+            InferenceMain.getInstance().getCurrentExtractor().annotateInferredType(getIdentifier(tree), type);
+            break;
+        case METHOD:
+            ExecutableElement methodElt = TreeUtils.elementFromDeclaration(
+                    (MethodTree) tree);
+            InferenceMain.getInstance().getCurrentExtractor().annotateInferredType(getIdentifier(methodElt), type);
+            break;
+        case TYPE_CAST:
+            if (!checker.isAnnotated(type)) {
+                Tree t = tree;
+                while (t.getKind() == Kind.TYPE_CAST) {
+                    t = ((TypeCastTree) t).getExpression();
+                    if (t instanceof ExpressionTree)
+                        t = TreeUtils.skipParens((ExpressionTree) t);
+                }
+                AnnotatedTypeMirror castType = getAnnotatedType(t);
+                InferenceUtils.assignAnnotations(type, castType);
+            }
+            break;
+        case METHOD_INVOCATION:
+            if (type.getKind() != TypeKind.VOID) {
+                MethodInvocationTree miTree = (MethodInvocationTree) tree;
+                ExecutableElement iMethodElt = TreeUtils.elementFromUse(miTree);
+                ExpressionTree rcvTree = InferenceUtils.getReceiverTree(miTree);
+                if (ElementUtils.isStatic(iMethodElt)) {
+                    System.out.println("WARN: Not support yet");
+                } else {
+                    ExecutableElement currentMethod = getCurrentMethodElt();
+                    AnnotatedTypeMirror rcvType = null;
+                    if (rcvTree != null) {
+                        // like x = y.m(z);
+                        rcvType = getAnnotatedType(rcvTree); 
+                    } else if (currentMethod != null) {
+                        rcvType = getAnnotatedType(currentMethod).getReceiverType();
+                    }
+                    if (rcvType != null) {
+                        // Do viewpoint adaptation
+						Set<AnnotationMirror> set = checker.adaptFieldSet(
+                            rcvType.getAnnotations(), type.getAnnotations());
+						if (!set.isEmpty()) {
+							type.clearAnnotations();
+							type.addAnnotations(set);
+						}
+                    }
+                }
+            }
+            break;
+        case VARIABLE:
+            // TODO: Consider using viewpoint adaptation
+            VariableElement varElt = TreeUtils.elementFromDeclaration((VariableTree)tree);
+            InferenceMain.getInstance().getCurrentExtractor().annotateInferredType(getIdentifier(varElt), type);
+            // If there is an initialization for field, we need adapt it from 
+            // ClassTree type
+            if (varElt.getKind().isField() && !ElementUtils.isStatic(varElt)) {
+                ClassTree classTree = this.getVisitorState().getClassTree();
+                TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
+                AnnotatedDeclaredType defConstructorType = getAnnotatedType(classElt);
+                InferenceMain.getInstance().getCurrentExtractor()
+                    .annotateInferredType(getIdentifier(classElt), defConstructorType);
+                Set<AnnotationMirror> set = checker.adaptFieldSet(defConstructorType
+                        .getAnnotations(), type.getAnnotations());
+                if (!set.isEmpty()) {
+                    type.clearAnnotations();
+                    type.addAnnotations(set);
+                }
+            }
+
+            break;
+        case IDENTIFIER:
+            Element idElt = TreeUtils.elementFromUse((IdentifierTree) tree);
+            // We don't want to annotate CLASS type
+            if (idElt.getKind() != ElementKind.CLASS && idElt.getKind() != ElementKind.INTERFACE) {
+                InferenceMain.getInstance().getCurrentExtractor().annotateInferredType(getIdentifier(idElt), type);
+                // May need viewpoint adaptation if it is a field
+				if (idElt.getKind() == ElementKind.FIELD) {
+					// We need to adapt it from PoV of THIS
+                    ExecutableElement currentMethod = getCurrentMethodElt();
+                    if (currentMethod != null) {
+						AnnotatedExecutableType methodType = getAnnotatedType(currentMethod);
+						Set<AnnotationMirror> set = checker.adaptFieldSet(methodType
+								.getReceiverType().getAnnotations(), type.getAnnotations());
+						if (!set.isEmpty()) {
+							type.clearAnnotations();
+							type.addAnnotations(set);
+						}
+					} else {
+						// This happen in the static initializer 
+                        // ignore
+					}
+				}
+            }
+            break;
+        case ARRAY_ACCESS:
+            // WEI: move from ReimAnnotatedTypeFactory on Aug 2. 
+            ArrayAccessTree aTree = (ArrayAccessTree) tree;
+            ExpressionTree aExpr = aTree.getExpression();
+            AnnotatedTypeMirror aExprType = getAnnotatedType(aExpr);
+            assert aExprType.getKind() == TypeKind.ARRAY;
+            Set<AnnotationMirror> componentAnnos = ((AnnotatedArrayType) aExprType)
+                    .getComponentType().getAnnotations();
+            Set<AnnotationMirror> adaptedAnnos = checker.adaptFieldSet(
+                    aExprType.getAnnotations(), componentAnnos);
+            if (!adaptedAnnos.isEmpty()) {
+                type.clearAnnotations();
+                type.addAnnotations(adaptedAnnos);
+            }
+            break;	
+        case MEMBER_SELECT:
+            // WEI: added on Aug 2
+            // WEI: Remove the above line, also considering remove the 
+            // tree.getKind() == Kind.MEMBER_SELECT in the "default" case
+            MemberSelectTree mTree = (MemberSelectTree) tree;
+            Element fieldElt = TreeUtils.elementFromUse(mTree);
+            if (checker.isAccessOuterThis(mTree)) {
+                // If it is like Body.this
+                // FIXME:
+                MethodTree methodTree = this.getVisitorState().getMethodTree();
+                if (methodTree != null) {
+                    ExecutableElement currentMethodElt = TreeUtils
+                            .elementFromDeclaration(methodTree);
+                    Element outerElt = checker.getOuterThisElement(mTree, currentMethodElt);
+                    Reference inferredRef = null;
+                    if (outerElt != null && outerElt.getKind() == ElementKind.METHOD) {
+                        inferredRef = InferenceMain.getInstance().getCurrentExtractor().getInferredReference(getIdentifier(outerElt));
+                    } else {
+                        inferredRef = InferenceMain.getInstance().getCurrentExtractor().getInferredReference(getIdentifier(currentMethodElt));
+                    }
+                    if (inferredRef != null)
+                        InferenceUtils.annotateReferenceType(type, 
+                                ((ExecutableReference) inferredRef).getReceiverRef());
+                    else
+                        System.err.println("WARN: Cannot annotate " + mTree);
+                }
+            } else if (!fieldElt.getSimpleName().contentEquals("super")
+                    && fieldElt.getKind() == ElementKind.FIELD
+                    && !ElementUtils.isStatic(fieldElt)
+                    && checker.isAnnotated(type)
+                    ) {
+                // Do viewpoint adaptation
+                ExpressionTree expr = mTree.getExpression();
+                AnnotatedTypeMirror exprType = getAnnotatedType(expr);
+                AnnotatedTypeMirror fieldType = getAnnotatedType(fieldElt);
+                Set<AnnotationMirror> set = checker.adaptFieldSet(
+                        exprType.getAnnotations(),
+                        fieldType.getAnnotations());
+                if (!set.isEmpty()) {
+                    type.clearAnnotations();
+                    type.addAnnotations(set);
+                }
+            } else if (!checker.isAnnotated(type) 
+                    && fieldElt.getSimpleName().contentEquals("class"))
+                type.addAnnotation(checker.BOTTOM);
+
+            break;
+        default: 
+            if(!checker.isAnnotated(type)) {
+                if (tree instanceof UnaryTree) {
+                    AnnotatedTypeMirror aType = getAnnotatedType(
+                            ((UnaryTree) tree).getExpression());
+                    InferenceUtils.assignAnnotations(type, aType);
+                } else if (tree instanceof BinaryTree && !checker.isAnnotated(type)) {
+                    ExpressionTree left = ((BinaryTree)tree).getLeftOperand();
+                    ExpressionTree right = ((BinaryTree)tree).getRightOperand();
+                    AnnotatedTypeMirror leftType = getAnnotatedType(left);
+                    AnnotatedTypeMirror rightType = getAnnotatedType(right);
+                    Set<AnnotationMirror> leftSet = leftType.getAnnotations();
+                    Set<AnnotationMirror> rightSet = rightType.getAnnotations();
+                    Set<AnnotationMirror> set = qualHierarchy.leastUpperBound(leftSet, rightSet);
+                    type.addAnnotations(set);
+                }
+            }
+        }
+    }
 
 
 	@Override

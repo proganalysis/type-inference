@@ -473,7 +473,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 //	}
 	
     
-	protected Element getOuterThisElement(MemberSelectTree mTree,
+	public Element getOuterThisElement(MemberSelectTree mTree,
 			ExecutableElement currentMethodElt) {
     	if (!isAccessOuterThis(mTree))
     		return null;
@@ -510,7 +510,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
      * @param mTree
      * @return
      */
-    protected boolean isAccessOuterThis(MemberSelectTree mTree) {
+    public boolean isAccessOuterThis(MemberSelectTree mTree) {
 		if (!(mTree.getExpression() instanceof PrimitiveTypeTree)) {
 			if (mTree.getIdentifier().contentEquals("this")) {
 				return true;
