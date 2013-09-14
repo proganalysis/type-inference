@@ -57,29 +57,11 @@ public class SFlowVisitor extends BaseTypeVisitor<SFlowChecker> {
 
 	public SFlowVisitor(SFlowChecker checker, CompilationUnitTree root) {
 		super(checker, root);
-		// TODO Auto-generated constructor stub
-//		readonlySet = AnnotationUtils.createAnnotationSet();
-//		readonlySet.add(checker.READONLY);
 	}
 	
-//	private Set<AnnotationMirror> readonlySet;
 	
 	private boolean canIgnored(AnnotatedTypeMirror varType,
 			AnnotatedTypeMirror valueType) {
-//		if (varType != null && checker.isDefaultReadonlyType(varType)
-//				|| valueType != null && checker.isDefaultReadonlyType(valueType))
-//			return true;
-//		
-//		// Polyread can be assigned to any variable
-//		if (InferenceUtils.getMaxType(valueType, checker.getComparator()).hasAnnotation(
-//				checker.POLYREAD))
-//			return true;
-//		
-//		Element varElt = varType.getElement();
-//		Element valueElt = valueType.getElement();
-//		if (varElt != null && checker.isFromLibrary(varElt) 
-//				|| valueElt != null && checker.isFromLibrary(valueElt))
-//			return true;
 		return false;
 	}
 	
@@ -298,15 +280,11 @@ public class SFlowVisitor extends BaseTypeVisitor<SFlowChecker> {
         }
 		// FIXME: Skip those special methods
 		ExecutableElement overriddenElt = overridden.getElement();
-//		ExecutableElement overriderElt = TreeUtils.elementFromDeclaration(overriderTree);
-//		if (overriderElt != null
-//				&& checker.isSpecialMethod(overriderElt))
 		if (overriddenElt != null
 				&& checker.isSpecialMethod((ExecutableElement) overriddenElt))
 			return true;
 		
 		boolean fromLibrary = false;
-//		Element overriddenElt = overriddenType.getUnderlyingType().asElement();
 		
 		if (overriddenElt != null
 				&& (overriddenElt instanceof ExecutableElement
@@ -331,9 +309,6 @@ public class SFlowVisitor extends BaseTypeVisitor<SFlowChecker> {
         String overriddenTyp = overriddenType.getUnderlyingType().asElement().toString();
 
         // Check the return value.
-//        System.out.println();
-//        System.out.println(overrider.getReturnType());
-//        System.out.println(overridden.getReturnType());
         if ((overrider.getReturnType().getKind() != TypeKind.VOID)
     		&& overridden.getReturnType().isAnnotated()
             && !checker.isSubtype(overrider.getReturnType(),
@@ -453,13 +428,6 @@ public class SFlowVisitor extends BaseTypeVisitor<SFlowChecker> {
 						adaptContextType.getAnnotations(), 
 						requiredType.getAnnotations());
 				if (!adaptedAnnos.isEmpty()) {
-//					// If one of context and decl has READONLY, add READONLY back
-//					if (!InferenceUtils.intersectAnnotations(readonlySet, 
-//							adaptContextType.getAnnotations()).isEmpty()
-//							|| !InferenceUtils.intersectAnnotations(readonlySet, 
-//									requiredType.getAnnotations()).isEmpty()
-//							)
-//						adaptedAnnos.add(checker.READONLY);
 					requiredType.clearAnnotations();
 					requiredType.addAnnotations(adaptedAnnos);
 				}
@@ -469,7 +437,6 @@ public class SFlowVisitor extends BaseTypeVisitor<SFlowChecker> {
                     passedArgs.get(i),
                     "argument.type.incompatible");
         }
-//		super.checkArguments(requiredArgs, passedArgs);
 	}
 	
 	
@@ -537,8 +504,6 @@ public class SFlowVisitor extends BaseTypeVisitor<SFlowChecker> {
 
 	@Override
 	public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-		if (node.toString().contains("opyOfRange(toCop"))
-			System.out.println();
 		return super.visitMethodInvocation(node, p);
 	}
 
@@ -554,9 +519,9 @@ public class SFlowVisitor extends BaseTypeVisitor<SFlowChecker> {
 
 	@Override
 	public Void visitVariable(VariableTree node, Void p) {
-//		if (node.toString().contains("getValue()"))
-//			System.out.println();
-		return super.visitVariable(node, p);
+		if (node.toString().contains("a2.get()"))
+			System.out.println();
+        return super.visitVariable(node, p);
 	}
 	
 

@@ -496,8 +496,7 @@ public class MaximalTypingExtractor implements TypingExtractor {
 					&& outRef.getAnnotations().contains(SFlowChecker.TAINTED)
 					&& declElt != null 
 					&& declElt.getKind() == ElementKind.METHOD
-					&& declRef.getReadableName() != null
-					&& declRef.getReadableName().startsWith("RET_")
+					&& declRef.getRefName().startsWith("RET_")
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(SFlowChecker.POLY) 
 					&& declRef.getAnnotations().contains(SFlowChecker.TAINTED)) {
@@ -621,8 +620,7 @@ public class MaximalTypingExtractor implements TypingExtractor {
 					&& outRef.getAnnotations().contains(SFlowChecker.TAINTED)
 					&& declElt != null 
 					&& declElt.getKind() == ElementKind.METHOD
-					&& declRef.getReadableName() != null
-					&& declRef.getReadableName().startsWith("RET_")
+					&& declRef.getRefName().startsWith("RET_")
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(SFlowChecker.POLY) 
 					&& declRef.getAnnotations().contains(SFlowChecker.TAINTED)
@@ -686,7 +684,6 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			tracePw = new FileWriter(new File(InferenceMain.outputDir
 					+ File.separator + "trace.log"), true);
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -704,10 +701,10 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			}
 			// Run the SetbasedSolver again with maximal typing
 //			System.out.println("INFO: Looking for conflicts...");
-//			SetbasedSolver solver = new SetbasedSolver(inferenceChecker,
-//					exprRefs, constraints);
-			WorklistSetbasedSolver solver = new WorklistSetbasedSolver(inferenceChecker,
+			SetbasedSolver solver = new SetbasedSolver(inferenceChecker,
 					exprRefs, constraints);
+//            WorklistSetbasedSolver solver = new WorklistSetbasedSolver(inferenceChecker,
+//                    exprRefs, constraints);
 			List<Constraint> conflictConstraints = solver.solve();
 			if (!conflictConstraints.isEmpty()) {
 				if (InferenceChecker.DEBUG) {
@@ -886,13 +883,13 @@ public class MaximalTypingExtractor implements TypingExtractor {
 		// Check whether we need to resolve conflicts
 		List<Constraint> typeErrors = Collections.emptyList();
 		
-//		if (inferenceChecker.needCheckConflict()
-//				&& typeErrorNum == 0
-//				) {
-//			buildRefToConstraintMapping();
-//			typeErrors = resolveConflicts();
-//		}
-//		else 
+//        if (inferenceChecker.needCheckConflict()
+//                && typeErrorNum == 0
+//                ) {
+//            buildRefToConstraintMapping();
+//            typeErrors = resolveConflicts();
+//        }
+//        else 
 			System.out.println("INFO: Skip resolving conflicts");
 		
 		maximalSolution = new HashMap<String, Reference>();
@@ -902,10 +899,7 @@ public class MaximalTypingExtractor implements TypingExtractor {
 				Reference maxRef = null;
 				// FIXME: If a reference hasn't been constrained, we do not
 				// fix it to the maximal qual.
-//				if (refToConstraints.containsKey(ref.id))
-					 maxRef = inferenceChecker.getMaximal(ref);
-//				else
-//					maxRef = ref;
+                 maxRef = inferenceChecker.getMaximal(ref);
 				maximalSolution.put(identifier, maxRef);
 			}
 		}
@@ -932,39 +926,6 @@ public class MaximalTypingExtractor implements TypingExtractor {
 		inferenceChecker.printResult(maximalSolution, out);
 	}
 
-	/* (non-Javadoc)
-	 * @see checkers.inference.TypingExtractor#annotateInferredType(javax.lang.model.element.Element, checkers.types.AnnotatedTypeMirror)
-	 */
-//	@Override
-//	public void annotateInferredType(Element elt, AnnotatedTypeMirror type) {
-//		if (elt.getKind() == ElementKind.METHOD 
-//				|| elt.getKind() == ElementKind.CONSTRUCTOR) {
-//			if (type.getKind() != TypeKind.EXECUTABLE)
-//				throw new RuntimeException("Incompatible method type!");
-//			ExecutableElement methodElt = (ExecutableElement) elt;
-//			AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
-//			assert methodElt.getParameters().size() == methodType.getParameterTypes().size();
-//			// Parameters
-//			for (Iterator<? extends VariableElement> itParamElt = methodElt
-//					.getParameters().iterator(); itParamElt.hasNext();) {
-//				for (Iterator<AnnotatedTypeMirror> itParamType = methodType
-//						.getParameterTypes().iterator(); itParamType.hasNext();) {
-//					annotateInferredType(itParamElt.next(), itParamType.next());
-//				}
-//			}
-//			String methodSig = InferenceUtils.getElementSignature(elt);
-//			ExecutableReference methodRef = (ExecutableReference) maximalSolution.get(methodSig);
-//			if (methodRef != null) {
-//				// Return
-//				InferenceUtils.annotateReferenceType(methodType.getReturnType(), 
-//						methodRef.getReturnRef());
-//				// Receiver
-//				InferenceUtils.annotateReferenceType(methodType.getReceiverType(), 
-//						methodRef.getReceiverRef());
-//			}
-//		} else
-//			annotateInferredType(InferenceUtils.getElementSignature(elt), type);
-//	}
 
 	/* (non-Javadoc)
 	 * @see checkers.inference.TypingExtractor#annotateInferredType(java.lang.String, checkers.types.AnnotatedTypeMirror)
