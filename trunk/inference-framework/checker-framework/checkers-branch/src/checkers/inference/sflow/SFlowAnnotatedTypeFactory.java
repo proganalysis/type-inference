@@ -286,7 +286,7 @@ public class SFlowAnnotatedTypeFactory extends
                 ExecutableElement iMethodElt = TreeUtils.elementFromUse(miTree);
                 ExpressionTree rcvTree = InferenceUtils.getReceiverTree(miTree);
                 if (ElementUtils.isStatic(iMethodElt)) {
-                    System.out.println("WARN: Not support yet");
+//                    System.out.println("WARN: be supported in SFlowVisitor");
                 } else {
                     ExecutableElement currentMethod = getCurrentMethodElt();
                     AnnotatedTypeMirror rcvType = null;
