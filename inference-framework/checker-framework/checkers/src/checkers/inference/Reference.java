@@ -366,9 +366,9 @@ public abstract class Reference {
 	}
 
 
-	public String getReadableName() {
-		return readableName;
-	}
+//    public String getReadableName() {
+//        return readableName;
+//    }
 
 	protected String formatAnnotations() {
 		return "{" + InferenceUtils.formatAnnotationString(annotations) + "}";
@@ -382,12 +382,15 @@ public abstract class Reference {
 	public boolean equals(Object obj) {
 		if (obj instanceof Reference) {
 			Reference ref = (Reference) obj;
-			Element elt = ref.getElement();
-			if (this.element != null && elt != null)
-				return (element.equals(elt));
-			Tree t = ref.getTree();
-			if (this.tree != null && t != null) 
-				return (this.tree.equals(t));
+            return this.getFullRefName().equals(ref.getFullRefName());
+//            if (!this.getRefName().equals(ref.getRefName()))
+//                return false;
+//            Element elt = ref.getElement();
+//            if (this.element != null && elt != null)
+//                return (element.equals(elt));
+//            Tree t = ref.getTree();
+//            if (this.tree != null && t != null) 
+//                return (this.tree.equals(t));
 		}
 		return false;
 	}
@@ -407,14 +410,6 @@ public abstract class Reference {
 			prefix = fileName.substring(index) + ":" + lineNum;
 		}
 		prefix += "(" + getId() + ")";
-//		if (readableName != null) {
-//			return prefix + ":" + readableName;// + ":" + formatAnnotations();
-//		} else if (element != null) {
-//			return prefix + ":VAR_" + element;// + ":" + formatAnnotations();
-//		} else if (tree != null) {
-//			return prefix + ":EXP_" + tree.toString();// + ":" + formatAnnotations();
-//		} else
-//			return prefix + ":" + "#INTERNAL#:";// + formatAnnotations();
 		return prefix + ":" + getRefName();
 	}
 	
@@ -426,11 +421,11 @@ public abstract class Reference {
 		} else if (tree != null) {
 			return "EXP_" + tree.toString();
 		} else
-			return "#INTERNAL#:";
+			return "#INTERNAL#";
 	}
 	
 	public String getFullRefName() {
-		return getRefName() + ":" + fileName;
+		return fileName + ":" + lineNum + ":" + offset + ":" + getRefName();
 	}
 	
 	public String toAnnotatedString() {
@@ -798,19 +793,22 @@ public static abstract class AdaptReference extends Reference {
 	public Reference getDeclRef() {
 		return declRef;
 	} 
-//	@Override
-//	public int hashCode() {
-//		return contextRef.id * 23111 + declRef.id;
-//	}
-//	@Override
-//	public boolean equals(Object obj) {
-//		if (obj instanceof AdaptReference) {
-//			AdaptReference ref = (AdaptReference) obj;
-//			return contextRef.equals(ref.contextRef) 
-//					&& declRef.equals(ref.declRef);
-//		}
-//		return false;
-//	}
+	public void setContextRef(Reference ref) {
+		contextRef = ref;
+	}
+	public void setDeclRef(Reference ref) {
+		declRef = ref;
+	} 
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof AdaptReference) {
+			AdaptReference ref = (AdaptReference) obj;
+			return contextRef.equals(ref.contextRef) 
+					&& declRef.equals(ref.declRef);
+		}
+		return false;
+	}
 	@Override
 	public boolean isSimilar(Reference ref) {
 		if (ref instanceof AdaptReference) {
@@ -820,6 +818,7 @@ public static abstract class AdaptReference extends Reference {
 		}
 		return false;
 	}
+	
 }
 
 public static class FieldAdaptReference extends AdaptReference {
@@ -836,12 +835,20 @@ public static class FieldAdaptReference extends AdaptReference {
 	public String toString() {
 		return "(" + contextRef.toString() + " =f=> " + declRef.toString() + ")";
 	}
+    @Override
+	public String getRefName() {
+        return "(" + contextRef.getRefName() + " =f=> " + declRef.getRefName() + ")";
+	}
 	
 	@Override
 	public String toAnnotatedString() {
 		return "(" + contextRef.toAnnotatedString() + " =f=> " + declRef.toAnnotatedString() + ")";
 	}
 
+    @Override
+	public String getFullRefName() {
+		return "(" + contextRef.getFullRefName() + " =f=> " + declRef.getFullRefName() + ")";
+	}
 
 	@Override
 	public Reference getCopy() {
@@ -871,6 +878,16 @@ public static class MethodAdaptReference extends AdaptReference {
 	@Override
 	public String toString() {
 		return "(" + contextRef.toString() + " =m=> " + declRef.toString() + ")";
+	}
+
+    @Override
+	public String getRefName() {
+        return "(" + contextRef.getRefName() + " =m=> " + declRef.getRefName() + ")";
+	}
+
+    @Override
+	public String getFullRefName() {
+		return "(" + contextRef.getFullRefName() + " =m=> " + declRef.getFullRefName() + ")";
 	}
 	
 	@Override

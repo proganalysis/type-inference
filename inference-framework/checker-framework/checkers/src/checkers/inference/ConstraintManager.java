@@ -44,7 +44,9 @@ public class ConstraintManager {
 		
 		if (sub instanceof NullReference || sup instanceof NullReference)
 			return;
+
 		
+		constraints.add(new Constraint.SubtypeConstraint(sub, sup));
 		// TODO: Handling the case that one of sub or sup is array. 
 		// e.g. (x =f=> a)  <: b, where a and b are arrays 
 		// then we add another constraint:  a.getComponenetRef == b.getComponentRef
@@ -78,7 +80,6 @@ public class ConstraintManager {
 			addSubtypeConstraint(((ArrayReference) sub).getComponentRef(),
 					((ArrayReference) sup).getComponentRef());
 		}
-		constraints.add(new Constraint.SubtypeConstraint(sub, sup));
 	}
 	
 	public void addEqualityConstraint(Reference left, Reference right) {
@@ -90,6 +91,7 @@ public class ConstraintManager {
 //		if (left instanceof PrimitiveReference || right instanceof PrimitiveReference)
 //			return;
 		
+		constraints.add(new Constraint.EqualityConstraint(left, right));
 		if (left instanceof AdaptReference && right instanceof ArrayReference) {
 			// In case that the decl reference is an array
 			Reference declRef = ((AdaptReference) left).getDeclRef();
@@ -109,7 +111,6 @@ public class ConstraintManager {
 			addEqualityConstraint(((ArrayReference) left).getComponentRef(),
 					((ArrayReference) right).getComponentRef());
 		}
-		constraints.add(new Constraint.EqualityConstraint(left, right));
 	}
 	
 	public void addInequalityConstraint(Reference left, Reference right) {
