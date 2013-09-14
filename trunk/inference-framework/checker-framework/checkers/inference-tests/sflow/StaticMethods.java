@@ -1,7 +1,7 @@
 
 public class StaticMethods {
 
-    public String escape(String url) {
+    public static String escape(String url) {
         return url;
     }
 
