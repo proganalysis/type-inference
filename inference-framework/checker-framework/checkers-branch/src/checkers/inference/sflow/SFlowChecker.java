@@ -780,8 +780,7 @@ public class SFlowChecker extends InferenceChecker {
 					&& outRef.getAnnotations().contains(TAINTED)
 					&& declElt != null
 					&& declElt.getKind() == ElementKind.METHOD
-					&& declRef.getReadableName() != null
-					&& declRef.getReadableName().startsWith("RET_")
+					&& declRef.getRefName().startsWith("RET_")
 					&& declRef.getAnnotations().size() > 1
 					// && declRef.getAnnotations().contains(POLY)
 					&& declRef.getAnnotations().contains(TAINTED)) {
@@ -971,8 +970,7 @@ public class SFlowChecker extends InferenceChecker {
 					&& outRef.getAnnotations().contains(TAINTED)
 					&& declElt != null
 					&& declElt.getKind() == ElementKind.METHOD
-					&& declRef.getReadableName() != null
-					&& declRef.getReadableName().startsWith("RET_")
+					&& declRef.getRefName().startsWith("RET_")
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(POLY)
 					&& declRef.getAnnotations().contains(TAINTED)) {

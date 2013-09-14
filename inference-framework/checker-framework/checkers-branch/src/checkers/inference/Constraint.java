@@ -39,6 +39,30 @@ public abstract class Constraint {
 	public int getID() {
 		return id;
 	}
+
+	public void setLeft(Reference r) {
+		left = r;
+	}
+
+	public void setRight(Reference r) {
+		right = r;
+	}
+
+	public void setRef(Reference r) {
+		ref = r;
+	}
+
+    @Override
+    public int hashCode() {
+        int res = 0;
+        if (left != null)
+            res += left.hashCode() * 17;
+        if (right != null)
+            res += right.hashCode() * 13;
+        if (ref != null)
+            res += ref.hashCode() * 11;
+        return res;
+    }
 	
 	public abstract boolean isSimilar(Constraint c);
 
@@ -61,6 +85,13 @@ public abstract class Constraint {
 			}
 			return false;
 		}
+
+        @Override
+        public boolean equals(Object o) {
+            Constraint obj = (Constraint) o;
+            return (obj instanceof SubtypeConstraint) && 
+                this.left.equals(obj.getLeft()) && this.right.equals(obj.getRight());
+        }
 	}
 	
 	public static class EqualityConstraint extends Constraint {
@@ -82,6 +113,12 @@ public abstract class Constraint {
 			return false;
 		}
 		
+        @Override
+        public boolean equals(Object o) {
+            Constraint obj = (Constraint) o;
+            return (obj instanceof EqualityConstraint) && 
+                this.left.equals(obj.getLeft()) && this.right.equals(obj.getRight());
+        }
 	}
 	
 	public static class UnequalityConstraint extends Constraint {
@@ -102,6 +139,12 @@ public abstract class Constraint {
 			}
 			return false;
 		}
+        @Override
+        public boolean equals(Object o) {
+            Constraint obj = (Constraint) o;
+            return (obj instanceof UnequalityConstraint) && 
+                this.left.equals(obj.getLeft()) && this.right.equals(obj.getRight());
+        }
 	}
 	
 	/**
@@ -127,6 +170,12 @@ public abstract class Constraint {
 			}
 			return false;
 		}
+        @Override
+        public boolean equals(Object o) {
+            Constraint obj = (Constraint) o;
+            return (obj instanceof UnequalityConstraint) && 
+                this.ref.equals(obj.getRef());
+        }
 	}
 	
 	public static class IfConstraint extends Constraint {

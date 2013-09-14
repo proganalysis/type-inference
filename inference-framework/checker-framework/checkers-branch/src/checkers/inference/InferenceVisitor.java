@@ -1062,7 +1062,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 				
 		if (elt != null
 				&& !(ref instanceof ExecutableReference) 
-				&& ref.getReadableName().startsWith("THIS_") 
+				&& ref.getRefName().startsWith("THIS_") 
 				|| tree.toString().equals("this"))
 			return true;
 		else
