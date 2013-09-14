@@ -1,5 +1,0 @@
-package annotator.tests;
-
-public class FieldSimpleArray {
-  @java.lang.Mutable Integer @java.lang.ReadOnly [] field;
-}

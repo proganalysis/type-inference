@@ -1,8 +1,0 @@
-package annotator.tests;
-
-public class NewSimple {
-  public void foo() {
-    Object o = new @java.lang.ReadOnly Object();
-    System.out.println(o);
-  }
-}
