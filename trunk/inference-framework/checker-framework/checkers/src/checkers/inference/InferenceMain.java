@@ -173,10 +173,14 @@ public class InferenceMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-//		String jdkBootPaths = "";
 		String jdkBootPaths = findPathJar(InferenceMain.class);
-		if (jdkBootPaths == "" || !jdkBootPaths.contains("jdk.jar"))
-			jdkBootPaths += File.pathSeparator + jdkJar();
+		if (jdkBootPaths == "" || !jdkBootPaths.contains("jdk.jar")) {
+            String customJDK = System.getProperty("jdk");
+            if (customJDK != null)
+                jdkBootPaths += File.pathSeparator + customJDK;
+            else
+                jdkBootPaths += File.pathSeparator + jdkJar();
+        }
 		String bootStr = "-Xbootclasspath/p:";
 		for (String arg : args) {
 			if (arg.startsWith(bootStr)) {
