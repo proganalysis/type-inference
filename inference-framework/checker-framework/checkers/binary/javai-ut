@@ -79,6 +79,7 @@ for i in "$@" ; do
    case $i in
    -Xbootclasspath/p:* ) bcp=`echo $i | sed -e 's/^-Xbootclasspath.p://'`:${bcp} ;;
    -J-Xbootclasspath/p:* ) bcp=`echo $i | sed -e 's/^-J-Xbootclasspath.p://'`:${bcp} ;;
+   -D* ) javaOpts=$javaOpts""`echo $i`"";;
    -J* )       javaOpts=$javaOpts$nl"'"`echo $i | sed -e 's/^-J//'`"'" ;;
    *   )       toolOpts=$toolOpts$nl"'"$i"'" ;;
    esac
