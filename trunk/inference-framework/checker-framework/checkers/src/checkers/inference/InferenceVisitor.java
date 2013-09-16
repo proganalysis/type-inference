@@ -285,8 +285,6 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 	@Override
 	public Void visitMethod(MethodTree node, Void p) {
 		ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
-//		if (methodElt.toString().contains("pwriteBytes("))
-//			System.out.println();
 		// First create method reference
 		Reference methodRef = Reference.createReference(methodElt, factory);
 		addEmptyConstraint(methodRef);
@@ -419,15 +417,12 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 					factory);
 			generateConstraint(initilizerRef, initializer);
 			
-//			addSubtypeConstraint(initilizerRef, varRef);
 			// FIXME: The field should be accessed by adapting it from PoV
 			// the default constructor. The implementation below can be 
 			// merged with the field access in static initializer.
 			if (varElt.getKind().isField()) {
-				Reference defaultConstructorThisRef = getDefaultConstructorThisRef();
+				Reference defaultConstructorThisRef = getDefaultConstructorThisRefWithField(varElt);
 				handleFieldWrite(defaultConstructorThisRef, varRef, initilizerRef);
-//				addSubtypeConstraint(initilizerRef, getFieldAdaptReference(
-//						defaultConstructorThisRef, varRef, null));
 			} else {
 				addSubtypeConstraint(initilizerRef, varRef);
 			}
@@ -475,10 +470,59 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
      * We use the first constructor as the default
      * @return
      */
+    @Deprecated
     public Reference getDefaultConstructorThisRef() {
     	ClassTree classTree = TreeUtils.enclosingClass(getCurrentPath());
         TypeElement elem = TreeUtils.elementFromDeclaration(classTree);
         return Reference.createReference(elem, factory);
+    }
+
+    /**
+     * with field
+     */
+    public Reference getDefaultConstructorThisRefWithField(Element fieldElt) {
+        if (!fieldElt.getKind().isField())
+            return null;
+        TreePath p = getCurrentPath();
+        while (p != null) {
+            Tree leaf = p.getLeaf();
+            assert leaf != null; /*nninvariant*/
+            if (TreeUtils.isClassTree(leaf.getKind())) {
+                AnnotatedDeclaredType classType = (AnnotatedDeclaredType) factory
+                        .getAnnotatedType((ClassTree) leaf);
+                if (checker.isFieldElt(classType, fieldElt)) {
+                    TypeElement elem = TreeUtils.elementFromDeclaration((ClassTree) leaf);
+                    return Reference.createReference(elem, factory);
+                }
+            }
+            p = p.getParentPath();
+        }
+        return null;
+    }
+
+    /**
+     * Get the method element which is a sibling of fieldElt
+     */
+    public ExecutableElement getEnclosingMethodWithField(Element fieldElt) {
+        if (!fieldElt.getKind().isField())
+            return null;
+        TreePath p = getCurrentPath();
+        while (p != null) {
+            Tree leaf = p.getLeaf();
+            assert leaf != null; /*nninvariant*/
+            if (leaf.getKind() == Tree.Kind.METHOD) {
+                p = p.getParentPath();
+                Tree t = p.getLeaf();
+                if (t.getKind() == Tree.Kind.CLASS) {
+                    AnnotatedDeclaredType classType = (AnnotatedDeclaredType) factory
+                            .getAnnotatedType((ClassTree) t);
+                    if (checker.isFieldElt(classType, fieldElt))
+                        return TreeUtils.elementFromDeclaration((MethodTree) leaf);
+                }
+            }
+            p = p.getParentPath();
+        }
+        return null;
     }
     
 	/**
@@ -595,16 +639,26 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 //					&& isCurrentFieldElt(idElt)  //FIXME: WEI: this line is commented out on Nov 27
 					/*&& currentMethodElt != null*/) {
 				Reference thisRef = null;
-				if (currentMethodElt != null) {
+                if (!isCurrentFieldElt(idElt)) {
+                    // If accessing fields of outer class
+                    ExecutableElement enclosingMethodElt = getEnclosingMethodWithField(idElt);
+                    if (enclosingMethodElt != null) {
+                        // If there is an enclosing method
+                        Reference currentMethodRef = Reference.createReference(
+                                enclosingMethodElt, factory);
+                        thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
+                    } else {
+                        // Otherwise, we use the class as THIS
+                        thisRef = getDefaultConstructorThisRefWithField(idElt);
+                    }
+                } else if (currentMethodElt != null) {
 					Reference currentMethodRef = Reference.createReference(
 							currentMethodElt, factory);
 					thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
 				} else {
 					// This happens in static initializer. But reading should not
 					// be possible
-//					System.out.println("WARN: Reading field " + idElt + " in " 
-//						+ TreeUtils.enclosingClass(getCurrentPath()).getSimpleName());
-					thisRef = getDefaultConstructorThisRef(); // WEI: Add on Dec 5, 2012
+					thisRef = getDefaultConstructorThisRefWithField(idElt); // WEI: Add on Dec 5, 2012
 				}
 				handleFieldRead(lhsRef, thisRef, idRef);
 			} else if (lhsRef.getTree() != null && lhsRef.getTree().equals(rhsTree)){
@@ -789,13 +843,25 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 				// Now we need to check if idElt is a field. If so, then we need to 
 				// generate adapt constraint
 				Reference thisRef = null;
-				if (currentMethodElt != null) {
+                if (!isCurrentFieldElt(idElt)) {
+                    // If accessing fields of outer class
+                    ExecutableElement enclosingMethodElt = getEnclosingMethodWithField(idElt);
+                    if (enclosingMethodElt != null) {
+                        // If there is an enclosing method
+                        Reference currentMethodRef = Reference.createReference(
+                                enclosingMethodElt, factory);
+                        thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
+                    } else {
+                        // Otherwise, we use the class as THIS
+                        thisRef = getDefaultConstructorThisRefWithField(idElt);
+                    }
+                } else if (currentMethodElt != null) {
 					Reference currentMethodRef = Reference.createReference(
 							currentMethodElt, factory);
 					thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
 				} else {
 					// This happens when initializing a field in static initializer
-					thisRef = getDefaultConstructorThisRef();
+					thisRef = getDefaultConstructorThisRefWithField(idElt);
 				}
 				handleFieldWrite(thisRef, idRef, rhsRef);
 			} else if (rhsRef.getTree() != null && rhsRef.getTree().equals(lhsTree)){
@@ -1114,11 +1180,6 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 	
 	protected Reference getMethodAdaptReference(Reference rcvRef, 
 			Reference declRef, Reference assignToRef) {
-//		if (rcvRef == null) {
-//			System.out.println(this.getCurrentMethodElt());
-//			System.out.println(this.getCurrentPath().getLeaf());
-//			throw new RuntimeException("Null context!");
-//		}
 		switch (getMethodAdaptContext(rcvRef, declRef, assignToRef)) {
 		case NONE:
 			return declRef;
