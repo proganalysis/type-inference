@@ -75,7 +75,7 @@ import com.sun.tools.javac.code.Type.WildcardType;
  * @author huangw5
  * 
  */
-@SupportedOptions({ "warn", "checking", "insertAnnos", "debug", "noReim", "inferLibrary", "polyLibrary", "sourceSinkOnly" })
+@SupportedOptions({ "warn", "checking", "insertAnnos", "debug", "noReim", "inferLibrary", "polyLibrary", "sourceSinkOnly", "inferAndroidApp" })
 @TypeQualifiers({ Uncheck.class, Readonly.class, Polyread.class, Mutable.class,
 		Poly.class, Secret.class, Tainted.class, Bottom.class })
 public class SFlowChecker extends InferenceChecker {
@@ -100,9 +100,9 @@ public class SFlowChecker extends InferenceChecker {
 	private boolean inferLibrary = false;
 	
 	private boolean sourceSinkOnly = false;
-	
-//	private boolean resolveConflict = true;
 
+    private boolean inferAndroidApp = true;
+	
 	@Override
 	public void initChecker(ProcessingEnvironment processingEnv) {
 		super.initChecker(processingEnv);
@@ -155,12 +155,18 @@ public class SFlowChecker extends InferenceChecker {
 				"noReim")) {
 			useReim = false;
 		}
+
+		if (getProcessingEnvironment().getOptions().containsKey(
+				"inferAndroidApp")) {
+            inferAndroidApp = true;
+		}
         
         if (InferenceChecker.DEBUG) {
             System.out.println("INFO: useReim = " + useReim);
             System.out.println("INFO: polyLibrary = " + polyLibrary);
             System.out.println("INFO: inferLibrary = " + inferLibrary);
             System.out.println("INFO: sourceSinkOnly = " + sourceSinkOnly);
+            System.out.println("INFO: inferAndroidApp = " + inferAndroidApp);
         }
 	}
 	
@@ -190,12 +196,33 @@ public class SFlowChecker extends InferenceChecker {
 		return sourceSinkOnly;
 	}
 
+    public boolean isInferAndroidApp() {
+        return inferAndroidApp; 
+    }
 
 
 	@Override
 	protected MultiGraphFactory createQualifierHierarchyFactory() {
 		return new SFlowGraphQualifierHierarchy.InferenceGraphFactory(this);
 	}
+
+
+    public boolean isSpecialAndroidClass(String classStr) {
+        if (classStr.equals("android.app.Activity")
+                || classStr.equals("android.app.Service")
+                || classStr.equals("android.location.LocationListener"))
+            return true;
+        return false;
+    }
+    public boolean isSpecialAndroidMethod(ExecutableElement methodElt) {
+		if (methodElt instanceof MethodSymbol) {
+            String ownerStr = ((MethodSymbol) methodElt).owner.toString();
+            if (isSpecialAndroidClass(ownerStr)
+                && !methodElt.getModifiers().contains(Modifier.PRIVATE))
+                return true;
+        }
+        return false;
+    }
 
 	public boolean isSpecialMethod(ExecutableElement methodElt) {
 		String key = InferenceUtils.getMethodSignature(methodElt);

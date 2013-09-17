@@ -115,7 +115,6 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             conflictConstraints.clear();
             System.out.println("Adding linear constraints...");
             Set<Constraint> newCons = addLinearConstraints(constraints);
-//            System.out.println(newCons.size());
             buildRefToConstraintMapping(newCons);
             constraints.addAll(newCons);
             System.out.println("Solving constraints...");

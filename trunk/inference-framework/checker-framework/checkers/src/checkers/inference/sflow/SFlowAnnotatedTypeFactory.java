@@ -87,6 +87,7 @@ public class SFlowAnnotatedTypeFactory extends
 		}
 		methodType.addAnnotation(checker.BOTTOM);
 		boolean fromLibrary = checker.isFromLibrary(methodElt);
+
 		
 		if (fromLibrary && checker.isPolyLibrary()) {
 			// We assume all library has Poly type
@@ -97,36 +98,6 @@ public class SFlowAnnotatedTypeFactory extends
 			return;
 		}
 		
-//		if (fromLibrary
-////				|| methodElt.getModifiers().contains(Modifier.NATIVE)
-//				){ 
-//			// If it is from library, we make the worst-case assumption
-//			// that all primitive parameters are tainted. But we don't make 
-//			// make that assumption for those reference parameters 
-//			// FIXME: We don't make the worst-case assumption here 
-////			Set<AnnotationMirror> pSet = AnnotationUtils.createAnnotationSet();
-////			pSet.add(checker.TAINTED);
-////			annotateConstants(methodType, pSet);
-//		}
-		
-//		else {
-		
-//		if (checker.isInferLibrary()) {
-//			// If it is a non-static public method, we don't want the parameters to be SECRET 
-//			if (//!ElementUtils.isStatic(methodElt) && 
-//					!methodElt.getModifiers().contains(Modifier.PRIVATE)) {
-//				AnnotatedDeclaredType receiverType = methodType.getReceiverType();
-//				Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-//				set.add(checker.POLY);
-//				set.add(checker.TAINTED); 
-//				if (!checker.isAnnotated(receiverType))
-//					receiverType.addAnnotations(set);
-//				for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
-//					if (!checker.isAnnotated(paramType)) 
-//						annotateConstants(paramType, set);
-//				}
-//			}
-//		}
 		
 		// The return reference type can be TAINTED 
 		// Add default types for return
