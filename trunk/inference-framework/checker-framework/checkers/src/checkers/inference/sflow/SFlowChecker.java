@@ -101,7 +101,7 @@ public class SFlowChecker extends InferenceChecker {
 	
 	private boolean sourceSinkOnly = false;
 
-    private boolean inferAndroidApp = true;
+    private boolean inferAndroidApp = false;
 	
 	@Override
 	public void initChecker(ProcessingEnvironment processingEnv) {
