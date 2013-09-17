@@ -470,7 +470,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
      * We use the first constructor as the default
      * @return
      */
-    @Deprecated
+//    @Deprecated
     public Reference getDefaultConstructorThisRef() {
     	ClassTree classTree = TreeUtils.enclosingClass(getCurrentPath());
         TypeElement elem = TreeUtils.elementFromDeclaration(classTree);
@@ -490,8 +490,8 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
             if (TreeUtils.isClassTree(leaf.getKind())) {
                 AnnotatedDeclaredType classType = (AnnotatedDeclaredType) factory
                         .getAnnotatedType((ClassTree) leaf);
+                TypeElement elem = TreeUtils.elementFromDeclaration((ClassTree) leaf);
                 if (checker.isFieldElt(classType, fieldElt)) {
-                    TypeElement elem = TreeUtils.elementFromDeclaration((ClassTree) leaf);
                     return Reference.createReference(elem, factory);
                 }
             }

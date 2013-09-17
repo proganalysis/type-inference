@@ -27,6 +27,7 @@ import checkers.inference.Reference.FieldAdaptReference;
 import checkers.inference.Reference.FieldAdaptReference;
 import checkers.inference.Reference.MethodAdaptReference;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
@@ -39,6 +40,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
@@ -515,9 +517,11 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		// Here, we don't enforce equality even if they are not readonly
 		// Mar 30: we only add override constraint for library methods when there
 		// are annotations.
+        // Sep 16, 2013 FIXME: In order to work with Callbacks_LocationLeak3, have to 
+        // enforce this constraint. 
 		if (!checker.isFromLibrary(overridden) 
-				|| !InferenceUtils.intersectAnnotations(overriddenRcvRef.getAnnotations(), checker.getSourceLevelQualifiers()).isEmpty())
-			super.addSubtypeConstraint(overriddenRcvRef, overriderRcvRef);
+				|| checker.isAnnotated(overriderRcvRef))
+			addSubtypeConstraint(overriddenRcvRef, overriderRcvRef);
 		
 		// Parameters: overridden <: overrider  
     	List<? extends VariableElement> overriderParams = overrider.getParameters();
@@ -532,8 +536,8 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
     		Reference overriddenParamRef = Reference.createReference(overriddenParam, 
     				factory);
 			if (!checker.isFromLibrary(overridden) 
-				|| !InferenceUtils.intersectAnnotations(overriddenParamRef.getAnnotations(), checker.getSourceLevelQualifiers()).isEmpty())
-				super.addSubtypeConstraint(overriddenParamRef, overriderParamRef);
+				|| checker.isAnnotated(overriddenParamRef))
+				addSubtypeConstraint(overriddenParamRef, overriderParamRef);
     	}
     	
     	if (overrider.getReturnType().getKind() == TypeKind.VOID)
@@ -543,7 +547,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
     	Reference overriddenReturnRef = overriddenRef.getReturnRef();
     	// Skip for library methods
 		if (!checker.isFromLibrary(overridden))
-			super.addSubtypeConstraint(overriderReturnRef, overriddenReturnRef);
+			addSubtypeConstraint(overriderReturnRef, overriddenReturnRef);
 	}
 
 	
@@ -594,7 +598,6 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	}
 	
 	
-//	private MethodInvocationTree currentInvocation = null;
 
 	@Override
 	public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -607,13 +610,43 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				)	
 			// skip
 			return p;
-//		if (node.toString().contains("m_props.put("))
-//			System.out.println("INFOFO: " + methodElt + "   " + ((MethodSymbol) methodElt).owner.toString());
-//		currentInvocation = node;
 		Void v = super.visitMethodInvocation(node, p);
-//		currentInvocation = null;
 		return v;
 	}
+
+
+	@Override
+	public Void visitMethod(MethodTree node, Void p) {
+        // Special-case for inferring android apps
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
+        if (checker.isInferAndroidApp()) {
+            Reference methodRef = Reference.createReference(methodElt, factory);
+            Reference classRef = getDefaultConstructorThisRef();
+            String classStr = (methodElt instanceof MethodSymbol) ? 
+                                ((MethodSymbol) methodElt).owner.toString()
+                                : "";
+            if (TreeUtils.isConstructor(node)/* && checker.isSpecialAndroidClass(classStr)*/) {
+                Reference thisRef = ((ExecutableReference) methodRef).getReceiverRef();
+                addEqualityConstraint(thisRef, classRef);
+            }
+            else {
+                Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods = annoTypes
+                        .overriddenMethods(methodElt);
+                for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair 
+                        : overriddenMethods.entrySet()) {
+                    ExecutableElement overriddenElement = pair.getValue();
+                    if (checker.isSpecialAndroidMethod(overriddenElement)) {
+                        // We connect THIS of current method to the class
+                        // THIS
+                        addEqualityConstraint(((ExecutableReference)methodRef).getReceiverRef(), 
+                                classRef);
+                        break;
+                    }
+                }
+            }
+        }
+        return super.visitMethod(node, p);
+    }
 
 	@Override
 	protected Reference getMethodAdaptReference(Reference rcvRef, 
