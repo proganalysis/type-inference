@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -290,7 +291,10 @@ public abstract class Reference {
     
     protected AnnotatedTypeMirror type;
     
-//    protected RefKind kind; 
+    /** For adding linear constraints*/
+    protected Set<Reference> lessSet = new HashSet<Reference>();
+
+    protected Set<Reference> greaterSet = new HashSet<Reference>();
     
 	public Reference(Tree tree, Element element, String fileName,
 			long lineNum, int offset, AnnotatedTypeMirror type,
@@ -319,6 +323,24 @@ public abstract class Reference {
 		this.annotations.clear();
 		this.annotations.addAll(annotations);
 	}
+
+    public void addLessRef(Reference ref) {
+        if (!ref.equals(this))
+            lessSet.add(ref);
+    }
+
+    public void addGreaterRef(Reference ref) {
+        if (!ref.equals(this))
+            greaterSet.add(ref);
+    }
+
+    public Set<Reference> getLessSet() {
+        return lessSet;
+    }
+
+    public Set<Reference> getGreaterSet() {
+        return greaterSet;
+    }
 
 	public Element getElement() {
 		return element;

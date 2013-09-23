@@ -217,7 +217,7 @@ public class InferenceMain {
 		}
 		
 		System.out.println("INFO: Inference finished");
-		System.out.println("INFO: inferrence_time:\t"
+		System.out.println("INFO: inference_time:\t"
 				+ String.format("%6.1f seconds",
 						(float) (System.currentTimeMillis() - startTime) / 1000));
 		
