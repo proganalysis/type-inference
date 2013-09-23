@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -56,6 +57,10 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 	private Map<Integer, List<Constraint>> refToConstraints; 
 
 	private Map<String, List<Constraint>> adaptRefToConstraints; 
+
+	private Map<Integer, Set<Reference>> declRefToContextRefs; 
+
+    private Map<Integer, Constraint> subconsToEqucons; 
 	
 	public WorklistSetbasedSolver(InferenceChecker inferenceChecker, 
 			List<Reference> exprRefs, List<Constraint> constraints) {
@@ -64,6 +69,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         this.constraints = new LinkedHashSet<Constraint>(constraints);
 		this.refToConstraints = new HashMap<Integer, List<Constraint>>();
         this.adaptRefToConstraints = new HashMap<String, List<Constraint>>();
+        this.declRefToContextRefs = new HashMap<Integer, Set<Reference>>();
+        this.subconsToEqucons = new HashMap<Integer, Constraint>();
 		this.secretSet = new LinkedHashSet<Constraint>(this.constraints.size());
 		this.taintedSet = new LinkedHashSet<Constraint>(this.constraints.size() / 10);
 		inferenceChecker.fillAllPossibleAnnos(exprRefs);
@@ -100,23 +107,22 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 				e.printStackTrace();
 			}
 		}
+        replaceUsevarWithDeclvar(constraints);
         rewriteEqualityConstraints(constraints);
+        Set<Constraint> originalCons = new HashSet<Constraint>(constraints);
 		
 		Set<Constraint> warnConstraints = new HashSet<Constraint>();
 		Set<Constraint> conflictConstraints = new HashSet<Constraint>();
         int size = 0;
 		boolean hasUpdate = false;
 		buildRefToConstraintMapping(constraints);
-        Set<Constraint> originalCons = new HashSet<Constraint>(constraints);
-        while (size != constraints.size() || hasUpdate) {
-            size = constraints.size();
-            hasUpdate = false;
+//        int it = 1;
+//        while (size != constraints.size() || hasUpdate) {
+//            System.out.println("Iteration " + (it++) + ":");
+//            size = constraints.size();
+//            hasUpdate = false;
             warnConstraints.clear();
             conflictConstraints.clear();
-            System.out.println("Adding linear constraints...");
-            Set<Constraint> newCons = addLinearConstraints(constraints);
-            buildRefToConstraintMapping(newCons);
-            constraints.addAll(newCons);
             System.out.println("Solving constraints...");
             long startTime = System.currentTimeMillis();
             // First add to secretSet
@@ -125,6 +131,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                     secretSet.add(c);
                 }
             }
+            Set<Constraint> newConstraints = new LinkedHashSet<Constraint>();
             while (!secretSet.isEmpty() || !taintedSet.isEmpty()) {
                 Constraint c = null;
                 if (!secretSet.isEmpty()) {
@@ -138,6 +145,16 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                 }
                 try {
                     hasUpdate = handleConstraint(c) || hasUpdate;
+                    Set<Constraint> newCons = addLinearConstraints2(c, constraints, newConstraints);
+                    if (newCons.size() > 500) {
+                        System.out.println("Adding linear constraints for " + c);
+                        System.out.println(" Size = " + newCons.size());
+//                        if (c.getID() == 155897)  {
+//                            for (Constraint cc : newCons) 
+//                                System.out.println(cc);
+//                        }
+                    }
+                    newConstraints.addAll(newCons);
                 } catch (SetbasedSolverException e) {
                     FailureStatus fs = inferenceChecker.getFailureStatus(c);
                     if (fs == FailureStatus.ERROR && originalCons.contains(c)) {
@@ -149,10 +166,17 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                         }
                     }
                 }
+                if (secretSet.isEmpty() && taintedSet.isEmpty()) {
+                    buildRefToConstraintMapping(newConstraints);
+                    constraints.addAll(newConstraints);
+                    secretSet.addAll(newConstraints);
+                    System.out.println("Added " + newConstraints.size() + " new constraints");
+                    newConstraints.clear();
+                }
             }
-            System.out.println("Time: " + (System.currentTimeMillis() - startTime) + " ms");
-        }
-        System.out.println("Total linear time: " + totalLinearTime);
+//            System.out.println("Time: " + (System.currentTimeMillis() - startTime) + " ms");
+//            System.out.println("Constraint size - " + constraints.size());
+//        }
 		if (InferenceChecker.DEBUG) {
             PrintWriter pw;
 			try {
@@ -161,12 +185,12 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                 int count = originalCons.size();
                 for (Constraint c : constraints) {
                     pw.println(c.toString());
-                    count--;
-                    if (count == 0)
-                        pw.println("New Constraints:");
+//                    count--;
+//                    if (count == 0)
+//                        pw.println("New Constraints:");
                 }
 				pw.close();
-                System.out.println("INFO: Added " + (-count) + " linear constraints in total");
+//                System.out.println("INFO: Added " + (-count) + " linear constraints in total");
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -201,7 +225,14 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 				e.printStackTrace();
 			}
 		}
-		ArrayList<Constraint> list = new ArrayList<Constraint>(conflictConstraints);
+		ArrayList<Constraint> list = new ArrayList<Constraint>(conflictConstraints.size());
+        for (Constraint c : conflictConstraints) {
+            Constraint ec = subconsToEqucons.get(c.getID());
+            if (ec != null)
+                list.add(ec);
+            else
+                list.add(c);
+        }
         Collections.sort(list, new Comparator<Constraint>() {
             @Override
             public int compare(Constraint o1, Constraint o2) {
@@ -625,9 +656,11 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         if (left != null) {
             if ((rRef = map.get(left.getId())) != null) 
                 c.setLeft(rRef);
-            else if ((left instanceof AdaptReference)
-                    && (rRef = map.get(((AdaptReference) left).getContextRef().getId())) != null) {
-                ((AdaptReference) left).setContextRef(rRef);
+            else if ((left instanceof AdaptReference)) {
+                if ((rRef = map.get(((AdaptReference) left).getContextRef().getId())) != null)
+                    ((AdaptReference) left).setContextRef(rRef);
+                if ((rRef = map.get(((AdaptReference) left).getDeclRef().getId())) != null)
+                    ((AdaptReference) left).setDeclRef(rRef);
             }
                     
         }
@@ -635,9 +668,11 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         if (right != null) {
             if ((rRef = map.get(right.getId())) != null) 
                 c.setRight(rRef);
-            else if ((right instanceof AdaptReference)
-                    && (rRef = map.get(((AdaptReference) right).getContextRef().getId())) != null) {
-                ((AdaptReference) right).setContextRef(rRef);
+            else if ((right instanceof AdaptReference)) {
+                if ((rRef = map.get(((AdaptReference) right).getContextRef().getId())) != null) 
+                    ((AdaptReference) right).setContextRef(rRef);
+                if ((rRef = map.get(((AdaptReference) right).getDeclRef().getId())) != null) 
+                    ((AdaptReference) right).setDeclRef(rRef);
             }
                     
         }
@@ -646,27 +681,40 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
     private boolean isSame(Reference left, Reference right, Map<Integer, Reference> map) {
         Reference varRef = null, expRef = null;
         Element elt = null;
+        Tree tree = null;
         if ((elt = left.getElement()) != null 
-                && right.getTree() != null
+                && (tree = right.getTree()) != null
                 && elt.getKind() != ElementKind.CLASS
+                && elt.getKind() != ElementKind.INTERFACE
+                && elt.getKind() != ElementKind.ENUM
+                && elt.getKind() != ElementKind.ANNOTATION_TYPE
                 && !ElementUtils.isStatic(elt)
                 && left.getFileName().equals(right.getFileName())
-                && elt.toString().equals(right.getTree().toString())) {
+                && (elt.toString().equals(tree.toString())
+                        && TreeUtils.elementFromUse((ExpressionTree) tree).equals(elt)
+                    || left.getRefName().equals("THIS_" + elt.toString()) 
+                        && right.getRefName().equals("EXP_this"))) {
             varRef = left; 
             expRef = right;
         } else if ((elt = right.getElement()) != null 
-                && left.getTree() != null
+                && (tree = left.getTree()) != null
                 && elt.getKind() != ElementKind.CLASS
+                && elt.getKind() != ElementKind.INTERFACE
+                && elt.getKind() != ElementKind.ENUM
+                && elt.getKind() != ElementKind.ANNOTATION_TYPE
                 && !ElementUtils.isStatic(elt)
                 && left.getFileName().equals(right.getFileName())
-                && elt.toString().equals(left.getTree().toString())) {
+                && (elt.toString().equals(tree.toString()) 
+                        && TreeUtils.elementFromUse((ExpressionTree) tree).equals(elt)
+                    || right.getRefName().equals("THIS_" + elt.toString()) 
+                        && left.getRefName().equals("EXP_this"))) {
             varRef = right; 
             expRef = left;
         } else if (!(left instanceof ConstantReference) && !(right instanceof ConstantReference)
                 && left.getRefName().equals(right.getRefName())
                 && left.getRefName().equals("#INTERNAL#")) {
-            varRef = left; 
-            expRef = right;
+            varRef = left.getId() < right.getId() ? left : right; 
+            expRef = left.getId() < right.getId() ? right : left; 
         }
         if (varRef != null && expRef != null) {
             Set<AnnotationMirror> interAnnos = InferenceUtils.intersectAnnotations(
@@ -675,27 +723,30 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             if (map.get(expRef.getId()) == null 
                     && map.get(varRef.getId()) == null)
                 map.put(expRef.getId(), varRef); // only update the map when both do not exisit
-            if (varRef instanceof ArrayReference
-                && expRef instanceof ArrayReference)
-                return isSame(((ArrayReference) varRef).getComponentRef(), 
-                        ((ArrayReference) expRef).getComponentRef(), map);
+//            if (varRef instanceof ArrayReference
+//                && expRef instanceof ArrayReference)
+//                return isSame(((ArrayReference) varRef).getComponentRef(), 
+//                        ((ArrayReference) expRef).getComponentRef(), map);
             return true;
         }
         return false;
     }
 
     private boolean canRewrite(Reference ref) {
-        if (ref == null)
+        if (ref == null || ref instanceof ConstantReference)
             return false;
         Element elt = ref.getElement();
         if (elt != null 
                 && (elt.getKind() == ElementKind.CLASS
+                    || elt.getKind() == ElementKind.INTERFACE
+                    || elt.getKind() == ElementKind.ENUM
+                    || elt.getKind() == ElementKind.ANNOTATION_TYPE
                     || ElementUtils.isStatic(elt)))
             return false;
         return true;
     }
 
-    private void rewriteEqualityConstraints(Set<Constraint> constraints) {
+    private void replaceUsevarWithDeclvar(Set<Constraint> constraints) {
         // First find out constraints like "VAR_id == EXP_id" and
         // replace each appearence of EXP_id with VAR_id;
         Map<Integer, Reference> map = new HashMap<Integer, Reference>();
@@ -704,13 +755,9 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             if (c instanceof EqualityConstraint) {
                 Reference left = c.getLeft();
                 Reference right = c.getRight();
-                if (left.getRefName().equals("#INTERNAL#")
-                        && right.getRefName().equals("#INTERNAL#"))
-                    continue;
                 if (isSame(left, right, map)) {
                     // remove c from constraints
                     it.remove();
-//                    System.out.println("remove: " + c);
                 }
             }
         }
@@ -718,6 +765,9 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         for (Constraint c : constraints) {
             replace(c, map);
         }
+    }
+
+    private void rewriteEqualityConstraints(Set<Constraint> constraints) {
         // Rewrite other EqualityConstraint 
         List<Constraint> list = new LinkedList<Constraint>();
         for (Constraint c : constraints) {
@@ -727,9 +777,13 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                     && canRewrite(left) && canRewrite(right)
                     && (!left.getRefName().equals("#INTERNAL#")
                             || !right.getRefName().equals("#INTERNAL#"))) {
-                list.add(new SubtypeConstraint(left, right));
-                list.add(new SubtypeConstraint(right, left));
-            } else 
+                Constraint sc = new SubtypeConstraint(left, right);
+                list.add(sc);
+                subconsToEqucons.put(sc.getID(), c);
+                sc = new SubtypeConstraint(right, left);
+                list.add(sc);
+                subconsToEqucons.put(sc.getID(), c);
+            } else
                 list.add(c);
         }
         constraints.clear();
@@ -763,6 +817,12 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                             adaptRefToConstraints.put(key, l);
                         }
                         l.add(c);
+                        Set<Reference> contextSet = declRefToContextRefs.get(ids[0]);
+                        if (contextSet == null) {
+                            contextSet = new HashSet<Reference>();
+                            declRefToContextRefs.put(ids[0], contextSet);
+                        }
+                        contextSet.add(((AdaptReference) ref).getContextRef());
 					} else 
 						ids = new int[] {ref.getId()};
 					for (int id : ids) {
@@ -774,6 +834,12 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 						l.add(c);
 					}
 				}
+                if ((c instanceof SubtypeConstraint)
+                        && !(left instanceof AdaptReference)
+                        && !(right instanceof AdaptReference)) {
+                    left.addGreaterRef(right);
+                    right.addLessRef(left);
+                }
 			}
 		}
 	}
@@ -810,6 +876,27 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
     private boolean canConnectVia(Reference left, Reference right) {
         if (left == null || right == null)
             return false;
+        // Should be in the same file
+        String leftFile = left.getFileName();
+        String rightFile = right.getFileName();
+        if (leftFile != null && rightFile != null 
+                && !leftFile.equals(rightFile))
+            return false;
+
+        Tree leftTree = left.getTree();
+        Tree rightTree = right.getTree();
+        if (leftTree != null && (leftTree instanceof MethodInvocationTree 
+                    || leftTree instanceof NewClassTree
+                    || leftTree instanceof BinaryTree 
+                    || leftTree instanceof LiteralTree)
+                && rightTree != null && !(right instanceof AdaptReference)
+                    && (rightTree instanceof MethodInvocationTree 
+                    || leftTree instanceof NewClassTree
+                    || leftTree instanceof BinaryTree 
+                    || leftTree instanceof LiteralTree))
+            return false;
+
+
         //  no internal elements of arrays
         if (!(left instanceof AdaptReference) && left.getRefName().equals("#INTERNAL#") 
                 || !(right instanceof AdaptReference) && right.getRefName().equals("#INTERNAL#"))
@@ -828,6 +915,112 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             }
         }
         return true;
+    }
+
+    // Add new linear constraint c, return a new set
+    private Set<Constraint> addLinearConstraints2(Constraint con, Set<Constraint> constraints, Set<Constraint> tmpNewConstraints) {
+        Set<Constraint> newCons = new LinkedHashSet<Constraint>();
+        if (!(con instanceof SubtypeConstraint))
+            return newCons;
+        Queue<Constraint> queue = new LinkedList<Constraint>();
+        queue.add(con); 
+        while (!queue.isEmpty()) {
+            Constraint c = queue.poll();
+            Reference left = c.getLeft();
+            Reference right = c.getRight();
+            Reference ref = null;
+            List<Constraint> tmplist = new LinkedList<Constraint>();
+            // Step 1: field read
+            if ((left instanceof FieldAdaptReference) 
+                    && (ref = ((FieldAdaptReference) left).getDeclRef()) != null
+                    && ref.getAnnotations().size() == 1 
+                    && ref.getAnnotations().contains(SFlowChecker.POLY)) {
+                Constraint linear = new SubtypeConstraint(
+                            ((FieldAdaptReference) left).getContextRef(), right);
+                tmplist.add(linear);
+            }
+            // Step 2: field write
+            else if ((right instanceof FieldAdaptReference) 
+                    && (ref = ((FieldAdaptReference) right).getDeclRef()) != null
+                    && ref.getAnnotations().size() == 1 
+                    && ref.getAnnotations().contains(SFlowChecker.POLY)) {
+                Constraint linear = new SubtypeConstraint(
+                            left, ((FieldAdaptReference) right).getContextRef());
+                tmplist.add(linear);
+            }
+            // Step 3: linear constraints
+            else if (!(left instanceof AdaptReference) && !(right instanceof AdaptReference) 
+                    && canConnectVia(left, right)) {
+                for (Reference r : left.getLessSet()) {
+                    if (!r.equals(right)) {
+                        Constraint linear = new SubtypeConstraint(r, right);
+                        tmplist.add(linear);
+                    }
+                }
+                for (Reference r : right.getGreaterSet()) {
+                    if (!left.equals(r)) {
+                        Constraint linear = new SubtypeConstraint(left, r);
+                        tmplist.add(linear);
+                    }
+                }
+                // look for method adapt constraint
+                Set<Reference> contextSetLeft = declRefToContextRefs.get(left.getId());
+                Set<Reference> contextSetRight = declRefToContextRefs.get(right.getId());
+                if (contextSetLeft != null && contextSetRight != null) {
+                    contextSetLeft.retainAll(contextSetRight);
+                    if (!contextSetLeft.isEmpty()) {
+                        List<Constraint> relatedCons = refToConstraints.get(left.getId());
+                        for (Constraint related : relatedCons) {
+                            if (!(related.getLeft() instanceof AdaptReference) 
+                                    && (related.getRight() instanceof MethodAdaptReference)
+                                    && contextSetLeft.contains(((MethodAdaptReference) related.getRight()).getContextRef()))
+                                tmplist.add(related);
+                        }
+                    }
+                }
+            }
+            // step 4: z <: (y |> par)
+            else if (!(left instanceof AdaptReference) && (right instanceof MethodAdaptReference)) {
+                Reference parRef = ((MethodAdaptReference) right).getDeclRef();
+                Reference rcvRef = ((MethodAdaptReference) right).getContextRef();
+                Set<Reference> parPrimes = parRef.getGreaterSet();
+                for (Reference parPrime : parPrimes) {
+                    MethodAdaptReference mr = new MethodAdaptReference(rcvRef, parPrime);
+                    List<Reference> xs = getRelatedReferences(mr, true/*onLeft*/);
+                    for (Reference x : xs) {
+                        Constraint linear = new SubtypeConstraint(left, x);
+                        tmplist.add(linear);
+                    }
+                }
+            }
+            for (Constraint linear : tmplist) {
+//                Tree leftTree = linear.getLeft().getTree();
+//                Tree rightTree = linear.getRight().getTree();
+//                if (leftTree != null && (leftTree instanceof MethodInvocationTree 
+//                            || leftTree instanceof NewClassTree
+//                            || leftTree instanceof BinaryTree 
+//                            || leftTree instanceof LiteralTree)
+//                        && rightTree != null && !(linear.getRight() instanceof AdaptReference)
+//                            && (rightTree instanceof MethodInvocationTree 
+//                            || leftTree instanceof NewClassTree
+//                            || leftTree instanceof BinaryTree 
+//                            || leftTree instanceof LiteralTree))
+//                    continue;
+                if (!canConnectVia(linear.getLeft(), linear.getRight()))
+                    continue;
+
+                if (!c.equals(linear) && !constraints.contains(linear)
+                        && !tmpNewConstraints.contains(linear) && !newCons.contains(linear)) {
+                    newCons.add(linear);
+                    queue.add(linear);
+                    linear.getLeft().addGreaterRef(linear.getRight());
+                    linear.getRight().addLessRef(linear.getLeft());
+                } else if (!(linear.getLeft() instanceof AdaptReference) 
+                        && (linear.getRight() instanceof MethodAdaptReference)) 
+                    queue.add(linear); // add method adapt constraint
+            }
+        }
+        return newCons;
     }
 
     private static long totalLinearTime = 0;
