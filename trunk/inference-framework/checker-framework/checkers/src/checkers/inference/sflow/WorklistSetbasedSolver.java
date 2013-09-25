@@ -650,35 +650,42 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 				|| setAnnotations(declRef, declAnnos);
 	}
 
-    private void replace(Constraint c, Map<Integer, Reference> map) {
+    private Reference replaceRef(Reference ref, Map<Integer, Reference> map) {
+        if (ref instanceof ArrayReference) {
+            Reference componentRef = ((ArrayReference) ref).getComponentRef();
+            ((ArrayReference) ref).setComponentRef(replaceRef(componentRef, map));
+        } else if (ref instanceof AdaptReference) {
+            Reference contextRef = ((AdaptReference) ref).getContextRef();
+            ((AdaptReference) ref).setContextRef(replaceRef(contextRef, map));
+            Reference declRef = ((AdaptReference) ref).getDeclRef();
+            ((AdaptReference) ref).setDeclRef(replaceRef(declRef, map));
+        }
+        Reference rRef = map.get(ref.getId());
+        if (rRef == null)
+            rRef = ref;
+        return rRef;
+    }
+
+    private void replaceConstraint(Constraint c, Map<Integer, Reference> map) {
         Reference rRef = null;
         Reference left = c.getLeft();
         if (left != null) {
-            if ((rRef = map.get(left.getId())) != null) 
-                c.setLeft(rRef);
-            else if ((left instanceof AdaptReference)) {
-                if ((rRef = map.get(((AdaptReference) left).getContextRef().getId())) != null)
-                    ((AdaptReference) left).setContextRef(rRef);
-                if ((rRef = map.get(((AdaptReference) left).getDeclRef().getId())) != null)
-                    ((AdaptReference) left).setDeclRef(rRef);
-            }
-                    
+            c.setLeft(replaceRef(left, map));
         }
         Reference right = c.getRight();
         if (right != null) {
-            if ((rRef = map.get(right.getId())) != null) 
-                c.setRight(rRef);
-            else if ((right instanceof AdaptReference)) {
-                if ((rRef = map.get(((AdaptReference) right).getContextRef().getId())) != null) 
-                    ((AdaptReference) right).setContextRef(rRef);
-                if ((rRef = map.get(((AdaptReference) right).getDeclRef().getId())) != null) 
-                    ((AdaptReference) right).setDeclRef(rRef);
-            }
-                    
+            c.setRight(replaceRef(right, map));
         }
     }
 
     private boolean isSame(Reference left, Reference right, Map<Integer, Reference> map) {
+        if (!(left instanceof ConstantReference) && !(right instanceof ConstantReference)
+                && left.getRefName().equals(right.getRefName())
+                && left.getRefName().equals("#INTERNAL#")
+            || left instanceof ArrayReference && right instanceof ArrayReference) {
+            return false;
+        }
+
         Reference varRef = null, expRef = null;
         Element elt = null;
         Tree tree = null;
@@ -710,23 +717,23 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                         && left.getRefName().equals("EXP_this"))) {
             varRef = right; 
             expRef = left;
-        } else if (!(left instanceof ConstantReference) && !(right instanceof ConstantReference)
+        } /*else if (!(left instanceof ConstantReference) && !(right instanceof ConstantReference)
                 && left.getRefName().equals(right.getRefName())
                 && left.getRefName().equals("#INTERNAL#")) {
             varRef = left.getId() < right.getId() ? left : right; 
             expRef = left.getId() < right.getId() ? right : left; 
-        }
+        }*/
         if (varRef != null && expRef != null) {
             Set<AnnotationMirror> interAnnos = InferenceUtils.intersectAnnotations(
                     varRef.getAnnotations(), expRef.getAnnotations());
             varRef.setAnnotations(interAnnos);
-            if (map.get(expRef.getId()) == null 
-                    && map.get(varRef.getId()) == null)
-                map.put(expRef.getId(), varRef); // only update the map when both do not exisit
-//            if (varRef instanceof ArrayReference
-//                && expRef instanceof ArrayReference)
-//                return isSame(((ArrayReference) varRef).getComponentRef(), 
-//                        ((ArrayReference) expRef).getComponentRef(), map);
+            int varId = varRef.getId();
+            Reference ref = null;
+            while ((ref = map.get(varId)) != null) {
+                varRef = ref;
+                varId = ref.getId();
+            }
+            map.put(expRef.getId(), varRef); 
             return true;
         }
         return false;
@@ -763,7 +770,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         }
         // Now do the replacement
         for (Constraint c : constraints) {
-            replace(c, map);
+            replaceConstraint(c, map);
         }
     }
 
@@ -1006,8 +1013,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 //                            || leftTree instanceof BinaryTree 
 //                            || leftTree instanceof LiteralTree))
 //                    continue;
-                if (!canConnectVia(linear.getLeft(), linear.getRight()))
-                    continue;
+//                if (!canConnectVia(linear.getLeft(), linear.getRight()))
+//                    continue;
 
                 if (!c.equals(linear) && !constraints.contains(linear)
                         && !tmpNewConstraints.contains(linear) && !newCons.contains(linear)) {
