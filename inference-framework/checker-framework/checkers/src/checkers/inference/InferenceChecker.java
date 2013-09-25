@@ -342,8 +342,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	}
 	
 	protected Reference getMaximal(Reference ref) {
-		Reference copy = ref;
-//		Reference copy = ref.getCopy(); // FIXME WEI: add ".getCopy()" on Nov 30, 201
+//        Reference copy = ref;
+		Reference copy = ref.getCopy(); // FIXME WEI: add ".getCopy()" on Nov 30, 201
 		AnnotationMirror[] annos = copy.getAnnotations().toArray(
 				new AnnotationMirror[0]);
 		if (annos.length == 0)
