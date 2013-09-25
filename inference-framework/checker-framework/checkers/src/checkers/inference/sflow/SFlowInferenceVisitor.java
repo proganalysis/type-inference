@@ -431,8 +431,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		} 
 		else if ((ie = isConstantSetMappingMethod(methodElt, arguments)) != null) {
 			// FIXME: Incomplete fix for Issue-2
-            String rcvTypeStr = rcvRef.getType().getUnderlyingType().toString();
-			String key = rcvTypeStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
+			String key = ownerStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
 			Reference valueRef = Reference.createReference(arguments.get(ie.valueIndex), factory);
 			addMappingConstraint(key, valueRef);
 			// Recursively generate constraints 
@@ -440,8 +439,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		}
 		else if ((ie = isConstantGetMappingMethod(methodElt, arguments)) != null) {
 			// FIXME: Incomplete fix for Issue-2
-            String rcvTypeStr = rcvRef.getType().getUnderlyingType().toString();
-			String key = rcvTypeStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
+			String key = ownerStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
 			addMappingConstraint(key, lhsRef);
 		}
 		else if ((ownerStr.equals("javax.servlet.ServletRequest")
