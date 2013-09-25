@@ -635,6 +635,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			if (idRef == null) {
 				// do nothing. This happens when currentMethodElt is null;
 			} else if (!idElt.getSimpleName().contentEquals("this")
+                    && !idElt.getSimpleName().contentEquals("super")
 					&& idElt.getKind() == ElementKind.FIELD  // FIXME: WEI: this is line added back on Nov 27
 //					&& isCurrentFieldElt(idElt)  //FIXME: WEI: this line is commented out on Nov 27
 					/*&& currentMethodElt != null*/) {
@@ -837,6 +838,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			if (idRef == null) {
 				// Do nothing
 			} else if (!idElt.getSimpleName().contentEquals("this")
+                    && !idElt.getSimpleName().contentEquals("super")
 					&& idElt.getKind() == ElementKind.FIELD  // FIXME: WEI: this is line added back on Nov 27
 //					&& isCurrentFieldElt(idElt)  //FIXME: WEI: this line is commented out on Nov 27
 					/*&& currentMethodElt != null*/) {
