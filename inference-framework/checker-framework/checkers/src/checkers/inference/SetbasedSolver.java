@@ -92,7 +92,6 @@ public class SetbasedSolver implements ConstraintSolver {
 		Set<Constraint> warnConstraints = new HashSet<Constraint>();
 		List<Constraint> conflictConstraints;
 		boolean hasUpdate = false;
-//		boolean hasError = false;
 		do {
 			conflictConstraints = new LinkedList<Constraint>();
 			hasUpdate = false;
@@ -113,7 +112,6 @@ public class SetbasedSolver implements ConstraintSolver {
 				}
 			}
 		} while (hasUpdate);
-//		} while (hasUpdate && !hasError);
 		
 		if (InferenceChecker.DEBUG) {
 			if (tracePw != null)

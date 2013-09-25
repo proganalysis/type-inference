@@ -127,7 +127,6 @@ public class InferenceMainSFlow extends InferenceMain {
 			System.out.println("WARN: No constraints generated.");
 			return null;
 		}
-//		solver = new SetbasedSolver(inferenceChecker, Reference.getExpReferences(), constraints);
 		solver = new WorklistSetbasedSolver(inferenceChecker, Reference.getExpReferences(), constraints);
 		// FIXME: output constraints
 		if (InferenceChecker.DEBUG) {
@@ -144,18 +143,6 @@ public class InferenceMainSFlow extends InferenceMain {
 			}
 		}
 		conflictConstraints = solver.solve();
-		if (!conflictConstraints.isEmpty()) {
-//			System.out.println("There are " + conflictConstraints.size() + " unresolvable conflicts before resolution: ");
-//			for (Constraint c : conflictConstraints) {
-//				System.out.println(c);
-//			}
-//			return Collections.emptyList();
-			// FIXME: Now we treat conflict resolution similarly to libraries
-//			if (inferenceChecker instanceof SFlowChecker
-//					&& !((SFlowChecker) inferenceChecker).isInferLibrary()) {
-//				((SFlowChecker) inferenceChecker).setInferLibrary(true);
-//			}
-		}
 		currentExtractor = new MaximalTypingExtractor(inferenceChecker, Reference.getExpReferences(), constraints);
 		List<Constraint> typeErrors = currentExtractor.extractConcreteTyping(conflictConstraints.size());
 		boolean beforeResolve = false;
@@ -182,7 +169,7 @@ public class InferenceMainSFlow extends InferenceMain {
 				pw.println(c);
 				pre = c;
 			}
-			System.out.println("\nThere are " + count + " errors after merging similar ones");
+			System.out.println("There are " + count + " errors after merging similar ones");
 			pw.println("\nThere are " + count + " errors after merging similar ones");
 			pw.close();
 		} catch (Exception e) {

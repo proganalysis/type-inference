@@ -65,6 +65,10 @@ public abstract class Reference {
 		trees.clear();
 		expRefs.clear();
 	}
+
+    public static Reference getReference(Element elt) {
+        return elements.get(elt);
+    }
 	
 	public static Reference createConstantReference(AnnotationMirror anno) {
 		Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
@@ -98,6 +102,8 @@ public abstract class Reference {
 			Reference declRef) {
 		if (contextRef instanceof ExecutableReference || declRef instanceof ExecutableReference) 
 			throw new RuntimeException("Shouldn't happen!");
+        if (contextRef == null)
+            System.out.println();
 		return new FieldAdaptReference(contextRef, declRef);
 	}
 
