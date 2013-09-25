@@ -882,7 +882,6 @@ public class MaximalTypingExtractor implements TypingExtractor {
 	public List<Constraint> extractConcreteTyping(int typeErrorNum) {
 		// Check whether we need to resolve conflicts
 		List<Constraint> typeErrors = Collections.emptyList();
-		
 //        if (inferenceChecker.needCheckConflict()
 //                && typeErrorNum == 0
 //                ) {
@@ -892,29 +891,44 @@ public class MaximalTypingExtractor implements TypingExtractor {
 //        else 
 			System.out.println("INFO: Skip resolving conflicts");
 		
+        List<Reference> copyRefs = copyReferences(exprRefs);
 		maximalSolution = new HashMap<String, Reference>();
 		for (Reference ref : exprRefs) {
 			String identifier = ref.getIdentifier();
 			if (identifier != null) {
 				Reference maxRef = null;
-				// FIXME: If a reference hasn't been constrained, we do not
-				// fix it to the maximal qual.
-                 maxRef = inferenceChecker.getMaximal(ref);
+                maxRef = inferenceChecker.getMaximal(ref);
 				maximalSolution.put(identifier, maxRef);
+                ref.setAnnotations(maxRef.getAnnotations());
 			}
 		}
-		if (InferenceChecker.DEBUG) {
-			try {
-				PrintWriter pw = new PrintWriter(InferenceMain.outputDir
-						+ File.separator + "maximalsolution.log");
-				for (Entry<String, Reference> entry : maximalSolution.entrySet()) {
-					Reference ref = entry.getValue();
-					pw.println(entry.getKey() + ": " + ref.toString() + ref.formatAnnotations());
-				}
-				pw.close();
-			} catch (Exception e) {
-			}
-		}
+
+        if (typeErrorNum == 0) {
+            // Check if maximal typing type-checks
+            SetbasedSolver solver = new SetbasedSolver(inferenceChecker,
+                    exprRefs, constraints);
+            List<Constraint> conflictConstraints = solver.solve();
+            if (!conflictConstraints.isEmpty()) {
+                recoverReferences(exprRefs, copyRefs);
+                System.out.println("There are " + conflictConstraints.size()
+                        + " conflicts:");
+                for (Constraint c : conflictConstraints)
+                    System.out.println(c);
+            } else 
+                System.out.println("No conflicts!");
+        }
+//        if (InferenceChecker.DEBUG) {
+//            try {
+//                PrintWriter pw = new PrintWriter(InferenceMain.outputDir
+//                        + File.separator + "maximalsolution.log");
+//                for (Entry<String, Reference> entry : maximalSolution.entrySet()) {
+//                    Reference ref = entry.getValue();
+//                    pw.println(entry.getKey() + ": " + ref.toString() + ref.formatAnnotations());
+//                }
+//                pw.close();
+//            } catch (Exception e) {
+//            }
+//        }
 		return typeErrors;
 	}
 
