@@ -36,7 +36,7 @@ public class ConstraintManager {
 	}
 	
 	public void addSubtypeConstraint(Reference sub, Reference sup) {
-		if (sub.equals(sup))
+        if (sub.getId() == sup.getId())
 			return;
 		// FIXME: WEI: Comment out for AtomicSet/Confidentiality
 //		if (sub instanceof PrimitiveReference || sup instanceof PrimitiveReference)
@@ -83,7 +83,7 @@ public class ConstraintManager {
 	}
 	
 	public void addEqualityConstraint(Reference left, Reference right) {
-		if (left.equals(right))
+        if (left.getId() == right.getId())
 			return;
 		if (left instanceof NullReference || right instanceof NullReference)
 			return;
@@ -114,7 +114,7 @@ public class ConstraintManager {
 	}
 	
 	public void addInequalityConstraint(Reference left, Reference right) {
-		if (left.equals(right))
+        if (left.getId() == right.getId())
 			return;
 		if (left instanceof NullReference || right instanceof NullReference)
 			return;
