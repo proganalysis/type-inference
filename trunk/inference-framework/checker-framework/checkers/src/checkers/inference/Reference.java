@@ -1020,7 +1020,7 @@ public static class ConstantReference extends Reference {
 	public boolean isSimilar(Reference ref) {
 		if (ref instanceof ConstantReference) {
 			return this.getRefName().equals(ref.getRefName()) 
-					&& this.fileName.equals(ref.getFileName())
+//                    && this.fileName.equals(ref.getFileName())
 					&& this.annotations.equals(ref.getAnnotations());
 		}
 		return false;
