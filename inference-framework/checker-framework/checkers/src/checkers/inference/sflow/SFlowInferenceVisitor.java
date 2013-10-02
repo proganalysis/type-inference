@@ -444,7 +444,6 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		}
 		else if ((ownerStr.equals("javax.servlet.ServletRequest")
 				|| ownerStr.equals("javax.servlet.http.HttpServletRequest"))
-				
 				) {
 			// FIXME:  Special-case for methods in
             // *ServletRequest. This is to prevent a @Secret/@Tainted 
