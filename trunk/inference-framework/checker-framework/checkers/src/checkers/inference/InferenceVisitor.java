@@ -570,7 +570,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 						Reference currentMethodRef = Reference.createReference(
 								currentMethodElt, factory);
 						iRcvRef = ((ExecutableReference) currentMethodRef)
-								.getReceiverRef();
+                                    .getReceiverRef();
 					}
 				} else {
 					iRcvRef = Reference.createReference(rcvTree, factory);
