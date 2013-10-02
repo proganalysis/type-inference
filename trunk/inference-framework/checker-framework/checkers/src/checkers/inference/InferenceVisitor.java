@@ -336,7 +336,14 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 				ExpressionTree rcvTree = InferenceUtils.getReceiverTree(node);
 				if (rcvTree == null) {
 					// This may be a a self invocation like x = m(z); 
-					ExecutableElement currentMethodElt = getCurrentMethodElt();
+                    if (methodElt.toString().startsWith("rememberme")) {
+                        System.out.println();
+                    }
+//                    ExecutableElement currentMethodElt = getCurrentMethodElt();
+                    // WEI: added on Oct 2, 2013 considering method
+                    // calls to outer class
+					ExecutableElement currentMethodElt = getEnclosingMethodWithElt(methodElt);
+                    currentMethodElt = currentMethodElt != null? currentMethodElt :getCurrentMethodElt();
 					if(currentMethodElt != null) {
 						Reference currentMethodRef = Reference.createReference(
 								currentMethodElt, factory);
@@ -501,6 +508,29 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
     }
 
     /**
+     * Get the method element which is a sibling of methodElt 
+     */
+    public ExecutableElement getEnclosingMethodWithElt(Element elt) {
+        TreePath p = getCurrentPath();
+        while (p != null) {
+            Tree leaf = p.getLeaf();
+            assert leaf != null; /*nninvariant*/
+            if (leaf.getKind() == Tree.Kind.METHOD 
+                    || leaf.getKind() == Tree.Kind.NEW_CLASS) {
+                p = p.getParentPath();
+                Tree t = p.getLeaf();
+                if (t.getKind() == Tree.Kind.CLASS) {
+                   TypeElement classElt = TreeUtils.elementFromDeclaration((ClassTree) t);
+                   if (classElt.equals(elt.getEnclosingElement()))
+                        return TreeUtils.elementFromDeclaration((MethodTree) leaf);
+                }
+            }
+            p = p.getParentPath();
+        }
+        return null;
+    }
+
+    /**
      * Get the method element which is a sibling of fieldElt
      */
     public ExecutableElement getEnclosingMethodWithField(Element fieldElt) {
@@ -561,8 +591,9 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			ExpressionTree rcvTree = InferenceUtils.getReceiverTree(miTree);
 			Reference iRcvRef = null;
 			if (!ElementUtils.isStatic(iMethodElt)) {
-				ExecutableElement currentMethodElt = getCurrentMethodElt();
 				if (rcvTree == null) {
+                    ExecutableElement currentMethodElt = getEnclosingMethodWithElt(iMethodElt);
+                    currentMethodElt = currentMethodElt != null? currentMethodElt :getCurrentMethodElt();
 					// This may be a a self invocation like x = m(z); 
 					if (currentMethodElt == null)
 						iRcvRef = null;
