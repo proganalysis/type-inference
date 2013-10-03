@@ -5,6 +5,7 @@ package checkers.inference.sflow;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -13,9 +14,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.*;
 
 import checkers.inference.InferenceUtils;
 import checkers.inference.InferenceVisitor;
@@ -619,10 +622,32 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
         if (checker.isInferAndroidApp()) {
             Reference methodRef = Reference.createReference(methodElt, factory);
             Reference classRef = getDefaultConstructorThisRef();
+            // Connect all methods in special android classes
+            boolean needConnect = false;
+            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            assert enclosingClass != null;
+            TypeElement classElt = TreeUtils.elementFromDeclaration(enclosingClass);
+            List<? extends TypeMirror> interfaces = classElt.getInterfaces();
+            TypeMirror superclass = classElt.getSuperclass();
+            if (checker.isSpecialAndroidClass(superclass.toString()))
+                needConnect = true;
+            else {
+                for (TypeMirror t : interfaces) 
+                    if (checker.isSpecialAndroidClass(t.toString())) {
+                        needConnect = true;
+                        break;
+                    }
+            }
+            if (needConnect) {
+                addEqualityConstraint(((ExecutableReference)methodRef).getReceiverRef(), 
+                        classRef);
+            }
+
+            /*
             String classStr = (methodElt instanceof MethodSymbol) ? 
                                 ((MethodSymbol) methodElt).owner.toString()
                                 : "";
-            if (TreeUtils.isConstructor(node)/* && checker.isSpecialAndroidClass(classStr)*/) {
+            if (TreeUtils.isConstructor(node)) {
                 Reference thisRef = ((ExecutableReference) methodRef).getReceiverRef();
                 addEqualityConstraint(thisRef, classRef);
             }
@@ -640,7 +665,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
                         break;
                     }
                 }
-            }
+            } */
         }
         return super.visitMethod(node, p);
     }
