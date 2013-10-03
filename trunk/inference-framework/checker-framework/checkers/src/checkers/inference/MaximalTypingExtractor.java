@@ -903,7 +903,7 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			}
 		}
 
-//        if (typeErrorNum == 0) {
+        if (typeErrorNum == 0) {
             // Check if maximal typing type-checks
             SetbasedSolver solver = new SetbasedSolver(inferenceChecker,
                     exprRefs, constraints);
@@ -916,7 +916,7 @@ public class MaximalTypingExtractor implements TypingExtractor {
                     System.out.println(c);
             } else 
                 System.out.println("No conflicts!");
-//        }
+        }
 //        if (InferenceChecker.DEBUG) {
 //            try {
 //                PrintWriter pw = new PrintWriter(InferenceMain.outputDir
