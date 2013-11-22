@@ -515,7 +515,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		Reference overriderRcvRef = overriderRef.getReceiverRef();
 		Reference overriddenRcvRef = overriddenRef.getReceiverRef();
 		// Here, we don't enforce equality even if they are not readonly
-		// Mar 30: we only add override constraint for library methods when there
+		// Mar 30, 2013: we only add override constraint for library methods when there
 		// are annotations.
         // Sep 16, 2013 FIXME: In order to work with Callbacks_LocationLeak3, have to 
         // enforce this constraint. 

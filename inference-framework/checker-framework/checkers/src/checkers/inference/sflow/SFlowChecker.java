@@ -160,6 +160,10 @@ public class SFlowChecker extends InferenceChecker {
 				"inferAndroidApp")) {
             inferAndroidApp = true;
 		}
+
+        if (inferLibrary && polyLibrary) {
+            throw new RuntimeException("inferLibrary and polyLibrary cannot be true at the same time.");
+        }
         
         if (InferenceChecker.DEBUG) {
             System.out.println("INFO: useReim = " + useReim);
