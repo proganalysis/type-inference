@@ -1,5 +1,0 @@
-repo: 9a66ca7c79fab293c1bb0534e0d208c7e4f58b01
-node: ff4508fc29c1f320c9a94c2da81d8e29899e6b62
-branch: default
-latesttag: jsr308-1.3.0
-latesttagdistance: 3
