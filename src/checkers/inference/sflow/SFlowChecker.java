@@ -135,7 +135,6 @@ public class SFlowChecker extends InferenceChecker {
 		specialMethodPatterns.add(Pattern
 				.compile(".*\\.equals\\(java\\.lang\\.Object\\)$"));
 		specialMethodPatterns.add(Pattern.compile(".*\\.hashCode\\(\\)$"));
-		// specialMethodPatterns.add(Pattern.compile(".*\\.run\\(\\)$"));
 		specialMethodPatterns.add(Pattern.compile(".*\\.toString\\(\\)$"));
 		specialMethodPatterns.add(Pattern.compile(".*\\.compareTo\\(.*\\)$"));
 		

@@ -56,6 +56,9 @@ public abstract class Reference {
 	
 	/** A mapping from tree (only NewClassTree and NewArrayTree) */
 	private static transient Map<Tree, Reference> trees = new HashMap<Tree, Reference>();
+
+	/** A mapping from string to constant reference */
+	private static transient Map<String, ConstantReference> constantRefs = new HashMap<String, ConstantReference>();
 	
 	private static transient List<Reference> expRefs = new LinkedList<Reference>();
 	
@@ -76,20 +79,29 @@ public abstract class Reference {
 		return createConstantReference(annotations, "");
 	}
 	
-	public static Reference createConstantReference(AnnotationMirror anno, String name) {
+	public static Reference createConstantReference(AnnotationMirror anno, String id) {
 		Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 		annotations.add(anno);
-		return createConstantReference(annotations, name);
+		return createConstantReference(annotations, id);
 	}
 	
 	public static Reference createConstantReference(Set<AnnotationMirror> annos) {
 		return createConstantReference(annos, "");
 	}
 	
-	public static Reference createConstantReference(Set<AnnotationMirror> annos, String name) {
-		ConstantReference ref = new ConstantReference(annos, name);
-		// FIXME: this is bad
-		expRefs.add(ref);
+	public static Reference createConstantReference(Set<AnnotationMirror> annos, String id) {
+        ConstantReference ref;
+        if (id.equals("")) {
+            ref = new ConstantReference(annos, id);
+            expRefs.add(ref);
+        } else {
+            ref = constantRefs.get(id);
+            if (ref == null) {
+                ref = new ConstantReference(annos, id);
+                constantRefs.put(id, ref);
+                expRefs.add(ref);
+            }
+        }
 		return ref;
 	}
 	
@@ -445,7 +457,10 @@ public abstract class Reference {
 		if (readableName != null) {
 			return readableName;
 		} else if (element != null) {
-			return "VAR_" + element;
+            if (element.getKind() == ElementKind.PARAMETER)
+                return "PAR_" + element;
+            else
+                return "VAR_" + element;
 		} else if (tree != null) {
 			return "EXP_" + tree.toString();
 		} else
@@ -990,7 +1005,10 @@ public static class ConstantReference extends Reference {
 	
 	public ConstantReference(Set<AnnotationMirror> annotations, String name) {
 		super(null, null, null, 0, 0, null, annotations);
-		this.readableName = name;
+        // FIXME: this is only for call site adaptation context
+        int lastIndexOf = name.lastIndexOf('/');
+        int index = lastIndexOf == -1 ? 0 : lastIndexOf + 1;
+		this.readableName = name.substring(index);
 	}
 	
 	@Override

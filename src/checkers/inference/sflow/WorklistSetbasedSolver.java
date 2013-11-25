@@ -108,73 +108,69 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 				e.printStackTrace();
 			}
 		}
-        replaceUsevarWithDeclvar(constraints);
+        replaceUseVarWithDeclVar(constraints);
         rewriteEqualityConstraints(constraints);
-        Set<Constraint> originalCons = new HashSet<Constraint>(constraints);
+        Set<Constraint> extendedConstraints = new LinkedHashSet<Constraint>(constraints);
 		
 		Set<Constraint> warnConstraints = new HashSet<Constraint>();
 		Set<Constraint> conflictConstraints = new HashSet<Constraint>();
         int size = 0;
 		boolean hasUpdate = false;
-		buildRefToConstraintMapping(constraints);
+		buildRefToConstraintMapping(extendedConstraints);
 //        int it = 1;
 //        while (size != constraints.size() || hasUpdate) {
 //            System.out.println("Iteration " + (it++) + ":");
 //            size = constraints.size();
 //            hasUpdate = false;
-            warnConstraints.clear();
-            conflictConstraints.clear();
-            System.out.println("Solving constraints...");
-            long startTime = System.currentTimeMillis();
-            // First add to secretSet
-            for (Constraint c : constraints) {
-                if (!(c instanceof EmptyConstraint)) {
-                    secretSet.add(c);
-                }
+        warnConstraints.clear();
+        conflictConstraints.clear();
+        System.out.println("Solving constraints...");
+        long startTime = System.currentTimeMillis();
+        // First add to secretSet
+        for (Constraint c : extendedConstraints) {
+            if (!(c instanceof EmptyConstraint)) {
+                secretSet.add(c);
             }
-            Set<Constraint> newConstraints = new LinkedHashSet<Constraint>();
-            while (!secretSet.isEmpty() || !taintedSet.isEmpty()) {
-                Constraint c = null;
-                if (!secretSet.isEmpty()) {
-                    c = secretSet.iterator().next();
-                    secretSet.remove(c);
-                    preferSecret = true; 
-                } else if (!taintedSet.isEmpty()) {
-                    c = taintedSet.iterator().next();
-                    taintedSet.remove(c);
-                    preferSecret = false; 
-                }
-                try {
-                    hasUpdate = handleConstraint(c) || hasUpdate;
-                    Set<Constraint> newCons = addLinearConstraints(c, constraints, newConstraints);
-                    if (newCons.size() > 800) {
-                        System.out.println("Adding linear constraints for " + c);
-                        System.out.println(" Size = " + newCons.size());
-//                        if (c.getID() == 155897)  {
-//                            for (Constraint cc : newCons) 
-//                                System.out.println(cc);
-//                        }
-                    }
-                    newConstraints.addAll(newCons);
-                } catch (SetbasedSolverException e) {
-                    FailureStatus fs = inferenceChecker.getFailureStatus(c);
-                    if (fs == FailureStatus.ERROR && originalCons.contains(c)) {
-                        conflictConstraints.add(c);
-                    } else if (fs == FailureStatus.WARN) {
-                        if (!warnConstraints.contains(c)) {
-                            System.out.println("WARN: handling constraint " + c + " failed.");
-                            warnConstraints.add(c);
-                        }
+        }
+        Set<Constraint> newConstraints = new LinkedHashSet<Constraint>();
+        while (!secretSet.isEmpty() || !taintedSet.isEmpty()) {
+            Constraint c = null;
+            if (!secretSet.isEmpty()) {
+                c = secretSet.iterator().next();
+                secretSet.remove(c);
+                preferSecret = true; 
+            } else if (!taintedSet.isEmpty()) {
+                c = taintedSet.iterator().next();
+                taintedSet.remove(c);
+                preferSecret = false; 
+            }
+            try {
+                hasUpdate = handleConstraint(c) || hasUpdate;
+                Set<Constraint> newCons = addLinearConstraints(c, extendedConstraints, newConstraints);
+//                    if (newCons.size() > 800) {
+//                        System.out.println("Adding linear constraints for " + c);
+//                        System.out.println(" Size = " + newCons.size());
+//                    }
+                newConstraints.addAll(newCons);
+            } catch (SetbasedSolverException e) {
+                FailureStatus fs = inferenceChecker.getFailureStatus(c);
+                if (fs == FailureStatus.ERROR && constraints.contains(c)) {
+                    conflictConstraints.add(c);
+                } else if (fs == FailureStatus.WARN) {
+                    if (!warnConstraints.contains(c)) {
+                        System.out.println("WARN: handling constraint " + c + " failed.");
+                        warnConstraints.add(c);
                     }
                 }
-                if (secretSet.isEmpty() && taintedSet.isEmpty()) {
-                    buildRefToConstraintMapping(newConstraints);
-                    constraints.addAll(newConstraints);
-                    secretSet.addAll(newConstraints);
-                    System.out.println("Added " + newConstraints.size() + " new constraints");
-                    newConstraints.clear();
-                }
             }
+            if (secretSet.isEmpty() && taintedSet.isEmpty()) {
+                buildRefToConstraintMapping(newConstraints);
+                extendedConstraints.addAll(newConstraints);
+                secretSet.addAll(newConstraints);
+                System.out.println("Added " + newConstraints.size() + " new constraints");
+                newConstraints.clear();
+            }
+        }
 //            System.out.println("Time: " + (System.currentTimeMillis() - startTime) + " ms");
 //            System.out.println("Constraint size - " + constraints.size());
 //        }
@@ -183,15 +179,10 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 			try {
 				pw = new PrintWriter(InferenceMainSFlow.outputDir
 						+ File.separator + "new-constraints.log");
-                int count = originalCons.size();
-                for (Constraint c : constraints) {
+                for (Constraint c : extendedConstraints) {
                     pw.println(c.toString());
-//                    count--;
-//                    if (count == 0)
-//                        pw.println("New Constraints:");
                 }
 				pw.close();
-//                System.out.println("INFO: Added " + (-count) + " linear constraints in total");
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -646,7 +637,11 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 		
 		if (declAnnos.isEmpty())
 			throw new SetbasedSolverException("ERROR: Empty set for declRef in AdaptConstraint");
-		
+
+        // Nov 22, 2013: Skip updating CONSTANT method adaptation context
+	    if (aRef instanceof MethodAdaptReference)
+            return setAnnotations(declRef, declAnnos);
+
 		return setAnnotations(contextRef, contextAnnos)
 				|| setAnnotations(declRef, declAnnos);
 	}
@@ -754,31 +749,31 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         return true;
     }
 
-    private void replaceUsevarWithDeclvar(Set<Constraint> constraints) {
+    private void replaceUseVarWithDeclVar(Set<Constraint> cons) {
         // First find out constraints like "VAR_id == EXP_id" and
         // replace each appearence of EXP_id with VAR_id;
         Map<Integer, Reference> map = new HashMap<Integer, Reference>();
-        for (Iterator<Constraint> it = constraints.iterator(); it.hasNext();) {
+        for (Iterator<Constraint> it = cons.iterator(); it.hasNext();) {
             Constraint c = it.next();
             if (c instanceof EqualityConstraint) {
                 Reference left = c.getLeft();
                 Reference right = c.getRight();
                 if (isSame(left, right, map)) {
-                    // remove c from constraints
+                    // remove c from cons 
                     it.remove();
                 }
             }
         }
         // Now do the replacement
-        for (Constraint c : constraints) {
+        for (Constraint c : cons) {
             replaceConstraint(c, map);
         }
     }
 
-    private void rewriteEqualityConstraints(Set<Constraint> constraints) {
+    private void rewriteEqualityConstraints(Set<Constraint> cons) {
         // Rewrite other EqualityConstraint 
         List<Constraint> list = new LinkedList<Constraint>();
-        for (Constraint c : constraints) {
+        for (Constraint c : cons) {
             Reference left = c.getLeft();
             Reference right = c.getRight();
             if (c instanceof EqualityConstraint
@@ -794,8 +789,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             } else
                 list.add(c);
         }
-        constraints.clear();
-        constraints.addAll(list);
+        cons.clear();
+        cons.addAll(list);
     }
 
 	
@@ -811,8 +806,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
     }
 
 	
-	private void buildRefToConstraintMapping(Set<Constraint> constraints) {
-		for (Constraint c : constraints) {
+	private void buildRefToConstraintMapping(Set<Constraint> cons) {
+		for (Constraint c : cons) {
 			Reference left = null, right = null; 
 			if (c instanceof SubtypeConstraint
 					|| c instanceof EqualityConstraint
@@ -937,7 +932,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
     }
 
     // Add new linear constraint c, return a new set
-    private Set<Constraint> addLinearConstraints(Constraint con, Set<Constraint> constraints, Set<Constraint> tmpNewConstraints) {
+    private Set<Constraint> addLinearConstraints(Constraint con, Set<Constraint> cons, 
+            Set<Constraint> tmpNewConstraints) {
         Set<Constraint> newCons = new LinkedHashSet<Constraint>();
         if (!(con instanceof SubtypeConstraint))
             return newCons;
@@ -982,6 +978,22 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                         tmplist.add(linear);
                     }
                 }
+                // if c is a new linear constraint between parameters
+                // and returns, add it into original constraints
+                if (!constraints.contains(c)) {
+                    Element elt = null;
+                    // param/this -> return/param/this
+                     if ((elt = left.getElement()) != null 
+                                && (elt.getKind() == ElementKind.PARAMETER 
+                                    || left.getRefName().startsWith("THIS_"))
+                             && (elt = right.getElement()) != null 
+                                && (right.getRefName().startsWith("RET_")
+                                    || right.getRefName().startsWith("THIS_")
+                                    || elt.getKind() == ElementKind.PARAMETER)) {
+                         System.out.println("added: " + c);
+                         constraints.add(c);
+                    }
+                }
                 // look for method adapt constraint
                 Set<Reference> contextSetLeft = declRefToContextRefs.get(left.getId());
                 Set<Reference> contextSetRight = declRefToContextRefs.get(right.getId());
@@ -1009,6 +1021,11 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                     for (Reference x : xs) {
                         Constraint linear = new SubtypeConstraint(left, x);
                         tmplist.add(linear);
+                        // add it into original constraints
+                        if (!constraints.contains(linear)) {
+                            System.out.println("added2: " + linear);
+                            constraints.add(linear);
+                        }
                     }
                 }
             }
@@ -1051,7 +1068,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 //                if (!canConnectVia(linear.getLeft(), linear.getRight()))
 //                    continue;
 
-                if (!c.equals(linear) && !constraints.contains(linear)
+                if (!c.equals(linear) && !cons.contains(linear)
                         && linear.getLeft().getId() != linear.getRight().getId()
                         && !tmpNewConstraints.contains(linear) && !newCons.contains(linear)) {
                     newCons.add(linear);
