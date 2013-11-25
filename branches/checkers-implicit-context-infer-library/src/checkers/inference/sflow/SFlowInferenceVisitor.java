@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.EnumSet;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -29,6 +30,7 @@ import checkers.inference.Reference.ExecutableReference;
 import checkers.inference.Reference.FieldAdaptReference;
 import checkers.inference.Reference.FieldAdaptReference;
 import checkers.inference.Reference.MethodAdaptReference;
+import checkers.inference.Reference.PrimitiveReference;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
@@ -131,9 +133,10 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 			key = InferenceUtils.getElementSignature(elt);
 		} else {
 			Tree decl = checker.getDeclaration(elt);
-			key = factory.getFileName(decl) + ":"
-					+ TreeInfo.getStartPos((JCTree) decl) + ":"
-					+ decl.toString();
+            key = factory.getIdentifier(decl);
+//            key = factory.getFileName(decl) + ":"
+//                    + TreeInfo.getStartPos((JCTree) decl) + ":"
+//                    + decl.toString();
 		}
         if (key == null) 
             throw new RuntimeException("Null key!");
@@ -253,11 +256,11 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	}
 	
 	private void addMappingConstraint(String key, Reference valueRef) {
-		Reference keyRef = mappingKeys.get(key);
-		if (keyRef == null) {
-			keyRef = Reference.createConstantReference(AnnotationUtils.createAnnotationSet(), key);
-			mappingKeys.put(key, keyRef);
-		}
+//        Reference keyRef = mappingKeys.get(key);
+//        if (keyRef == null) {
+        Reference keyRef = Reference.createConstantReference(AnnotationUtils.createAnnotationSet(), key);
+//            mappingKeys.put(key, keyRef);
+//        }
 		addEqualityConstraint(keyRef, valueRef);
 		if (valueRef instanceof ArrayReference) {
 			String componentKey = key + "[]";
@@ -491,7 +494,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	/**
 	 * For special-casing getAttribute, etc.
 	 */
-	private static Map<String, Reference> mappingKeys = new HashMap<String, Reference>();
+//    private static Map<String, Reference> mappingKeys = new HashMap<String, Reference>();
 
 	@Override
 	protected void handleMethodOverride(ExecutableElement overrider, ExecutableElement overridden) {
@@ -673,36 +676,49 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	@Override
 	protected Reference getMethodAdaptReference(Reference rcvRef, 
 			Reference declRef, Reference assignToRef) {
-		switch (getMethodAdaptContext(rcvRef, declRef, assignToRef)) {
-		case NONE:
-			return declRef;
-		case RECEIVER:
-			return Reference.createMethodAdaptReference(rcvRef, declRef);
-		case ASSIGNTO:
-			return Reference.createMethodAdaptReference(assignToRef, declRef);
-		}
-		System.out.println("ERROR: No adapt context is found!");
-		return null;
+//        Reference ref = super.getMethodAdaptReference(rcvRef, declRef, assignToRef);
+//        if (getMethodAdaptContext(rcvRef, declRef, assignToRef) == AdaptContext.ASSIGNTO
+//                && (assignToRef instanceof PrimitiveReference))
+//            // SFlow does not ignore PrimitiveReference
+//            ref = Reference.createMethodAdaptReference(assignToRef, declRef);
+//        return ref;
+        // Rewrite for implicit adaptation context
+        // Use the call site as the context
+        Set<Tree.Kind> kinds = EnumSet.of(Tree.Kind.METHOD_INVOCATION, 
+            Tree.Kind.NEW_CLASS);
+        Tree tree = TreeUtils.enclosingOfKind(getInferenceTreePath(), kinds);
+        if (tree != null) {
+            // use constant reference
+			String id = "callsite_" + factory.getFileName(tree) + ":"
+                    + factory.getLineNumber(tree) + ":"                    
+					+ tree.toString();
+            Reference callRef = Reference.createConstantReference(
+                    checker.getSourceLevelQualifiers(), id);
+            return Reference.createMethodAdaptReference(callRef, declRef);
+        } else 
+            throw new RuntimeException("Invalid adaptation context!");
 	}
 
-    @Override
-	protected Reference getFieldAdaptReference(Reference rcvRef, 
-			Reference fieldRef, Reference assignToRef, Tree tree) {
-        Reference ref = getFieldAdaptReference(rcvRef, fieldRef, assignToRef);
-        if (ref != null && (ref instanceof FieldAdaptReference))
-            ((FieldAdaptReference) ref).setTree(tree);
-        return ref;
-    }
+    // Nov 22, 2013: Commented out 
+//    @Override
+//    protected Reference getFieldAdaptReference(Reference rcvRef, 
+//            Reference fieldRef, Reference assignToRef, Tree tree) {
+//        Reference ref = getFieldAdaptReference(rcvRef, fieldRef, assignToRef);
+//        if (ref != null && (ref instanceof FieldAdaptReference))
+//            ((FieldAdaptReference) ref).setTree(tree);
+//        return ref;
+//    }
 
 
-    @Override
-	protected Reference getMethodAdaptReference(Reference rcvRef, 
-			Reference declRef, Reference assignToRef, Tree tree) {
-        Reference ref = getMethodAdaptReference(rcvRef, declRef, assignToRef);
-        if (ref != null && (ref instanceof MethodAdaptReference))
-            ((MethodAdaptReference) ref).setTree(tree);
-        return ref;
-    }
+    // Nov 22, 2013: Commented out 
+//    @Override
+//    protected Reference getMethodAdaptReference(Reference rcvRef, 
+//            Reference declRef, Reference assignToRef, Tree tree) {
+//        Reference ref = getMethodAdaptReference(rcvRef, declRef, assignToRef);
+//        if (ref != null && (ref instanceof MethodAdaptReference))
+//            ((MethodAdaptReference) ref).setTree(tree);
+//        return ref;
+//    }
 
 	/* (non-Javadoc)
 	 * @see checkers.inference.InferenceVisitor#getFieldAdaptContext(checkers.inference_new.Reference, checkers.inference_new.Reference, checkers.inference_new.Reference)
@@ -719,6 +735,10 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	@Override
 	public AdaptContext getMethodAdaptContext(Reference rcvRef,
 			Reference declRef, Reference assignToRef) {
+        // Nov 22, 2013: this doesn't matter. It is ignored in
+        // getMethodAdaptReference
+        return AdaptContext.NONE;
+
 //		// We may want to special-case some instance methods with viewpoint on
 //		// the left. 
 //		Element elt = null;
@@ -728,15 +748,16 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 //				&& isLeftViewpointInstanceMethod((ExecutableElement) elt)) {
 //			return AdaptContext.ASSIGNTO;
 //		}
-		// The adapt context for static method is the left-hand-side
-		// If revRef is null, then it is a static method
-		if (rcvRef == null) {
-			if (assignToRef != null)
-				return AdaptContext.ASSIGNTO;
-			else
-				return AdaptContext.NONE;
-		} else 
-			return AdaptContext.RECEIVER;
+ 
+// 		// The adapt context for static method is the left-hand-side
+// 		// If revRef is null, then it is a static method
+// 		if (rcvRef == null) {
+// 			if (assignToRef != null)
+// 				return AdaptContext.ASSIGNTO;
+// 			else
+// 				return AdaptContext.NONE;
+// 		} else 
+// 			return AdaptContext.RECEIVER;
 	}
 
 

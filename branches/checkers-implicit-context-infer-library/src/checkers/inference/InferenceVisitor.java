@@ -69,6 +69,8 @@ import com.sun.tools.javac.tree.JCTree.Tag;
  *
  */
 public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker> {
+
+    private TreePath inferenceTreePath = null;
 	
 	protected final InferenceAnnotatedTypeFactory factory;
 	
@@ -336,9 +338,9 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 				ExpressionTree rcvTree = InferenceUtils.getReceiverTree(node);
 				if (rcvTree == null) {
 					// This may be a a self invocation like x = m(z); 
-                    if (methodElt.toString().startsWith("rememberme")) {
-                        System.out.println();
-                    }
+//                    if (methodElt.toString().startsWith("rememberme")) {
+//                        System.out.println();
+//                    }
 //                    ExecutableElement currentMethodElt = getCurrentMethodElt();
                     // WEI: added on Oct 2, 2013 considering method
                     // calls to outer class
@@ -445,6 +447,11 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 		InferenceMain.getInstance().getConstraintManager().addVisitedClass(classElt);
 		return super.visitClass(node, p);
 	}
+
+    public TreePath getInferenceTreePath() {
+        return inferenceTreePath == null ? 
+            getCurrentPath() : inferenceTreePath;
+    }
 
 	/**
 	 * Get current method element; 
@@ -576,267 +583,276 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 	 * @param rhsTree
 	 */
 	protected void generateConstraint(Reference lhsRef, ExpressionTree rhsTree) {
-		switch (rhsTree.getKind()) {
-		case NEW_CLASS:
-			NewClassTree ncTree = (NewClassTree) rhsTree;
-			ExecutableElement methodElt = TreeUtils.elementFromUse(ncTree);
-			Reference rcvRef = Reference.createReference(ncTree, factory);
-			// Recursively
-			// TODO: lhsRef passed to  generateMethodCallConstraints() is null
-			handleMethodCall(methodElt, ncTree.getArguments(), rcvRef, lhsRef, rhsTree);
-			break;
-		case METHOD_INVOCATION:
-			MethodInvocationTree miTree = (MethodInvocationTree) rhsTree;
-			ExecutableElement iMethodElt = TreeUtils.elementFromUse(miTree);
-			ExpressionTree rcvTree = InferenceUtils.getReceiverTree(miTree);
-			Reference iRcvRef = null;
-			if (!ElementUtils.isStatic(iMethodElt)) {
-				if (rcvTree == null) {
-                    ExecutableElement currentMethodElt = getEnclosingMethodWithElt(iMethodElt);
-                    currentMethodElt = currentMethodElt != null? currentMethodElt :getCurrentMethodElt();
-					// This may be a a self invocation like x = m(z); 
-					if (currentMethodElt == null)
-						iRcvRef = null;
-					else {
-						Reference currentMethodRef = Reference.createReference(
-								currentMethodElt, factory);
-						iRcvRef = ((ExecutableReference) currentMethodRef)
-                                    .getReceiverRef();
-					}
-				} else {
-					iRcvRef = Reference.createReference(rcvTree, factory);
-					// generate constraints on the receiver recursively
-					generateConstraint(iRcvRef, rcvTree);
-				}
-			} else 
-				iRcvRef = null;
-			handleMethodCall(iMethodElt, miTree.getArguments(), iRcvRef, lhsRef, rhsTree);
-			break;
-		case MEMBER_SELECT:
-			MemberSelectTree mTree = (MemberSelectTree) rhsTree;
-            ExpressionTree expr = mTree.getExpression();
-            Element fieldElt = TreeUtils.elementFromUse(mTree);
-            AnnotatedTypeMirror exprType = factory.getAnnotatedType(expr);
-            if (checker.isAccessOuterThis(mTree)) {
-            	// If it is like Body.this
-            	Element outerElt = checker.getOuterThisElement(mTree, getCurrentMethodElt());
-            	if (outerElt != null 
-            			&& outerElt.getKind() ==  ElementKind.METHOD) {
-            		ExecutableElement outerExecutableElt = (ExecutableElement) outerElt;
-					Reference outerMethodRef = Reference.createReference(
-							outerExecutableElt, factory);
-            		Reference outerThisRef = ((ExecutableReference) outerMethodRef).getReceiverRef();
-            		addSubtypeConstraint(outerThisRef, lhsRef);
-            	} else {
-            		// FIXME: we have to enforce currentMethod <: lhsRef
-					ExecutableElement currentMethodElt = getCurrentMethodElt();
-					if (currentMethodElt != null) {
-						Reference currentMethodRef = Reference.createReference(
-								currentMethodElt, factory);
-						Reference thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
-	            		addSubtypeConstraint(thisRef, lhsRef);
-					}
-            	}
-			} else if (!fieldElt.getSimpleName().contentEquals("super")
-					&& checker.isFieldElt(exprType, fieldElt)) {
-            	Reference fieldRef = Reference.createReference(fieldElt, factory);
-                // TODO There may be type casts on "this", 
-            	// e.g. ((@mutable X) this).field
-				Reference exprRef = Reference.createReference(expr, factory);
-            	// Recursively generate constraints
-            	generateConstraint(exprRef, expr);
-            	handleFieldRead(lhsRef, exprRef, fieldRef);
-            } 
-			break;
-		case IDENTIFIER:
-			ExecutableElement currentMethodElt = getCurrentMethodElt();
-			IdentifierTree idTree = (IdentifierTree) rhsTree;
-			Element idElt = TreeUtils.elementFromUse(idTree);
-			// TODO: idElt should be the same as idTree. They should be equivalent. 
-			// If idElt is "this", then we create the thisRef
-			Reference idRef = null;
-			if (idElt.getSimpleName().contentEquals("this")
-					&& currentMethodElt != null) {
-				Reference currentMethodRef = Reference.createReference(
-						currentMethodElt, factory);
-				idRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
-			} else
-				idRef = Reference.createReference(idElt, factory);
-			// Check if idElt is a field or not
-			if (idRef == null) {
-				// do nothing. This happens when currentMethodElt is null;
-			} else if (!idElt.getSimpleName().contentEquals("this")
-                    && !idElt.getSimpleName().contentEquals("super")
-					&& idElt.getKind() == ElementKind.FIELD  // FIXME: WEI: this is line added back on Nov 27
-//					&& isCurrentFieldElt(idElt)  //FIXME: WEI: this line is commented out on Nov 27
-					/*&& currentMethodElt != null*/) {
-				Reference thisRef = null;
-                if (!isCurrentFieldElt(idElt)) {
-                    // If accessing fields of outer class
-                    ExecutableElement enclosingMethodElt = getEnclosingMethodWithField(idElt);
-                    if (enclosingMethodElt != null) {
-                        // If there is an enclosing method
+        TreePath prev = inferenceTreePath;
+        if (prev == null) 
+            inferenceTreePath = new TreePath(getCurrentPath(), rhsTree);
+        else
+            inferenceTreePath = new TreePath(prev, rhsTree);
+        try {
+            switch (rhsTree.getKind()) {
+            case NEW_CLASS:
+                NewClassTree ncTree = (NewClassTree) rhsTree;
+                ExecutableElement methodElt = TreeUtils.elementFromUse(ncTree);
+                Reference rcvRef = Reference.createReference(ncTree, factory);
+                // Recursively
+                // TODO: lhsRef passed to  generateMethodCallConstraints() is null
+                handleMethodCall(methodElt, ncTree.getArguments(), rcvRef, lhsRef, rhsTree);
+                break;
+            case METHOD_INVOCATION:
+                MethodInvocationTree miTree = (MethodInvocationTree) rhsTree;
+                ExecutableElement iMethodElt = TreeUtils.elementFromUse(miTree);
+                ExpressionTree rcvTree = InferenceUtils.getReceiverTree(miTree);
+                Reference iRcvRef = null;
+                if (!ElementUtils.isStatic(iMethodElt)) {
+                    if (rcvTree == null) {
+                        ExecutableElement currentMethodElt = getEnclosingMethodWithElt(iMethodElt);
+                        currentMethodElt = currentMethodElt != null? currentMethodElt :getCurrentMethodElt();
+                        // This may be a a self invocation like x = m(z); 
+                        if (currentMethodElt == null)
+                            iRcvRef = null;
+                        else {
+                            Reference currentMethodRef = Reference.createReference(
+                                    currentMethodElt, factory);
+                            iRcvRef = ((ExecutableReference) currentMethodRef)
+                                        .getReceiverRef();
+                        }
+                    } else {
+                        iRcvRef = Reference.createReference(rcvTree, factory);
+                        // generate constraints on the receiver recursively
+                        generateConstraint(iRcvRef, rcvTree);
+                    }
+                } else 
+                    iRcvRef = null;
+                handleMethodCall(iMethodElt, miTree.getArguments(), iRcvRef, lhsRef, rhsTree);
+                break;
+            case MEMBER_SELECT:
+                MemberSelectTree mTree = (MemberSelectTree) rhsTree;
+                ExpressionTree expr = mTree.getExpression();
+                Element fieldElt = TreeUtils.elementFromUse(mTree);
+                AnnotatedTypeMirror exprType = factory.getAnnotatedType(expr);
+                if (checker.isAccessOuterThis(mTree)) {
+                    // If it is like Body.this
+                    Element outerElt = checker.getOuterThisElement(mTree, getCurrentMethodElt());
+                    if (outerElt != null 
+                            && outerElt.getKind() ==  ElementKind.METHOD) {
+                        ExecutableElement outerExecutableElt = (ExecutableElement) outerElt;
+                        Reference outerMethodRef = Reference.createReference(
+                                outerExecutableElt, factory);
+                        Reference outerThisRef = ((ExecutableReference) outerMethodRef).getReceiverRef();
+                        addSubtypeConstraint(outerThisRef, lhsRef);
+                    } else {
+                        // FIXME: we have to enforce currentMethod <: lhsRef
+                        ExecutableElement currentMethodElt = getCurrentMethodElt();
+                        if (currentMethodElt != null) {
+                            Reference currentMethodRef = Reference.createReference(
+                                    currentMethodElt, factory);
+                            Reference thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
+                            addSubtypeConstraint(thisRef, lhsRef);
+                        }
+                    }
+                } else if (!fieldElt.getSimpleName().contentEquals("super")
+                        && checker.isFieldElt(exprType, fieldElt)) {
+                    Reference fieldRef = Reference.createReference(fieldElt, factory);
+                    // TODO There may be type casts on "this", 
+                    // e.g. ((@mutable X) this).field
+                    Reference exprRef = Reference.createReference(expr, factory);
+                    // Recursively generate constraints
+                    generateConstraint(exprRef, expr);
+                    handleFieldRead(lhsRef, exprRef, fieldRef);
+                } 
+                break;
+            case IDENTIFIER:
+                ExecutableElement currentMethodElt = getCurrentMethodElt();
+                IdentifierTree idTree = (IdentifierTree) rhsTree;
+                Element idElt = TreeUtils.elementFromUse(idTree);
+                // TODO: idElt should be the same as idTree. They should be equivalent. 
+                // If idElt is "this", then we create the thisRef
+                Reference idRef = null;
+                if (idElt.getSimpleName().contentEquals("this")
+                        && currentMethodElt != null) {
+                    Reference currentMethodRef = Reference.createReference(
+                            currentMethodElt, factory);
+                    idRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
+                } else
+                    idRef = Reference.createReference(idElt, factory);
+                // Check if idElt is a field or not
+                if (idRef == null) {
+                    // do nothing. This happens when currentMethodElt is null;
+                } else if (!idElt.getSimpleName().contentEquals("this")
+                        && !idElt.getSimpleName().contentEquals("super")
+                        && idElt.getKind() == ElementKind.FIELD  // FIXME: WEI: this is line added back on Nov 27
+    //					&& isCurrentFieldElt(idElt)  //FIXME: WEI: this line is commented out on Nov 27
+                        /*&& currentMethodElt != null*/) {
+                    Reference thisRef = null;
+                    if (!isCurrentFieldElt(idElt)) {
+                        // If accessing fields of outer class
+                        ExecutableElement enclosingMethodElt = getEnclosingMethodWithField(idElt);
+                        if (enclosingMethodElt != null) {
+                            // If there is an enclosing method
+                            Reference currentMethodRef = Reference.createReference(
+                                    enclosingMethodElt, factory);
+                            thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
+                        } else {
+                            // Otherwise, we use the class as THIS
+                            thisRef = getDefaultConstructorThisRefWithField(idElt);
+                        }
+                    } else if (currentMethodElt != null) {
                         Reference currentMethodRef = Reference.createReference(
-                                enclosingMethodElt, factory);
+                                currentMethodElt, factory);
                         thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
                     } else {
-                        // Otherwise, we use the class as THIS
-                        thisRef = getDefaultConstructorThisRefWithField(idElt);
+                        // This happens in static initializer. But reading should not
+                        // be possible
+                        thisRef = getDefaultConstructorThisRefWithField(idElt); // WEI: Add on Dec 5, 2012
                     }
-                } else if (currentMethodElt != null) {
-					Reference currentMethodRef = Reference.createReference(
-							currentMethodElt, factory);
-					thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
-				} else {
-					// This happens in static initializer. But reading should not
-					// be possible
-					thisRef = getDefaultConstructorThisRefWithField(idElt); // WEI: Add on Dec 5, 2012
-				}
-				handleFieldRead(lhsRef, thisRef, idRef);
-			} else if (lhsRef.getTree() != null && lhsRef.getTree().equals(rhsTree)){
-				// They are equivalent
-				addEqualityConstraint(idRef, lhsRef);
-			} else {
-				addSubtypeConstraint(idRef, lhsRef);
-			}
-			break;
-		case NEW_ARRAY:
-			NewArrayTree nArrayTree = (NewArrayTree) rhsTree;
-//			if (nArrayTree.toString().contains("user") && nArrayTree.toString().contains("pass"))
-//				System.out.println();
-			// Create the reference of the new array
-			ArrayReference nArrayRef = (ArrayReference) Reference
-					.createReference(nArrayTree, factory);
-			// Generate constraints
-			addSubtypeConstraint(nArrayRef, lhsRef);
-			
-			List<? extends ExpressionTree> aInitializers = nArrayTree.getInitializers();
-			
-			// Generate constraints for the initializers and the array 
-			// if the initializers are not empty
-			if (aInitializers != null && !aInitializers.isEmpty()) {
-				// Get its component reference
-				Reference componentRef = nArrayRef.getComponentRef();
-				// TODO: What is the relation between the initializer
-				// and the component? In the previous implementation, 
-				// there is no adapt... 
-				// I think it should do the adapt first, because it is
-				// equivalent to:
-				// X[] a = new X[2]; a[0] = x1; a[1] = x2;
-				for (ExpressionTree initializer : aInitializers) {
-					Reference initializerRef = Reference.createReference(
-							initializer, factory);
-					// Recursively 
-					generateConstraint(initializerRef, initializer);
-					// Now add the adapt constraint
-					addSubtypeConstraint(initializerRef, 
-							getFieldAdaptReference(nArrayRef, componentRef, null));
-				}
-			}
-			break;
-		case ARRAY_ACCESS:
-			ArrayAccessTree aaTree = (ArrayAccessTree) rhsTree;
-			ExpressionTree aaExpr = aaTree.getExpression();
-			Reference exprRef = Reference.createReference(aaExpr, factory);
-			
-			// Recursively
-			generateConstraint(exprRef, aaExpr);
-			
-			// Get the component reference of this array access
-			Reference componentRef = ((ArrayReference) exprRef).getComponentRef();
-			
-			// Now add the adapt constraint
-			handleArrayRead(lhsRef, exprRef, componentRef);
-			
-			break;
-		case TYPE_CAST:
-			// Get the tree being casted 
-//			if (rhsTree.toString().contains("String)this"))
-//				System.out.println();
-			ExpressionTree castedTree = ((TypeCastTree) rhsTree).getExpression();
-			Reference castedRef = Reference
-					.createReference(castedTree, factory);
-			// Recursively 
-			generateConstraint(castedRef, castedTree);
-			
-			AnnotatedTypeMirror rhsType = factory.getAnnotatedType(rhsTree);
-			if (!checker.isAnnotated(rhsType)) {
-				// In the case no annotations appear in the cast 
-				// connect the casted expr and the lhs 
-				// TODO rhsType may have been annotated with all possible qualifiers
-				addSubtypeConstraint(castedRef, lhsRef);
-			}
-			break;
-		case PARENTHESIZED:
-//			if (rhsTree.toString().contains("null != mParser"))
-//				System.out.println();
-            ParenthesizedTree pTree = (ParenthesizedTree) rhsTree;
-            ExpressionTree pExpr = pTree.getExpression();
-			Reference pRef = Reference.createReference(pExpr, factory);
-            // Recursively 
-            generateConstraint(pRef, pExpr);
-            
-            addSubtypeConstraint(pRef, lhsRef);
-			break;
-		case ASSIGNMENT:
-            AssignmentTree aTree = (AssignmentTree) rhsTree; 
-            ExpressionTree aExpr = aTree.getVariable();
-			Reference aRef = Reference.createReference(aExpr, factory);
-            // Recursively
-            generateConstraint(aRef, aExpr);
-            
-            addSubtypeConstraint(aRef, lhsRef);
-			break;
-		case CONDITIONAL_EXPRESSION:
-            ConditionalExpressionTree cTree = (ConditionalExpressionTree) rhsTree;
-            ExpressionTree cTrueExpr = cTree.getTrueExpression();
-			Reference cTrueRef = Reference.createReference(cTrueExpr, factory);
-            generateConstraint(cTrueRef, cTrueExpr);
-            addSubtypeConstraint(cTrueRef, lhsRef);
-            
-            ExpressionTree cFalseExpr = cTree.getFalseExpression();
-			Reference cFalseRef = Reference
-					.createReference(cFalseExpr, factory);
-            generateConstraint(cFalseRef, cFalseExpr);
-            addSubtypeConstraint(cFalseRef, lhsRef);
-			break;
-		case INT_LITERAL:
-		case LONG_LITERAL:
-		case FLOAT_LITERAL:
-		case DOUBLE_LITERAL:
-		case BOOLEAN_LITERAL:
-		case CHAR_LITERAL:
-		case STRING_LITERAL:
-		case NULL_LITERAL:
-			break;
-		default:
-			// Check other cases
-			if (rhsTree instanceof BinaryTree) {
-				BinaryTree bTree = (BinaryTree) rhsTree;
-//				visitBinary(bTree, null);
-				// WEI: Add constraints for BinaryTree on Dec 2, 2012
-				ExpressionTree left = bTree.getLeftOperand();
-				ExpressionTree right = bTree.getRightOperand();
-				Reference leftRef = Reference.createReference(left, factory);
-				Reference rightRef = Reference.createReference(right, factory);
-				addSubtypeConstraint(leftRef, lhsRef);
-				addSubtypeConstraint(rightRef, lhsRef);
-				generateConstraint(leftRef, left);
-				generateConstraint(rightRef, right);
-				
-			} else if (rhsTree instanceof UnaryTree) {
-				UnaryTree uTree = (UnaryTree) rhsTree;
-				ExpressionTree exprTree = uTree.getExpression();
-                Reference ref = Reference.createReference(exprTree, factory);
-                addSubtypeConstraint(ref, lhsRef);
-                generateConstraint(ref, exprTree);
-//				visitUnary(uTree, null);
-			} 
-//			else
-//				System.out.println("WARN: Unhandled statment: " + rhsTree
-//						+ " type: " + rhsTree.getKind());
-		}
-		visited.add(rhsTree);
+                    handleFieldRead(lhsRef, thisRef, idRef);
+                } else if (lhsRef.getTree() != null && lhsRef.getTree().equals(rhsTree)){
+                    // They are equivalent
+                    addEqualityConstraint(idRef, lhsRef);
+                } else {
+                    addSubtypeConstraint(idRef, lhsRef);
+                }
+                break;
+            case NEW_ARRAY:
+                NewArrayTree nArrayTree = (NewArrayTree) rhsTree;
+    //			if (nArrayTree.toString().contains("user") && nArrayTree.toString().contains("pass"))
+    //				System.out.println();
+                // Create the reference of the new array
+                ArrayReference nArrayRef = (ArrayReference) Reference
+                        .createReference(nArrayTree, factory);
+                // Generate constraints
+                addSubtypeConstraint(nArrayRef, lhsRef);
+                
+                List<? extends ExpressionTree> aInitializers = nArrayTree.getInitializers();
+                
+                // Generate constraints for the initializers and the array 
+                // if the initializers are not empty
+                if (aInitializers != null && !aInitializers.isEmpty()) {
+                    // Get its component reference
+                    Reference componentRef = nArrayRef.getComponentRef();
+                    // TODO: What is the relation between the initializer
+                    // and the component? In the previous implementation, 
+                    // there is no adapt... 
+                    // I think it should do the adapt first, because it is
+                    // equivalent to:
+                    // X[] a = new X[2]; a[0] = x1; a[1] = x2;
+                    for (ExpressionTree initializer : aInitializers) {
+                        Reference initializerRef = Reference.createReference(
+                                initializer, factory);
+                        // Recursively 
+                        generateConstraint(initializerRef, initializer);
+                        // Now add the adapt constraint
+                        addSubtypeConstraint(initializerRef, 
+                                getFieldAdaptReference(nArrayRef, componentRef, null));
+                    }
+                }
+                break;
+            case ARRAY_ACCESS:
+                ArrayAccessTree aaTree = (ArrayAccessTree) rhsTree;
+                ExpressionTree aaExpr = aaTree.getExpression();
+                Reference exprRef = Reference.createReference(aaExpr, factory);
+                
+                // Recursively
+                generateConstraint(exprRef, aaExpr);
+                
+                // Get the component reference of this array access
+                Reference componentRef = ((ArrayReference) exprRef).getComponentRef();
+                
+                // Now add the adapt constraint
+                handleArrayRead(lhsRef, exprRef, componentRef);
+                
+                break;
+            case TYPE_CAST:
+                // Get the tree being casted 
+    //			if (rhsTree.toString().contains("String)this"))
+    //				System.out.println();
+                ExpressionTree castedTree = ((TypeCastTree) rhsTree).getExpression();
+                Reference castedRef = Reference
+                        .createReference(castedTree, factory);
+                // Recursively 
+                generateConstraint(castedRef, castedTree);
+                
+                AnnotatedTypeMirror rhsType = factory.getAnnotatedType(rhsTree);
+                if (!checker.isAnnotated(rhsType)) {
+                    // In the case no annotations appear in the cast 
+                    // connect the casted expr and the lhs 
+                    // TODO rhsType may have been annotated with all possible qualifiers
+                    addSubtypeConstraint(castedRef, lhsRef);
+                }
+                break;
+            case PARENTHESIZED:
+    //			if (rhsTree.toString().contains("null != mParser"))
+    //				System.out.println();
+                ParenthesizedTree pTree = (ParenthesizedTree) rhsTree;
+                ExpressionTree pExpr = pTree.getExpression();
+                Reference pRef = Reference.createReference(pExpr, factory);
+                // Recursively 
+                generateConstraint(pRef, pExpr);
+                
+                addSubtypeConstraint(pRef, lhsRef);
+                break;
+            case ASSIGNMENT:
+                AssignmentTree aTree = (AssignmentTree) rhsTree; 
+                ExpressionTree aExpr = aTree.getVariable();
+                Reference aRef = Reference.createReference(aExpr, factory);
+                // Recursively
+                generateConstraint(aRef, aExpr);
+                
+                addSubtypeConstraint(aRef, lhsRef);
+                break;
+            case CONDITIONAL_EXPRESSION:
+                ConditionalExpressionTree cTree = (ConditionalExpressionTree) rhsTree;
+                ExpressionTree cTrueExpr = cTree.getTrueExpression();
+                Reference cTrueRef = Reference.createReference(cTrueExpr, factory);
+                generateConstraint(cTrueRef, cTrueExpr);
+                addSubtypeConstraint(cTrueRef, lhsRef);
+                
+                ExpressionTree cFalseExpr = cTree.getFalseExpression();
+                Reference cFalseRef = Reference
+                        .createReference(cFalseExpr, factory);
+                generateConstraint(cFalseRef, cFalseExpr);
+                addSubtypeConstraint(cFalseRef, lhsRef);
+                break;
+            case INT_LITERAL:
+            case LONG_LITERAL:
+            case FLOAT_LITERAL:
+            case DOUBLE_LITERAL:
+            case BOOLEAN_LITERAL:
+            case CHAR_LITERAL:
+            case STRING_LITERAL:
+            case NULL_LITERAL:
+                break;
+            default:
+                // Check other cases
+                if (rhsTree instanceof BinaryTree) {
+                    BinaryTree bTree = (BinaryTree) rhsTree;
+    //				visitBinary(bTree, null);
+                    // WEI: Add constraints for BinaryTree on Dec 2, 2012
+                    ExpressionTree left = bTree.getLeftOperand();
+                    ExpressionTree right = bTree.getRightOperand();
+                    Reference leftRef = Reference.createReference(left, factory);
+                    Reference rightRef = Reference.createReference(right, factory);
+                    addSubtypeConstraint(leftRef, lhsRef);
+                    addSubtypeConstraint(rightRef, lhsRef);
+                    generateConstraint(leftRef, left);
+                    generateConstraint(rightRef, right);
+                    
+                } else if (rhsTree instanceof UnaryTree) {
+                    UnaryTree uTree = (UnaryTree) rhsTree;
+                    ExpressionTree exprTree = uTree.getExpression();
+                    Reference ref = Reference.createReference(exprTree, factory);
+                    addSubtypeConstraint(ref, lhsRef);
+                    generateConstraint(ref, exprTree);
+    //				visitUnary(uTree, null);
+                } 
+    //			else
+    //				System.out.println("WARN: Unhandled statment: " + rhsTree
+    //						+ " type: " + rhsTree.getKind());
+            }
+            visited.add(rhsTree);
+        } finally {
+            inferenceTreePath = prev;
+        }
 	}
 	
 	/**
@@ -846,99 +862,108 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 	 * @param rhsRef
 	 */
 	protected void generateConstraint(ExpressionTree lhsTree, Reference rhsRef) {
-		switch (lhsTree.getKind()) {
-		case VARIABLE:
-			// generate Reference of element
-			Reference varRef = Reference.createReference(lhsTree, factory);
-			addSubtypeConstraint(rhsRef, varRef);
-			break;
-		case IDENTIFIER:
-			// lhsTree is an identifier: get its use element.
-			Element idElt = TreeUtils.elementFromUse((IdentifierTree) lhsTree);
-//			AnnotatedTypeMirror idType = factory.getAnnotatedType(lhsTree);
-			ExecutableElement currentMethodElt = getCurrentMethodElt();
-			// generate Reference of element
-			Reference idRef = null;
-			if (idElt.getSimpleName().contentEquals("this")) {
-				Reference currentMethodRef = Reference.createReference(
-						currentMethodElt, factory);
-				idRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
-			} else
-				idRef = Reference.createReference(idElt, factory);
-			
-			if (idRef == null) {
-				// Do nothing
-			} else if (!idElt.getSimpleName().contentEquals("this")
-                    && !idElt.getSimpleName().contentEquals("super")
-					&& idElt.getKind() == ElementKind.FIELD  // FIXME: WEI: this is line added back on Nov 27
-//					&& isCurrentFieldElt(idElt)  //FIXME: WEI: this line is commented out on Nov 27
-					/*&& currentMethodElt != null*/) {
-				// Now we need to check if idElt is a field. If so, then we need to 
-				// generate adapt constraint
-				Reference thisRef = null;
-                if (!isCurrentFieldElt(idElt)) {
-                    // If accessing fields of outer class
-                    ExecutableElement enclosingMethodElt = getEnclosingMethodWithField(idElt);
-                    if (enclosingMethodElt != null) {
-                        // If there is an enclosing method
+        TreePath prev = inferenceTreePath;
+        if (prev == null) 
+            inferenceTreePath = new TreePath(getCurrentPath(), lhsTree);
+        else
+            inferenceTreePath = new TreePath(prev, lhsTree);
+        try {
+            switch (lhsTree.getKind()) {
+            case VARIABLE:
+                // generate Reference of element
+                Reference varRef = Reference.createReference(lhsTree, factory);
+                addSubtypeConstraint(rhsRef, varRef);
+                break;
+            case IDENTIFIER:
+                // lhsTree is an identifier: get its use element.
+                Element idElt = TreeUtils.elementFromUse((IdentifierTree) lhsTree);
+    //			AnnotatedTypeMirror idType = factory.getAnnotatedType(lhsTree);
+                ExecutableElement currentMethodElt = getCurrentMethodElt();
+                // generate Reference of element
+                Reference idRef = null;
+                if (idElt.getSimpleName().contentEquals("this")) {
+                    Reference currentMethodRef = Reference.createReference(
+                            currentMethodElt, factory);
+                    idRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
+                } else
+                    idRef = Reference.createReference(idElt, factory);
+                
+                if (idRef == null) {
+                    // Do nothing
+                } else if (!idElt.getSimpleName().contentEquals("this")
+                        && !idElt.getSimpleName().contentEquals("super")
+                        && idElt.getKind() == ElementKind.FIELD  // FIXME: WEI: this is line added back on Nov 27
+    //					&& isCurrentFieldElt(idElt)  //FIXME: WEI: this line is commented out on Nov 27
+                        /*&& currentMethodElt != null*/) {
+                    // Now we need to check if idElt is a field. If so, then we need to 
+                    // generate adapt constraint
+                    Reference thisRef = null;
+                    if (!isCurrentFieldElt(idElt)) {
+                        // If accessing fields of outer class
+                        ExecutableElement enclosingMethodElt = getEnclosingMethodWithField(idElt);
+                        if (enclosingMethodElt != null) {
+                            // If there is an enclosing method
+                            Reference currentMethodRef = Reference.createReference(
+                                    enclosingMethodElt, factory);
+                            thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
+                        } else {
+                            // Otherwise, we use the class as THIS
+                            thisRef = getDefaultConstructorThisRefWithField(idElt);
+                        }
+                    } else if (currentMethodElt != null) {
                         Reference currentMethodRef = Reference.createReference(
-                                enclosingMethodElt, factory);
+                                currentMethodElt, factory);
                         thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
                     } else {
-                        // Otherwise, we use the class as THIS
+                        // This happens when initializing a field in static initializer
                         thisRef = getDefaultConstructorThisRefWithField(idElt);
                     }
-                } else if (currentMethodElt != null) {
-					Reference currentMethodRef = Reference.createReference(
-							currentMethodElt, factory);
-					thisRef = ((ExecutableReference) currentMethodRef).getReceiverRef();
-				} else {
-					// This happens when initializing a field in static initializer
-					thisRef = getDefaultConstructorThisRefWithField(idElt);
-				}
-				handleFieldWrite(thisRef, idRef, rhsRef);
-			} else if (rhsRef.getTree() != null && rhsRef.getTree().equals(lhsTree)){
-				// They are equivalent
-				addEqualityConstraint(rhsRef, idRef);
-			} else 
-				addSubtypeConstraint(rhsRef, idRef);
-			break;
-		case MEMBER_SELECT:
-			// Okay, it is an member selection. Need to construct the adapt
-			// constraint. 
-			MemberSelectTree mTree = (MemberSelectTree) lhsTree;
-			// Get the expr
-			ExpressionTree rcvExpr = mTree.getExpression();
-			// Get the field
-			Element fieldElt = TreeUtils.elementFromUse(mTree);
-            AnnotatedTypeMirror rcvType = factory.getAnnotatedType(rcvExpr);
-			if (!fieldElt.getSimpleName().contentEquals("super")
-					&& checker.isFieldElt(rcvType, fieldElt)) {
-				Reference fieldRef = Reference.createReference(fieldElt, factory);
-				Reference rcvRef = Reference.createReference(rcvExpr, factory);
-				// Recursively, this is equal to:
-				// exprRef = rcvExpr; exprRef.fieldRef = rhsRef;
-				generateConstraint(rcvRef, rcvExpr);
-				handleFieldWrite(rcvRef, fieldRef, rhsRef);
-			} 
-			break;
-		case ARRAY_ACCESS:
-			// It is an array access expression. Also need the viewpoint adaptation.
-			ArrayAccessTree aTree = (ArrayAccessTree) lhsTree;
-			ExpressionTree expr = aTree.getExpression();
-			Reference exprRef = Reference.createReference(expr, factory);
-			// Recursively 
-			generateConstraint(exprRef, expr);
-			
-			// Get the component reference of this array access
-			Reference componentRef = ((ArrayReference) exprRef).getComponentRef();
-			handleArrayWrite(exprRef, componentRef, rhsRef);
-			break;
-		default:
-//			System.out.println("WARN: Unhandled statements: " + lhsTree
-//					+ " type: " + lhsTree.getKind());
-		}
-		visited.add(lhsTree);
+                    handleFieldWrite(thisRef, idRef, rhsRef);
+                } else if (rhsRef.getTree() != null && rhsRef.getTree().equals(lhsTree)){
+                    // They are equivalent
+                    addEqualityConstraint(rhsRef, idRef);
+                } else 
+                    addSubtypeConstraint(rhsRef, idRef);
+                break;
+            case MEMBER_SELECT:
+                // Okay, it is an member selection. Need to construct the adapt
+                // constraint. 
+                MemberSelectTree mTree = (MemberSelectTree) lhsTree;
+                // Get the expr
+                ExpressionTree rcvExpr = mTree.getExpression();
+                // Get the field
+                Element fieldElt = TreeUtils.elementFromUse(mTree);
+                AnnotatedTypeMirror rcvType = factory.getAnnotatedType(rcvExpr);
+                if (!fieldElt.getSimpleName().contentEquals("super")
+                        && checker.isFieldElt(rcvType, fieldElt)) {
+                    Reference fieldRef = Reference.createReference(fieldElt, factory);
+                    Reference rcvRef = Reference.createReference(rcvExpr, factory);
+                    // Recursively, this is equal to:
+                    // exprRef = rcvExpr; exprRef.fieldRef = rhsRef;
+                    generateConstraint(rcvRef, rcvExpr);
+                    handleFieldWrite(rcvRef, fieldRef, rhsRef);
+                } 
+                break;
+            case ARRAY_ACCESS:
+                // It is an array access expression. Also need the viewpoint adaptation.
+                ArrayAccessTree aTree = (ArrayAccessTree) lhsTree;
+                ExpressionTree expr = aTree.getExpression();
+                Reference exprRef = Reference.createReference(expr, factory);
+                // Recursively 
+                generateConstraint(exprRef, expr);
+                
+                // Get the component reference of this array access
+                Reference componentRef = ((ArrayReference) exprRef).getComponentRef();
+                handleArrayWrite(exprRef, componentRef, rhsRef);
+                break;
+            default:
+    //			System.out.println("WARN: Unhandled statements: " + lhsTree
+    //					+ " type: " + lhsTree.getKind());
+            }
+            visited.add(lhsTree);
+        } finally {
+            inferenceTreePath = prev;
+        }
 	}
 	
 //	/**
@@ -1199,7 +1224,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			else
 				return Reference.createFieldAdaptReference(assignToRef, fieldRef);
 		}
-		System.out.println("ERROR: No adapt context is found!");
+		System.out.println("ERROR: No adapt context found!");
 		return null;
 	}
 
@@ -1227,7 +1252,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			else
 				return Reference.createMethodAdaptReference(assignToRef, declRef);
 		}
-		System.out.println("ERROR: No adapt context is found!");
+		System.out.println("ERROR: No adapt context found!");
 		return null;
 	}
 
