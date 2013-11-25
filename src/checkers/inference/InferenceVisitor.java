@@ -399,9 +399,9 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 	public Void visitReturn(ReturnTree node, Void p) {
 		ExpressionTree expr = node.getExpression();
 		if (expr != null) {
-			Reference exprRef = Reference.createReference(expr, factory);
+//            Reference exprRef = Reference.createReference(expr, factory);
 			// Recursively
-			generateConstraint(exprRef, expr);
+//            generateConstraint(exprRef, expr);
 			
 			MethodTree methodTree = TreeUtils.enclosingMethod(getCurrentPath());
 			ExecutableElement methodElt = (ExecutableElement) 
@@ -409,7 +409,8 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			// Get the reference of return 
 			Reference methodRef = Reference.createReference(methodElt, factory);
 			Reference returnRef = ((ExecutableReference) methodRef).getReturnRef();
-			addSubtypeConstraint(exprRef, returnRef);
+//            addSubtypeConstraint(exprRef, returnRef);
+            generateConstraint(returnRef, expr);
 		}
 		return super.visitReturn(node, p);
 	}
@@ -424,16 +425,18 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			// Add subtype constraint
 			Reference initilizerRef = Reference.createReference(initializer, 
 					factory);
-			generateConstraint(initilizerRef, initializer);
+//            generateConstraint(initilizerRef, initializer);
 			
 			// FIXME: The field should be accessed by adapting it from PoV
 			// the default constructor. The implementation below can be 
 			// merged with the field access in static initializer.
 			if (varElt.getKind().isField()) {
+                generateConstraint(initilizerRef, initializer);
 				Reference defaultConstructorThisRef = getDefaultConstructorThisRefWithField(varElt);
 				handleFieldWrite(defaultConstructorThisRef, varRef, initilizerRef);
 			} else {
-				addSubtypeConstraint(initilizerRef, varRef);
+//                addSubtypeConstraint(initilizerRef, varRef);
+                generateConstraint(varRef, initializer);
 			}
 		} else 
 			addEmptyConstraint(varRef);
