@@ -49,6 +49,7 @@ import checkers.inference.sflow.quals.Bottom;
 import checkers.inference.sflow.quals.Poly;
 import checkers.inference.sflow.quals.Secret;
 import checkers.inference.sflow.quals.Tainted;
+import checkers.inference.sflow.quals.Top;
 import checkers.inference.sflow.quals.Uncheck;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeMirror;
@@ -77,11 +78,11 @@ import com.sun.tools.javac.code.Type.WildcardType;
  */
 @SupportedOptions({ "warn", "checking", "insertAnnos", "debug", "noReim", "inferLibrary", "polyLibrary", "sourceSinkOnly", "inferAndroidApp" })
 @TypeQualifiers({ Uncheck.class, Readonly.class, Polyread.class, Mutable.class,
-		Poly.class, Secret.class, Tainted.class, Bottom.class })
+		Poly.class, Secret.class, Tainted.class, Bottom.class, Top.class })
 public class SFlowChecker extends InferenceChecker {
 
 	public static AnnotationMirror UNCHECK, READONLY, POLYREAD, MUTABLE, POLY,
-			SECRET, TAINTED, BOTTOM;
+			SECRET, TAINTED, BOTTOM, TOP;
 
 	private Map<String, Integer> annoWeights = new HashMap<String, Integer>();
 
@@ -111,6 +112,7 @@ public class SFlowChecker extends InferenceChecker {
 		SECRET = annoFactory.fromClass(Secret.class);
 		TAINTED = annoFactory.fromClass(Tainted.class);
 		BOTTOM = annoFactory.fromClass(Bottom.class);
+		TOP = annoFactory.fromClass(Top.class);
 
 		UNCHECK = annoFactory.fromClass(Uncheck.class);
 
@@ -127,6 +129,7 @@ public class SFlowChecker extends InferenceChecker {
 		sourceAnnos.add(POLY);
 		sourceAnnos.add(TAINTED);
 		sourceAnnos.add(BOTTOM);
+//        sourceAnnos.add(TOP);
 
 		extraPrimitiveTypes = new HashSet<String>();
 		extraPrimitiveTypes.add("java.lang.String");
@@ -160,9 +163,9 @@ public class SFlowChecker extends InferenceChecker {
             inferAndroidApp = true;
 		}
 
-        if (inferLibrary && polyLibrary) {
-            throw new RuntimeException("inferLibrary and polyLibrary cannot be true at the same time.");
-        }
+//        if (inferLibrary && polyLibrary) {
+//            throw new RuntimeException("inferLibrary and polyLibrary cannot be true at the same time.");
+//        }
         
         if (InferenceChecker.DEBUG) {
             System.out.println("INFO: useReim = " + useReim);
@@ -185,9 +188,9 @@ public class SFlowChecker extends InferenceChecker {
 	}
 	
 	
-	public void setInferLibrary(boolean inferLibrary) {
-		this.inferLibrary = inferLibrary;
-	}
+//    public void setInferLibrary(boolean inferLibrary) {
+//        this.inferLibrary = inferLibrary;
+//    }
 
 
 	public boolean isPolyLibrary() {
@@ -299,20 +302,22 @@ public class SFlowChecker extends InferenceChecker {
 	
 	
 	public boolean isTaintableRef(Reference ref) {
-		AnnotatedTypeMirror type = ref.getType();
-		Element elt = ref.getElement();
-		Tree tree = ref.getTree();
-		if (type != null && isTaintableType(type))
-			return true;
-		else if (elt != null && elt.getKind() == ElementKind.LOCAL_VARIABLE)
-			return true;
-		else if (elt == null && (elt = InternalUtils.symbol(ref.getTree())) != null 
-				&& elt.getKind() == ElementKind.LOCAL_VARIABLE)
-			return true;
-		else if (tree != null 
-				&& (tree.getKind() == Kind.NEW_CLASS || tree.getKind() == Kind.NEW_ARRAY))
-			return true;
-		return false;
+        // FIXME:
+        return true;
+//        AnnotatedTypeMirror type = ref.getType();
+//        Element elt = ref.getElement();
+//        Tree tree = ref.getTree();
+//        if (type != null && isTaintableType(type))
+//            return true;
+//        else if (elt != null && elt.getKind() == ElementKind.LOCAL_VARIABLE)
+//            return true;
+//        else if (elt == null && (elt = InternalUtils.symbol(ref.getTree())) != null 
+//                && elt.getKind() == ElementKind.LOCAL_VARIABLE)
+//            return true;
+//        else if (tree != null 
+//                && (tree.getKind() == Kind.NEW_CLASS || tree.getKind() == Kind.NEW_ARRAY))
+//            return true;
+//        return false;
 	}
 	
 
@@ -495,7 +500,7 @@ public class SFlowChecker extends InferenceChecker {
 	
 
 	@Override
-	protected Reference getMaximal(Reference ref) {
+	public Reference getMaximal(Reference ref) {
 		if (!isSourceSinkOnly())
 			return super.getMaximal(ref);
 		else {

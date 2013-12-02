@@ -20,6 +20,8 @@ import checkers.types.AnnotatedTypeMirror;
 public interface ConstraintSolver {
 	
 	public List<Constraint> solve();
+
+    public List<Constraint> getUpdatedConstraints();
 	
 //	public void printAllVariables(PrintWriter out);
 	

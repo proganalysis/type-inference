@@ -16,7 +16,7 @@ import checkers.quals.Unqualified;
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Unqualified.class})
+@SubtypeOf({Top.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Secret {
     

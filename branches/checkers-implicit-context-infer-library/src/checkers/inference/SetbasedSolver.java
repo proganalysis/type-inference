@@ -367,6 +367,7 @@ public class SetbasedSolver implements ConstraintSolver {
 			sb.append("{" + InferenceUtils.formatAnnotationString(ref.getAnnotations()) + "}|");
 			sb.append("{" + InferenceUtils.formatAnnotationString(annos) + "}|");
 			sb.append(currentConstraint.toString().replace("\r", "").replace("\n", "").replace('|', ' '));
+            sb.append("|NONE|0");
 			try {
 				if (tracePw == null) {
 					tracePw = new FileWriter(new File(InferenceMain.outputDir
@@ -446,6 +447,11 @@ public class SetbasedSolver implements ConstraintSolver {
 		return setAnnotations(contextRef, contextAnnos)
 				|| setAnnotations(declRef, declAnnos);
 	}
+
+
+    public List<Constraint> getUpdatedConstraints() {
+        return constraints;
+    }
 	
 //	/**
 //	 * Build the maximal solution

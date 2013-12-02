@@ -24,6 +24,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.*;
@@ -164,7 +165,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                 }
             }
             if (secretSet.isEmpty() && taintedSet.isEmpty()) {
-                buildRefToConstraintMapping(newConstraints);
+//                buildRefToConstraintMapping(newConstraints);
                 extendedConstraints.addAll(newConstraints);
                 secretSet.addAll(newConstraints);
                 System.out.println("Added " + newConstraints.size() + " new constraints");
@@ -674,6 +675,36 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         }
     }
 
+    private boolean isParamReturnConstraint(Constraint c) {
+        Reference left = c.getLeft();
+        Reference right = c.getRight();
+        if (left != null && !(left instanceof AdaptReference) 
+                && right != null && !(right instanceof AdaptReference)) {
+            // param/this -> return/param/this
+            Element lElt = null;
+            Element rElt = null;
+             if ((lElt = left.getElement()) != null 
+                        && (lElt.getKind() == ElementKind.PARAMETER 
+                            || left.getRefName().startsWith("RET_")
+                            || left.getRefName().startsWith("THIS_"))
+                     && (rElt = right.getElement()) != null 
+                        && (right.getRefName().startsWith("RET_")
+                            || right.getRefName().startsWith("THIS_")
+                            || rElt.getKind() == ElementKind.PARAMETER)) {
+                 // check if they are from the same method
+                 while (lElt != null && lElt.getKind() != ElementKind.METHOD 
+                         && lElt.getKind() != ElementKind.CONSTRUCTOR)
+                     lElt = lElt.getEnclosingElement();
+                 while (rElt != null && rElt.getKind() != ElementKind.METHOD 
+                         && rElt.getKind() != ElementKind.CONSTRUCTOR)
+                     rElt = rElt.getEnclosingElement();
+                 if (lElt.equals(rElt))
+                     return true;
+            }
+        }
+        return false;
+    }
+
     private boolean isSame(Reference left, Reference right, Map<Integer, Reference> map) {
         if (!(left instanceof ConstantReference) && !(right instanceof ConstantReference)
                 && left.getRefName().equals(right.getRefName())
@@ -681,6 +712,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             || left instanceof ArrayReference && right instanceof ArrayReference) {
             return false;
         }
+
 
         Reference varRef = null, expRef = null;
         Element elt = null;
@@ -692,6 +724,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                 && elt.getKind() != ElementKind.ENUM
                 && elt.getKind() != ElementKind.ANNOTATION_TYPE
                 && !ElementUtils.isStatic(elt)
+                && left.getFileName() != null
                 && left.getFileName().equals(right.getFileName())
                 && (elt.toString().equals(tree.toString())
                         && TreeUtils.elementFromUse((ExpressionTree) tree).equals(elt)
@@ -706,6 +739,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                 && elt.getKind() != ElementKind.ENUM
                 && elt.getKind() != ElementKind.ANNOTATION_TYPE
                 && !ElementUtils.isStatic(elt)
+                && left.getFileName() != null
                 && left.getFileName().equals(right.getFileName())
                 && (elt.toString().equals(tree.toString()) 
                         && TreeUtils.elementFromUse((ExpressionTree) tree).equals(elt)
@@ -805,56 +839,60 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         }
     }
 
+
+	private void buildRefToConstraintMapping(Constraint c) {
+        Reference left = null, right = null; 
+        if (c instanceof SubtypeConstraint
+                || c instanceof EqualityConstraint
+                || c instanceof UnequalityConstraint) {
+            left = c.getLeft();
+            right = c.getRight();
+        }
+        if (left != null && right != null) {
+            Reference[] refs = {left, right};
+            for (Reference ref : refs) {
+                int[] ids = null;
+                if (ref instanceof AdaptReference) {
+                    ids = new int[] {
+                            ((AdaptReference) ref).getDeclRef().getId(),
+                            ((AdaptReference) ref).getContextRef().getId() };
+                    // For adaptReference, we use fullRefName as key
+                    String key = ref.getFullRefName();
+                    List<Constraint> l = adaptRefToConstraints.get(key);
+                    if (l == null) {
+                        l = new ArrayList<Constraint>(2);
+                        adaptRefToConstraints.put(key, l);
+                    }
+                    l.add(c);
+                    Set<Reference> contextSet = declRefToContextRefs.get(ids[0]);
+                    if (contextSet == null) {
+                        contextSet = new HashSet<Reference>();
+                        declRefToContextRefs.put(ids[0], contextSet);
+                    }
+                    contextSet.add(((AdaptReference) ref).getContextRef());
+                } else 
+                    ids = new int[] {ref.getId()};
+                for (int id : ids) {
+                    List<Constraint> l = refToConstraints.get(id);
+                    if (l == null) {
+                        l = new ArrayList<Constraint>(5);
+                        refToConstraints.put(id, l);
+                    }
+                    l.add(c);
+                }
+            }
+            if ((c instanceof SubtypeConstraint)
+                    && !(left instanceof AdaptReference)
+                    && !(right instanceof AdaptReference)) {
+                left.addGreaterRef(right);
+                right.addLessRef(left);
+            }
+        }
+    }
 	
 	private void buildRefToConstraintMapping(Set<Constraint> cons) {
 		for (Constraint c : cons) {
-			Reference left = null, right = null; 
-			if (c instanceof SubtypeConstraint
-					|| c instanceof EqualityConstraint
-					|| c instanceof UnequalityConstraint) {
-				left = c.getLeft();
-				right = c.getRight();
-			}
-			if (left != null && right != null) {
-				Reference[] refs = {left, right};
-				for (Reference ref : refs) {
-					int[] ids = null;
-					if (ref instanceof AdaptReference) {
-						ids = new int[] {
-								((AdaptReference) ref).getDeclRef().getId(),
-								((AdaptReference) ref).getContextRef().getId() };
-                        // For adaptReference, we use fullRefName as key
-                        String key = ref.getFullRefName();
-						List<Constraint> l = adaptRefToConstraints.get(key);
-                        if (l == null) {
-                            l = new ArrayList<Constraint>(2);
-                            adaptRefToConstraints.put(key, l);
-                        }
-                        l.add(c);
-                        Set<Reference> contextSet = declRefToContextRefs.get(ids[0]);
-                        if (contextSet == null) {
-                            contextSet = new HashSet<Reference>();
-                            declRefToContextRefs.put(ids[0], contextSet);
-                        }
-                        contextSet.add(((AdaptReference) ref).getContextRef());
-					} else 
-						ids = new int[] {ref.getId()};
-					for (int id : ids) {
-						List<Constraint> l = refToConstraints.get(id);
-						if (l == null) {
-							l = new ArrayList<Constraint>(5);
-							refToConstraints.put(id, l);
-						}
-						l.add(c);
-					}
-				}
-                if ((c instanceof SubtypeConstraint)
-                        && !(left instanceof AdaptReference)
-                        && !(right instanceof AdaptReference)) {
-                    left.addGreaterRef(right);
-                    right.addLessRef(left);
-                }
-			}
+            buildRefToConstraintMapping(c);
 		}
 	}
 
@@ -890,11 +928,17 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
     private boolean canConnectVia(Reference left, Reference right) {
         if (left == null || right == null)
             return false;
-        // Should be in the same file
+        // Should be in the same file or same class tree
         String leftFile = left.getFileName();
         String rightFile = right.getFileName();
-        if (leftFile != null && rightFile != null 
-                && !leftFile.equals(rightFile))
+        TypeElement leftEType = left.getEnclosingType();
+        TypeElement rightEType = right.getEnclosingType();
+//        if (leftFile != null && rightFile != null 
+//                && !leftFile.equals(rightFile))
+//            return false;
+        if (leftEType != null && rightEType != null
+                && !inferenceChecker.isSubtype(leftEType, rightEType)
+                && !inferenceChecker.isSubtype(rightEType, leftEType))
             return false;
 
         Tree leftTree = left.getTree();
@@ -916,6 +960,10 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                 || !(right instanceof AdaptReference) && right.getRefName().equals("#INTERNAL#"))
             return false;
         // no subclass constraints
+        // Nov 29, 2013: Actuall we need such constraints. For the 
+        // abstract method String getSQLString() in hibernate, we want 
+        // to connect THIS and RET because one of its subclasses
+        // connects THIS and RET
         Element leftElt = null, rightElt = null;
         if ((leftElt = left.getElement()) != null && (rightElt = right.getElement()) != null) {
             if (leftElt.getKind() == ElementKind.PARAMETER 
@@ -946,21 +994,25 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             Reference ref = null;
             List<Constraint> tmplist = new LinkedList<Constraint>();
             // Step 1: field read
+            // Nov 26, 2013: add linear constraint for array fields
             if ((left instanceof FieldAdaptReference) 
                     && (ref = ((FieldAdaptReference) left).getDeclRef()) != null
-                    && ref.getAnnotations().size() == 1 
-                    && ref.getAnnotations().contains(SFlowChecker.POLY)) {
+                    && (/*inferenceChecker instanceof SFlowChecker && ((SFlowChecker) inferenceChecker).isInferLibrary()
+                        ||*/ ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(SFlowChecker.POLY)
+                        || ((FieldAdaptReference) left).getContextRef() instanceof ArrayReference)) {
                 Constraint linear = new SubtypeConstraint(
-                            ((FieldAdaptReference) left).getContextRef(), right);
+                            ((FieldAdaptReference) left).getContextRef(), right, c.getID());
                 tmplist.add(linear);
             }
             // Step 2: field write
+            // Nov 26, 2013: add linear constraint for array fields
             else if ((right instanceof FieldAdaptReference) 
                     && (ref = ((FieldAdaptReference) right).getDeclRef()) != null
-                    && ref.getAnnotations().size() == 1 
-                    && ref.getAnnotations().contains(SFlowChecker.POLY)) {
+                    && (/*inferenceChecker instanceof SFlowChecker && ((SFlowChecker) inferenceChecker).isInferLibrary()
+                        ||*/ ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(SFlowChecker.POLY)
+                        || ((FieldAdaptReference) right).getContextRef() instanceof ArrayReference)) {
                 Constraint linear = new SubtypeConstraint(
-                            left, ((FieldAdaptReference) right).getContextRef());
+                            left, ((FieldAdaptReference) right).getContextRef(), c.getID());
                 tmplist.add(linear);
             }
             // Step 3: linear constraints
@@ -968,31 +1020,21 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                     && canConnectVia(left, right)) {
                 for (Reference r : left.getLessSet()) {
                     if (!r.equals(right) && (right.getElement() != null || r.getElement() != null)) {
-                        Constraint linear = new SubtypeConstraint(r, right);
+                        Constraint linear = new SubtypeConstraint(r, right, c.getID());
                         tmplist.add(linear);
                     }
                 }
                 for (Reference r : right.getGreaterSet()) {
                     if (!left.equals(r) && (left.getElement() != null || r.getElement() != null)) {
-                        Constraint linear = new SubtypeConstraint(left, r);
+                        Constraint linear = new SubtypeConstraint(left, r, c.getID());
                         tmplist.add(linear);
                     }
                 }
                 // if c is a new linear constraint between parameters
                 // and returns, add it into original constraints
-                if (!constraints.contains(c)) {
-                    Element elt = null;
+                if (!constraints.contains(c) && isParamReturnConstraint(c)) {
                     // param/this -> return/param/this
-                     if ((elt = left.getElement()) != null 
-                                && (elt.getKind() == ElementKind.PARAMETER 
-                                    || left.getRefName().startsWith("THIS_"))
-                             && (elt = right.getElement()) != null 
-                                && (right.getRefName().startsWith("RET_")
-                                    || right.getRefName().startsWith("THIS_")
-                                    || elt.getKind() == ElementKind.PARAMETER)) {
-                         System.out.println("added: " + c);
-                         constraints.add(c);
-                    }
+                     constraints.add(c);
                 }
                 // look for method adapt constraint
                 Set<Reference> contextSetLeft = declRefToContextRefs.get(left.getId());
@@ -1019,11 +1061,19 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                     MethodAdaptReference mr = new MethodAdaptReference(rcvRef, parPrime);
                     List<Reference> xs = getRelatedReferences(mr, true/*onLeft*/);
                     for (Reference x : xs) {
-                        Constraint linear = new SubtypeConstraint(left, x);
+                        int retConId = -1;
+                        List<Constraint> relatedCons = refToConstraints.get(parRef.getId());
+                        for (Constraint relatedCon : relatedCons) {
+                            if (relatedCon.getRight().equals(parPrime)) {
+                                retConId = relatedCon.getID();
+                                break;
+                            }
+                        }
+                        Constraint linear = new SubtypeConstraint(left, x, new int[]{c.getID(), retConId});
                         tmplist.add(linear);
                         // add it into original constraints
                         if (!constraints.contains(linear)) {
-                            System.out.println("added2: " + linear);
+//                            System.out.println("added2: " + linear);
                             constraints.add(linear);
                         }
                     }
@@ -1038,14 +1088,22 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                         && (elt = ref.getElement()) != null
                         && inferenceChecker.isFromLibrary(elt)) {
                     // z <: (y |> par)
-                    Constraint linear = new SubtypeConstraint(left, ((MethodAdaptReference) right).getContextRef());
+                    // Nov 26, 2013: if z is NewClassTree/NewArrayTree
+                    Constraint linear;
+                    Tree ltree = null; 
+                    if ((ltree = left.getTree()) != null 
+                            && (ltree instanceof NewClassTree || ltree instanceof NewArrayTree)
+                            && ref.getRefName().startsWith("THIS_")) 
+                        linear = new SubtypeConstraint(((MethodAdaptReference) right).getContextRef(), left, c.getID());
+                    else
+                        linear = new SubtypeConstraint(left, ((MethodAdaptReference) right).getContextRef(), c.getID());
                     tmplist.add(linear);
                 } else if (!(right instanceof AdaptReference) && (left instanceof MethodAdaptReference)
                         && (ref = ((MethodAdaptReference) left).getDeclRef()) != null
                         && (elt = ref.getElement()) != null
                         && inferenceChecker.isFromLibrary(elt)) {
                     // y |> ret <: x
-                    Constraint linear = new SubtypeConstraint(((MethodAdaptReference) left).getContextRef(), right);
+                    Constraint linear = new SubtypeConstraint(((MethodAdaptReference) left).getContextRef(), right, c.getID());
                     tmplist.add(linear);
                 }
             }
@@ -1068,19 +1126,39 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 //                if (!canConnectVia(linear.getLeft(), linear.getRight()))
 //                    continue;
 
+//                if (linear.getLeft().getId() == 509811 && linear.getRight().getId() == 428153) 
+//                    System.out.println();
+
+                // Should be in the same file or they are subclasses
+//                String leftFile = linear.getLeft().getFileName();
+//                String rightFile = linear.getRight().getFileName();
+                TypeElement leftEType = linear.getLeft().getEnclosingType();
+                TypeElement rightEType = linear.getRight().getEnclosingType();
                 if (!c.equals(linear) && !cons.contains(linear)
                         && linear.getLeft().getId() != linear.getRight().getId()
-                        && !tmpNewConstraints.contains(linear) && !newCons.contains(linear)) {
+                        && !tmpNewConstraints.contains(linear) 
+                        && !newCons.contains(linear)
+//                        && (leftFile == null || rightFile == null || leftFile.equals(rightFile))
+                        && (leftEType == null || rightEType == null 
+                            || inferenceChecker.isSubtype(leftEType, rightEType)
+                            || inferenceChecker.isSubtype(rightEType, leftEType))
+                        ) {
                     newCons.add(linear);
-                    queue.add(linear);
                     linear.getLeft().addGreaterRef(linear.getRight());
                     linear.getRight().addLessRef(linear.getLeft());
+                    buildRefToConstraintMapping(linear);
+                    queue.add(linear);
                 } else if (!(linear.getLeft() instanceof AdaptReference) 
                         && (linear.getRight() instanceof MethodAdaptReference)) 
                     queue.add(linear); // add method adapt constraint
             }
         }
         return newCons;
+    }
+
+
+    public List<Constraint> getUpdatedConstraints() {
+        return new ArrayList<Constraint>(constraints);
     }
 
 }
