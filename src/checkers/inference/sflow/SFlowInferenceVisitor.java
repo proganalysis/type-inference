@@ -336,13 +336,13 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 
 	@Override
 	protected void handleFieldRead(Reference lhsRef, Reference rcvRef, Reference fieldRef) {
-		super.handleFieldRead(lhsRef, rcvRef, fieldRef);
-		// The instant field cannot be Tainted
-		// WEI: now we enforce it in SFlowAnnotatedTypeFactory
-//		Element fieldElt = fieldRef.getElement();
-//		if (!ElementUtils.isStatic(fieldElt) && fieldRef.getAnnotations().isEmpty())
-//			addInequalityConstraint(fieldRef,
-//					Reference.createConstantReference(checker.TAINTED));
+		Element fieldElt = fieldRef.getElement();
+    	if (!ElementUtils.isStatic(fieldElt)) {
+	    	Reference msAdaptRef = getFieldAdaptReference(rcvRef, 
+	    			fieldRef, lhsRef);
+			addSubtypeConstraint(msAdaptRef, lhsRef);
+	    } else
+			addSubtypeConstraint(fieldRef, lhsRef);
 	}
 
 
@@ -360,13 +360,13 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 
 	@Override
 	protected void handleFieldWrite(Reference rcvRef, Reference fieldRef, Reference rhsRef) {
-		super.handleFieldWrite(rcvRef, fieldRef, rhsRef);
-		// The instant field cannot be Tainted
-		// WEI: now we enforce it in SFlowAnnotatedTypeFactory
-//		Element fieldElt = fieldRef.getElement();
-//		if (!ElementUtils.isStatic(fieldElt) && fieldRef.getAnnotations().isEmpty())
-//			addInequalityConstraint(fieldRef,
-//					Reference.createConstantReference(checker.TAINTED));
+		Element fieldElt = fieldRef.getElement();
+		if (!ElementUtils.isStatic(fieldElt)) {
+			// Get the adapt context's reference
+			Reference adaptRef = getFieldAdaptReference(rcvRef, fieldRef, null);
+			addSubtypeConstraint(rhsRef, adaptRef);
+		} else 
+			addSubtypeConstraint(rhsRef, fieldRef);
 	}
 
 

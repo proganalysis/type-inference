@@ -25,6 +25,8 @@ import checkers.inference.InferenceChecker;
 import checkers.inference.InferenceMain;
 import checkers.inference.InferenceUtils;
 import checkers.inference.MaximalTypingExtractor;
+import checkers.inference.sflow.SFlowTypingExtractor;
+import checkers.inference.sflow.SFlowChecker;
 import checkers.inference.Reference;
 import checkers.inference.SetbasedSolver;
 import checkers.inference.TypingExtractor;
@@ -129,21 +131,22 @@ public class InferenceMainSFlow extends InferenceMain {
 		}
 		solver = new WorklistSetbasedSolver(inferenceChecker, Reference.getExpReferences(), constraints);
 		// FIXME: output constraints
-		if (InferenceChecker.DEBUG) {
-			try {
-				pw = new PrintWriter(InferenceMainSFlow.outputDir
-						+ File.separator + "tf-constraints.log");
-                for (Constraint c : constraints) {
-                    pw.println(c.toString());
-                }
-				pw.close();
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+//        if (InferenceChecker.DEBUG) {
+//            try {
+//                pw = new PrintWriter(InferenceMainSFlow.outputDir
+//                        + File.separator + "tf-constraints.log");
+//                for (Constraint c : constraints) {
+//                    pw.println(c.toString());
+//                }
+//                pw.close();
+//                
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
 		conflictConstraints = solver.solve();
-		currentExtractor = new MaximalTypingExtractor(inferenceChecker, Reference.getExpReferences(), constraints);
+//        currentExtractor = new MaximalTypingExtractor(inferenceChecker, Reference.getExpReferences(), constraints);
+		currentExtractor = new SFlowTypingExtractor((SFlowChecker)inferenceChecker, Reference.getExpReferences(), solver.getUpdatedConstraints());
 		List<Constraint> typeErrors = currentExtractor.extractConcreteTyping(conflictConstraints.size());
 		boolean beforeResolve = false;
 		if (typeErrors.isEmpty()) {

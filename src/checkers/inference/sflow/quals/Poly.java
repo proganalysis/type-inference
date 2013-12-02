@@ -15,7 +15,7 @@ import checkers.quals.TypeQualifier;
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Secret.class})
+@SubtypeOf({Top.class, Secret.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Poly {
     

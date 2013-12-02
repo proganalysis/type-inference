@@ -425,6 +425,9 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 			// Add subtype constraint
 			Reference initilizerRef = Reference.createReference(initializer, 
 					factory);
+
+            if (varRef.getId() == 429185)
+                System.out.println();
 //            generateConstraint(initilizerRef, initializer);
 			
 			// FIXME: The field should be accessed by adapting it from PoV
@@ -1109,7 +1112,8 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 				Reference adaptRef = getMethodAdaptReference(rcvRef, 
 						returnRef, lhsRef, tree);
 				addSubtypeConstraint(adaptRef, lhsRef);
-			} else if (isConstructor(methodElt)){
+			} else if (isConstructor(methodElt) || tree instanceof NewClassTree 
+                    || tree instanceof NewArrayTree){
 				// It is a constructor, we connect rcvRef and lhsRef
 				addSubtypeConstraint(rcvRef, lhsRef);
 			}
@@ -1164,10 +1168,11 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 	}
 	
 	protected boolean isConstructor(ExecutableElement methodElt) {
-		Tree tree = factory.getDeclaration(methodElt);
-		if (tree != null && tree instanceof MethodTree)
-			return TreeUtils.isConstructor((MethodTree) tree);
-		return false;
+//        Tree tree = factory.getDeclaration(methodElt);
+//        if (tree != null && tree instanceof MethodTree)
+//            return TreeUtils.isConstructor((MethodTree) tree);
+//        return false;
+        return methodElt.getKind() == ElementKind.CONSTRUCTOR;
 	}
 	
 	

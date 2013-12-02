@@ -4,6 +4,7 @@
 package checkers.inference;
 
 import com.sun.source.tree.Tree;
+import java.util.Arrays;
 
 /**
  * There are three types of constraints currently
@@ -16,6 +17,8 @@ public abstract class Constraint {
 	Reference right;
 	Reference ref;
 	Tree tree;
+
+    int[] causeIDs; // this constraint may be generated due to other constraints
 	
 	int id; 
 	private static int counter = 0;
@@ -68,14 +71,24 @@ public abstract class Constraint {
 
 	public static class SubtypeConstraint extends Constraint {
 		public SubtypeConstraint(Reference sub, Reference sup) {
+            this(sub, sup, null);
+		}
+
+		public SubtypeConstraint(Reference sub, Reference sup, int causeId) {
+            this(sub, sup, new int[]{causeId});
+		}
+
+		public SubtypeConstraint(Reference sub, Reference sup, int[] causeIDs) {
 			super();
 			this.left = sub;
 			this.right = sup;
+            this.causeIDs = causeIDs;
 		}
 		
 		@Override
 		public String toString() {
-			return "SUB-" + id + ": " + left.toAnnotatedString() + "  <:  " + right.toAnnotatedString();
+			return "SUB-" + id + ": " + left.toAnnotatedString() + "  <:  " + right.toAnnotatedString() 
+                + (causeIDs == null ? "" : " caused by " + Arrays.toString(causeIDs));
 		}
 
 		@Override
@@ -96,14 +109,24 @@ public abstract class Constraint {
 	
 	public static class EqualityConstraint extends Constraint {
 		public EqualityConstraint(Reference left, Reference right) {
+            this(left, right, null);
+		}
+
+		public EqualityConstraint(Reference left, Reference right, int causeId) {
+            this(left, right, new int[]{causeId});
+		}
+
+		public EqualityConstraint(Reference left, Reference right, int[] causeIDs) {
 			super();
 			this.left = left;
 			this.right = right;
+            this.causeIDs = causeIDs;
 		}
 		
 		@Override
 		public String toString() {
-			return "EQU-" + id + ": " + left.toAnnotatedString() + "  ==  " + right.toAnnotatedString();
+			return "EQU-" + id + ": " + left.toAnnotatedString() + "  ==  " + right.toAnnotatedString()
+                + (causeIDs == null ? "" : " caused by " + Arrays.toString(causeIDs));
 		}
 		@Override
 		public boolean isSimilar(Constraint c) {
@@ -123,14 +146,24 @@ public abstract class Constraint {
 	
 	public static class UnequalityConstraint extends Constraint {
 		public UnequalityConstraint(Reference left, Reference right) {
+            this(left, right, null);
+		}
+
+		public UnequalityConstraint(Reference left, Reference right, int causeId) {
+            this(left, right, new int[]{causeId});
+        }
+
+		public UnequalityConstraint(Reference left, Reference right, int[] causeIDs) {
 			super();
 			this.left = left;
 			this.right = right;
+            this.causeIDs = causeIDs;
 		}
 		
 		@Override
 		public String toString() {
-			return "UNE-" + id + ": " + left.toAnnotatedString() + "  !=  " + right.toAnnotatedString();
+			return "UNE-" + id + ": " + left.toAnnotatedString() + "  !=  " + right.toAnnotatedString()
+                + (causeIDs == null ? "" : " caused by " + Arrays.toString(causeIDs));
 		}
 		@Override
 		public boolean isSimilar(Constraint c) {

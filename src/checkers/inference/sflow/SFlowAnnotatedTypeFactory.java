@@ -73,7 +73,7 @@ public class SFlowAnnotatedTypeFactory extends
 		// in the InferenceVisitor by adding an Inequality 
 		// constraint like arrays
 		if (!ElementUtils.isStatic(varElt)
-				&& !checker.isInferLibrary()
+//                && !checker.isInferLibrary()
 				) {
 			type.addAnnotation(checker.SECRET);
 			type.addAnnotation(checker.POLY);
