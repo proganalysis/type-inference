@@ -689,8 +689,8 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
         Tree tree = TreeUtils.enclosingOfKind(getInferenceTreePath(), kinds);
         if (tree != null) {
             // use constant reference
-			String id = "callsite_" + factory.getFileName(tree) + ":"
-                    + factory.getLineNumber(tree) + ":"                    
+			String id = factory.getFileName(tree) + ":"
+                    + factory.getLineNumber(tree) + ":(callsite)"                    
 					+ tree.toString();
             Reference callRef = Reference.createConstantReference(
                     checker.getSourceLevelQualifiers(), id);

@@ -97,7 +97,7 @@ public class SFlowTypingExtractor implements TypingExtractor {
         return false;
     }
 
-    private void setPolyLibraryMethods(List<Constraint> cons, Map<String, Reference> solution) {
+    private void setPolyLibraryMethods(List<Reference> refs, List<Constraint> cons, Map<String, Reference> solution) {
 		Set<AnnotationMirror> sflowSet = AnnotationUtils.createAnnotationSet();
 		sflowSet.add(SFlowChecker.SECRET);
 		sflowSet.add(SFlowChecker.POLY);
@@ -144,6 +144,25 @@ public class SFlowTypingExtractor implements TypingExtractor {
                 }
             }
         }
+        for (Reference ref : refs) {
+            Element elt = null;
+            Set<AnnotationMirror> annos = ref.getAnnotations(); 
+            if ((elt = ref.getElement()) != null 
+                && InferenceUtils.intersectAnnotations(sflowSet, annos).size() == 3
+                && (elt.getKind() == ElementKind.PARAMETER 
+                    || ref.getRefName().startsWith("RET_")
+                    || ref.getRefName().startsWith("THIS_"))) {
+                Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+                if (ref.getRefName().startsWith("RET_"))
+                    set.add(SFlowChecker.BOTTOM);
+                else
+                    set.add(SFlowChecker.TOP);
+                ref.setAnnotations(set);
+                if (InferenceChecker.DEBUG) {
+                    System.out.println("INFO: set " + ref + " from " + annos + " to " + set);
+                }
+            }
+        }
     }
 	
 	/**
@@ -157,7 +176,15 @@ public class SFlowTypingExtractor implements TypingExtractor {
 		maximalSolution = new HashMap<String, Reference>();
 
         if (inferenceChecker.isInferLibrary()) {
-//            setPolyLibraryMethods(constraints, maximalSolution);
+            setPolyLibraryMethods(exprRefs, constraints, maximalSolution);
+            ConstraintSolver solver = new WorklistSetbasedSolver(inferenceChecker, exprRefs, constraints);
+            typeErrors = solver.solve();
+            if (!typeErrors.isEmpty()) {
+                for (Constraint c : typeErrors)
+                    System.out.println(c);
+                System.out.println("There are " + typeErrors.size() + " type errors after setting Poly");
+                return typeErrors;
+            }
         }
 		
         List<Reference> copyRefs = copyReferences(exprRefs);

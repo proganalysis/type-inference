@@ -1073,7 +1073,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
             Reference lhsRef, Tree tree) {
 		if (lhsRef == null) {
 			// WEI: Added on Dec 9, 2012
-			lhsRef = Reference.createConstantReference(checker.getSourceLevelQualifiers(), "DummyLHS");
+			lhsRef = Reference.createConstantReference(checker.getSourceLevelQualifiers()/*, "DummyLHS"*/);
 		}
 		Reference methodRef = Reference.createReference(methodElt, factory);
 		if (!ElementUtils.isStatic(methodElt) && rcvRef != null) {
