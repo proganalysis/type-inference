@@ -265,6 +265,9 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 		// Get the references
 		Reference subRef = c.getLeft();
 		Reference supRef = c.getRight();
+
+//        if (c.getLeft().getId() == 382461 && c.getRight().getId() == 382489)
+//            System.out.println();
 		
 		boolean hasUpdate = false;		
 		
@@ -640,8 +643,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 			throw new SetbasedSolverException("ERROR: Empty set for declRef in AdaptConstraint");
 
         // Nov 22, 2013: Skip updating CONSTANT method adaptation context
-	    if (aRef instanceof MethodAdaptReference)
-            return setAnnotations(declRef, declAnnos);
+//        if (aRef instanceof MethodAdaptReference)
+//            return setAnnotations(declRef, declAnnos);
 
 		return setAnnotations(contextRef, contextAnnos)
 				|| setAnnotations(declRef, declAnnos);
@@ -1074,7 +1077,9 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                         // add it into original constraints
                         if (!constraints.contains(linear)) {
 //                            System.out.println("added2: " + linear);
-                            constraints.add(linear);
+//                            constraints.add(linear);
+//                            if (linear.getLeft().getId() == 382461 && linear.getRight().getId() == 382489)
+//                                System.out.println();
                         }
                     }
                 }
