@@ -47,8 +47,8 @@ import checkers.inference.reim.quals.Polyread;
 import checkers.inference.reim.quals.Readonly;
 import checkers.inference.sflow.quals.Bottom;
 import checkers.inference.sflow.quals.Poly;
-import checkers.inference.sflow.quals.Secret;
 import checkers.inference.sflow.quals.Tainted;
+import checkers.inference.sflow.quals.Safe;
 import checkers.inference.sflow.quals.Top;
 import checkers.inference.sflow.quals.Uncheck;
 import checkers.quals.TypeQualifiers;
@@ -78,11 +78,11 @@ import com.sun.tools.javac.code.Type.WildcardType;
  */
 @SupportedOptions({ "warn", "checking", "insertAnnos", "debug", "noReim", "inferLibrary", "polyLibrary", "sourceSinkOnly", "inferAndroidApp" })
 @TypeQualifiers({ Uncheck.class, Readonly.class, Polyread.class, Mutable.class,
-		Poly.class, Secret.class, Tainted.class, Bottom.class, Top.class })
+		Poly.class, Tainted.class, Safe.class, Bottom.class, Top.class })
 public class SFlowChecker extends InferenceChecker {
 
 	public static AnnotationMirror UNCHECK, READONLY, POLYREAD, MUTABLE, POLY,
-			SECRET, TAINTED, BOTTOM, TOP;
+			TAINTED, SAFE, BOTTOM, TOP;
 
 	private Map<String, Integer> annoWeights = new HashMap<String, Integer>();
 
@@ -109,8 +109,8 @@ public class SFlowChecker extends InferenceChecker {
 		super.initChecker(processingEnv);
 		annoFactory = AnnotationUtils.getInstance(env);
 		POLY = annoFactory.fromClass(Poly.class);
-		SECRET = annoFactory.fromClass(Secret.class);
 		TAINTED = annoFactory.fromClass(Tainted.class);
+		SAFE = annoFactory.fromClass(Safe.class);
 		BOTTOM = annoFactory.fromClass(Bottom.class);
 		TOP = annoFactory.fromClass(Top.class);
 
@@ -120,14 +120,14 @@ public class SFlowChecker extends InferenceChecker {
 		POLYREAD = annoFactory.fromClass(Polyread.class);
 		MUTABLE = annoFactory.fromClass(Mutable.class);
 
-		annoWeights.put(SECRET.toString(), 1);
+		annoWeights.put(TAINTED.toString(), 1);
 		annoWeights.put(POLY.toString(), 3);
-		annoWeights.put(TAINTED.toString(), 5);
+		annoWeights.put(SAFE.toString(), 5);
 
 		sourceAnnos = new HashSet<AnnotationMirror>(4);
-		sourceAnnos.add(SECRET);
-		sourceAnnos.add(POLY);
 		sourceAnnos.add(TAINTED);
+		sourceAnnos.add(POLY);
+		sourceAnnos.add(SAFE);
 		sourceAnnos.add(BOTTOM);
 //        sourceAnnos.add(TOP);
 
@@ -349,9 +349,9 @@ public class SFlowChecker extends InferenceChecker {
 	@Override
 	public void fillAllPossibleAnnos(List<Reference> refs) {
 		Set<AnnotationMirror> sflowSet = AnnotationUtils.createAnnotationSet();
-		sflowSet.add(SECRET);
-		sflowSet.add(POLY);
 		sflowSet.add(TAINTED);
+		sflowSet.add(POLY);
+		sflowSet.add(SAFE);
 		
 		Set<AnnotationMirror> reimSet = AnnotationUtils.createAnnotationSet();
 		reimSet.add(READONLY);
@@ -465,10 +465,10 @@ public class SFlowChecker extends InferenceChecker {
 		}
 		if (declStr.equals(POLY.toString()))
 			return contextAnno;
+		else if (declStr.equals(SAFE.toString()))
+			return SAFE;
 		else if (declStr.equals(TAINTED.toString()))
 			return TAINTED;
-		else if (declStr.equals(SECRET.toString()))
-			return SECRET;
 		return null;
 	}
 
@@ -578,9 +578,9 @@ public class SFlowChecker extends InferenceChecker {
 			}
 		});
 
-		int secretNum = 0, polyNum = 0, taintedNum = 0;
+		int taintedNum = 0, polyNum = 0, safeNum = 0;
 		int totalElementNum = 0;
-		int localSecretNum = 0, localPolyNum = 0, localTaintedNum = 0;
+		int localTaintedNum = 0, localPolyNum = 0, localSafeNum = 0;
 		
 		for (Reference ref : lst) {
 //			AnnotatedTypeMirror tmpType = null;
@@ -602,12 +602,12 @@ public class SFlowChecker extends InferenceChecker {
 				if (!ElementUtils.isStatic(ref.getElement())) {
 					totalElementNum++;
 					AnnotatedTypeMirror rcvType = eRef.getReceiverRef().getAnnotatedType();
-					if (rcvType.hasAnnotation(SECRET))
-						secretNum++;
+					if (rcvType.hasAnnotation(TAINTED))
+						taintedNum++;
 					else if (rcvType.hasAnnotation(POLY))
 						polyNum++;
-					else if (rcvType.hasAnnotation(TAINTED))
-						taintedNum++;
+					else if (rcvType.hasAnnotation(SAFE))
+						safeNum++;
 					else 
 						System.err.println("WARN: Unknown type! " + rcvType);
 				}
@@ -616,12 +616,12 @@ public class SFlowChecker extends InferenceChecker {
 				if (returnType != null
 						&& returnType.getKind() != TypeKind.VOID) {
 					totalElementNum++;
-					if (returnType.hasAnnotation(SECRET))
-						secretNum++;
+					if (returnType.hasAnnotation(TAINTED))
+						taintedNum++;
 					else if (returnType.hasAnnotation(POLY))
 						polyNum++;
-					else if (returnType.hasAnnotation(TAINTED))
-						taintedNum++;
+					else if (returnType.hasAnnotation(SAFE))
+						safeNum++;
 					else 
 						System.err.println("WARN: Unknown type! " + returnType);
 				}
@@ -637,18 +637,18 @@ public class SFlowChecker extends InferenceChecker {
 					AnnotatedTypeMirror type = ref.getAnnotatedType();
 					if (type.getKind() != TypeKind.VOID) {
 						totalElementNum++;
-						if (type.hasAnnotation(SECRET)) {
-							secretNum++;
+						if (type.hasAnnotation(TAINTED)) {
+							taintedNum++;
 							if (ref.getElement().getKind() == ElementKind.LOCAL_VARIABLE)
-								localSecretNum++;
+								localTaintedNum++;
 						} else if (type.hasAnnotation(POLY)) {
 							polyNum++;
 							if (ref.getElement().getKind() == ElementKind.LOCAL_VARIABLE)
 								localPolyNum++;
-						} else if (type.hasAnnotation(TAINTED)) {
-							taintedNum++;
+						} else if (type.hasAnnotation(SAFE)) {
+							safeNum++;
 							if (ref.getElement().getKind() == ElementKind.LOCAL_VARIABLE)
-								localTaintedNum++;
+								localSafeNum++;
 						} else 
 							System.err.println("WARN: Unknown type! " + type);
 					}
@@ -657,25 +657,25 @@ public class SFlowChecker extends InferenceChecker {
 			// statistics
 		}
 		
-		String s = "INFO: There are " + secretNum + " ("
-				+ (((float) secretNum / totalElementNum) * 100)
+		String s = "INFO: There are " + taintedNum + " ("
+				+ (((float) taintedNum / totalElementNum) * 100)
 				+ "%) secret, " + polyNum + " ("
 				+ (((float) polyNum / totalElementNum) * 100)
-				+ "%) poly and " + taintedNum + " ("
-				+ (((float) taintedNum / totalElementNum) * 100) + "%) tainted"
+				+ "%) poly and " + safeNum + " ("
+				+ (((float) safeNum / totalElementNum) * 100) + "%) safe"
 				+ " references out of " + totalElementNum + " references";
 		
-		secretNum = secretNum - localSecretNum;
-		polyNum = polyNum - localPolyNum;
 		taintedNum = taintedNum - localTaintedNum;
-		totalElementNum = totalElementNum - localSecretNum - localPolyNum - localTaintedNum;
+		polyNum = polyNum - localPolyNum;
+		safeNum = safeNum - localSafeNum;
+		totalElementNum = totalElementNum - localTaintedNum - localPolyNum - localSafeNum;
 		
-		String s2 = "INFO: There are " + secretNum + " ("
-				+ (((float) secretNum / totalElementNum) * 100)
+		String s2 = "INFO: There are " + taintedNum + " ("
+				+ (((float) taintedNum / totalElementNum) * 100)
 				+ "%) secret, " + polyNum + " ("
 				+ (((float) polyNum / totalElementNum) * 100)
-				+ "%) poly and " + taintedNum + " ("
-				+ (((float) taintedNum / totalElementNum) * 100) + "%) tainted"
+				+ "%) poly and " + safeNum + " ("
+				+ (((float) safeNum / totalElementNum) * 100) + "%) safe"
 				+ " references out of " + totalElementNum + " references excluding local variables";
 		
 		System.out.println(s);
@@ -778,69 +778,69 @@ public class SFlowChecker extends InferenceChecker {
 			Element declElt = declRef.getElement();
 			// if (declElt != null && declElt.getKind() == ElementKind.FIELD
 			// && declRef.getAnnotations().size() > 1
-			// && declRef.getAnnotations().contains(TAINTED)) {
+			// && declRef.getAnnotations().contains(SAFE)) {
 			// Set<AnnotationMirror> annos = declRef.getAnnotations();
-			// annos.remove(TAINTED);
+			// annos.remove(SAFE);
 			// declRef.setAnnotations(annos);
 			// }
 
-			// Conflict due to Tainted RET
+			// Conflict due to Safe RET
 			// Element declElt = declRef.getElement();
 			// if (declElt != null && declElt.getKind() == ElementKind.METHOD
 			// && declRef.getReadableName() != null
 			// && declRef.getReadableName().startsWith("RET_")
 			// && declRef.getAnnotations().size() > 1
-			// && declRef.getAnnotations().contains(TAINTED)) {
+			// && declRef.getAnnotations().contains(SAFE)) {
 			// Set<AnnotationMirror> annos = declRef.getAnnotations();
-			// annos.remove(TAINTED);
+			// annos.remove(SAFE);
 			// declRef.setAnnotations(annos);
 			// }
 
 			if (contextRef.getAnnotations().size() > 1
 					&& (contextElt == null || contextElt.getKind() != ElementKind.FIELD)
-					&& contextRef.getAnnotations().contains(SECRET)) {
+					&& contextRef.getAnnotations().contains(TAINTED)) {
 				Set<AnnotationMirror> annos = contextRef.getAnnotations();
-				annos.remove(SECRET);
+				annos.remove(TAINTED);
 				contextRef.setAnnotations(annos);
 			} else if (outRef.getAnnotations().size() == 1
-					&& outRef.getAnnotations().contains(TAINTED)
+					&& outRef.getAnnotations().contains(SAFE)
 					&& declElt != null
 					&& declElt.getKind() == ElementKind.FIELD
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(POLY)
-					&& declRef.getAnnotations().contains(TAINTED)) {
-				// set declRef as TAINTED
+					&& declRef.getAnnotations().contains(SAFE)) {
+				// set declRef as SAFE
 				Set<AnnotationMirror> annos = declRef.getAnnotations();
 				annos.clear();
 				// annos.add(POLY);
-				annos.add(TAINTED);
+				annos.add(SAFE);
 				declRef.setAnnotations(annos);
 			} else if (outRef.getAnnotations().size() == 1
-					&& outRef.getAnnotations().contains(TAINTED)
+					&& outRef.getAnnotations().contains(SAFE)
 					&& declElt != null
 					&& declElt.getKind() == ElementKind.METHOD
 					&& declRef.getRefName().startsWith("RET_")
 					&& declRef.getAnnotations().size() > 1
 					// && declRef.getAnnotations().contains(POLY)
-					&& declRef.getAnnotations().contains(TAINTED)) {
-				// set declRef as TAINTED
+					&& declRef.getAnnotations().contains(SAFE)) {
+				// set declRef as SAFE
 				Set<AnnotationMirror> annos = declRef.getAnnotations();
 				annos.clear();
-				annos.add(TAINTED);
+				annos.add(SAFE);
 				// annos.add(POLY);
 				declRef.setAnnotations(annos);
 			} else if (outRef.getAnnotations().size() == 1
-					&& outRef.getAnnotations().contains(TAINTED)
-					&& contextRef.getAnnotations().contains(TAINTED)
+					&& outRef.getAnnotations().contains(SAFE)
+					&& contextRef.getAnnotations().contains(SAFE)
 					&& contextRef.getAnnotations().contains(POLY)
 					&& (declElt == null || declElt.getKind() == ElementKind.PARAMETER)
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(POLY)
-					&& declRef.getAnnotations().contains(TAINTED)) {
+					&& declRef.getAnnotations().contains(SAFE)) {
 				// set declRef as POLY
 				Set<AnnotationMirror> annos = declRef.getAnnotations();
 				annos.clear();
-				annos.add(TAINTED);
+				annos.add(SAFE);
 				declRef.setAnnotations(annos);
 			}
 		}
@@ -868,13 +868,13 @@ public class SFlowChecker extends InferenceChecker {
 			Element declElt = declRef.getElement();
 
 			if (outRef.getAnnotations().size() == 1
-					&& outRef.getAnnotations().contains(TAINTED)
+					&& outRef.getAnnotations().contains(SAFE)
 					&& declElt != null
 					&& declElt.getKind() == ElementKind.FIELD
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(POLY)
-					&& declRef.getAnnotations().contains(TAINTED)) {
-				// set declRef as TAINTED
+					&& declRef.getAnnotations().contains(SAFE)) {
+				// set declRef as SAFE
 				if (declElt != null && declElt.toString().equals("length")
 						&& contextRef instanceof ArrayReference) {
 					// This is array.length
@@ -883,7 +883,7 @@ public class SFlowChecker extends InferenceChecker {
 				Set<AnnotationMirror> annos = declRef.getAnnotations();
 				annos.clear();
 				annos.add(POLY);
-				// annos.add(TAINTED);
+				// annos.add(SAFE);
 				declRef.setAnnotations(annos);
 				num++;
 				// System.out.println("Resolved: " + c.toString());
@@ -916,20 +916,20 @@ public class SFlowChecker extends InferenceChecker {
 			Element declElt = declRef.getElement();
 
 			if (outRef.getAnnotations().size() == 1
-					&& outRef.getAnnotations().contains(TAINTED)
+					&& outRef.getAnnotations().contains(SAFE)
 					&& declElt != null
 					&& declElt.getKind() == ElementKind.FIELD
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(POLY)
-					&& declRef.getAnnotations().contains(TAINTED)) {
-				// set declRef as TAINTED
+					&& declRef.getAnnotations().contains(SAFE)) {
+				// set declRef as SAFE
 				if (declElt != null && declElt.toString().equals("length")
 						&& contextRef instanceof ArrayReference) {
 					// This is array.length
 					Set<AnnotationMirror> annos = declRef.getAnnotations();
 					annos.clear();
 					annos.add(POLY);
-					// annos.add(TAINTED);
+					// annos.add(SAFE);
 					declRef.setAnnotations(annos);
 					num++;
 				}
@@ -960,13 +960,13 @@ public class SFlowChecker extends InferenceChecker {
 			Element declElt = declRef.getElement();
 
 			if (outRef.getAnnotations().size() == 1
-					&& outRef.getAnnotations().contains(TAINTED)
-					&& contextRef.getAnnotations().contains(TAINTED)
+					&& outRef.getAnnotations().contains(SAFE)
+					&& contextRef.getAnnotations().contains(SAFE)
 					&& contextRef.getAnnotations().contains(POLY)
 					&& (declElt == null || declElt.getKind() == ElementKind.PARAMETER)
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(POLY)
-					&& declRef.getAnnotations().contains(TAINTED)) {
+					&& declRef.getAnnotations().contains(SAFE)) {
 				// set declRef as POLY
 				Set<AnnotationMirror> annos = declRef.getAnnotations();
 				annos.clear();
@@ -974,7 +974,7 @@ public class SFlowChecker extends InferenceChecker {
 						|| !ElementUtils
 								.isStatic(declElt.getEnclosingElement())) {
 					// Nonstatic
-					annos.add(TAINTED);
+					annos.add(SAFE);
 				} else
 					annos.add(POLY);
 				declRef.setAnnotations(annos);
@@ -1006,13 +1006,13 @@ public class SFlowChecker extends InferenceChecker {
 			Element declElt = declRef.getElement();
 
 			if (outRef.getAnnotations().size() == 1
-					&& outRef.getAnnotations().contains(TAINTED)
+					&& outRef.getAnnotations().contains(SAFE)
 					&& declElt != null
 					&& declElt.getKind() == ElementKind.METHOD
 					&& declRef.getRefName().startsWith("RET_")
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(POLY)
-					&& declRef.getAnnotations().contains(TAINTED)) {
+					&& declRef.getAnnotations().contains(SAFE)) {
 				Set<AnnotationMirror> annos = declRef.getAnnotations();
 				annos.clear();
 				String methodSig = InferenceUtils.getMethodSignature(declElt);
@@ -1024,8 +1024,8 @@ public class SFlowChecker extends InferenceChecker {
 					}
 				}
 				if (!isSpecial) {
-					// set declRef as TAINTED
-					annos.add(TAINTED);
+					// set declRef as SAFE
+					annos.add(SAFE);
 				} else {
 					annos.add(POLY);
 				}
@@ -1059,24 +1059,24 @@ public class SFlowChecker extends InferenceChecker {
 
 			if (contextRef.getAnnotations().size() > 1
 					&& (contextElt == null || contextElt.getKind() != ElementKind.FIELD)
-					&& contextRef.getAnnotations().contains(SECRET)) {
+					&& contextRef.getAnnotations().contains(TAINTED)) {
 				Set<AnnotationMirror> annos = contextRef.getAnnotations();
-				annos.remove(SECRET);
+				annos.remove(TAINTED);
 				contextRef.setAnnotations(annos);
 				num++;
 			}
 			// else
 			// if (outRef.getAnnotations().size() == 1
-			// && outRef.getAnnotations().contains(TAINTED)
+			// && outRef.getAnnotations().contains(SAFE)
 			// && declElt != null && declElt.getKind() == ElementKind.FIELD
 			// && declRef.getAnnotations().size() > 1
 			// && declRef.getAnnotations().contains(POLY)
-			// && declRef.getAnnotations().contains(TAINTED)) {
-			// // set declRef as TAINTED
+			// && declRef.getAnnotations().contains(SAFE)) {
+			// // set declRef as SAFE
 			// Set<AnnotationMirror> annos = declRef.getAnnotations();
 			// annos.clear();
 			// annos.add(POLY);
-			// // annos.add(TAINTED);
+			// // annos.add(SAFE);
 			// declRef.setAnnotations(annos);
 			// num++;
 			// }
@@ -1296,7 +1296,7 @@ public class SFlowChecker extends InferenceChecker {
 		}
 		out.println();
 		out.println("package checkers.inference.sflow.quals:");
-		strs = new String[] { "@Secret", "@Poly", "@Tainted" };
+		strs = new String[] { "@Tainted", "@Poly", "@Safe" };
 		for (String s : strs) {
 			out.println("annotation "
 					+ s
@@ -1355,9 +1355,9 @@ public class SFlowChecker extends InferenceChecker {
 				if (anno.toString().equals(READONLY.toString())) {
 					sb.append(POLYREAD.toString() + " ");
 					sb.append(MUTABLE.toString() + " ");
-				} else if (anno.toString().equals(SECRET.toString())) {
+				} else if (anno.toString().equals(TAINTED.toString())) {
 					sb.append(POLY.toString() + " ");
-					sb.append(TAINTED.toString() + " ");
+					sb.append(SAFE.toString() + " ");
 				} 
 			}
 		}

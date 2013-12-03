@@ -99,9 +99,9 @@ public class SFlowTypingExtractor implements TypingExtractor {
 
     private void setPolyLibraryMethods(List<Reference> refs, List<Constraint> cons, Map<String, Reference> solution) {
 		Set<AnnotationMirror> sflowSet = AnnotationUtils.createAnnotationSet();
-		sflowSet.add(SFlowChecker.SECRET);
-		sflowSet.add(SFlowChecker.POLY);
 		sflowSet.add(SFlowChecker.TAINTED);
+		sflowSet.add(SFlowChecker.POLY);
+		sflowSet.add(SFlowChecker.SAFE);
         for (Constraint c : cons) {
             Reference left = c.getLeft();
             Reference right = c.getRight();

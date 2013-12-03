@@ -325,11 +325,11 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	@Override
 	protected void handleArrayRead(Reference lhsRef, Reference exprRef, Reference componentRef) {
 		super.handleArrayRead(lhsRef, exprRef, componentRef);
-		// The componentRef cannot be TAINTED
+		// The componentRef cannot be SAFE
 //        if (componentRef.getAnnotations().isEmpty()) {
         if (!checker.isAnnotated(componentRef)) {
 			addInequalityConstraint(componentRef,
-					Reference.createConstantReference(checker.TAINTED));
+					Reference.createConstantReference(checker.SAFE));
 		}
 	}
 
@@ -349,11 +349,11 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	@Override
 	protected void handleArrayWrite(Reference exprRef, Reference componentRef, Reference rhsRef) {
 		super.handleArrayWrite(exprRef, componentRef, rhsRef);
-		// The componentRef cannot be TAINTED
+		// The componentRef cannot be SAFE
 //        if (componentRef.getAnnotations().isEmpty()) {
         if (!checker.isAnnotated(componentRef)) {
 			addInequalityConstraint(componentRef,
-					Reference.createConstantReference(checker.TAINTED));
+					Reference.createConstantReference(checker.SAFE));
 		}
 	}
 
@@ -452,9 +452,9 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				|| ownerStr.equals("javax.servlet.http.HttpServletRequest"))
 				) {
 			// FIXME:  Special-case for methods in
-            // *ServletRequest. This is to prevent a @Secret/@Tainted 
+            // *ServletRequest. This is to prevent a @Tainted/@Safe 
             // request from making all of its methods return
-            // @Secret/@Tainted values
+            // @Tainted/@Safe values
             // We only generate constraints for actual arguments,
             // ignoring return values
 			int size = arguments.size();
@@ -464,10 +464,10 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				// Recursively generate constraints 
 				generateConstraint(argRef, argTree);
 			}
-            // If the return value is Secret, we simply enforce RET <:
+            // If the return value is Tainted, we simply enforce RET <:
             // LHS without adaptation (which is not necessary)
             if (((ExecutableReference) methodRef).getReturnRef().getAnnotations()
-                    .contains(checker.SECRET)) {
+                    .contains(checker.TAINTED)) {
                 addSubtypeConstraint(((ExecutableReference) methodRef).getReturnRef(), 
                         lhsRef);
             }

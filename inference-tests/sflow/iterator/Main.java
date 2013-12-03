@@ -32,11 +32,11 @@ class X {}
 
 class Main {
     public static void main() {
-        /*@Secret*/ X x = new X();
+        /*@Tainted*/ X x = new X();
         C c = new C();
         c.put(x);
         I i = c.iter();
-        /*@Tainted*/ X x2 = i.next();
+        /*@Safe*/ X x2 = i.next();
     }
 }
 

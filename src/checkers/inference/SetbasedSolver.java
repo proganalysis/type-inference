@@ -342,7 +342,7 @@ public class SetbasedSolver implements ConstraintSolver {
 		boolean hasUpdate = false;
 		if (inferenceChecker instanceof SFlowChecker 
 				&& ((SFlowChecker) inferenceChecker).isInferLibrary()
-				&& annos.size() == 1 && annos.contains(SFlowChecker.TAINTED)
+				&& annos.size() == 1 && annos.contains(SFlowChecker.SAFE)
 				) {
 			if (ref.getType() != null
 					&& ((SFlowChecker) inferenceChecker).isTaintableRef(ref)) {

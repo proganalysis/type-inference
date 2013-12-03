@@ -1,19 +1,19 @@
 package java.io;
-import checkers.inference.sflow.quals.Tainted;
+import checkers.inference.sflow.quals.Safe;
 import checkers.inference.reim.quals.*;
 
 import java.nio.channels.FileChannel;
 
 public class FileInputStream extends InputStream {
-    public FileInputStream(/*-@Tainted*/ String name) throws FileNotFoundException {
+    public FileInputStream(/*-@Safe*/ String name) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 
-    public FileInputStream(/*Tainted*/ File file) throws FileNotFoundException {
+    public FileInputStream(/*Safe*/ File file) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 
-    public FileInputStream(/*Tainted*/ FileDescriptor fdObj) {
+    public FileInputStream(/*Safe*/ FileDescriptor fdObj) {
         throw new RuntimeException("skeleton method");
     }
 

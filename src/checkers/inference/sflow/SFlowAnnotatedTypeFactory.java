@@ -69,13 +69,13 @@ public class SFlowAnnotatedTypeFactory extends
 		if (checker.isChecking() || checker.isAnnotated(type)) {
 			return;
 		}
-		// Field cannot be TAINTED. This can also be enforced 
+		// Field cannot be SAFE. This can also be enforced 
 		// in the InferenceVisitor by adding an Inequality 
 		// constraint like arrays
 		if (!ElementUtils.isStatic(varElt)
 //                && !checker.isInferLibrary()
 				) {
-			type.addAnnotation(checker.SECRET);
+			type.addAnnotation(checker.TAINTED);
 			type.addAnnotation(checker.POLY);
 		}
 	}
@@ -99,9 +99,9 @@ public class SFlowAnnotatedTypeFactory extends
 		}
 		
 		
-		// The return reference type can be TAINTED 
+		// The return reference type can be SAFE 
 		// Add default types for return
-		// FIXME: The return value of public library methods should not be SECRET
+		// FIXME: The return value of public library methods should not be TAINTED
 		// FIXME: It can be? (Mar 5)
 		AnnotatedTypeMirror returnType = methodType.getReturnType();
 		if (checker.isInferLibrary()) {
@@ -111,24 +111,24 @@ public class SFlowAnnotatedTypeFactory extends
 //				returnType.clearAnnotations();
 //				Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
 //				set.add(checker.POLY);
-//				set.add(checker.TAINTED); 
+//				set.add(checker.SAFE); 
 //				annotateConstants(returnType, set);
 			} 
 		} else if (returnType.getKind() != TypeKind.VOID){
 //			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-//			set.add(checker.SECRET);
+//			set.add(checker.TAINTED);
 //			set.add(checker.POLY);
 //			annotateConstants(returnType, set);
 		}
 		
 		
 		/*
-		 *  FIXME: Can the parameter of a public static method be Secret? 
+		 *  FIXME: Can the parameter of a public static method be Tainted? 
 		 *  I think it should be disallowed due to a constraint I observed:
-		 *  SUB-467018: ServletContextResource.java:73(580115):EXP_path{@Poly @Secret}  
-		 *  <:  (ServletContextResource.java:73(580114):EXP_StringUtils.cleanPath(path){@Tainted} 
-         *  			=m=> StringUtils.java:579(418091):VAR_path{@Poly @Secret})
-         *  Here, the parameter VAR_path is forced to be Secret, which
+		 *  SUB-467018: ServletContextResource.java:73(580115):EXP_path{@Poly @Tainted}  
+		 *  <:  (ServletContextResource.java:73(580114):EXP_StringUtils.cleanPath(path){@Safe} 
+         *  			=m=> StringUtils.java:579(418091):VAR_path{@Poly @Tainted})
+         *  Here, the parameter VAR_path is forced to be Tainted, which
          *  is not good. See Issue-3
 		 */
 		// FIXME: added on Mar 28, 2013
@@ -137,7 +137,7 @@ public class SFlowAnnotatedTypeFactory extends
 					!methodElt.getModifiers().contains(Modifier.PRIVATE)) {
 			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
 			set.add(checker.POLY);
-			set.add(checker.TAINTED); 
+			set.add(checker.SAFE); 
 			for (AnnotatedTypeMirror paramType : methodType.getParameterTypes()) {
 				if (!checker.isAnnotated(paramType)) 
 					annotateConstants(paramType, set);

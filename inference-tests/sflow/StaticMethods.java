@@ -6,13 +6,13 @@ public class StaticMethods {
     }
 
     public void m1() {
-        /*@checkers.inference.sflow.quals.Secret*/ String oldUrl = "";
+        /*@checkers.inference.sflow.quals.Tainted*/ String oldUrl = "";
         String newUrl = escape(oldUrl);
     }
 
     public void m2() {
-        /*@checkers.inference.sflow.quals.Secret*/ String oldUrl = "";
-        /*@checkers.inference.sflow.quals.Tainted*/ String newUrl = "";
+        /*@checkers.inference.sflow.quals.Tainted*/ String oldUrl = "";
+        /*@checkers.inference.sflow.quals.Safe*/ String newUrl = "";
         newUrl = escape(oldUrl);
     }
 }
