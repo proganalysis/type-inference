@@ -18,7 +18,7 @@ import checkers.quals.TypeQualifier;
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Top.class, Poly.class, Secret.class, Tainted.class})
+@SubtypeOf({Top.class, Poly.class, Tainted.class, Safe.class})
 //@ImplicitFor(
 //	types={TypeKind.NULL}
 //    )

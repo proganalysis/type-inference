@@ -488,8 +488,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 			return false;
 		
         // Skip for the following cases
-		if (preferSecret && annos.size() == 1 && annos.contains(SFlowChecker.TAINTED)
-				|| preferSecret && annos.size() == 2 && !annos.contains(SFlowChecker.SECRET)) {
+		if (preferSecret && annos.size() == 1 && annos.contains(SFlowChecker.SAFE)
+				|| preferSecret && annos.size() == 2 && !annos.contains(SFlowChecker.TAINTED)) {
 			if (currentConstraint != null) {
 				taintedSet.remove(currentConstraint);
 				taintedSet.add(currentConstraint);
@@ -498,11 +498,11 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 		}
         // For Issue-3:
         // Skip if setting the parameter of a non-private static methods
-        // to Secret by viewpoint adaptation. 
+        // to Tainted by viewpoint adaptation. 
         Element elt = null;
         if ((elt = ref.getElement()) != null && elt.getKind() == ElementKind.PARAMETER
                 && currentConstraint != null && (currentConstraint.getRight() instanceof MethodAdaptReference)
-                && annos.size() == 1 && annos.contains(SFlowChecker.SECRET)) {
+                && annos.size() == 1 && annos.contains(SFlowChecker.TAINTED)) {
             MethodAdaptReference mref = (MethodAdaptReference) currentConstraint.getRight();
             Tree tree = null;
             ExecutableElement methodElt = null;
@@ -520,7 +520,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 		boolean hasUpdate = false;
 		if (inferenceChecker instanceof SFlowChecker 
 				&& ((SFlowChecker) inferenceChecker).isInferLibrary()
-				&& annos.size() == 1 && annos.contains(SFlowChecker.TAINTED)
+				&& annos.size() == 1 && annos.contains(SFlowChecker.SAFE)
 				) {
 			if (ref.getType() != null
 					&& ((SFlowChecker) inferenceChecker).isTaintableRef(ref)) {
