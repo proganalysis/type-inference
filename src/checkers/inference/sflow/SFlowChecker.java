@@ -359,11 +359,15 @@ public class SFlowChecker extends InferenceChecker {
 		reimSet.add(MUTABLE);
 		
 		for (Reference ref : refs) {
-			Set<AnnotationMirror> annos = ref.getAnnotations();
+            if (ref instanceof ExecutableReference)
+                continue;
+//            Set<AnnotationMirror> annos = ref.getAnnotations();
 			// remove reim qualifiers
-			annos = InferenceUtils.differAnnotations(annos, reimSet);
-			if (InferenceUtils.intersectAnnotations(sflowSet, annos).isEmpty()) {
+//            annos = InferenceUtils.differAnnotations(annos, reimSet);
+//            if (InferenceUtils.intersectAnnotations(sflowSet, annos).isEmpty()) {
+            if (!isAnnotated(ref)) {
 				// WEI: move from annotateMethod on Mar 30, 2013
+                Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
 				Element elt = ref.getElement();
 				if (elt != null && isFromLibrary(elt) 
                         && isPolyLibrary()
