@@ -446,14 +446,14 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 			// FIXME: Incomplete fix for Issue-2
 			String key = ownerStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
 			Reference valueRef = Reference.createReference(arguments.get(ie.valueIndex), factory);
-			addMappingConstraint(key, valueRef, false);
+			addMappingConstraint(valueRef, key);
 			// Recursively generate constraints 
 			generateConstraint(valueRef, arguments.get(ie.valueIndex));
 		}
 		else if ((ie = isConstantGetMappingMethod(methodElt, arguments)) != null) {
 			// FIXME: Incomplete fix for Issue-2
 			String key = ownerStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
-			addMappingConstraint(key, lhsRef, true);
+			addMappingConstraint(key, lhsRef);
 		}
 		else if ((ownerStr.equals("javax.servlet.ServletRequest")
 				|| ownerStr.equals("javax.servlet.http.HttpServletRequest"))
@@ -594,7 +594,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 								factory);
 					String key = getArgumentSignature(mTree.getArguments().get(ie.keyIndex));
 		    		if (valueRef != null)
-		    			addMappingConstraint(key, valueRef, true);
+		    			addMappingConstraint(key, valueRef);
 		    	}
 			}
 		}
