@@ -254,18 +254,25 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		
 		return null;
 	}
-	
-	private void addMappingConstraint(String key, Reference valueRef) {
-//        Reference keyRef = mappingKeys.get(key);
-//        if (keyRef == null) {
+
+	private void addMappingConstraint(String key, Reference valueRef, boolean isSubtype) {
         Reference keyRef = Reference.createConstantReference(AnnotationUtils.createAnnotationSet(), key);
-//            mappingKeys.put(key, keyRef);
-//        }
-		addEqualityConstraint(keyRef, valueRef);
+        if (isSubtype)
+            addSubtypeConstraint(keyRef, valueRef);
+        else 
+            addSubtypeConstraint(valueRef, keyRef);
 		if (valueRef instanceof ArrayReference) {
 			String componentKey = key + "[]";
-			addMappingConstraint(componentKey, ((ArrayReference) valueRef).getComponentRef());
+			addMappingConstraint(componentKey, ((ArrayReference) valueRef).getComponentRef(), isSubtype);
 		}
+    }
+
+	private void addMappingConstraint(Reference valueRef, String key) {
+        addMappingConstraint(key, valueRef, false);
+    }
+	
+	private void addMappingConstraint(String key, Reference valueRef) {
+        addMappingConstraint(key, valueRef, true);
 	}
 	
 	@Override
@@ -439,14 +446,14 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 			// FIXME: Incomplete fix for Issue-2
 			String key = ownerStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
 			Reference valueRef = Reference.createReference(arguments.get(ie.valueIndex), factory);
-			addMappingConstraint(key, valueRef);
+			addMappingConstraint(key, valueRef, false);
 			// Recursively generate constraints 
 			generateConstraint(valueRef, arguments.get(ie.valueIndex));
 		}
 		else if ((ie = isConstantGetMappingMethod(methodElt, arguments)) != null) {
 			// FIXME: Incomplete fix for Issue-2
 			String key = ownerStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
-			addMappingConstraint(key, lhsRef);
+			addMappingConstraint(key, lhsRef, true);
 		}
 		else if ((ownerStr.equals("javax.servlet.ServletRequest")
 				|| ownerStr.equals("javax.servlet.http.HttpServletRequest"))
@@ -587,7 +594,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 								factory);
 					String key = getArgumentSignature(mTree.getArguments().get(ie.keyIndex));
 		    		if (valueRef != null)
-		    			addMappingConstraint(key, valueRef);
+		    			addMappingConstraint(key, valueRef, true);
 		    	}
 			}
 		}
