@@ -5,7 +5,9 @@ package checkers.inference;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 
 import javax.lang.model.element.TypeElement;
@@ -26,12 +28,12 @@ import checkers.inference.Reference.PrimitiveReference;
  */
 public class ConstraintManager {
 	
-	private List<Constraint> constraints;
+	private Set<Constraint> constraints;
 	
 	private Set<TypeElement> visitedClasses;
 	
 	public ConstraintManager() {
-		constraints = new LinkedList<Constraint>();
+		constraints = new LinkedHashSet<Constraint>();
 		visitedClasses = new HashSet<TypeElement>();
 	}
 	
@@ -46,7 +48,8 @@ public class ConstraintManager {
 			return;
 
 		
-		constraints.add(new Constraint.SubtypeConstraint(sub, sup));
+		if (!constraints.add(new Constraint.SubtypeConstraint(sub, sup)))
+            return;
 		// TODO: Handling the case that one of sub or sup is array. 
 		// e.g. (x =f=> a)  <: b, where a and b are arrays 
 		// then we add another constraint:  a.getComponenetRef == b.getComponentRef
@@ -91,7 +94,8 @@ public class ConstraintManager {
 //		if (left instanceof PrimitiveReference || right instanceof PrimitiveReference)
 //			return;
 		
-		constraints.add(new Constraint.EqualityConstraint(left, right));
+		if (!constraints.add(new Constraint.EqualityConstraint(left, right)))
+            return;
 		if (left instanceof AdaptReference && right instanceof ArrayReference) {
 			// In case that the decl reference is an array
 			Reference declRef = ((AdaptReference) left).getDeclRef();
@@ -122,7 +126,8 @@ public class ConstraintManager {
 //		if (left instanceof PrimitiveReference || right instanceof PrimitiveReference)
 //			return;
 		
-		constraints.add(new Constraint.UnequalityConstraint(left, right));
+		if (!constraints.add(new Constraint.UnequalityConstraint(left, right)))
+            return;
 	}
 	
 	/**
@@ -132,10 +137,11 @@ public class ConstraintManager {
 	public void addEmptyConstraint(Reference ref) {
 		if (ref instanceof PrimitiveReference)
 			return;
-		constraints.add(new Constraint.EmptyConstraint(ref));
+		if (!constraints.add(new Constraint.EmptyConstraint(ref)))
+            return;
 	}
 	
-	public void addIfConstraint(Constraint condition, Constraint ifConstraint,
+	private void addIfConstraint(Constraint condition, Constraint ifConstraint,
 			Constraint elseConstraint) {
 		if (condition instanceof EqualityConstraint
 				|| condition instanceof UnequalityConstraint) {
@@ -148,7 +154,7 @@ public class ConstraintManager {
 	}
 	
 	public List<Constraint> getConstraints() {
-		return constraints;
+		return new ArrayList<Constraint>(constraints);
 	}
 	
 	public void reset() {

@@ -23,6 +23,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 
 import checkers.inference.Constraint.EqualityConstraint;
 import checkers.inference.Constraint.SubtypeConstraint;
@@ -30,6 +31,8 @@ import checkers.inference.Constraint.UnequalityConstraint;
 import checkers.inference.Reference;
 import checkers.inference.Reference.AdaptReference;
 import checkers.inference.Reference.ArrayReference;
+import checkers.inference.Reference.MethodAdaptReference;
+import checkers.inference.Reference.ConstantReference;
 import checkers.inference.SetbasedSolver.SetbasedSolverException;
 import checkers.inference.sflow.SFlowChecker;
 import checkers.inference.sflow.WorklistSetbasedSolver;
@@ -84,12 +87,14 @@ public class SFlowTypingExtractor implements TypingExtractor {
                             || right.getRefName().startsWith("THIS_")
                             || rElt.getKind() == ElementKind.PARAMETER)) {
                  // check if they are from the same method
-                 while (lElt != null && lElt.getKind() != ElementKind.METHOD 
-                         && lElt.getKind() != ElementKind.CONSTRUCTOR)
-                     lElt = lElt.getEnclosingElement();
-                 while (rElt != null && rElt.getKind() != ElementKind.METHOD 
-                         && rElt.getKind() != ElementKind.CONSTRUCTOR)
-                     rElt = rElt.getEnclosingElement();
+//                 while (lElt != null && lElt.getKind() != ElementKind.METHOD 
+//                         && lElt.getKind() != ElementKind.CONSTRUCTOR)
+//                     lElt = lElt.getEnclosingElement();
+//                 while (rElt != null && rElt.getKind() != ElementKind.METHOD 
+//                         && rElt.getKind() != ElementKind.CONSTRUCTOR)
+//                     rElt = rElt.getEnclosingElement();
+                 lElt = getEnclosingMethod(lElt);
+                 rElt = getEnclosingMethod(rElt);
                  if (lElt.equals(rElt))
                      return true;
             }
@@ -97,7 +102,15 @@ public class SFlowTypingExtractor implements TypingExtractor {
         return false;
     }
 
-    private void setPolyLibraryMethods(List<Reference> refs, List<Constraint> cons, Map<String, Reference> solution) {
+    private Element getEnclosingMethod(Element elt) {
+        while (elt != null && elt.getKind() != ElementKind.METHOD
+                && elt.getKind() != ElementKind.CONSTRUCTOR) {
+            elt = elt.getEnclosingElement();
+        }
+        return elt;
+    }
+
+    private List<Constraint> handleLibraryInference(List<Reference> refs, List<Constraint> cons, Map<String, Reference> solution) {
 		Set<AnnotationMirror> sflowSet = AnnotationUtils.createAnnotationSet();
 		sflowSet.add(SFlowChecker.TAINTED);
 		sflowSet.add(SFlowChecker.POLY);
@@ -106,6 +119,11 @@ public class SFlowTypingExtractor implements TypingExtractor {
             Reference left = c.getLeft();
             Reference right = c.getRight();
             if (isParamReturnConstraint(c)) {
+                // Get the method element
+                Element methodElt = getEnclosingMethod(left.getElement());
+                // skip non-public methods
+                if (!methodElt.getModifiers().contains(Modifier.PUBLIC))
+                    continue;
                 Set<AnnotationMirror> leftAnnos = left.getAnnotations(); 
                 Set<AnnotationMirror> rightAnnos = right.getAnnotations();
                 Set<AnnotationMirror> inter = InferenceUtils
@@ -115,54 +133,95 @@ public class SFlowTypingExtractor implements TypingExtractor {
                     set.add(SFlowChecker.POLY);
                     left.setAnnotations(set);
                     right.setAnnotations(set);
-                } else if (InferenceUtils.intersectAnnotations(sflowSet, leftAnnos).size() == 3) {
-                    // left is unconstrained.
-                    Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-                    if (left.getRefName().startsWith("RET_"))
-                        set.add(SFlowChecker.BOTTOM);
-                    else
-                        set.add(SFlowChecker.TOP);
-                    left.setAnnotations(set);
-                } else if (InferenceUtils.intersectAnnotations(sflowSet, rightAnnos).size() == 3) {
-                    // right is unconstrained.
-                    Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-                    if (right.getRefName().startsWith("RET_"))
-                        set.add(SFlowChecker.BOTTOM);
-                    else
-                        set.add(SFlowChecker.TOP);
-                    right.setAnnotations(set);
-                }
-                if (InferenceChecker.DEBUG) {
-                    Element elt = left.getElement();
-                    while (elt != null && elt.getKind() != ElementKind.METHOD
-                            && elt.getKind() != ElementKind.CONSTRUCTOR) {
-                        elt = elt.getEnclosingElement();
-                    }
-                    System.out.println("INFO: set " + left.toAnnotatedString() 
-                            + " and " + right.toAnnotatedString() + " for "
-                            + elt);
-                }
+//                    System.out.println("INFO: set " + left  + " from " + leftAnnos + "  and " 
+//                            + right + " from " + rightAnnos + " constraint:" + c);
+                } 
             }
         }
+		List<Constraint> typeErrors = Collections.emptyList();
+        // Step 2: Now propagate Poly->Poly
+        WorklistSetbasedSolver solver = new WorklistSetbasedSolver(inferenceChecker, exprRefs, constraints);
+        solver.setComputeLinearConstraints(false);
+        typeErrors = solver.solve();
+        if (!typeErrors.isEmpty()) {
+            for (Constraint c : typeErrors)
+                System.out.println(c);
+            System.out.println("There are " + typeErrors.size() + " type errors after setting Poly");
+            return typeErrors;
+        }
+        // At public methods, and readonly return whose set-based
+        // solution is {Tainted,Poly,Safe}, type those returns Safe. 
         for (Reference ref : refs) {
-            Element elt = null;
+            Element elt = ref.getElement();
+            // Get the method element
+            Element methodElt = getEnclosingMethod(elt);
+            // skip non-public methods
+            if (methodElt == null || !methodElt.getModifiers().contains(Modifier.PUBLIC))
+                continue;
             Set<AnnotationMirror> annos = ref.getAnnotations(); 
-            if ((elt = ref.getElement()) != null 
-                && InferenceUtils.intersectAnnotations(sflowSet, annos).size() == 3
-                && (elt.getKind() == ElementKind.PARAMETER 
-                    || ref.getRefName().startsWith("RET_")
-                    || ref.getRefName().startsWith("THIS_"))) {
+            if (ref.getRefName().startsWith("RET_")
+                    && inferenceChecker.isReadonlyType(ref.getType())
+                    && InferenceUtils.intersectAnnotations(sflowSet, annos).size() == 3) {
                 Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-                if (ref.getRefName().startsWith("RET_"))
-                    set.add(SFlowChecker.BOTTOM);
-                else
-                    set.add(SFlowChecker.TOP);
+                set.add(SFlowChecker.SAFE);
                 ref.setAnnotations(set);
-                if (InferenceChecker.DEBUG) {
-                    System.out.println("INFO: set " + ref + " from " + annos + " to " + set);
-                }
+//                if (InferenceChecker.DEBUG) {
+//                    System.out.println("INFO: set " + ref + " from " + annos + " to " + set + " type: " + ref.getType());
+//                }
             }
         }
+        constraints.clear();
+        constraints.addAll(solver.getUpdatedConstraints());
+        System.out.println("constraint size: " + constraints.size());
+        solver = new WorklistSetbasedSolver(inferenceChecker, exprRefs, constraints);
+        solver.setComputeLinearConstraints(false);
+        typeErrors = solver.solve();
+        if (!typeErrors.isEmpty()) {
+            for (Constraint c : typeErrors)
+                System.out.println(c);
+            System.out.println("There are " + typeErrors.size() + " type errors after setting readonly RET");
+            return typeErrors;
+        }
+
+
+        // At public methods, and readonly parameters whose set-based
+        // solution is {Tainted,Poly,Safe}, type those parameters Tainted. 
+        for (Reference ref : refs) {
+            Element elt = ref.getElement();
+            // Get the method element
+            Element methodElt = getEnclosingMethod(elt);
+            // skip non-public methods
+            if (methodElt == null || !methodElt.getModifiers().contains(Modifier.PUBLIC))
+                continue;
+            Set<AnnotationMirror> annos = ref.getAnnotations(); 
+            if (elt.getKind() == ElementKind.PARAMETER
+                    && inferenceChecker.isReadonlyType(ref.getType())
+                    && InferenceUtils.intersectAnnotations(sflowSet, annos).size() == 3) {
+                Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+                set.add(SFlowChecker.TAINTED);
+                ref.setAnnotations(set);
+//                if (InferenceChecker.DEBUG) {
+//                    System.out.println("INFO: set " + ref + " from " + annos + " to " + set + " type: " + ref.getType());
+//                }
+            }
+        }
+        constraints.clear();
+        constraints.addAll(solver.getUpdatedConstraints());
+        solver = new WorklistSetbasedSolver(inferenceChecker, exprRefs, constraints);
+        solver.setComputeLinearConstraints(false);
+        System.out.println("constraint size: " + constraints.size());
+        typeErrors = solver.solve();
+        if (!typeErrors.isEmpty()) {
+            for (Constraint c : typeErrors)
+                System.out.println(c);
+            System.out.println("There are " + typeErrors.size() + " type errors after setting readonly PAR");
+            return typeErrors;
+        }
+        constraints.clear();
+        constraints.addAll(solver.getUpdatedConstraints());
+        System.out.println("constraint size: " + constraints.size());
+
+        return typeErrors;
     }
 	
 	/**
@@ -174,20 +233,13 @@ public class SFlowTypingExtractor implements TypingExtractor {
 		List<Constraint> typeErrors = Collections.emptyList();
 
 		maximalSolution = new HashMap<String, Reference>();
-
-        if (inferenceChecker.isInferLibrary()) {
-            setPolyLibraryMethods(exprRefs, constraints, maximalSolution);
-            ConstraintSolver solver = new WorklistSetbasedSolver(inferenceChecker, exprRefs, constraints);
-            typeErrors = solver.solve();
-            if (!typeErrors.isEmpty()) {
-                for (Constraint c : typeErrors)
-                    System.out.println(c);
-                System.out.println("There are " + typeErrors.size() + " type errors after setting Poly");
-                return typeErrors;
-            }
-        }
 		
         List<Reference> copyRefs = copyReferences(exprRefs);
+
+        if (inferenceChecker.isInferLibrary()) {
+            if (!(typeErrors = handleLibraryInference(exprRefs, constraints, maximalSolution)).isEmpty())
+                return typeErrors;
+        }
 		for (Reference ref : exprRefs) {
 			String identifier = ref.getIdentifier();
 			if (identifier != null) {
@@ -202,15 +254,26 @@ public class SFlowTypingExtractor implements TypingExtractor {
             // Check if maximal typing type-checks
             boolean prev = InferenceChecker.DEBUG;
             InferenceChecker.DEBUG = false;
-            SetbasedSolver solver = new SetbasedSolver(inferenceChecker,
+            WorklistSetbasedSolver solver = new WorklistSetbasedSolver(inferenceChecker,
                     exprRefs, constraints);
+            solver.setComputeLinearConstraints(false);
             List<Constraint> conflictConstraints = solver.solve();
             InferenceChecker.DEBUG = prev;
             if (!conflictConstraints.isEmpty()) {
                 recoverReferences(exprRefs, copyRefs);
-                for (Constraint c : conflictConstraints)
+                int counter = 0;
+                for (Constraint c : conflictConstraints) {
+                    Reference left = c.getLeft();
+                    Reference right = c.getRight();
+                    if (left instanceof MethodAdaptReference &&
+                            ((MethodAdaptReference) left).getContextRef() instanceof ConstantReference
+                        || right instanceof MethodAdaptReference &&
+                            ((MethodAdaptReference) right).getContextRef() instanceof ConstantReference) 
+                        continue;
                     System.out.println(c);
-                System.out.println("There are " + conflictConstraints.size()
+                    counter++;
+                }
+                System.out.println("There are " + counter
                         + " conflicts:");
             } else 
                 System.out.println("No conflicts!");
