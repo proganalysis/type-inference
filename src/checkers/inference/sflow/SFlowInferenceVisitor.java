@@ -48,6 +48,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -187,7 +188,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				ExpressionTree expr = TreeUtils.skipParens(arguments.get(0));
 			
 			if (expr instanceof LiteralTree && expr.getKind() != Kind.NULL_LITERAL
-				|| (elt = TreeUtils.elementFromUse(expr)) != null 
+				|| !(expr instanceof ArrayAccessTree) && (elt = TreeUtils.elementFromUse(expr)) != null 
 					&& elt.getModifiers().contains(Modifier.FINAL)
 				) {
 			
@@ -386,7 +387,17 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		String ownerStr = ((MethodSymbol) methodElt).owner.toString();
 		String methodStr = methodElt.toString();
 		IndexEntry ie = null;
-		Reference methodRef = Reference.createReference(methodElt, factory);
+		ExecutableReference methodRef = (ExecutableReference) Reference.createReference(methodElt, factory);
+        if (checker.isPolyLibrary() && checker.isFromLibrary(methodElt)) {
+            // Add constraints PARAM -> RET for library methods
+            if (methodElt.getReturnType().getKind() != TypeKind.VOID
+                ||  methodElt.getKind() == ElementKind.CONSTRUCTOR) {
+                for (Reference paramRef : methodRef.getParamRefs()) 
+                    super.addSubtypeConstraint(paramRef, methodRef.getReturnRef());
+                if (!ElementUtils.isStatic(methodElt))
+                    super.addSubtypeConstraint(methodRef.getReceiverRef(), methodRef.getReturnRef());
+            }
+        }
 		if (methodElt.toString().equals(
 				"arraycopy(java.lang.Object,int,java.lang.Object,int,int)")
 				&& classStr != null && classStr.equals("java.lang.System")) {
@@ -699,8 +710,10 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 			String id = factory.getFileName(tree) + ":"
                     + factory.getLineNumber(tree) + ":(callsite)"                    
 					+ tree.toString();
+//            Reference callRef = Reference.createConstantReference(
+//                    checker.getSourceLevelQualifiers(), id);
             Reference callRef = Reference.createConstantReference(
-                    checker.getSourceLevelQualifiers(), id);
+                    AnnotationUtils.createAnnotationSet(), id);
             return Reference.createMethodAdaptReference(callRef, declRef);
         } else 
             throw new RuntimeException("Invalid adaptation context!");

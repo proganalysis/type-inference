@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -227,8 +228,13 @@ public abstract class Reference {
 			rcvRef.readableName = "THIS_" + elt.toString();
 			dRef.setReceiverRef(rcvRef);
 			
+            AnnotatedTypeMirror returnType;
+            if (elt.getKind() == ElementKind.CONSTRUCTOR) {
+                returnType = factory.getAnnotatedType(enclosingType);
+            } else 
+                returnType = methodType.getReturnType();
 			Reference returnRef = createReferenceImpl(null, elt, fileName,
-					lineNum, offset, enclosingType, methodType.getReturnType(), factory);
+					lineNum, offset, enclosingType, returnType, factory);
 			returnRef.readableName = "RET_" + elt.toString();
 			dRef.setReturnRef(returnRef);
 			
@@ -323,9 +329,9 @@ public abstract class Reference {
     protected TypeElement enclosingType;
     
     /** For adding linear constraints*/
-    protected Set<Reference> lessSet = new HashSet<Reference>();
+    protected Set<Constraint> lessSet = new LinkedHashSet<Constraint>();
 
-    protected Set<Reference> greaterSet = new HashSet<Reference>();
+    protected Set<Constraint> greaterSet = new LinkedHashSet<Constraint>();
     
 	public Reference(Tree tree, Element element, String fileName,
 			long lineNum, int offset, TypeElement enclosingType, 
@@ -357,21 +363,19 @@ public abstract class Reference {
 		this.annotations.addAll(annotations);
 	}
 
-    public void addLessRef(Reference ref) {
-        if (!ref.equals(this))
-            lessSet.add(ref);
+    public void addLessConstraint(Constraint c) {
+        lessSet.add(c);
     }
 
-    public void addGreaterRef(Reference ref) {
-        if (!ref.equals(this))
-            greaterSet.add(ref);
+    public void addGreaterConstraint(Constraint c) {
+        greaterSet.add(c);
     }
 
-    public Set<Reference> getLessSet() {
+    public Set<Constraint> getLessSet() {
         return lessSet;
     }
 
-    public Set<Reference> getGreaterSet() {
+    public Set<Constraint> getGreaterSet() {
         return greaterSet;
     }
 

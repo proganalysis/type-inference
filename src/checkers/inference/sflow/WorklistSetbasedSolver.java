@@ -63,6 +63,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 	private Map<Integer, Set<Reference>> declRefToContextRefs; 
 
     private Map<Integer, Constraint> subconsToEqucons; 
+
+    private boolean computeLinearConstraints = true;
 	
 	public WorklistSetbasedSolver(InferenceChecker inferenceChecker, 
 			List<Reference> exprRefs, List<Constraint> constraints) {
@@ -118,11 +120,6 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         int size = 0;
 		boolean hasUpdate = false;
 		buildRefToConstraintMapping(extendedConstraints);
-//        int it = 1;
-//        while (size != constraints.size() || hasUpdate) {
-//            System.out.println("Iteration " + (it++) + ":");
-//            size = constraints.size();
-//            hasUpdate = false;
         warnConstraints.clear();
         conflictConstraints.clear();
         System.out.println("Solving constraints...");
@@ -147,12 +144,10 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             }
             try {
                 hasUpdate = handleConstraint(c) || hasUpdate;
-                Set<Constraint> newCons = addLinearConstraints(c, extendedConstraints, newConstraints);
-//                    if (newCons.size() > 800) {
-//                        System.out.println("Adding linear constraints for " + c);
-//                        System.out.println(" Size = " + newCons.size());
-//                    }
-                newConstraints.addAll(newCons);
+                if (computeLinearConstraints) {
+                    Set<Constraint> newCons = addLinearConstraints(c, extendedConstraints, newConstraints);
+                    newConstraints.addAll(newCons);
+                }
             } catch (SetbasedSolverException e) {
                 FailureStatus fs = inferenceChecker.getFailureStatus(c);
                 if (fs == FailureStatus.ERROR && constraints.contains(c)) {
@@ -172,10 +167,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                 newConstraints.clear();
             }
         }
-//            System.out.println("Time: " + (System.currentTimeMillis() - startTime) + " ms");
-//            System.out.println("Constraint size - " + constraints.size());
-//        }
-		if (InferenceChecker.DEBUG) {
+		if (InferenceChecker.DEBUG && computeLinearConstraints) {
             PrintWriter pw;
 			try {
 				pw = new PrintWriter(InferenceMainSFlow.outputDir
@@ -190,7 +182,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 			}
 		}
 		
-		if (InferenceChecker.DEBUG) {
+		if (InferenceChecker.DEBUG && computeLinearConstraints) {
 			if (tracePw != null)
 				try {
 					tracePw.close();
@@ -362,6 +354,9 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 		oldLeftAnnos.addAll(leftAnnos);
 		Set<AnnotationMirror> oldRightAnnos = AnnotationUtils.createAnnotationSet();
 		oldRightAnnos.addAll(rightAnnos);
+
+//        if (left.getId() == 368430 && right.getId() == 368410)
+//            System.out.println();
 		
 		// The default intersection of Set doesn't work well
 		Set<AnnotationMirror> interAnnos = InferenceUtils.intersectAnnotations(
@@ -514,25 +509,24 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                 return false;
         } 
 
-		
 		// FIXME: Check whether to propagate or not. This is for
         // inferLibary only
-		boolean hasUpdate = false;
-		if (inferenceChecker instanceof SFlowChecker 
-				&& ((SFlowChecker) inferenceChecker).isInferLibrary()
-				&& annos.size() == 1 && annos.contains(SFlowChecker.SAFE)
-				) {
-			if (ref.getType() != null
-					&& ((SFlowChecker) inferenceChecker).isTaintableRef(ref)) {
-				hasUpdate = true;
-			}
-			else {
-				// Skip
-			}
-		}
-		else {
-			hasUpdate = true;
-		}
+		boolean hasUpdate = true;
+//		if (inferenceChecker instanceof SFlowChecker 
+//				&& ((SFlowChecker) inferenceChecker).isInferLibrary()
+//				&& annos.size() == 1 && annos.contains(SFlowChecker.SAFE)
+//				) {
+//			if (ref.getType() != null
+//					&& ((SFlowChecker) inferenceChecker).isTaintableRef(ref)) {
+//				hasUpdate = true;
+//			}
+//			else {
+//				// Skip
+//			}
+//		}
+//		else {
+//			hasUpdate = true;
+//		}
 		// FIXME: End
 		
 		if (InferenceChecker.DEBUG && hasUpdate) {
@@ -643,8 +637,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 			throw new SetbasedSolverException("ERROR: Empty set for declRef in AdaptConstraint");
 
         // Nov 22, 2013: Skip updating CONSTANT method adaptation context
-//        if (aRef instanceof MethodAdaptReference)
-//            return setAnnotations(declRef, declAnnos);
+        if (aRef instanceof MethodAdaptReference)
+            return setAnnotations(declRef, declAnnos);
 
 		return setAnnotations(contextRef, contextAnnos)
 				|| setAnnotations(declRef, declAnnos);
@@ -887,8 +881,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             if ((c instanceof SubtypeConstraint)
                     && !(left instanceof AdaptReference)
                     && !(right instanceof AdaptReference)) {
-                left.addGreaterRef(right);
-                right.addLessRef(left);
+                left.addGreaterConstraint(c);
+                right.addLessConstraint(c);
             }
         }
     }
@@ -902,6 +896,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
     /**
      * Get a list of references which have ref on the left or right
      */
+    @Deprecated
     private List<Reference> getRelatedReferences(Reference ref, boolean onLeft) {
         List<Reference> list = new LinkedList<Reference>();
         Set<Constraint> relatedSet = null;
@@ -1000,8 +995,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             // Nov 26, 2013: add linear constraint for array fields
             if ((left instanceof FieldAdaptReference) 
                     && (ref = ((FieldAdaptReference) left).getDeclRef()) != null
-                    && (/*inferenceChecker instanceof SFlowChecker && ((SFlowChecker) inferenceChecker).isInferLibrary()
-                        ||*/ ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(SFlowChecker.POLY)
+                    && (inferenceChecker instanceof SFlowChecker && ((SFlowChecker) inferenceChecker).isInferLibrary()
+                        || ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(SFlowChecker.POLY)
                         || ((FieldAdaptReference) left).getContextRef() instanceof ArrayReference)) {
                 Constraint linear = new SubtypeConstraint(
                             ((FieldAdaptReference) left).getContextRef(), right, c.getID());
@@ -1011,8 +1006,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             // Nov 26, 2013: add linear constraint for array fields
             else if ((right instanceof FieldAdaptReference) 
                     && (ref = ((FieldAdaptReference) right).getDeclRef()) != null
-                    && (/*inferenceChecker instanceof SFlowChecker && ((SFlowChecker) inferenceChecker).isInferLibrary()
-                        ||*/ ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(SFlowChecker.POLY)
+                    && (inferenceChecker instanceof SFlowChecker && ((SFlowChecker) inferenceChecker).isInferLibrary()
+                        || ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(SFlowChecker.POLY)
                         || ((FieldAdaptReference) right).getContextRef() instanceof ArrayReference)) {
                 Constraint linear = new SubtypeConstraint(
                             left, ((FieldAdaptReference) right).getContextRef(), c.getID());
@@ -1021,15 +1016,17 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             // Step 3: linear constraints
             else if (!(left instanceof AdaptReference) && !(right instanceof AdaptReference) 
                     && canConnectVia(left, right)) {
-                for (Reference r : left.getLessSet()) {
+                for (Constraint lc : left.getLessSet()) {
+                    Reference r = lc.getLeft();
                     if (!r.equals(right) && (right.getElement() != null || r.getElement() != null)) {
-                        Constraint linear = new SubtypeConstraint(r, right, c.getID());
+                        Constraint linear = new SubtypeConstraint(r, right, new int[]{lc.getID(), c.getID()});
                         tmplist.add(linear);
                     }
                 }
-                for (Reference r : right.getGreaterSet()) {
+                for (Constraint gc : right.getGreaterSet()) {
+                    Reference r = gc.getRight();
                     if (!left.equals(r) && (left.getElement() != null || r.getElement() != null)) {
-                        Constraint linear = new SubtypeConstraint(left, r, c.getID());
+                        Constraint linear = new SubtypeConstraint(left, r, new int[]{c.getID(), gc.getID()});
                         tmplist.add(linear);
                     }
                 }
@@ -1059,59 +1056,54 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             else if (!(left instanceof AdaptReference) && (right instanceof MethodAdaptReference)) {
                 Reference parRef = ((MethodAdaptReference) right).getDeclRef();
                 Reference rcvRef = ((MethodAdaptReference) right).getContextRef();
-                Set<Reference> parPrimes = parRef.getGreaterSet();
-                for (Reference parPrime : parPrimes) {
+                Set<Constraint> parCons = parRef.getGreaterSet();
+                for (Constraint parCon : parCons) {
+                    Reference parPrime = parCon.getRight();
                     MethodAdaptReference mr = new MethodAdaptReference(rcvRef, parPrime);
-                    List<Reference> xs = getRelatedReferences(mr, true/*onLeft*/);
-                    for (Reference x : xs) {
-                        int retConId = -1;
-                        List<Constraint> relatedCons = refToConstraints.get(parRef.getId());
-                        for (Constraint relatedCon : relatedCons) {
-                            if (relatedCon.getRight().equals(parPrime)) {
-                                retConId = relatedCon.getID();
-                                break;
+                    List<Constraint> adaptCons = adaptRefToConstraints.get(mr.getFullRefName());
+                    if (adaptCons != null) {
+                        for (Constraint adaptCon : adaptCons) {
+                            if (adaptCon.getLeft().equals(mr)) {
+                                Constraint linear = new SubtypeConstraint(left, adaptCon.getRight(), 
+                                        new int[]{c.getID(), parCon.getID(), adaptCon.getID()});
+                                tmplist.add(linear);
+                                // add it into original constraints
+                                if (!constraints.contains(linear)) {
+        //                            constraints.add(linear);
+                                }
                             }
-                        }
-                        Constraint linear = new SubtypeConstraint(left, x, new int[]{c.getID(), retConId});
-                        tmplist.add(linear);
-                        // add it into original constraints
-                        if (!constraints.contains(linear)) {
-//                            System.out.println("added2: " + linear);
-//                            constraints.add(linear);
-//                            if (linear.getLeft().getId() == 382461 && linear.getRight().getId() == 382489)
-//                                System.out.println();
                         }
                     }
                 }
             }
             // Extra step for Poly library
-            if (inferenceChecker instanceof SFlowChecker
-                    && ((SFlowChecker) inferenceChecker).isPolyLibrary()) {
-                Element elt = null;
-                if (!(left instanceof AdaptReference) && (right instanceof MethodAdaptReference)
-                        && (ref = ((MethodAdaptReference) right).getDeclRef()) != null
-                        && (elt = ref.getElement()) != null
-                        && inferenceChecker.isFromLibrary(elt)) {
-                    // z <: (y |> par)
-                    // Nov 26, 2013: if z is NewClassTree/NewArrayTree
-                    Constraint linear;
-                    Tree ltree = null; 
-                    if ((ltree = left.getTree()) != null 
-                            && (ltree instanceof NewClassTree || ltree instanceof NewArrayTree)
-                            && ref.getRefName().startsWith("THIS_")) 
-                        linear = new SubtypeConstraint(((MethodAdaptReference) right).getContextRef(), left, c.getID());
-                    else
-                        linear = new SubtypeConstraint(left, ((MethodAdaptReference) right).getContextRef(), c.getID());
-                    tmplist.add(linear);
-                } else if (!(right instanceof AdaptReference) && (left instanceof MethodAdaptReference)
-                        && (ref = ((MethodAdaptReference) left).getDeclRef()) != null
-                        && (elt = ref.getElement()) != null
-                        && inferenceChecker.isFromLibrary(elt)) {
-                    // y |> ret <: x
-                    Constraint linear = new SubtypeConstraint(((MethodAdaptReference) left).getContextRef(), right, c.getID());
-                    tmplist.add(linear);
-                }
-            }
+//            if (inferenceChecker instanceof SFlowChecker
+//                    && ((SFlowChecker) inferenceChecker).isPolyLibrary()) {
+//                Element elt = null;
+//                if (!(left instanceof AdaptReference) && (right instanceof MethodAdaptReference)
+//                        && (ref = ((MethodAdaptReference) right).getDeclRef()) != null
+//                        && (elt = ref.getElement()) != null
+//                        && inferenceChecker.isFromLibrary(elt)) {
+//                    // z <: (y |> par)
+//                    // Nov 26, 2013: if z is NewClassTree/NewArrayTree
+//                    Constraint linear;
+//                    Tree ltree = null; 
+//                    if ((ltree = left.getTree()) != null 
+//                            && (ltree instanceof NewClassTree || ltree instanceof NewArrayTree)
+//                            && ref.getRefName().startsWith("THIS_")) 
+//                        linear = new SubtypeConstraint(((MethodAdaptReference) right).getContextRef(), left, c.getID());
+//                    else
+//                        linear = new SubtypeConstraint(left, ((MethodAdaptReference) right).getContextRef(), c.getID());
+//                    tmplist.add(linear);
+//                } else if (!(right instanceof AdaptReference) && (left instanceof MethodAdaptReference)
+//                        && (ref = ((MethodAdaptReference) left).getDeclRef()) != null
+//                        && (elt = ref.getElement()) != null
+//                        && inferenceChecker.isFromLibrary(elt)) {
+//                    // y |> ret <: x
+//                    Constraint linear = new SubtypeConstraint(((MethodAdaptReference) left).getContextRef(), right, c.getID());
+//                    tmplist.add(linear);
+//                }
+//            }
             for (Constraint linear : tmplist) {
                 Tree leftTree = linear.getLeft().getTree();
                 Tree rightTree = linear.getRight().getTree();
@@ -1149,8 +1141,8 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                             || inferenceChecker.isSubtype(rightEType, leftEType))
                         ) {
                     newCons.add(linear);
-                    linear.getLeft().addGreaterRef(linear.getRight());
-                    linear.getRight().addLessRef(linear.getLeft());
+//                    linear.getLeft().addGreaterRef(linear.getRight());
+//                    linear.getRight().addLessRef(linear.getLeft());
                     buildRefToConstraintMapping(linear);
                     queue.add(linear);
                 } else if (!(linear.getLeft() instanceof AdaptReference) 
@@ -1164,6 +1156,10 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 
     public List<Constraint> getUpdatedConstraints() {
         return new ArrayList<Constraint>(constraints);
+    }
+
+    public void setComputeLinearConstraints(boolean b) {
+        this.computeLinearConstraints = b;
     }
 
 }
