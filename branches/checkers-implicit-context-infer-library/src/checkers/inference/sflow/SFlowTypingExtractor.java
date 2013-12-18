@@ -195,10 +195,12 @@ public class SFlowTypingExtractor implements TypingExtractor {
                 continue;
             Set<AnnotationMirror> annos = ref.getAnnotations(); 
             if (elt.getKind() == ElementKind.PARAMETER
-                    && inferenceChecker.isReadonlyType(ref.getType())
                     && InferenceUtils.intersectAnnotations(sflowSet, annos).size() == 3) {
                 Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-                set.add(SFlowChecker.TAINTED);
+                if (inferenceChecker.isReadonlyType(ref.getType()))
+                    set.add(SFlowChecker.TAINTED);
+                else 
+                    set.add(SFlowChecker.POLY);
                 ref.setAnnotations(set);
 //                if (InferenceChecker.DEBUG) {
 //                    System.out.println("INFO: set " + ref + " from " + annos + " to " + set + " type: " + ref.getType());
