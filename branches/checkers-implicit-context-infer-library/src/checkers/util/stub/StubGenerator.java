@@ -10,6 +10,7 @@ import javax.annotation.processing.Processor;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.element.Modifier;
 
 import checkers.util.TypesUtils;
 
@@ -114,6 +115,9 @@ public class StubGenerator {
      */
     private void printClass(TypeElement typeElement) {
         indent();
+        for (Modifier mo : typeElement.getModifiers()) {
+            out.print(mo.toString() + " ");
+        }
         if (typeElement.getKind() == ElementKind.INTERFACE)
             out.print("interface");
         else if (typeElement.getKind() == ElementKind.CLASS)
@@ -193,6 +197,8 @@ public class StubGenerator {
         // if protected, indicate that, but not public
         if (field.getModifiers().contains(Modifier.PROTECTED))
             out.print("protected ");
+        else if (field.getModifiers().contains(Modifier.PUBLIC))
+            out.print("public ");
 
         out.print(formatType(field.asType()));
 
@@ -211,6 +217,8 @@ public class StubGenerator {
         // if protected, indicate that, but not public
         if (method.getModifiers().contains(Modifier.PROTECTED))
             out.print("protected ");
+        else if (method.getModifiers().contains(Modifier.PUBLIC))
+            out.print("public ");
 
         // print Generic arguments
         if (!method.getTypeParameters().isEmpty()) {
@@ -244,7 +252,9 @@ public class StubGenerator {
             out.print(" throws ");
             out.print(formatType(method.getThrownTypes()));
         }
-        out.println(';');
+//        out.println(';');
+        // Add skeleton 
+        out.println(" { throw new RuntimeException(\"skeleton method\"); }");
     }
 
     /** Indent the current line */
@@ -283,20 +293,21 @@ public class StubGenerator {
 
     /** outputs the simple name of the type */
     private String formatType(Object typeRep) {
-        StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
-        StringBuilder sb = new StringBuilder();
+//        StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
+//        StringBuilder sb = new StringBuilder();
 
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            if (token.length() == 1
-                    || token.lastIndexOf('.') == -1)
-                sb.append(token);
-            else {
-                int index = token.lastIndexOf('.');
-                sb.append(token.substring(index + 1));
-            }
-        }
-        return sb.toString();
+//        while (tokenizer.hasMoreTokens()) {
+//            String token = tokenizer.nextToken();
+//            if (token.length() == 1
+//                    || token.lastIndexOf('.') == -1)
+//                sb.append(token);
+//            else {
+//                int index = token.lastIndexOf('.');
+//                sb.append(token.substring(index + 1));
+//            }
+//        }
+//        return sb.toString();
+        return typeRep.toString().replace('$', '.');
     }
 
     public static void main(String[] args) {
