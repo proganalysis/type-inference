@@ -1,0 +1,15 @@
+#!/bin/bash
+
+mydir="`dirname $0`"
+mylib=`find $mydir/../lib/ -name *.jar | xargs |sed 's/ /:/g'`
+#rtjar=/projects/proganalysis/Software/jdk1.6.0_27/jre/lib/rt.jar
+jdk=$mydir/../jdk/android/jdk-android.jar
+
+mainClass="edu.rpi.SootInference"
+opts="-DpolyLibrary "
+
+echo "java -Xss50m -Xmx1500m $opts -classpath $mylib $mainClass \
+  -process-dir$1  --soot-classpath $jdk:$mylib"
+java -Xss50m -Xmx1500m $opts -classpath $mylib $mainClass  \
+  -process-dir $1 --soot-classpath $jdk:$mylib
+

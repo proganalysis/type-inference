@@ -1,0 +1,17 @@
+#!/bin/bash
+
+mydir="`dirname $0`"
+mylib=`find $mydir/../lib/ -name *.jar | xargs |sed 's/ /:/g'`
+jdk=$mydir/../jdk/android/jdk-android.jar
+
+mainClass="edu.rpi.SootInference"
+opts="-DpolyLibrary "
+android_jar=$jdk
+#androidopts=" -android-jars -ire -src-prec apk "
+androidopts=" -force-android-jar $android_jar -ire -src-prec apk -exclude android.support"
+
+echo "java -Xss50m -Xmx1500m $opts -classpath $mylib $mainClass \
+    $androidopts -process-dir$1  --soot-classpath $jdk:$mylib"
+jdb -sourcepath $mydir/../src -Xss50m -Xmx1500m $opts -classpath $mylib $mainClass $androidopts \
+  -process-dir $1 --soot-classpath $jdk:$mylib
+
