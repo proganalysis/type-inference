@@ -90,6 +90,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     public abstract FailureStatus getFailureStatus(Constraint c);
 
+    public abstract String getName();
+
     protected AnnotatedValue getFieldAdaptValue(AnnotatedValue context, 
             AnnotatedValue decl, AnnotatedValue assignTo) {
         AnnotatedValue av = createFieldAdaptValue(context, decl, assignTo);
@@ -293,7 +295,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected Set<Annotation> getVisibilityTags(Host host, Kind kind) {
-        Set<Annotation> annos = getVisibilityTags(host);
+        Set<Annotation> annos = getRawVisibilityTags(host);
         Set<Annotation> set = AnnotationUtils.createAnnotationSet(); 
         for (Iterator<Annotation> it = annos.iterator(); it.hasNext();) {
             Annotation anno = it.next();
@@ -316,7 +318,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
     /**
      * Get all original annotations without filtering 
      */
-    protected Set<Annotation> getVisibilityTags(Host host) {
+    protected Set<Annotation> getRawVisibilityTags(Host host) {
         Set<Annotation> annos = AnnotationUtils.createAnnotationSet();
         VisibilityAnnotationTag vtag = (VisibilityAnnotationTag) 
             host.getTag("VisibilityAnnotationTag");
@@ -348,7 +350,9 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     public boolean isLibraryMethod(SootMethod sm) {
-        return !sm.hasActiveBody() && !userMethods.contains(sm);
+//        return !sm.hasActiveBody() && !userMethods.contains(sm);
+        SootClass sc = sm.getDeclaringClass();
+        return sc.isLibraryClass();
     }
 
     public boolean isFromLibrary(AnnotatedValue av) {
@@ -418,7 +422,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     protected void printAnnotatedValue(AnnotatedValue av, String typeStr, String indent, PrintStream out) {
         out.println(indent + typeStr + ": " + av.getAnnotations() + " (" + av.getId() + ")");
         if (av.getType() instanceof ArrayType) {
-            AnnotatedValue component = annotatedValues.get(av.getIdentifier() + "[]");
+            AnnotatedValue component = getAnnotatedValue(av.getIdentifier() + "[]", 
+                    ((ArrayType) av.getType()).getElementType(), Kind.LOCAL, null);
             printAnnotatedValue(component, "inner-type", indent + "\t", out);
         }
     }
@@ -544,8 +549,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
         visitedClasses.add(sc);
         processMethod(sm);
         InferenceVisitor visitor = getInferenceVisitor(this);
-
-        System.out.println(sc.getName() + " isLibraryClass() : " + sc.isLibraryClass() );
 
         final PatchingChain<Unit> units = b.getUnits();
         for(Iterator<Unit> iter = units.snapshotIterator(); iter.hasNext();) {

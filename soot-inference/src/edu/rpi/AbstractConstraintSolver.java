@@ -2,6 +2,10 @@ package edu.rpi;
 
 import java.util.*;
 import java.lang.annotation.*;
+import java.io.*;
+import java.util.concurrent.*;
+
+import soot.SourceLocator;
 
 import edu.rpi.ConstraintSolver.FailureStatus;
 import edu.rpi.ConstraintSolver.SolverException;
@@ -11,18 +15,111 @@ import edu.rpi.Constraint.UnequalityConstraint;
 import edu.rpi.AnnotatedValue.*;
 import edu.rpi.*;
 
+
 public abstract class AbstractConstraintSolver implements ConstraintSolver {
+
+    public static class Trace {
+        public int avId; 
+        public String oldAnnos; 
+        public String newAnnos; 
+        public int causeId;
+        public Trace(int avId, String oldAnnos, String newAnnos, int causeId) {
+            this.avId = avId;
+            this.oldAnnos = oldAnnos;
+            this.newAnnos = newAnnos;
+            this.causeId = causeId;
+        }
+    }
 
     protected InferenceTransformer t;
 
     protected Constraint currentConstraint;
 
+    private boolean needTrace = true;;
+
+    private ThreadFactory tFactory;
+    /** for storing traces */
+    private Thread worker; 
+
+    private boolean stop = false;
+
+    private PrintStream out;
+
+    private Deque<Object> queue = new LinkedList<Object>();
+
+    private final String DB_NAME, DB_SCRIPT;
+
+    private final String VALUE_TABLE_NAME = "avalues";
+
+    private final String AVALUE_TABLE_NAME = "adaptvalues";
+
+    private final String CONSTRAINT_TABLE_NAME = "constraints";
+
+    private final String TRACE_TABLE_NAME = "traces";
+
+    private final String CREATE_VALUE_TABLE = "create table " + VALUE_TABLE_NAME + "("
+        + "id integer, "
+        + "identifier string, " 
+        + "annos string, " 
+        + "type string, "
+        + "kind string, "
+        + "value string, "
+        + "class string" + ");";
+
+    /**
+     * kind = 0: field adapt
+     * kind = 1: method adapt
+     */
+    private final String CREATE_AVALUE_TABLE = "create table " + AVALUE_TABLE_NAME + "("
+        + "id integer, "
+        + "context string, "
+        + "decl string, "
+        + "context_id integer, "
+        + "decl_id integer, "
+        + "kind string" + ");";
+
+
+    /**
+     * kind = 0: subkind 
+     * kind = 1: equality
+     * kind = 2: inequality
+     */
+    private final String CREATE_CONSTRAINT_TABLE = "create table " + CONSTRAINT_TABLE_NAME + "("
+        + "id integer, "
+        + "str string, "
+        + "left_id integer, " 
+        + "right_id integer, " 
+        + "cause_1 integer, " 
+        + "cause_2 integer, " 
+        + "cause_3 integer, " 
+        + "kind integer" + ");";
+
+
+    /**
+     * direction = 0: forward
+     * direction = 1: backword
+     */
+    private final String CREATE_TRACE_TABLE = "create table " + TRACE_TABLE_NAME + "("
+        + "value_id integer,"
+        + "old string,"
+        + "new string,"
+        + "constraint_id integer" + ");";
+
     public AbstractConstraintSolver(InferenceTransformer t) {
         this.t = t;
+        needTrace = !(System.getProperty("noTrace") != null);
+        DB_NAME = SourceLocator.v().getOutputDir() + File.separator + t.getName() + "-traces.sqlite";
+        DB_SCRIPT = SourceLocator.v().getOutputDir() + File.separator + t.getName() + "-traces.sql";
+        tFactory =  Executors.defaultThreadFactory();
+        System.out.println("INFO: needTrace = " + needTrace);
     }
 
     public Constraint getCurrentConstraint() {
         return currentConstraint;
+    }
+
+    protected boolean needTrace() {
+        return needTrace; 
     }
 
 	protected boolean handleConstraint(Constraint c) throws SolverException {
@@ -161,11 +258,17 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 	 */
 	protected boolean setAnnotations(AnnotatedValue av, Set<Annotation> annos)
 			throws SolverException {
+        Set<Annotation> oldAnnos = av.getAnnotations();
 		if (av instanceof AdaptValue)
 			return setAnnotations((AdaptValue) av, annos);
-		if (av.getAnnotations().equals(annos))
+		if (oldAnnos.equals(annos))
 			return false;
         av.setAnnotations(annos);
+
+        if (needTrace())
+            insertObject(new Trace(av.getId(), oldAnnos.toString(), annos.toString(), 
+                    getCurrentConstraint().getId()));
+
         return true;
     }
 
@@ -225,5 +328,166 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 				|| setAnnotations(decl, declAnnos);
 	}
 
-    public abstract Set<Constraint> solve();
+    protected void insertValue(AdaptValue av) {
+        try {
+//            pInsertAValue.setInt(1, av.getId());
+//            pInsertAValue.setString(2, av.getContextValue().toString());
+//            pInsertAValue.setString(3, av.getDeclValue().toString());
+//            pInsertAValue.setInt(4, av.getContextValue().getId());
+//            pInsertAValue.setInt(5, av.getDeclValue().getId());
+//            pInsertAValue.setString(6, av.getKind().toString());
+//            adaptvalueNum--;
+//            if (adaptvalueNum == 0) {
+//                pInsertAValue.executeBatch();
+//                adaptvalueNum = 100;
+//            } else 
+//                pInsertAValue.addBatch();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void insertValue(AnnotatedValue av) {
+        if (av instanceof AdaptValue) {
+//            insertValue((AdaptValue) av);
+        }
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("insert into ").append(VALUE_TABLE_NAME)
+                .append(" values (");
+            sb.append(av.getId()).append(",\"");
+            sb.append(av.getIdentifier().replace('\"', '_')).append("\",\"");
+            sb.append(av.getAnnotations().toString()).append("\",\"");
+            sb.append(av.getType().toString()).append("\",\"");
+            sb.append(av.getKind().toString()).append("\",\"");
+            if (av.getValue() != null)
+                sb.append(av.getValue().toString().replace('\"', '_')).append("\",\"");
+            else 
+                sb.append("null\", \"");
+            sb.append(av.getEnclosingClass().toString()).append("\");");
+            out.println(sb.toString());
+
+			
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void insertConstraint(Constraint c) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("insert into ").append(CONSTRAINT_TABLE_NAME)
+                .append(" values (");
+            sb.append(c.getId()).append(",\"");
+            sb.append(c.toString().replace('\"', '_')).append("\",");
+            sb.append(c.getLeft().getId()).append(",");
+            sb.append(c.getRight().getId()).append(",");
+            List<Constraint> causes = c.getCauses();
+            for (int i = 0; i < 3; i++) {
+                if (i < causes.size())
+                    sb.append(causes.get(i).getId());
+                else 
+                    sb.append("-1");
+                sb.append(",");
+            }
+            sb.append(c.getKind()).append(");");
+            out.println(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void insertTrace(Trace t) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("insert into ").append(TRACE_TABLE_NAME)
+                .append(" values (");
+            sb.append(t.avId).append(",\"");
+            sb.append(t.oldAnnos).append("\",\"");
+            sb.append(t.newAnnos).append("\",");
+            sb.append(t.causeId).append(");");
+            out.println(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void insertObject(Object o) {
+        synchronized(queue) {
+            queue.addLast(o);
+            queue.notify();
+        }
+    }
+
+    private void initLog() throws FileNotFoundException {
+        out = new PrintStream(DB_SCRIPT);
+
+        out.println(CREATE_VALUE_TABLE);
+        out.println(CREATE_CONSTRAINT_TABLE);
+        out.println(CREATE_TRACE_TABLE);
+
+        worker = new Thread(new Runnable() {
+            public void run() {
+                while (!stop || !queue.isEmpty()) {
+                    synchronized(queue) {
+                        while (queue.isEmpty() && !stop) {
+                            try {
+                                queue.wait(10);
+                            } catch (Exception e) {}
+                        }
+                        int size = queue.size();
+                        while (size > 0) {
+                            Object o = queue.removeFirst();
+                            if (o instanceof Trace) 
+                                insertTrace((Trace) o);
+                            else if (o instanceof AnnotatedValue)
+                                insertValue((AnnotatedValue) o);
+                            else if (o instanceof Constraint)
+                                insertConstraint((Constraint) o);
+                            size--;
+                        }
+                    }
+                }
+            }
+        });;
+        worker.start();
+    }
+
+    private void endLog() {
+        try {
+            System.out.println("INFO: Finished solving. Waiting for log worker thread...");
+            stop = true;
+            worker.join();
+            out.close();    
+        } catch (Exception e) {
+        }
+    }
+
+    public Set<Constraint> solve() {
+        Set<Constraint> set;
+        try {
+            if (needTrace)
+                initLog();
+
+            set = solveImpl();
+
+            if (needTrace()) {
+                // dump annotated values
+                for (AnnotatedValue av: t.getAnnotatedValues().values()) {
+                    insertObject(av);
+                }
+                // dump constraints
+                for (Constraint c : t.getConstraints()) {
+                    insertObject(c);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            endLog();
+        }
+        return set;
+    }
+
+    protected abstract Set<Constraint> solveImpl();
 }
