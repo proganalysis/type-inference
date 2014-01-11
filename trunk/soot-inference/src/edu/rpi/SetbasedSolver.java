@@ -15,7 +15,7 @@ public class SetbasedSolver extends AbstractConstraintSolver {
     }
 
     @Override
-    public Set<Constraint> solve() {
+    protected Set<Constraint> solveImpl() {
         Set<Constraint> constraints = t.getConstraints();
 		Set<Constraint> warnConstraints = new HashSet<Constraint>();
 		Set<Constraint> conflictConstraints;

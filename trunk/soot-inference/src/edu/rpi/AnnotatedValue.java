@@ -17,9 +17,10 @@ public class AnnotatedValue {
         PARAMETER,
         THIS, 
         RETURN, 
-        ADAPT, 
         CONSTANT,
-        CLASS
+        CLASS, 
+        METH_ADAPT, 
+        FIELD_ADAPT
     }
 
     private static int counter = 0;
@@ -134,9 +135,9 @@ public class AnnotatedValue {
     public static abstract class AdaptValue extends AnnotatedValue {
         protected AnnotatedValue context;
         protected AnnotatedValue decl;
-        public AdaptValue(AnnotatedValue context, AnnotatedValue decl) {
+        public AdaptValue(AnnotatedValue context, AnnotatedValue decl, Kind kind) {
             super(context.getIdentifier() + decl.getIdentifier(), 
-                    VoidType.v(), Kind.ADAPT, null);
+                    VoidType.v(), kind, null);
             this.context = context;
             this.decl = decl;
         }
@@ -156,7 +157,7 @@ public class AnnotatedValue {
 
     public static class FieldAdaptValue extends AdaptValue {
         public FieldAdaptValue(AnnotatedValue context, AnnotatedValue decl) {
-            super(context, decl);
+            super(context, decl, Kind.FIELD_ADAPT);
         }
 
         @Override
@@ -180,7 +181,7 @@ public class AnnotatedValue {
 
     public static class MethodAdaptValue extends AdaptValue {
         public MethodAdaptValue(AnnotatedValue context, AnnotatedValue decl) {
-            super(context, decl);
+            super(context, decl, Kind.METH_ADAPT);
         }
 
         @Override

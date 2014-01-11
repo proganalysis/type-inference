@@ -13,10 +13,13 @@ public abstract class Constraint {
 
     protected int id;
 
+    private int kind;
+
     private static int counter = 0; 
 
-    public Constraint() {
+    public Constraint(int kind) {
         id = counter++;
+        this.kind = kind;
     }
 
     public AnnotatedValue getLeft() {
@@ -29,6 +32,10 @@ public abstract class Constraint {
 
     public int getId() {
         return id;
+    }
+
+    public int getKind() {
+        return kind;
     }
 
     public void addCause(Constraint c) {
@@ -67,6 +74,7 @@ public abstract class Constraint {
 
 	public static class SubtypeConstraint extends Constraint {
 		public SubtypeConstraint(AnnotatedValue sub, AnnotatedValue sup) {
+            super(0);
             this.left = sub;
             this.right = sup;
 		}
@@ -86,6 +94,7 @@ public abstract class Constraint {
 
 	public static class EqualityConstraint extends Constraint {
 		public EqualityConstraint(AnnotatedValue sub, AnnotatedValue sup) {
+            super(1);
             this.left = sub;
             this.right = sup;
 		}
@@ -105,6 +114,7 @@ public abstract class Constraint {
 
 	public static class UnequalityConstraint extends Constraint {
 		public UnequalityConstraint(AnnotatedValue sub, AnnotatedValue sup) {
+            super(2);
             this.left = sub;
             this.right = sup;
 		}

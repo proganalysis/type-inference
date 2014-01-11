@@ -46,12 +46,14 @@ public class InferenceVisitor extends AbstractStmtSwitch {
         System.out.println("Default case (" + obj.getClass() + "): " + obj);
     }
 
+    @Override
     public void caseInvokeStmt(InvokeStmt stmt) {
-        AnnotatedValue fakeLhs = t.getAnnotatedValue("fake-" + t.getVisitorState().getSootClass().getName() 
+        AnnotatedValue fakeLhs = t.getAnnotatedValue("fake-" + t.getVisitorState().getSootMethod().getSignature()
                 + "<" + stmt.hashCode() + ">", VoidType.v(), Kind.CONSTANT, stmt.getInvokeExpr());
         stmt.getInvokeExpr().apply(new ValueVisitor(null, fakeLhs));
     }
 
+    @Override
     public void caseAssignStmt(AssignStmt stmt)
     {
         Value leftOp = stmt.getLeftOp();
@@ -65,12 +67,14 @@ public class InferenceVisitor extends AbstractStmtSwitch {
         }
     }
 
+    @Override
     public void caseReturnStmt(ReturnStmt stmt) {
         AnnotatedValue aReturn = t.getAnnotatedReturn(t.getVisitorState().getSootMethod());
         Value returnOp = stmt.getOp();
         returnOp.apply(new ValueVisitor(null, aReturn));
     }
 
+    @Override
     public void caseIdentityStmt(IdentityStmt stmt) {
         Value left = stmt.getLeftOp();
         AnnotatedValue aLeft = null;
@@ -82,6 +86,25 @@ public class InferenceVisitor extends AbstractStmtSwitch {
         rightOp.apply(new ValueVisitor(null, aLeft));
     }
 
+    @Override
+    public void caseEnterMonitorStmt(EnterMonitorStmt stmt) {}
+
+    @Override
+    public void caseExitMonitorStmt(ExitMonitorStmt stmt) {}
+
+    @Override
+    public void caseThrowStmt(ThrowStmt stmt) {}
+
+    @Override
+    public void caseGotoStmt(GotoStmt stmt) {}
+
+    @Override
+    public void caseIfStmt(IfStmt stmt) {}
+
+    @Override
+    public void caseLookupSwitchStmt(LookupSwitchStmt stmt) {}
+
+    @Override
     public void caseReturnVoidStmt(ReturnVoidStmt stmt) {}
 
     class ValueVisitor extends AbstractJimpleValueSwitch {
@@ -159,10 +182,12 @@ public class InferenceVisitor extends AbstractStmtSwitch {
                 t.handleInstanceFieldRead(aBase, aComponent, sup);
         }
 
+        @Override
         public void caseInterfaceInvokeExpr(InterfaceInvokeExpr v) {
             t.handleMethodCall(v, sup);
         }
 
+        @Override
         public void caseSpecialInvokeExpr(SpecialInvokeExpr v) {
             // Skip Object.<init>
             SootMethod sm = v.getMethod();
@@ -172,6 +197,7 @@ public class InferenceVisitor extends AbstractStmtSwitch {
             t.handleMethodCall(v, sup);
         }
 
+        @Override
         public void caseStaticInvokeExpr(StaticInvokeExpr v) {
             // Skip accesses from inner classes, e.g. access$0
             if (v.getMethod().getName().startsWith("access$")) {
@@ -181,14 +207,52 @@ public class InferenceVisitor extends AbstractStmtSwitch {
             t.handleMethodCall(v, sup);
         }
 
+        @Override
         public void caseVirtualInvokeExpr(VirtualInvokeExpr v) {
             t.handleMethodCall(v, sup);
         }
         
+        @Override
         public void caseDynamicInvokeExpr(DynamicInvokeExpr v) {
             t.handleMethodCall(v, sup);
         }
- 
+
+        @Override
+        public void caseLengthExpr(LengthExpr v) {
+            AnnotatedValue av = t.getAnnotatedValue(v.getOp());
+            add(av);
+        }
+
+        @Override
+        public void caseAddExpr(AddExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseAndExpr(AndExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseDivExpr(DivExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseMulExpr(MulExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseOrExpr(OrExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseSubExpr(SubExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseXorExpr(XorExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseShlExpr(ShlExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseShrExpr(ShrExpr v) { handleBinary(v); }
+
+        @Override
+        public void caseUshrExpr(UshrExpr v) { handleBinary(v); }
+
         @Override
         public void caseDoubleConstant(DoubleConstant v) { }
 
@@ -209,6 +273,30 @@ public class InferenceVisitor extends AbstractStmtSwitch {
 
         @Override
         public void caseClassConstant(ClassConstant v) { }
+
+        @Override
+        public void caseNewExpr(NewExpr v) {}
+
+        @Override
+        public void caseNewArrayExpr(NewArrayExpr v) {}
+
+        @Override
+        public void caseNewMultiArrayExpr(NewMultiArrayExpr v) {}
+
+        @Override
+        public void caseCmpExpr(CmpExpr v) { }
+
+        @Override
+        public void caseCmpgExpr(CmpgExpr v) { }
+
+        @Override
+        public void caseCmplExpr(CmplExpr v) { }
+
+        @Override
+        public void caseCaughtExceptionRef(CaughtExceptionRef v) { }
+
+        @Override
+        public void caseInstanceOfExpr(InstanceOfExpr v) { }
 
         @Override
         public void defaultCase(Object v) {
@@ -239,6 +327,15 @@ public class InferenceVisitor extends AbstractStmtSwitch {
                 AnnotatedValue aReturn = t.getAnnotatedReturn(invokeMethod);
                 t.addSubtypeConstraint(aReturn, assignTo);
             }
+        }
+
+        private void handleBinary(BinopExpr v) {
+            Value op1 = v.getOp1();
+            Value op2 = v.getOp2();
+            AnnotatedValue av1 = t.getAnnotatedValue(op1);
+            AnnotatedValue av2 = t.getAnnotatedValue(op2);
+            add(av1);
+            add(av2);
         }
 
         private void add(AnnotatedValue av) {

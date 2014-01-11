@@ -66,6 +66,10 @@ public class SFlowTransformer extends InferenceTransformer {
 
     public final Annotation BOTTOM;
 
+    private final Annotation READONLYTHIS;
+
+    private final Annotation POLYTHIS;
+
     public SFlowTransformer() {
         isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
         useReim = (System.getProperty(OPTION_USE_REIM) != null);
@@ -75,6 +79,8 @@ public class SFlowTransformer extends InferenceTransformer {
         POLY = AnnotationUtils.fromClass(Poly.class);
         SAFE = AnnotationUtils.fromClass(Safe.class);
         BOTTOM = AnnotationUtils.fromClass(Bottom.class);
+        READONLYTHIS = AnnotationUtils.fromClass(ReadonlyThis.class);
+        POLYTHIS = AnnotationUtils.fromClass(PolyThis.class);
 
         sourceAnnos = AnnotationUtils.createAnnotationSet();
         sourceAnnos.add(TAINTED);
@@ -116,8 +122,16 @@ public class SFlowTransformer extends InferenceTransformer {
                     super.addSubtypeConstraint(aIn, aOut);
                 }
                 if (!invokeMethod.isStatic() && !invokeMethod.isConstructor()) {
-                    AnnotatedValue aIn = getAnnotatedThis(invokeMethod);
-                    super.addSubtypeConstraint(aIn, aOut);
+                    AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
+                    super.addSubtypeConstraint(aThis, aOut);
+                    // if THIS is not annotated as READONLY
+                    Set<Annotation> annos = getRawVisibilityTags(invokeMethod);
+                    if (!annos.contains(READONLYTHIS) && !annos.contains(POLYTHIS) ) {
+                        for (int i = 0; i < invokeMethod.getParameterCount(); i++) {
+                            AnnotatedValue aIn = getAnnotatedParameter(invokeMethod, i);
+                            super.addSubtypeConstraint(aIn, aThis);
+                        }
+                    }
                 }
             }
         }
@@ -126,9 +140,14 @@ public class SFlowTransformer extends InferenceTransformer {
 
     @Override
     protected boolean isAnnotated(AnnotatedValue v) {
-        Set<Annotation> diff = v.getAnnotations();
-        diff.retainAll(sourceAnnos);
-        return !diff.isEmpty();
+        return isAnnotated(v.getAnnotations());
+    }
+
+    private boolean isAnnotated(Set<Annotation> annos) {
+        Set<Annotation> set = AnnotationUtils.createAnnotationSet();
+        set.addAll(annos);
+        set.retainAll(sourceAnnos);
+        return !set.isEmpty();
     }
 
     @Override
@@ -140,9 +159,7 @@ public class SFlowTransformer extends InferenceTransformer {
     @Override
     protected AnnotatedValue createMethodAdaptValue(AnnotatedValue receiver, 
             AnnotatedValue decl, AnnotatedValue assignTo) {
-//        LineNumberTag lineTag = (LineNumberTag) getVisitorState().getUnit().getTag("LineNumberTag");
-//        int line = (lineTag != null ? lineTag.getLineNumber() : getVisitorState().getUnit().hashCode());
-        String callSiteIdentifier = CALLSITE_PREFIX + getVisitorState().getSootClass().getName() 
+        String callSiteIdentifier = CALLSITE_PREFIX + getVisitorState().getSootMethod().getSignature()
             + "<" + getVisitorState().getUnit().hashCode() + ">";
         AnnotatedValue callSite = getAnnotatedValue(callSiteIdentifier, VoidType.v(), Kind.CONSTANT, null);
         return new MethodAdaptValue(callSite, decl);
@@ -161,7 +178,10 @@ public class SFlowTransformer extends InferenceTransformer {
     @Override
     protected void annotateField(AnnotatedValue v, SootField field) {
         if (!isAnnotated(v)) {
-            if (!field.isStatic()) {
+            if (field.getName().equals("this$0")) {
+                v.setAnnotations(sourceAnnos);
+            } 
+            else if (!field.isStatic()) {
                 v.addAnnotation(TAINTED);
                 v.addAnnotation(POLY);
             } else
@@ -210,9 +230,27 @@ public class SFlowTransformer extends InferenceTransformer {
     @Override
     protected void handleMethodOverride(SootMethod overrider, SootMethod overridden) {
         // only handle overridden methods with active body?
-        if (isLibraryMethod(overridden))
-            return;
-        super.handleMethodOverride(overrider, overridden);
+        if (!overrider.isStatic()) {
+            // this: overridden <: overrider 
+            AnnotatedValue overriderThis = getAnnotatedThis(overrider);
+            AnnotatedValue overriddenThis = getAnnotatedThis(overridden);
+            if (!isFromLibrary(overriddenThis) || isAnnotated(getVisibilityTags(overridden, Kind.THIS))) 
+                addSubtypeConstraint(overriddenThis, overriderThis);
+        }
+        // parameter: overridden <: overrider 
+        assert overrider.getParameterCount() == overridden.getParameterCount();
+        for (int i = 0; i < overrider.getParameterCount(); i++) {
+            AnnotatedValue overriderParam = getAnnotatedThis(overrider);
+            AnnotatedValue overriddenParam = getAnnotatedThis(overridden);
+            if (!isFromLibrary(overriddenParam) || isAnnotated(getVisibilitParameterTags(overridden, i))) 
+                addSubtypeConstraint(overriddenParam, overriderParam);
+        }
+        if (overrider.getReturnType() != VoidType.v()) {
+            // return: overrider <: overridden 
+            AnnotatedValue overriderRet = getAnnotatedReturn(overrider);
+            AnnotatedValue overriddenRet = getAnnotatedReturn(overridden);
+            addSubtypeConstraint(overriderRet, overriddenRet);
+        }
     }
 
     @Override
@@ -264,5 +302,10 @@ public class SFlowTransformer extends InferenceTransformer {
                 addEqualityConstraint(classValue, thisValue);
             }
         }
+    }
+    
+    @Override
+    public String getName() {
+        return "sflow";
     }
 }

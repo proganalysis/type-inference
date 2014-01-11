@@ -3,6 +3,7 @@ package edu.rpi;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
 import java.io.PrintStream;
 import java.io.File;
 
@@ -42,13 +43,72 @@ public class SootInference {
 		//output as APK, too//-f J
 //        Options.v().set_output_format(Options.output_format_none);
         Options.v().set_output_format(Options.output_format_jimple);
-        Options.v().set_keep_line_number(true);
+//        Options.v().set_keep_line_number(true);
+
+        // Exclude packages
+        String[] excludes = new String[] {
+            "android.annotation",
+            "com.android",
+            "com.google",
+            "org.apache",
+            "org.acra",
+            "com.loopj",
+            "android.support"
+        };
+        Options.v().set_exclude(Arrays.asList(excludes));
 
         Scene.v().addBasicClass("java.lang.StringBuilder", SootClass.SIGNATURES);
-        Scene.v().addBasicClass("java.io.InputStreamReader",SootClass.HIERARCHY);
-//        Scene.v().addBasicClass("java.lang.IllegalStateException", SootClass.HIERARCHY);
-//        Scene.v().addBasicClass("java.lang.UnsupportedOperationException", SootClass.HIERARCHY);
-		
+        Scene.v().addBasicClass("java.lang.Math", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.util.HashMap", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.net.HttpURLConnection", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("java.util.LinkedList", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.StatusLine", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("java.io.InputStreamReader", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("java.lang.IllegalArgumentException", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.lang.NumberFormatException", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.lang.reflect.AccessibleObject", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.lang.reflect.Method", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.lang.String", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.lang.System", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("java.lang.System", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.security.MessageDigest", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("java.util.Date", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.util.List", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.util.zip.GZIPInputStream", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.client.entity.UrlEncodedFormEntity", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.conn.params.ConnPerRoute", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.conn.params.ConnPerRouteBean", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.conn.scheme.PlainSocketFactory", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.conn.scheme.SchemeRegistry", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.conn.scheme.SocketFactory", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.conn.ssl.SSLSocketFactory", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.entity.StringEntity", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.HttpVersion", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.impl.client.DefaultHttpClient", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.message.BasicHeader", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.message.BasicNameValuePair", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.params.BasicHttpParams", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.ProtocolVersion", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.util.CharArrayBuffer", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("java.io.File", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.io.FileOutputStream", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.io.PrintStream", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.net.HttpURLConnection", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.net.URL", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.net.URLConnection", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.util.AbstractList", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.util.ArrayList", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.util.LinkedList", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.util.Queue", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.util.zip.GZIPInputStream", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("org.apache.http.HttpResponse", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("org.apache.http.StatusLine", SootClass.SIGNATURES);
+        Scene.v().addBasicClass("org.apache.http.util.EntityUtils", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("org.apache.http.util.EntityUtils", SootClass.SIGNATURES);
+
+
+//        PackManager.v().getPack("jtp").add(new Transform("jtp.it", new IntentTransformer()));
 
         InferenceTransformer sflowTransformer = new SFlowTransformer();
         InferenceTransformer reimTransformer = new ReimTransformer();

@@ -14,6 +14,7 @@ import soot.RefType;
 import soot.Type;
 import soot.VoidType;
 import soot.PrimType;
+import soot.NullType;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -204,7 +205,9 @@ public class ReimTransformer extends InferenceTransformer {
     @Override
     protected void annotateDefault(AnnotatedValue v, Kind kind, Object o) {
         if (!isAnnotated(v)) {
-            if (kind == Kind.LITERAL)
+            if (v.getType() == NullType.v()) 
+                v.addAnnotation(MUTABLE);
+            else if (kind == Kind.LITERAL)
                 v.addAnnotation(READONLY);
             else if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
@@ -241,8 +244,8 @@ public class ReimTransformer extends InferenceTransformer {
     public FailureStatus getFailureStatus(Constraint c) {
         AnnotatedValue left = c.getLeft();
         AnnotatedValue right = c.getRight();
-        if (isDefaultReadonlyType(left.getType()) 
-                || isDefaultReadonlyType(right.getType()))
+        if (isDefaultReadonlyType(left.getType()) || left.getKind() == Kind.LITERAL
+                || isDefaultReadonlyType(right.getType()) || right.getKind() == Kind.LITERAL)
             return FailureStatus.IGNORE;
 
         if (isFromLibrary(left) || isFromLibrary(right))
@@ -259,5 +262,10 @@ public class ReimTransformer extends InferenceTransformer {
     @Override
     public boolean isStrictSubtyping() {
         return false;
+    }
+
+    @Override
+    public String getName() {
+        return "reim";
     }
 }
