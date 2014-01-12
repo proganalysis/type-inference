@@ -240,8 +240,8 @@ public class SFlowTransformer extends InferenceTransformer {
         // parameter: overridden <: overrider 
         assert overrider.getParameterCount() == overridden.getParameterCount();
         for (int i = 0; i < overrider.getParameterCount(); i++) {
-            AnnotatedValue overriderParam = getAnnotatedThis(overrider);
-            AnnotatedValue overriddenParam = getAnnotatedThis(overridden);
+            AnnotatedValue overriderParam = getAnnotatedParameter(overrider, i);
+            AnnotatedValue overriddenParam = getAnnotatedParameter(overridden, i);
             if (!isFromLibrary(overriddenParam) || isAnnotated(getVisibilitParameterTags(overridden, i))) 
                 addSubtypeConstraint(overriddenParam, overriderParam);
         }
@@ -279,14 +279,18 @@ public class SFlowTransformer extends InferenceTransformer {
         // connect THIS of callback methods for Android app
         if (inferAndroidApp) {
             boolean needConnect = false;
-            Map<SootClass, SootMethod> overriddens = InferenceUtils.overriddenMethods(sm);
-            for (SootClass sc : overriddens.keySet()) {
-                if (androidClasses.contains(sc.getName())) {
-                    needConnect = true;
-                    break;
-                }
-            }
-            if (!needConnect && sm.isConstructor()) {
+//            Map<SootClass, SootMethod> overriddens = InferenceUtils.overriddenMethods(sm);
+//            for (SootClass sc : overriddens.keySet()) {
+//                if (androidClasses.contains(sc.getName())) {
+//                    needConnect = true;
+//                    break;
+//                }
+//            }
+            String methodName = sm.getName();
+            if (!needConnect/* && sm.isConstructor()*/
+                    && !sm.isStatic()
+                    && !methodName.equals("<clinit>")
+                    && !methodName.startsWith("access$")) {
                 // check if it is constructor
                 Set<SootClass> supertypes = InferenceUtils.getSuperTypes(sm.getDeclaringClass());
                 for (SootClass sc : supertypes) 

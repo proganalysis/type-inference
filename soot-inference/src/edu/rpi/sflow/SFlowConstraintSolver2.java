@@ -46,7 +46,7 @@ import checkers.inference.sflow.quals.*;
 import checkers.inference.reim.quals.*;
 
 
-public class SFlowConstraintSolver extends AbstractConstraintSolver {
+public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
 
     protected SFlowTransformer st;
 
@@ -56,29 +56,74 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
 
 	private Map<AnnotatedValue, Set<AnnotatedValue>> declRefToContextRefs = new HashMap<AnnotatedValue, Set<AnnotatedValue>>(); 
 
-	private Map<AnnotatedValue, List<Constraint>> refToConstraints = new HashMap<AnnotatedValue, List<Constraint>>(); 
-
 	private Map<AnnotatedValue, Set<Constraint>> lessValues = new HashMap<AnnotatedValue, Set<Constraint>>(); 
 
 	private Map<AnnotatedValue, Set<Constraint>> greaterValues = new HashMap<AnnotatedValue, Set<Constraint>>(); 
 
-    private Deque<Constraint> positives;
+    private boolean preferSource = true;
 
-    private Deque<Constraint> negatives;
+    private BitSet updated = new BitSet(AnnotatedValue.maxId());
 
-    private boolean preferPositive = true;
+    private byte[] initAnnos = new byte[AnnotatedValue.maxId()];
 
-    public SFlowConstraintSolver(InferenceTransformer t) {
+    private final byte TAINTED_MASK = 0x01;
+    private final byte POLY_MASK = 0x02;
+    private final byte SAFE_MASK = 0x04;
+    private final byte BOTTOM_MASK = 0x08;
+
+    public SFlowConstraintSolver2(InferenceTransformer t) {
         super(t);
         if (!(t instanceof SFlowTransformer)) 
-            throw new RuntimeException("SFlowConstraintSolver expects SFlowTransformer");
+            throw new RuntimeException("SFlowConstraintSolver2 expects SFlowTransformer");
         this.st = (SFlowTransformer) t;
+        this.preferSource = !(System.getProperty("preferSink") != null);
+
     }
 
-    public SFlowConstraintSolver(InferenceTransformer t, Map<String, AnnotatedValue> reimValues) {
+    public SFlowConstraintSolver2(InferenceTransformer t, Map<String, AnnotatedValue> reimValues) {
         this(t);
         this.reimValues = reimValues;
     }
+
+
+    private byte toBits(Set<Annotation> annos) {
+        byte b = 0;
+        for (Annotation anno : annos) {
+            if (anno.equals(st.TAINTED))
+                b |= TAINTED_MASK;
+            else if (anno.equals(st.POLY))
+                b |= POLY_MASK;
+            else if (anno.equals(st.SAFE))
+                b |= SAFE_MASK;
+            else if (anno.equals(st.BOTTOM))
+                b |= BOTTOM_MASK;
+        }
+        return b;
+    }
+
+    private Set<Annotation> fromBits(byte b) {
+        Set<Annotation> annos = AnnotationUtils.createAnnotationSet();
+        if ((b & TAINTED_MASK) > 0)
+            annos.add(st.TAINTED);
+        if ((b & POLY_MASK) > 0)
+            annos.add(st.POLY);
+        if ((b & SAFE_MASK) > 0)
+            annos.add(st.SAFE);
+        if ((b & BOTTOM_MASK) > 0)
+            annos.add(st.BOTTOM);
+        return annos;
+    }
+
+    private void setInitAnnos(AnnotatedValue av) {
+        int id = av.getId();
+        initAnnos[id] = toBits(av.getAnnotations());
+    }
+
+    private Set<Annotation> getInitAnnos(int id) {
+        byte b = initAnnos[id];
+        return fromBits(b);
+    }
+
 
     private boolean containsReadonly(AnnotatedValue av) {
         if (av instanceof AdaptValue)
@@ -157,15 +202,15 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
                         declRefToContextRefs.put(decl, contextSet);
                     }
                     contextSet.add(context);
-                }                
-                for (AnnotatedValue av : avs) {
-                    List<Constraint> l = refToConstraints.get(av);
-                    if (l == null) {
-                        l = new ArrayList<Constraint>(5);
-                        refToConstraints.put(av, l);
-                    }
-                    l.add(c);
                 }
+//                for (AnnotatedValue av : avs) {
+//                    List<Constraint> l = refToConstraints.get(av);
+//                    if (l == null) {
+//                        l = new ArrayList<Constraint>(5);
+//                        refToConstraints.put(av, l);
+//                    }
+//                    l.add(c);
+//                }
             }
             if (c instanceof SubtypeConstraint) {
                 addGreaterConstraint(left, c);
@@ -353,42 +398,45 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
         cons.addAll(newCons);
     }
 
-    private boolean isMustSatisfiable(Constraint c) {
-        AnnotatedValue left = c.getLeft();
-        AnnotatedValue right = c.getRight();
 
-        if (left instanceof MethodAdaptValue || right instanceof MethodAdaptValue)
+    /**
+     * Retore the rhs to propagate Positive
+     */
+    private boolean makeSatisfiable(Constraint c) {
+        AnnotatedValue toUpdate;
+        if (preferSource) {
+            if (getAnnotations(c.getLeft()).contains(st.TAINTED))
+                toUpdate = c.getRight();
+            else 
+                toUpdate = c.getLeft();
+        } else {
+            if (getAnnotations(c.getRight()).contains(st.SAFE))
+                toUpdate = c.getLeft();
+            else 
+                toUpdate = c.getRight();
+        }
+        boolean needSolve = false;
+        AnnotatedValue[] avs;
+        if (toUpdate instanceof AdaptValue) {
+            avs = new AnnotatedValue[]{((AdaptValue) toUpdate).getContextValue(), 
+                ((AdaptValue) toUpdate).getDeclValue()};
+        } else 
+            avs = new AnnotatedValue[]{toUpdate};
+        
+        for (AnnotatedValue av : avs) {
+            int id = av.getId();
+            if (updated.get(id)) {
+                Set<Annotation> initAnnos = getInitAnnos(id);
+//                System.out.println("Restore " + av + " to " + initAnnos);
+                // restore
+                av.setAnnotations(initAnnos);
+                needSolve = true;
+            }
+        }
+
+        if (!needSolve)
             return false;
 
-        if (left.getKind() == Kind.CLASS ||
-                right.getKind() == Kind.CLASS)
-            return true;
-        
-        if ((left.getKind() == Kind.LOCAL || isParamOrRetValue(left)) 
-                && (right.getKind() == Kind.LOCAL || isParamOrRetValue(right))
-                && left.getEnclosingMethod().equals(right.getEnclosingMethod())
-                && ((SootMethod) left.getEnclosingMethod()).getName().startsWith("access$")) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean makeSatisfiable(Constraint c) {
-        AnnotatedValue left = c.getLeft();
-        AnnotatedValue right = c.getRight();
-
-        AnnotatedValue toUpdate = null;
-        if (left.getKind() == Kind.FIELD_ADAPT && right.getKind() !=  Kind.FIELD_ADAPT) {
-            toUpdate = right;
-        } else if (left.getKind() != Kind.FIELD_ADAPT && right.getKind() ==  Kind.FIELD_ADAPT) {
-            toUpdate = left;
-        } else if (left.getAnnotations().contains(st.TAINTED)) {
-            toUpdate = right;
-        } else {
-            toUpdate = left;
-        }
-        toUpdate.setAnnotations(st.getSourceLevelQualifiers());
         // solve again
         boolean b = false;
         try {
@@ -399,7 +447,7 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
     }
 
     @Override
-	protected boolean setAnnotations(AnnotatedValue av, Set<Annotation> annos)
+	protected boolean setAnnotations(AnnotatedValue av, Set<Annotation> annos) 
 			throws SolverException {
         Set<Annotation> oldAnnos = av.getAnnotations();
 		if (av instanceof AdaptValue)
@@ -409,24 +457,17 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
         if (av.getKind() == Kind.CONSTANT)
             return false;
 
-        if (preferPositive && !annos.contains(st.TAINTED)) {
-            // no update
-            Constraint current = getCurrentConstraint();
-            if (current != null) {
-                negatives.addLast(current);
-            }
-            return false;
+        if (annos.isEmpty())
+            System.out.println();
+
+        if (!updated.get(av.getId())) {
+            // first update, remember the initial annos
+            updated.set(av.getId());
+            setInitAnnos(av);
         }
-        super.setAnnotations(av, annos);
-        List<Constraint> related = refToConstraints.get(av);
-        for (Constraint c : related) {
-            if (annos.contains(st.TAINTED))
-                positives.addFirst(c);
-            else
-                positives.addLast(c);
-        }
-        return true;
+        return super.setAnnotations(av, annos);
     }
+
 
     @Override
     protected Set<Constraint> solveImpl() {
@@ -439,47 +480,33 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
 		Set<Constraint> warnConstraints = new HashSet<Constraint>();
 		Set<Constraint> conflictConstraints = new LinkedHashSet<Constraint>();
 		boolean hasUpdate = false;
-
-        positives = new LinkedList<Constraint>();
-        negatives = new LinkedList<Constraint>();
-
-        positives.addAll(constraints);
-        while (!positives.isEmpty() || !negatives.isEmpty()) {
-
+		do {
+			conflictConstraints = new LinkedHashSet<Constraint>();
+			hasUpdate = false;
             Set<Constraint> newCons = new LinkedHashSet<Constraint>();
-
-            Constraint c = null;
-            if (!positives.isEmpty()) {
-                c = positives.removeFirst();
-                preferPositive = true; 
-            } else if (!negatives.isEmpty()) {
-                c = negatives.removeFirst();
-                preferPositive = false; 
-            }
-
-            try {
-                hasUpdate = handleConstraint(c) || hasUpdate;
-                newCons.addAll(addLinearConstraints(c, extendedConstraints));
-            } catch (SolverException e) {
-                FailureStatus fs = t.getFailureStatus(c);
-                if (fs == FailureStatus.ERROR) {
-                    if (isMustSatisfiable(c)) 
+			for (Constraint c : extendedConstraints) {
+				try {
+					hasUpdate = handleConstraint(c) || hasUpdate;
+                    newCons.addAll(addLinearConstraints(c, extendedConstraints));
+				} catch (SolverException e) {
+					FailureStatus fs = t.getFailureStatus(c);
+					if (fs == FailureStatus.ERROR) {
                         hasUpdate = makeSatisfiable(c);
-                    else if (constraints.contains(c))
-                        conflictConstraints.add(c);
-                } else if (fs == FailureStatus.WARN) {
-                    if (!warnConstraints.contains(c)) {
-                        System.out.println("WARN: handling constraint " + c + " failed.");
-                        warnConstraints.add(c);
-                    }
-                }
-            }
-            for (Constraint nc : newCons) {
-                extendedConstraints.add(nc);
-                positives.addFirst(nc);
+                        if (!hasUpdate && extendedConstraints.contains(c))
+                            conflictConstraints.add(c);
+					} else if (fs == FailureStatus.WARN) {
+						if (!warnConstraints.contains(c)) {
+							System.out.println("WARN: handling constraint " + c + " failed.");
+							warnConstraints.add(c);
+						}
+					}
+				}
+			}
+            if (!newCons.isEmpty()) {
+                extendedConstraints.addAll(newCons);
                 hasUpdate = true;
             }
-        }
+		} while (hasUpdate);
         constraints.clear();
         constraints.addAll(extendedConstraints);
 

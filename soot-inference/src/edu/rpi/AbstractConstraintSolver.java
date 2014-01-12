@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.concurrent.*;
 
 import soot.SourceLocator;
+import soot.SootMethod;
 
 import edu.rpi.ConstraintSolver.FailureStatus;
 import edu.rpi.ConstraintSolver.SolverException;
@@ -64,7 +65,9 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         + "type string, "
         + "kind string, "
         + "value string, "
-        + "class string" + ");";
+        + "class string, " 
+        + "name string, "
+        + "method string" + ");";
 
     /**
      * kind = 0: field adapt
@@ -263,11 +266,12 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 			return setAnnotations((AdaptValue) av, annos);
 		if (oldAnnos.equals(annos))
 			return false;
-        av.setAnnotations(annos);
 
         if (needTrace())
             insertObject(new Trace(av.getId(), oldAnnos.toString(), annos.toString(), 
                     getCurrentConstraint().getId()));
+
+        av.setAnnotations(annos);
 
         return true;
     }
@@ -364,7 +368,10 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
                 sb.append(av.getValue().toString().replace('\"', '_')).append("\",\"");
             else 
                 sb.append("null\", \"");
-            sb.append(av.getEnclosingClass().toString()).append("\");");
+            sb.append(av.getEnclosingClass().getName()).append("\",\"");
+            sb.append(av.getName().replace('\"', '_')).append("\",\"");
+            SootMethod sm = av.getEnclosingMethod();
+            sb.append(sm != null ? sm.getSubSignature() : "").append("\");");
             out.println(sb.toString());
 
 			
@@ -399,6 +406,13 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 
     protected void insertTrace(Trace t) {
         try {
+
+            StringBuilder sbd = new StringBuilder();
+            sbd.append("delete from ").append(TRACE_TABLE_NAME)
+                .append(" where value_id = ").append(t.avId)
+                .append(" and old = \"").append(t.oldAnnos).append("\"");
+            out.println(sbd.toString());
+
             StringBuilder sb = new StringBuilder();
             sb.append("insert into ").append(TRACE_TABLE_NAME)
                 .append(" values (");

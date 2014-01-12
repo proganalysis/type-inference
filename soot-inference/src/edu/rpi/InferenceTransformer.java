@@ -100,6 +100,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         if (ret == null) {
             ret = av;
             ret.setEnclosingClass(visitorState.getSootClass());
+            ret.setEnclosingMethod(visitorState.getSootMethod());
             annotatedValues.put(identifier, ret);
         }
         return ret;
@@ -113,6 +114,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         if (ret == null) {
             ret = av;
             ret.setEnclosingClass(visitorState.getSootClass());
+            ret.setEnclosingMethod(visitorState.getSootMethod());
             annotatedValues.put(identifier, ret);
         }
         return ret;
@@ -128,6 +130,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         if (ret == null) {
             ret = new AnnotatedValue(identifier, type, kind, v, annos);
             ret.setEnclosingClass(visitorState.getSootClass());
+            ret.setEnclosingMethod(visitorState.getSootMethod());
             annotatedValues.put(identifier, ret);
             annotateDefault(ret, kind, v);
             if (needLocals && v != null && kind == Kind.LOCAL) {
@@ -177,6 +180,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         if (ret == null) {
             ret = new AnnotatedValue(identifier, field.getType(), Kind.FIELD, field, getVisibilityTags(field, Kind.FIELD));
             ret.setEnclosingClass(field.getDeclaringClass());
+            ret.setEnclosingMethod(null);
             annotateField(ret, field);
             annotatedValues.put(identifier, ret);
         }
@@ -191,6 +195,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         if (ret == null) {
             ret = new AnnotatedValue(identifier, sm.getParameterType(index), Kind.PARAMETER, sm, getVisibilitParameterTags(sm, index));
             ret.setEnclosingClass(sm.getDeclaringClass());
+            ret.setEnclosingMethod(sm);
             annotateParameter(ret, sm, index);
             annotatedValues.put(identifier, ret);
         }
@@ -203,6 +208,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         if (ret == null) {
             ret = new AnnotatedValue(identifier, sm.getReturnType(), Kind.RETURN, sm, getVisibilityTags(sm, Kind.RETURN));
             ret.setEnclosingClass(sm.getDeclaringClass());
+            ret.setEnclosingMethod(sm);
             annotateReturn(ret, sm);
             annotatedValues.put(identifier, ret);
         }
@@ -216,6 +222,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
             ret = new AnnotatedValue(identifier, sm.getDeclaringClass().getType(), Kind.THIS, sm, getVisibilityTags(sm, Kind.THIS));
             // TODO: this can also be annotated
             ret.setEnclosingClass(sm.getDeclaringClass());
+            ret.setEnclosingMethod(sm);
             annotateThis(ret, sm);
             annotatedValues.put(identifier, ret);
         }
@@ -483,8 +490,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
         // parameter: overridden <: overrider 
         assert overrider.getParameterCount() == overridden.getParameterCount();
         for (int i = 0; i < overrider.getParameterCount(); i++) {
-            AnnotatedValue overriderParam = getAnnotatedThis(overrider);
-            AnnotatedValue overriddenParam = getAnnotatedThis(overridden);
+            AnnotatedValue overriderParam = getAnnotatedParameter(overrider, i);
+            AnnotatedValue overriddenParam = getAnnotatedParameter(overridden, i);
             addSubtypeConstraint(overriddenParam, overriderParam);
         }
         if (overrider.getReturnType() != VoidType.v()) {
