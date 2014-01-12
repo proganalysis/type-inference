@@ -132,7 +132,7 @@ public class SootInference {
         }
         for (Constraint c : errors)
             System.out.println(c);
-        System.out.println("INFO: Finish solving Reim constraints. There are " + errors.size() + " errors");
+        System.out.println("INFO: Finish solving Reim constraints. " + errors.size() + " error(s)");
 
         try {
             PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-result.jaif");
@@ -142,7 +142,7 @@ public class SootInference {
         }
 
         System.out.println("INFO: Solving SFlow constraints:  " + sflowTransformer.getConstraints().size() + " in total...");
-        ConstraintSolver sflowSolver = new SFlowConstraintSolver(sflowTransformer, reimTransformer.getAnnotatedValues());
+        ConstraintSolver sflowSolver = new SFlowConstraintSolver2(sflowTransformer, reimTransformer.getAnnotatedValues());
         errors = sflowSolver.solve();
         try {
             PrintStream sflowOut = new PrintStream(outputDir + File.separator + "sflow-constraints.log");
@@ -152,10 +152,10 @@ public class SootInference {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("INFO: Finish solving SFlow constraints. There are " + errors.size() + " errors");
+        System.out.println();
         for (Constraint c : errors)
-            System.out.println(c);
-
+            System.out.println(c + "\n");
+        System.out.println("INFO: Finish solving SFlow constraints. " + errors.size() + " error(s)");
         try {
             PrintStream sflowOut = new PrintStream(outputDir + File.separator + "sflow-result.jaif");
             sflowTransformer.printJaif(sflowOut);

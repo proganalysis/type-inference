@@ -4,6 +4,7 @@ import soot.Value;
 import soot.Type;
 import soot.VoidType;
 import soot.SootClass;
+import soot.SootMethod;
 
 import java.util.*;
 import java.lang.annotation.*;
@@ -37,7 +38,19 @@ public class AnnotatedValue {
 
     private SootClass enclosingClass;
 
+    private SootMethod enclosingMethod;
+
+    private String name; 
+
     protected Set<Annotation> annos;
+
+    public static int maxId() {
+        return counter;
+    }
+
+    public static void reset() {
+        counter = 0;
+    }
 
     public AnnotatedValue(String identifier, Type type, Kind kind, Object v) {
         init(identifier, type, kind, v, AnnotationUtils.createAnnotationSet());
@@ -62,6 +75,9 @@ public class AnnotatedValue {
         this.kind = kind;
         this.value = v;
         this.annos = annos;
+
+        int i = identifier.lastIndexOf('@');
+        name = (i >= 0 ? identifier.substring(i+1) : identifier);
     }
 
     public Type getType() {
@@ -80,12 +96,24 @@ public class AnnotatedValue {
         return value;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public SootClass getEnclosingClass() {
         return enclosingClass;
     }
 
     public void setEnclosingClass(SootClass sc) {
         this.enclosingClass = sc;
+    }
+
+    public SootMethod getEnclosingMethod() {
+        return enclosingMethod;
+    }
+
+    public void setEnclosingMethod(SootMethod sm) {
+        this.enclosingMethod = sm;
     }
 
     public int getId() {
@@ -117,8 +145,8 @@ public class AnnotatedValue {
 
     public String toString() {
         return "(" +id + ")" + identifier + ": " 
-            + annos.toString().replace('[', '{').replace(']', '}') + ": " 
-            + type.toString();
+            + annos.toString().replace('[', '{').replace(']', '}') 
+            + " [" + type.toString() + "]";
     }
 
     @Override
