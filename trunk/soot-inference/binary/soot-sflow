@@ -1,20 +1,34 @@
 #!/bin/bash
 
 mydir="`dirname $0`"
-mylib=`find $mydir/../lib/ -name *.jar | xargs |sed 's/ /:/g'`
-jdk=$mydir/../jdk/android/jdk-android.jar
-#jdk="/projects/proganalysis/Software/jdk1.6.0_27/jre/lib/rt.jar"
+mylib=`find $mydir/ -name *.jar | xargs |sed 's/ /:/g'`
+jdk=$mydir/jdk-android.jar
+rt="/projects/proganalysis/Software/jdk1.6.0_27/jre/lib/rt.jar"
 
 mainClass="edu.rpi.SootInference"
-opts=" -DpolyLibrary -DinferAndroidApp "
+javaOpts=" -DpolyLibrary -DinferAndroidApp "
 android_jar=$jdk
-#androidopts=" -android-jars -ire -src-prec apk "
-#""
-# -force-android-jar $android_jar 
-androidopts=" -force-android-jar $android_jar -ire -src-prec apk -exclude android.support"
+androidOpts=" -force-android-jar $android_jar -ire -src-prec apk "
+cpOpts="$mylib:$jdk:$rt:"
+toolOpts=""
 
-echo "java -Xss50m -Xmx1500m $opts -classpath $mylib $mainClass \
-    $androidopts -process-dir$1  --soot-classpath $jdk:$mylib"
-java -Xss50m -Xmx1500m $opts -classpath $mylib $mainClass $androidopts \
-  -process-dir $1  --soot-classpath $jdk:$mylib
+while [[ $# > 0 ]]
+do
+  key=$1
+  shift
+  case $key in 
+    -D* ) javaOpts=$javaOpts"`echo $key`"" "
+    ;;
+    -cp ) cpOpts=$cpOpts:"`echo $1`"" "
+    shift
+    ;;
+    * ) toolOpts=$toolOpts"`echo $key`"" "
+  esac
+done
+
+echo "java -Xss50m -Xmx1500m $javaOpts -classpath $cpOpts $mainClass $androidOpts \
+  -process-dir $toolOpts --soot-classpath $cpOpts"
+
+time java -Xss50m -Xmx1500m $javaOpts -classpath $cpOpts $mainClass $androidOpts \
+  -process-dir $toolOpts --soot-classpath $cpOpts
 

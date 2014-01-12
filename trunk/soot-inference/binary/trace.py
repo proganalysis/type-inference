@@ -54,25 +54,41 @@ def trace_constraint():
 def trace_value():
     print("\n---------Tracing values-----------\n")
     c = conn.cursor()
+    vid = -1
     while True:
-        input_text = raw_input("Enter the value ID (Press Ctrl+C to exit): ")
-        try:
-            vid = int(input_text.strip())
-        except ValueError:
-            continue
+        if vid == -1:
+            input_text = raw_input("Enter the value ID (Press Ctrl+C to exit): ")
+            try:
+                vid = int(input_text.strip())
+            except ValueError:
+                continue
 
-        hasResult = False
-
-        for row in c.execute("select avalues.id, identifier, old, new, str from avalues, traces, constraints where avalues.id = traces.value_id and traces.constraint_id = constraints.id and avalues.id = %d" % vid):
-            hasResult = True
+        counter = 0
+        for row in c.execute("select avalues.id, avalues.name, old, new, str, avalues.type, avalues.class, avalues.method, constraints.left_id, constraints.right_id from avalues, traces, constraints where avalues.id = traces.value_id and traces.constraint_id = constraints.id and avalues.id = %d order by traces.ROWID" % vid):
+            counter = counter + 1
             print("%10s = %d" % ("id", row[0]))
-            print("%10s = %s" % ("identifier", row[1]))
+            print("%10s = %s" % ("name", row[1]))
             print("%10s = %s" % ("old", row[2]))
             print("%10s = %s" % ("new", row[3]))
+            print("%10s = %s" % ("type", row[5]))
+            print("%10s = %s" % ("method", row[7]))
+            print("%10s = %s" % ("class", row[6]))
             print("%10s = %s" % ("constraint", row[4]))
             print
-        if hasResult and not vid in trace_list:
+            left_id = int(row[8])
+            right_id = int(row[9])
+        if counter > 0 and not vid in trace_list:
             trace_list.append(vid)
+
+        if counter == 1:
+            if vid == left_id:
+                vid = right_id
+            elif vid == right_id:
+                vid = left_id
+            else:
+                vid = -1
+        else:
+            vid = -1
 
 def print_trace():
     c = conn.cursor()
