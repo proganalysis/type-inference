@@ -60,8 +60,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     private Map<String, AnnotatedValue> annotatedValues = new HashMap<String, AnnotatedValue>();
 
-    private Set<SootMethod> userMethods = new HashSet<SootMethod>();
-
     public final static String CALLSITE_PREFIX = "callsite-";
 
     public final static String LIB_PREFIX = "lib-";
@@ -134,13 +132,14 @@ public abstract class InferenceTransformer extends BodyTransformer {
             annotatedValues.put(identifier, ret);
             annotateDefault(ret, kind, v);
             if (needLocals && v != null && kind == Kind.LOCAL) {
+                Local lv = (Local) v;
                 SootMethod sm = visitorState.getSootMethod();
                 List<Local> ls = locals.get(sm);
                 if (ls == null) {
                     ls = new LinkedList<Local>();
                     locals.put(sm, ls);
                 }
-                ls.add((Local) v);
+                ls.add(lv);
             }
         }
         return ret;
@@ -549,7 +548,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
     protected void internalTransform(final Body b, String phaseName, 
             @SuppressWarnings("rawtypes") Map options) {
         SootMethod sm = b.getMethod();
-        userMethods.add(sm);
         SootClass sc = (sm == null ? null : sm.getDeclaringClass());
         visitorState.setSootMethod(sm);
         visitorState.setSootClass(sc);

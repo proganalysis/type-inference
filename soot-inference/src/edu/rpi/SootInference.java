@@ -114,6 +114,8 @@ public class SootInference {
         InferenceTransformer reimTransformer = new ReimTransformer();
         PackManager.v().getPack("jtp").add(new Transform("jtp.reim", reimTransformer));
         PackManager.v().getPack("jtp").add(new Transform("jtp.sflow", sflowTransformer));
+//        PackManager.v().getPack("jtp").add(new Transform("jtp.number", 
+//                    new LocalNumberingTransformer(sflowTransformer.getAnnotatedValues())));
 
 		soot.Main.main(args);
 
