@@ -121,16 +121,17 @@ public class SFlowTransformer extends InferenceTransformer {
                     AnnotatedValue aIn = getAnnotatedParameter(invokeMethod, i);
                     super.addSubtypeConstraint(aIn, aOut);
                 }
-                if (!invokeMethod.isStatic() && !invokeMethod.isConstructor()) {
-                    AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
+            }
+            if (!invokeMethod.isStatic() && !invokeMethod.isConstructor()) {
+                AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
+                if (aOut != null)
                     super.addSubtypeConstraint(aThis, aOut);
-                    // if THIS is not annotated as READONLY
-                    Set<Annotation> annos = getRawVisibilityTags(invokeMethod);
-                    if (!annos.contains(READONLYTHIS) && !annos.contains(POLYTHIS) ) {
-                        for (int i = 0; i < invokeMethod.getParameterCount(); i++) {
-                            AnnotatedValue aIn = getAnnotatedParameter(invokeMethod, i);
-                            super.addSubtypeConstraint(aIn, aThis);
-                        }
+                // if THIS is not annotated as READONLY
+                Set<Annotation> annos = getRawVisibilityTags(invokeMethod);
+                if (!annos.contains(READONLYTHIS) && !annos.contains(POLYTHIS) ) {
+                    for (int i = 0; i < invokeMethod.getParameterCount(); i++) {
+                        AnnotatedValue aIn = getAnnotatedParameter(invokeMethod, i);
+                        super.addSubtypeConstraint(aIn, aThis);
                     }
                 }
             }
