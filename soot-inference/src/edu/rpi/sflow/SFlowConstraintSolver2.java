@@ -62,6 +62,8 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
 
     private boolean preferSource = true;
 
+    private boolean isInteractive = false;
+
     private BitSet updated = new BitSet(AnnotatedValue.maxId());
 
     private byte[] initAnnos = new byte[AnnotatedValue.maxId()];
@@ -77,6 +79,7 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
             throw new RuntimeException("SFlowConstraintSolver2 expects SFlowTransformer");
         this.st = (SFlowTransformer) t;
         this.preferSource = !(System.getProperty("preferSink") != null);
+        this.isInteractive = (System.getProperty("interactive") != null);
 
     }
 
@@ -405,12 +408,12 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
     private boolean makeSatisfiable(Constraint c) {
         AnnotatedValue toUpdate;
         if (preferSource) {
-            if (getAnnotations(c.getLeft()).contains(st.TAINTED))
+            if (getAnnotations(c.getLeft()).contains(st.TAINTED) || getAnnotations(c.getLeft()).contains(st.POLY))
                 toUpdate = c.getRight();
             else 
                 toUpdate = c.getLeft();
         } else {
-            if (getAnnotations(c.getRight()).contains(st.SAFE))
+            if (getAnnotations(c.getRight()).contains(st.SAFE) || getAnnotations(c.getRight()).contains(st.POLY))
                 toUpdate = c.getLeft();
             else 
                 toUpdate = c.getRight();
@@ -427,7 +430,6 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
             int id = av.getId();
             if (updated.get(id)) {
                 Set<Annotation> initAnnos = getInitAnnos(id);
-//                System.out.println("Restore " + av + " to " + initAnnos);
                 // restore
                 av.setAnnotations(initAnnos);
                 needSolve = true;
