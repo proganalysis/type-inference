@@ -54,11 +54,13 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     private Set<SootClass> visitedClasses = new TreeSet<SootClass>(comparator);
 
-    private boolean needLocals = true;
+    private boolean needLocals = false;
 
     private Map<SootMethod, List<Local>> locals = new HashMap<SootMethod, List<Local>>();
 
     private Map<String, AnnotatedValue> annotatedValues = new HashMap<String, AnnotatedValue>();
+
+//    private AnnotatedValueMap annotatedValues = AnnotatedValueMap.v();
 
     public final static String CALLSITE_PREFIX = "callsite-";
 
@@ -129,8 +131,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
             ret = new AnnotatedValue(identifier, type, kind, v, annos);
             ret.setEnclosingClass(visitorState.getSootClass());
             ret.setEnclosingMethod(visitorState.getSootMethod());
-            annotatedValues.put(identifier, ret);
-            annotateDefault(ret, kind, v);
             if (needLocals && v != null && kind == Kind.LOCAL) {
                 Local lv = (Local) v;
                 SootMethod sm = visitorState.getSootMethod();
@@ -141,7 +141,11 @@ public abstract class InferenceTransformer extends BodyTransformer {
                 }
                 ls.add(lv);
             }
+            if (kind != Kind.LITERAL)
+                annotatedValues.put(identifier, ret);
         }
+        if (!isAnnotated(ret))
+            annotateDefault(ret, kind, v);
         return ret;
     }
 
@@ -180,9 +184,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
             ret = new AnnotatedValue(identifier, field.getType(), Kind.FIELD, field, getVisibilityTags(field, Kind.FIELD));
             ret.setEnclosingClass(field.getDeclaringClass());
             ret.setEnclosingMethod(null);
-            annotateField(ret, field);
             annotatedValues.put(identifier, ret);
         }
+        if (!isAnnotated(ret))
+            annotateField(ret, field);
         return ret;
     }
 
@@ -195,9 +200,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
             ret = new AnnotatedValue(identifier, sm.getParameterType(index), Kind.PARAMETER, sm, getVisibilitParameterTags(sm, index));
             ret.setEnclosingClass(sm.getDeclaringClass());
             ret.setEnclosingMethod(sm);
-            annotateParameter(ret, sm, index);
             annotatedValues.put(identifier, ret);
         }
+        if (!isAnnotated(ret))
+            annotateParameter(ret, sm, index);
         return ret;
     }
 
@@ -208,9 +214,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
             ret = new AnnotatedValue(identifier, sm.getReturnType(), Kind.RETURN, sm, getVisibilityTags(sm, Kind.RETURN));
             ret.setEnclosingClass(sm.getDeclaringClass());
             ret.setEnclosingMethod(sm);
-            annotateReturn(ret, sm);
             annotatedValues.put(identifier, ret);
         }
+        if (!isAnnotated(ret))
+            annotateReturn(ret, sm);
         return ret;
     }
 
@@ -222,13 +229,16 @@ public abstract class InferenceTransformer extends BodyTransformer {
             // TODO: this can also be annotated
             ret.setEnclosingClass(sm.getDeclaringClass());
             ret.setEnclosingMethod(sm);
-            annotateThis(ret, sm);
             annotatedValues.put(identifier, ret);
         }
+        if (!isAnnotated(ret))
+            annotateThis(ret, sm);
         return ret;
     }
 
 	protected void addSubtypeConstraint(AnnotatedValue sub, AnnotatedValue sup) {
+        if (sub.getKind() == Kind.LITERAL || sup.getKind() == Kind.LITERAL)
+            return;
         Constraint c = new SubtypeConstraint(sub, sup);
         if (!constraints.add(c))
             return;
@@ -236,6 +246,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
 	}
 
 	protected void addEqualityConstraint(AnnotatedValue sub, AnnotatedValue sup) {
+        if (sub.getKind() == Kind.LITERAL || sup.getKind() == Kind.LITERAL)
+            return;
         Constraint c = new EqualityConstraint(sub, sup);
         if (!constraints.add(c))
             return;
@@ -353,6 +365,13 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     public Map<String, AnnotatedValue> getAnnotatedValues() {
         return annotatedValues;
+    }
+
+    public void clear() {
+        annotatedValues.clear();
+        locals.clear();
+        constraints.clear();
+        visitedClasses.clear();
     }
 
     public boolean isLibraryMethod(SootMethod sm) {

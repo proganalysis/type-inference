@@ -50,6 +50,8 @@ public class SFlowTransformer extends InferenceTransformer {
 
     private Set<Annotation> sourceAnnos;
 
+    private Set<Annotation> thisAnnos;
+
     private Set<String> androidClasses; 
 
     private boolean isPolyLibrary;
@@ -68,7 +70,11 @@ public class SFlowTransformer extends InferenceTransformer {
 
     private final Annotation READONLYTHIS;
 
+    private final Annotation POLYREADTHIS;
+
+    private final Annotation TAINTEDTHIS;
     private final Annotation POLYTHIS;
+    private final Annotation SAFETHIS;
 
     public SFlowTransformer() {
         isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
@@ -79,13 +85,23 @@ public class SFlowTransformer extends InferenceTransformer {
         POLY = AnnotationUtils.fromClass(Poly.class);
         SAFE = AnnotationUtils.fromClass(Safe.class);
         BOTTOM = AnnotationUtils.fromClass(Bottom.class);
-        READONLYTHIS = AnnotationUtils.fromClass(ReadonlyThis.class);
+
+        TAINTEDTHIS = AnnotationUtils.fromClass(TaintedThis.class);
         POLYTHIS = AnnotationUtils.fromClass(PolyThis.class);
+        SAFETHIS = AnnotationUtils.fromClass(SafeThis.class);
+
+        READONLYTHIS = AnnotationUtils.fromClass(ReadonlyThis.class);
+        POLYREADTHIS = AnnotationUtils.fromClass(PolyreadThis.class);
 
         sourceAnnos = AnnotationUtils.createAnnotationSet();
         sourceAnnos.add(TAINTED);
         sourceAnnos.add(POLY);
         sourceAnnos.add(SAFE);
+
+        thisAnnos = AnnotationUtils.createAnnotationSet();
+        thisAnnos.add(TAINTEDTHIS);
+        thisAnnos.add(POLYTHIS);
+        thisAnnos.add(SAFETHIS);
 
         androidClasses = new HashSet<String>();
         androidClasses.add("android.app.Activity");
@@ -105,12 +121,49 @@ public class SFlowTransformer extends InferenceTransformer {
         return inferAndroidApp;
     }
 
+    private Set<Annotation> extractLibraryAnnos(AnnotatedValue av) {
+        Set<Annotation> annos = null;
+        if (av.getKind() == Kind.PARAMETER) {
+            int index = Integer.parseInt(
+                    av.getName().substring("parameter".length()));
+            annos = getVisibilitParameterTags(av.getEnclosingMethod(), index);
+            annos.retainAll(sourceAnnos);
+        } else if (av.getKind() == Kind.RETURN) {
+            annos = getVisibilityTags(av.getEnclosingMethod(), Kind.RETURN);
+            annos.retainAll(sourceAnnos);
+        } else if (av.getKind() == Kind.THIS) {
+            annos = getVisibilityTags(av.getEnclosingMethod(), Kind.THIS);
+            annos.retainAll(thisAnnos);
+        }
+        return annos;
+    }
+
+    private boolean isSource(AnnotatedValue av) {
+        Set<Annotation> annos = extractLibraryAnnos(av);
+        if (annos != null && !annos.isEmpty() 
+                && annos.contains(TAINTED)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isSink(AnnotatedValue av) {
+        Set<Annotation> annos = extractLibraryAnnos(av);
+        if (annos != null && !annos.isEmpty() 
+                && annos.contains(SAFE)) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
         // Add default annotations/constraints for library methods
         SootMethod invokeMethod = v.getMethod();
         if (isPolyLibrary() && isLibraryMethod(invokeMethod)) {
-            // Add constraints PARAM -> RET for library methods
+            // Add constraints PARAM -> RET for library methods if 
+            // there are no sources or sinks. Otherwise, it may 
+            // lead to unncessary progations...
             AnnotatedValue aOut = null;
             if (invokeMethod.isConstructor())
                 aOut = getAnnotatedThis(invokeMethod);
@@ -119,20 +172,46 @@ public class SFlowTransformer extends InferenceTransformer {
             if (aOut != null) {
                 for (int i = 0; i < invokeMethod.getParameterCount(); i++) {
                     AnnotatedValue aIn = getAnnotatedParameter(invokeMethod, i);
-                    super.addSubtypeConstraint(aIn, aOut);
+                    if (extractLibraryAnnos(aIn).isEmpty() 
+                            && extractLibraryAnnos(aOut).isEmpty())
+                        super.addSubtypeConstraint(aIn, aOut);
                 }
             }
             if (!invokeMethod.isStatic() && !invokeMethod.isConstructor()) {
                 AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
-                if (aOut != null)
+                if (aOut != null && extractLibraryAnnos(aOut).isEmpty() 
+                        && extractLibraryAnnos(aThis).isEmpty())
                     super.addSubtypeConstraint(aThis, aOut);
                 // if THIS is not annotated as READONLY
                 Set<Annotation> annos = getRawVisibilityTags(invokeMethod);
-                if (!annos.contains(READONLYTHIS) && !annos.contains(POLYTHIS) ) {
+                if (!annos.contains(READONLYTHIS) && !annos.contains(POLYREADTHIS) ) {
                     for (int i = 0; i < invokeMethod.getParameterCount(); i++) {
                         AnnotatedValue aIn = getAnnotatedParameter(invokeMethod, i);
-                        super.addSubtypeConstraint(aIn, aThis);
+                        if (extractLibraryAnnos(aIn).isEmpty() 
+                                && extractLibraryAnnos(aThis).isEmpty())
+                            super.addSubtypeConstraint(aIn, aThis);
                     }
+                }
+            }
+        }
+        // Output sources/sinks
+        if (isLibraryMethod(invokeMethod)) {
+            List<AnnotatedValue> list = new ArrayList<AnnotatedValue>();
+            for (int i = 0; i < invokeMethod.getParameterCount(); i++) {
+                AnnotatedValue aIn = getAnnotatedParameter(invokeMethod, i);
+                list.add(aIn);
+            }
+            if (invokeMethod.getReturnType() != VoidType.v())
+                list.add(getAnnotatedReturn(invokeMethod));
+            for (AnnotatedValue l : list) {
+                if (isSource(l)) {
+                    System.out.println("INFO: found the source " + l + " at " 
+                            + "\n\t" + getVisitorState().getSootMethod()
+                            + "\n\t" + getVisitorState().getUnit());
+                } else if (isSink(l)) {
+                    System.out.println("INFO: found the sink " + l + " at " 
+                            + "\n\t" + getVisitorState().getSootMethod()
+                            + "\n\t" + getVisitorState().getUnit());
                 }
             }
         }
@@ -154,6 +233,8 @@ public class SFlowTransformer extends InferenceTransformer {
     @Override
     protected AnnotatedValue createFieldAdaptValue(AnnotatedValue context, 
             AnnotatedValue decl, AnnotatedValue assignTo) {
+//        if (context.getName().equals("this"))
+//            return decl;
         return new FieldAdaptValue(context, decl);
     }
 
@@ -180,13 +261,13 @@ public class SFlowTransformer extends InferenceTransformer {
     protected void annotateField(AnnotatedValue v, SootField field) {
         if (!isAnnotated(v)) {
             if (field.getName().equals("this$0")) {
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
             } 
             else if (!field.isStatic()) {
                 v.addAnnotation(TAINTED);
                 v.addAnnotation(POLY);
             } else
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 
@@ -196,7 +277,7 @@ public class SFlowTransformer extends InferenceTransformer {
             if (isPolyLibrary() && isLibraryMethod(method)) {
                 v.addAnnotation(POLY);
             } else
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 
@@ -206,7 +287,7 @@ public class SFlowTransformer extends InferenceTransformer {
             if (isPolyLibrary() && isLibraryMethod(method)) {
                 v.addAnnotation(POLY);
             } else 
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 
@@ -216,7 +297,7 @@ public class SFlowTransformer extends InferenceTransformer {
             if (isPolyLibrary() && isLibraryMethod(method)) {
                 v.addAnnotation(POLY);
             } else 
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 
@@ -225,7 +306,7 @@ public class SFlowTransformer extends InferenceTransformer {
         if (kind == Kind.LITERAL)
             v.addAnnotation(BOTTOM);
         else
-            v.setAnnotations(sourceAnnos);
+            v.setAnnotations(sourceAnnos, this);
     }
 
     @Override

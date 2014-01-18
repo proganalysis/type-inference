@@ -130,8 +130,19 @@ public class AnnotatedValue {
         return annos;
     }
 
+    public Set<Annotation> getAnnotations(InferenceTransformer t) {
+        Set<Annotation> annos = getAnnotations();
+        annos.retainAll(t.getSourceLevelQualifiers());
+        return annos;
+    }
+
     public void setAnnotations(Set<Annotation> annos) {
         this.annos.clear();
+        this.annos.addAll(annos);
+    }
+
+    public void setAnnotations(Set<Annotation> annos, InferenceTransformer t) {
+        this.annos.removeAll(t.getSourceLevelQualifiers());
         this.annos.addAll(annos);
     }
 
