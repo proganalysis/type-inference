@@ -155,14 +155,14 @@ public class ReimTransformer extends InferenceTransformer {
     protected void annotateField(AnnotatedValue v, SootField field) {
         if (!isAnnotated(v)) {
             if (field.getName().equals("this$0")) {
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
             } else if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
             } else if (!field.isStatic()) {
                 v.addAnnotation(READONLY);
                 v.addAnnotation(POLYREAD);
             } else
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 
@@ -174,7 +174,7 @@ public class ReimTransformer extends InferenceTransformer {
             } else if (isLibraryMethod(method)) {
                 v.addAnnotation(MUTABLE);
             } else
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 
@@ -186,7 +186,7 @@ public class ReimTransformer extends InferenceTransformer {
             } else if (isLibraryMethod(method)) {
                 v.addAnnotation(MUTABLE);
             } else 
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 
@@ -198,7 +198,7 @@ public class ReimTransformer extends InferenceTransformer {
             } else if (isLibraryMethod(method)) {
                 v.addAnnotation(MUTABLE);
             } else 
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 
@@ -212,7 +212,7 @@ public class ReimTransformer extends InferenceTransformer {
             else if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
             } else 
-                v.setAnnotations(sourceAnnos);
+                v.setAnnotations(sourceAnnos, this);
         }
     }
 

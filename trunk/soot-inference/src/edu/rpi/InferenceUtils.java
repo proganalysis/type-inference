@@ -18,8 +18,8 @@ public class InferenceUtils {
             if (current.getName().equals("java.lang.Object"))
                 continue;
 
-            SootClass c = current.getSuperclass();
-            if (!supertypes.contains(c)) {
+            SootClass c = current.hasSuperclass() ? current.getSuperclass() : null;
+            if (c!= null && !supertypes.contains(c)) {
                 stack.push(c);
                 supertypes.add(c);
             }
@@ -40,7 +40,8 @@ public class InferenceUtils {
         String subSignature = sm.getSubSignature();
         for (SootClass supertype : supertypes) {
             for (SootMethod superMethod : supertype.getMethods()) {
-                if (superMethod.getSubSignature().equals(subSignature)) {
+                if (superMethod.getSubSignature().equals(subSignature)
+                        && superMethod.getModifiers() == sm.getModifiers()) {
                     overrides.put(supertype, superMethod);
                     break;
                 }

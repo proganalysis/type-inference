@@ -155,6 +155,11 @@ public class InferenceVisitor extends AbstractStmtSwitch {
             assert base instanceof Local;
             AnnotatedValue aBase = t.getAnnotatedValue((Local) base);
             SootField field = v.getField();
+            if (field == null) {
+                System.out.println("WARN: " + base.getType() + " doesn't have field, at"
+                        + "\n\t" + t.getVisitorState().getUnit());
+                return;
+            }
             AnnotatedValue aField = t.getAnnotatedField(field);
 
             if (field.getName().equals("this$0")) {
@@ -189,32 +194,22 @@ public class InferenceVisitor extends AbstractStmtSwitch {
 
         @Override
         public void caseSpecialInvokeExpr(SpecialInvokeExpr v) {
-            // Skip Object.<init>
-            SootMethod sm = v.getMethod();
-            if (sm.getName().equals("<init>") 
-                    && sm.getDeclaringClass().getName().equals("java.lang.Object"))
-                return;
-            t.handleMethodCall(v, sup);
+            handleMethodCall(v);
         }
 
         @Override
         public void caseStaticInvokeExpr(StaticInvokeExpr v) {
-            // Skip accesses from inner classes, e.g. access$0
-            if (v.getMethod().getName().startsWith("access$")) {
-                handleInnerAccessCall(v, sup);
-                return;
-            }
-            t.handleMethodCall(v, sup);
+            handleMethodCall(v);
         }
 
         @Override
         public void caseVirtualInvokeExpr(VirtualInvokeExpr v) {
-            t.handleMethodCall(v, sup);
+            handleMethodCall(v);
         }
         
         @Override
         public void caseDynamicInvokeExpr(DynamicInvokeExpr v) {
-            t.handleMethodCall(v, sup);
+            handleMethodCall(v);
         }
 
         @Override
@@ -336,6 +331,26 @@ public class InferenceVisitor extends AbstractStmtSwitch {
             AnnotatedValue av2 = t.getAnnotatedValue(op2);
             add(av1);
             add(av2);
+        }
+
+        private void handleMethodCall(InvokeExpr v) {
+            if (v.getMethod() == null) {
+                System.out.println("WARN: Cannot find method at "
+                        + "\n\t" + t.getVisitorState().getUnit());
+                return;
+            }
+            // Skip accesses from inner classes, e.g. access$0
+            if (v.getMethod().isStatic() 
+                    && v.getMethod().getName().startsWith("access$")) {
+                handleInnerAccessCall((StaticInvokeExpr) v, sup);
+                return;
+            }
+            // Skip Object.<init>
+            SootMethod sm = v.getMethod();
+            if (sm.getName().equals("<init>") 
+                    && sm.getDeclaringClass().getName().equals("java.lang.Object"))
+                return;
+            t.handleMethodCall(v, sup);
         }
 
         private void add(AnnotatedValue av) {

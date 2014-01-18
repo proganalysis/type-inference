@@ -2,6 +2,7 @@ package edu.rpi.sflow;
 
 import java.util.Iterator;
 import java.util.*;
+import java.io.*;
 import java.lang.annotation.*;
 
 import soot.Body;
@@ -127,7 +128,6 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
         return fromBits(b);
     }
 
-
     private boolean containsReadonly(AnnotatedValue av) {
         if (av instanceof AdaptValue)
             av = ((AdaptValue) av).getDeclValue();
@@ -206,14 +206,6 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
                     }
                     contextSet.add(context);
                 }
-//                for (AnnotatedValue av : avs) {
-//                    List<Constraint> l = refToConstraints.get(av);
-//                    if (l == null) {
-//                        l = new ArrayList<Constraint>(5);
-//                        refToConstraints.put(av, l);
-//                    }
-//                    l.add(c);
-//                }
             }
             if (c instanceof SubtypeConstraint) {
                 addGreaterConstraint(left, c);
@@ -231,6 +223,33 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
     private boolean canConnectVia(AnnotatedValue left, AnnotatedValue right) {
         if (left == null || right == null) 
             return false;
+
+        if (left.getKind() == Kind.LITERAL || right.getKind() == Kind.LITERAL)
+            return false;
+
+        SootMethod leftSm = left.getEnclosingMethod();
+        SootMethod rightSm = right.getEnclosingMethod();
+
+        if (leftSm != null && rightSm != null) {
+            if (leftSm.equals(rightSm))
+                return true;
+            else if (leftSm.getName().equals(rightSm.getName())) {
+                SootClass leftSc = left.getEnclosingClass();
+                SootClass rightSc = right.getEnclosingClass();
+                Set<SootClass> leftSuper = InferenceUtils.getSuperTypes(leftSc);
+                if (leftSuper.contains(right))
+                    return true;
+
+                Set<SootClass> rightSuper = InferenceUtils.getSuperTypes(rightSc);
+                if (rightSuper.contains(right))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean canConnectViaOld(AnnotatedValue left, AnnotatedValue right) {
+
         SootClass leftSc = left.getEnclosingClass();
         SootClass rightSc = right.getEnclosingClass();
 
@@ -292,6 +311,7 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
             else if ((right instanceof FieldAdaptValue) ) {
                 if ((ref = ((FieldAdaptValue) right).getDeclValue()) != null
                     && (ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(st.POLY)
+                        || !preferSource
                         || ((FieldAdaptValue) right).getContextValue().getType() instanceof ArrayType)) {
                     Constraint linear = new SubtypeConstraint(
                                 left, ((FieldAdaptValue) right).getContextValue());
@@ -392,6 +412,8 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
                     } else {
                         // need equality constraint: just add the reverse
                         Constraint reverse = new SubtypeConstraint(sup, sub);
+                        if (sup.getKind() == Kind.LITERAL) 
+                            System.out.println();
                         newCons.add(reverse);
                     }
                 }
@@ -399,21 +421,31 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
         }
         cons.clear();
         cons.addAll(newCons);
+        reimValues.clear();
     }
 
 
     /**
-     * Retore the rhs to propagate Positive
+     * Retore a Value to its initial annos
      */
     private boolean makeSatisfiable(Constraint c) {
+        return makeSatisfiable(c, true);
+    }
+
+    /**
+     * Retore a Value to its initial annos or to all
+     */
+    private boolean makeSatisfiable(Constraint c, boolean beenUpdated) {
         AnnotatedValue toUpdate;
         if (preferSource) {
-            if (getAnnotations(c.getLeft()).contains(st.TAINTED) || getAnnotations(c.getLeft()).contains(st.POLY))
+            if (getAnnotations(c.getLeft()).contains(st.TAINTED) 
+                    || getAnnotations(c.getLeft()).contains(st.POLY))
                 toUpdate = c.getRight();
             else 
                 toUpdate = c.getLeft();
         } else {
-            if (getAnnotations(c.getRight()).contains(st.SAFE) || getAnnotations(c.getRight()).contains(st.POLY))
+            if (getAnnotations(c.getRight()).contains(st.SAFE) 
+                    || getAnnotations(c.getRight()).contains(st.POLY))
                 toUpdate = c.getLeft();
             else 
                 toUpdate = c.getRight();
@@ -428,10 +460,29 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
         
         for (AnnotatedValue av : avs) {
             int id = av.getId();
-            if (updated.get(id)) {
-                Set<Annotation> initAnnos = getInitAnnos(id);
-                // restore
-                av.setAnnotations(initAnnos);
+            if (beenUpdated) {
+                // only restore values that have been updated before
+                if (updated.get(id)) {
+                    Set<Annotation> initAnnos = getInitAnnos(id);
+                    System.out.println("Restoring " + av + " to " + initAnnos);
+                    // restore
+                    av.setAnnotations(initAnnos);
+                    needSolve = true;
+                }
+            } else if (av.getKind() != Kind.CONSTANT) {
+                // restore values that have never been updated
+                // this essentially removes sources or sinks
+                System.out.println("INFO: Eliminating a SOURCE/SINK: " + av);
+                av.setAnnotations(st.getSourceLevelQualifiers());
+                // here we need to restore all constraints?
+                for (AnnotatedValue v : st.getAnnotatedValues().values()) {
+                    int vid = v.getId();
+                    if (updated.get(id)) {
+                        Set<Annotation> initAnnos = getInitAnnos(id);
+                        v.setAnnotations(initAnnos);
+                        updated.flip(id);
+                    }
+                }
                 needSolve = true;
             }
         }
@@ -459,8 +510,10 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
         if (av.getKind() == Kind.CONSTANT)
             return false;
 
-        if (annos.isEmpty())
-            System.out.println();
+//        if (preferSource && !annos.contains(st.TAINTED)) {
+//            return false;
+//        } else if (!preferSource && !annos.contains(st.SAFE))
+//            return false;
 
         if (!updated.get(av.getId())) {
             // first update, remember the initial annos
@@ -508,7 +561,36 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
                 extendedConstraints.addAll(newCons);
                 hasUpdate = true;
             }
+
+            if (!hasUpdate && isInteractive) {
+                // Interactive mode: allow user to eliminate sources or sinks
+                List<Constraint> conflictList = new ArrayList<Constraint>(conflictConstraints.size());
+                conflictList.addAll(conflictConstraints);
+                System.out.println("\n-----Enter interactive mode------\n");
+                int i = 1;
+                for (Constraint cc : conflictList) {
+                    System.out.println(i + ": " + cc + "\n");
+                    i++;
+                }
+                System.out.print("Please select the constraint you want to satisfy (Press <Enter> to quit): ");
+                BufferedReader br = null;
+                try {
+                    br = new BufferedReader(new InputStreamReader(System.in));
+                    String line = br.readLine();
+                    int index = Integer.parseInt(line);
+                    Constraint cc = conflictList.get(index - 1);
+                    hasUpdate = makeSatisfiable(cc, false);
+                    if (!hasUpdate) {
+                        System.out.println("INFO: No more type errors\n");
+                    }
+                } catch (Exception e) {
+                    System.out.println("ERROR: invalid input: " + e.getMessage());
+                } finally {
+                    System.out.println("\n-----Exit interactive mode------\n");
+                }
+            }
 		} while (hasUpdate);
+        System.out.println("Added " + (extendedConstraints.size() - constraints.size()) + " linear constraints");
         constraints.clear();
         constraints.addAll(extendedConstraints);
 
