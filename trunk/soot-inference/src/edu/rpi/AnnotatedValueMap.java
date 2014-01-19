@@ -21,4 +21,14 @@ public class AnnotatedValueMap extends HashMap<String, AnnotatedValue> {
         return instance;
     }
 
+    @Override
+    public AnnotatedValue put(String key, AnnotatedValue value) {
+        if (this.size() % 10000 == 0) {
+            System.out.println(String.format("%6s: %14d", "size", this.size()));
+            System.out.println(String.format("%6s: %14f MB", "free", ((float) Runtime.getRuntime().freeMemory()) / (1024*1024)));
+            System.out.println(String.format("%6s: %14f MB", "total", ((float) Runtime.getRuntime().totalMemory()) / (1024*1024)));
+        }
+        return super.put(key, value);
+    }
+
 }

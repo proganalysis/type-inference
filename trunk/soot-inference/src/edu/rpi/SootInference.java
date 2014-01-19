@@ -45,19 +45,37 @@ public class SootInference {
 		
 		//output as APK, too//-f J
 //        Options.v().set_output_format(Options.output_format_none);
-        Options.v().set_output_format(Options.output_format_jimple);
+//        Options.v().set_output_format(Options.output_format_jimple);
 //        Options.v().set_keep_line_number(true);
 
         // Exclude packages
         String[] excludes = new String[] {
             "android.annotation",
+            "android.hardware",
+            "android.support",
+            "android.media", 
             "com.android",
+            "android.bluetooth", 
+            "android.media",
             "com.google",
-//            "org.apache",
-//            "com.squareup.okhttp",
-//            "org.acra",
-//            "com.loopj",
-            "android.support"
+            "com.yume.android",
+            "com.squareup.okhttp",
+            "com.nbpcorp.mobilead",
+            "com.crashlytics",
+            "com.inmobi.androidsdk",
+            "com.millennialmedia",
+            "com.admob",
+            "com.slidingmenu",
+//            "com.facebook",
+            "com.admarvel.android.ads",
+            "com.amazon.inapp.purchasing",
+            "com.loopj",
+//            "com.dropbox",
+            "net.daum.adam.publisher",
+            "twitter4j.",
+            "org.java_websocket",
+            "org.acra",
+            "org.apache"
         };
         List<String> exclude = new ArrayList<String>(Arrays.asList(excludes));
         Options.v().set_exclude(exclude);
@@ -69,11 +87,15 @@ public class SootInference {
 
 		soot.Main.main(args);
 
+        System.out.println(String.format("%6s: %14d", "size", AnnotatedValueMap.v().size()));
+        System.out.println(String.format("%6s: %14f MB", "free", ((float) Runtime.getRuntime().freeMemory()) / (1024*1024)));
+        System.out.println(String.format("%6s: %14f MB", "total", ((float) Runtime.getRuntime().totalMemory()) / (1024*1024)));
+
         String outputDir = SourceLocator.v().getOutputDir();
 
-//        System.out.println("INFO: Solving Reim constraints:  " + reimTransformer.getConstraints().size() + " in total...");
-//        ConstraintSolver cs = new SetbasedSolver(reimTransformer);
-//        Set<Constraint> errors = cs.solve();
+        System.out.println("INFO: Solving Reim constraints:  " + reimTransformer.getConstraints().size() + " in total...");
+        ConstraintSolver cs = new SetbasedSolver(reimTransformer);
+        Set<Constraint> errors = cs.solve();
         try {
             PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-constraints.log");
             for (Constraint c : reimTransformer.getConstraints()) {
@@ -82,23 +104,21 @@ public class SootInference {
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        for (Constraint c : errors)
-//            System.out.println(c);
-//        System.out.println("INFO: Finish solving Reim constraints. " + errors.size() + " error(s)");
-//
-//        Map<String, AnnotatedValue> reimValues = new HashMap<String, AnnotatedValue>(reimTransformer.getAnnotatedValues());
-//
-//        try {
-//            PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-result.jaif");
-//            reimTransformer.printJaif(reimOut);
-//            reimTransformer.clear();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        System.out.println("INFO: Solving SFlow constraints:  " + sflowTransformer.getConstraints().size() + " in total...");
-//        ConstraintSolver sflowSolver = new SFlowConstraintSolver2(sflowTransformer, reimValues);
-//        errors = sflowSolver.solve();
+        for (Constraint c : errors)
+            System.out.println(c);
+        System.out.println("INFO: Finish solving Reim constraints. " + errors.size() + " error(s)");
+
+        try {
+            PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-result.jaif");
+            reimTransformer.printJaif(reimOut);
+            reimTransformer.clear();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("INFO: Solving SFlow constraints:  " + sflowTransformer.getConstraints().size() + " in total...");
+        ConstraintSolver sflowSolver = new SFlowConstraintSolver2(sflowTransformer);
+        errors = sflowSolver.solve();
         try {
             PrintStream sflowOut = new PrintStream(outputDir + File.separator + "sflow-constraints.log");
             for (Constraint c : sflowTransformer.getConstraints()) {
@@ -108,15 +128,17 @@ public class SootInference {
             e.printStackTrace();
         }
         System.out.println();
-//        for (Constraint c : errors)
-//            System.out.println(c + "\n");
-//        System.out.println("INFO: Finish solving SFlow constraints. " + errors.size() + " error(s)");
-//        try {
-//            PrintStream sflowOut = new PrintStream(outputDir + File.separator + "sflow-result.jaif");
-//            sflowTransformer.printJaif(sflowOut);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        for (Constraint c : errors)
+            System.out.println(c + "\n");
+        System.out.println("INFO: Finish solving SFlow constraints. " + errors.size() + " error(s)");
+        try {
+            PrintStream sflowOut = new PrintStream(outputDir + File.separator + "sflow-result.jaif");
+            sflowTransformer.printJaif(sflowOut);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("INFO: Annotated value size: " + AnnotatedValueMap.v().size());
 		
 	}
 }

@@ -121,7 +121,7 @@ public class ReimTransformer extends InferenceTransformer {
 
     @Override
     protected boolean isAnnotated(AnnotatedValue v) {
-        Set<Annotation> diff = v.getAnnotations();
+        Set<Annotation> diff = v.getRawAnnotations();
         diff.retainAll(sourceAnnos);
         return !diff.isEmpty();
     }
@@ -196,7 +196,8 @@ public class ReimTransformer extends InferenceTransformer {
             if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
             } else if (isLibraryMethod(method)) {
-                v.addAnnotation(MUTABLE);
+                v.addAnnotation(READONLY);
+                v.addAnnotation(POLYREAD);
             } else 
                 v.setAnnotations(sourceAnnos, this);
         }

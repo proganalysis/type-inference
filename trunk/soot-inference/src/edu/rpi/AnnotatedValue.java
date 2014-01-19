@@ -56,11 +56,11 @@ public class AnnotatedValue {
         init(identifier, type, kind, v, AnnotationUtils.createAnnotationSet());
     }
 
-    public AnnotatedValue(String identifier, Type type, Kind kind, Object v, Annotation anno) {
-        Set<Annotation> annos = AnnotationUtils.createAnnotationSet();
-        annos.add(anno);
-        init(identifier, type, kind, v, annos);
-    }
+//    public AnnotatedValue(String identifier, Type type, Kind kind, Object v, Annotation anno) {
+//        Set<Annotation> annos = AnnotationUtils.createAnnotationSet();
+//        annos.add(anno);
+//        init(identifier, type, kind, v, annos);
+//    }
 
     public AnnotatedValue(String identifier, Type type, Kind kind, Object v, Set<Annotation> annos) {
         Set<Annotation> set = AnnotationUtils.createAnnotationSet();
@@ -124,19 +124,19 @@ public class AnnotatedValue {
         annos.clear();
     }
 
-    public Set<Annotation> getAnnotations() {
+    public Set<Annotation> getRawAnnotations() {
         Set<Annotation> annos = AnnotationUtils.createAnnotationSet();
         annos.addAll(this.annos);
         return annos;
     }
 
     public Set<Annotation> getAnnotations(InferenceTransformer t) {
-        Set<Annotation> annos = getAnnotations();
+        Set<Annotation> annos = getRawAnnotations();
         annos.retainAll(t.getSourceLevelQualifiers());
         return annos;
     }
 
-    public void setAnnotations(Set<Annotation> annos) {
+    public void setRawAnnotations(Set<Annotation> annos) {
         this.annos.clear();
         this.annos.addAll(annos);
     }
@@ -191,6 +191,12 @@ public class AnnotatedValue {
 
         public AnnotatedValue getDeclValue() {
             return decl;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return (obj instanceof AdaptValue)
+                && this.getIdentifier().equals(((AdaptValue) obj).getIdentifier());
         }
     }
 
