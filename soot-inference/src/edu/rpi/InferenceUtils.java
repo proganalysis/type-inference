@@ -41,7 +41,7 @@ public class InferenceUtils {
         for (SootClass supertype : supertypes) {
             for (SootMethod superMethod : supertype.getMethods()) {
                 if (superMethod.getSubSignature().equals(subSignature)
-                        && superMethod.getModifiers() == sm.getModifiers()) {
+                        /*&& superMethod.getModifiers() == sm.getModifiers()*/) {
                     overrides.put(supertype, superMethod);
                     break;
                 }

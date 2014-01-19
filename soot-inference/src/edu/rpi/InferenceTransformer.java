@@ -56,13 +56,15 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     private boolean needLocals = false;
 
-    private Map<SootMethod, List<Local>> locals = new HashMap<SootMethod, List<Local>>();
+    private static Map<SootMethod, Map<String, AnnotatedValue>> locals = new HashMap<SootMethod, Map<String, AnnotatedValue>>();
 
-    private Map<String, AnnotatedValue> annotatedValues = new HashMap<String, AnnotatedValue>();
+    private static Map<String, AnnotatedValue> adaptValues = new HashMap<String, AnnotatedValue>();
 
-//    private AnnotatedValueMap annotatedValues = AnnotatedValueMap.v();
+    private AnnotatedValueMap annotatedValues = AnnotatedValueMap.v();
 
     public final static String CALLSITE_PREFIX = "callsite-";
+
+    public final static String FAKE_PREFIX = "fake-";
 
     public final static String LIB_PREFIX = "lib-";
 
@@ -96,12 +98,12 @@ public abstract class InferenceTransformer extends BodyTransformer {
             AnnotatedValue decl, AnnotatedValue assignTo) {
         AnnotatedValue av = createFieldAdaptValue(context, decl, assignTo);
         String identifier = av.getIdentifier();
-        AnnotatedValue ret = annotatedValues.get(identifier);
+        AnnotatedValue ret = adaptValues.get(identifier);
         if (ret == null) {
             ret = av;
             ret.setEnclosingClass(visitorState.getSootClass());
             ret.setEnclosingMethod(visitorState.getSootMethod());
-            annotatedValues.put(identifier, ret);
+            adaptValues.put(identifier, ret);
         }
         return ret;
     }
@@ -110,43 +112,51 @@ public abstract class InferenceTransformer extends BodyTransformer {
             AnnotatedValue decl, AnnotatedValue assignTo) {
         AnnotatedValue av = createMethodAdaptValue(receiver, decl, assignTo);
         String identifier = av.getIdentifier();
-        AnnotatedValue ret = annotatedValues.get(identifier);
+        AnnotatedValue ret = adaptValues.get(identifier);
         if (ret == null) {
             ret = av;
             ret.setEnclosingClass(visitorState.getSootClass());
             ret.setEnclosingMethod(visitorState.getSootMethod());
-            annotatedValues.put(identifier, ret);
+            adaptValues.put(identifier, ret);
         }
+        return ret;
+    }
+
+    protected AnnotatedValue getAnnotatedValue(String identifier, Type type, 
+            Kind kind, Object v, Set<Annotation> annos) {
+        AnnotatedValue ret;
+        if (kind == Kind.LOCAL) {
+            SootMethod sm = visitorState.getSootMethod();
+            Map<String, AnnotatedValue> localMap = locals.get(sm);
+            if (localMap == null) {
+                localMap = new LinkedHashMap<String, AnnotatedValue>();
+                locals.put(sm, localMap);
+            }
+            ret = localMap.get(identifier);
+            if (ret == null) {
+                ret = new AnnotatedValue(identifier, type, kind, v, annos);
+                ret.setEnclosingClass(visitorState.getSootClass());
+                ret.setEnclosingMethod(visitorState.getSootMethod());
+                if (v != null)
+                    localMap.put(identifier, ret);
+            }
+        } else {
+            ret = annotatedValues.get(identifier);
+            if (ret == null) {
+                ret = new AnnotatedValue(identifier, type, kind, v, annos);
+                ret.setEnclosingClass(visitorState.getSootClass());
+                ret.setEnclosingMethod(visitorState.getSootMethod());
+                if (kind != Kind.LITERAL)
+                    annotatedValues.put(identifier, ret);
+            }
+        }
+        if (!isAnnotated(ret))
+            annotateDefault(ret, kind, v);
         return ret;
     }
 
     protected AnnotatedValue getAnnotatedValue(String identifier, Type type, Kind kind, Object v) {
         return getAnnotatedValue(identifier, type, kind, v, AnnotationUtils.createAnnotationSet());
-    }
-
-    protected AnnotatedValue getAnnotatedValue(String identifier, Type type, Kind kind, Object v,
-            Set<Annotation> annos) {
-        AnnotatedValue ret = annotatedValues.get(identifier);
-        if (ret == null) {
-            ret = new AnnotatedValue(identifier, type, kind, v, annos);
-            ret.setEnclosingClass(visitorState.getSootClass());
-            ret.setEnclosingMethod(visitorState.getSootMethod());
-            if (needLocals && v != null && kind == Kind.LOCAL) {
-                Local lv = (Local) v;
-                SootMethod sm = visitorState.getSootMethod();
-                List<Local> ls = locals.get(sm);
-                if (ls == null) {
-                    ls = new LinkedList<Local>();
-                    locals.put(sm, ls);
-                }
-                ls.add(lv);
-            }
-            if (kind != Kind.LITERAL)
-                annotatedValues.put(identifier, ret);
-        }
-        if (!isAnnotated(ret))
-            annotateDefault(ret, kind, v);
-        return ret;
     }
 
     protected AnnotatedValue getAnnotatedClass(SootClass sc) {
@@ -181,13 +191,15 @@ public abstract class InferenceTransformer extends BodyTransformer {
         String identifier = field.getSignature();
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
-            ret = new AnnotatedValue(identifier, field.getType(), Kind.FIELD, field, getVisibilityTags(field, Kind.FIELD));
+            ret = new AnnotatedValue(identifier, field.getType(), Kind.FIELD, field);
             ret.setEnclosingClass(field.getDeclaringClass());
             ret.setEnclosingMethod(null);
             annotatedValues.put(identifier, ret);
         }
-        if (!isAnnotated(ret))
+        if (!isAnnotated(ret)) {
+            ret.setAnnotations(getVisibilityTags(field, Kind.FIELD), this);
             annotateField(ret, field);
+        }
         return ret;
     }
 
@@ -197,13 +209,15 @@ public abstract class InferenceTransformer extends BodyTransformer {
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@parameter" + index;
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
-            ret = new AnnotatedValue(identifier, sm.getParameterType(index), Kind.PARAMETER, sm, getVisibilitParameterTags(sm, index));
+            ret = new AnnotatedValue(identifier, sm.getParameterType(index), Kind.PARAMETER, sm);
             ret.setEnclosingClass(sm.getDeclaringClass());
             ret.setEnclosingMethod(sm);
             annotatedValues.put(identifier, ret);
         }
-        if (!isAnnotated(ret))
+        if (!isAnnotated(ret)) {
+            ret.setAnnotations(getVisibilitParameterTags(sm, index), this);
             annotateParameter(ret, sm, index);
+        }
         return ret;
     }
 
@@ -211,13 +225,15 @@ public abstract class InferenceTransformer extends BodyTransformer {
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@return";
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
-            ret = new AnnotatedValue(identifier, sm.getReturnType(), Kind.RETURN, sm, getVisibilityTags(sm, Kind.RETURN));
+            ret = new AnnotatedValue(identifier, sm.getReturnType(), Kind.RETURN, sm);
             ret.setEnclosingClass(sm.getDeclaringClass());
             ret.setEnclosingMethod(sm);
             annotatedValues.put(identifier, ret);
         }
-        if (!isAnnotated(ret))
+        if (!isAnnotated(ret)) {
+            ret.setAnnotations(getVisibilityTags(sm, Kind.RETURN), this);
             annotateReturn(ret, sm);
+        }
         return ret;
     }
 
@@ -225,14 +241,16 @@ public abstract class InferenceTransformer extends BodyTransformer {
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@this";
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
-            ret = new AnnotatedValue(identifier, sm.getDeclaringClass().getType(), Kind.THIS, sm, getVisibilityTags(sm, Kind.THIS));
+            ret = new AnnotatedValue(identifier, sm.getDeclaringClass().getType(), Kind.THIS, sm);
             // TODO: this can also be annotated
             ret.setEnclosingClass(sm.getDeclaringClass());
             ret.setEnclosingMethod(sm);
             annotatedValues.put(identifier, ret);
         }
-        if (!isAnnotated(ret))
+        if (!isAnnotated(ret)) {
+            ret.setAnnotations(getVisibilityTags(sm, Kind.THIS), this);
             annotateThis(ret, sm);
+        }
         return ret;
     }
 
@@ -350,15 +368,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
         return annos;
     }
 
-//    public Set<Constraint> getConstraintsByMethod(SootMethod sm) {
-//        Set<Constraint> constraints = constraintsByMethod.get(visitorState.getSootMethod());
-//        if (constraints == null) {
-//            constraints = new LinkedHashSet<Constraint>();
-//            constraintsByMethod.put(visitorState.getSootMethod(), constraints);
-//        }
-//        return constraints;
-//    }
-
     public Set<Constraint> getConstraints() {
         return constraints;
     }
@@ -368,7 +377,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     public void clear() {
-        annotatedValues.clear();
         locals.clear();
         constraints.clear();
         visitedClasses.clear();
@@ -426,12 +434,12 @@ public abstract class InferenceTransformer extends BodyTransformer {
             SootMethod prev = visitorState.getSootMethod();
             visitorState.setSootMethod(sm);
             try {
-                List<Local> list = locals.get(sm);
-                if (list == null)
+                Map<String, AnnotatedValue> map = locals.get(sm);
+                if (map == null)
                     return;
-                for (Local l : list) {
+                for (AnnotatedValue l : map.values()) {
                     out.println(indent + "local " + l.getName() + ":");
-                    printAnnotatedValue(getAnnotatedValue(l), "type", indent + "\t", out);
+                    printAnnotatedValue(l, "type", indent + "\t", out);
                 }
             } finally {
                 visitorState.setSootMethod(prev);
@@ -445,7 +453,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected void printAnnotatedValue(AnnotatedValue av, String typeStr, String indent, PrintStream out) {
-        out.println(indent + typeStr + ": " + av.getAnnotations() + " (" + av.getId() + ")");
+        out.println(indent + typeStr + ": " + av.getAnnotations(this) + " (" + av.getId() + ")");
         if (av.getType() instanceof ArrayType) {
             AnnotatedValue component = getAnnotatedValue(av.getIdentifier() + "[]", 
                     ((ArrayType) av.getType()).getElementType(), Kind.LOCAL, null);
@@ -583,5 +591,11 @@ public abstract class InferenceTransformer extends BodyTransformer {
         visitorState.setSootMethod(null);
         visitorState.setSootClass(null);
         visitorState.setUnit(null);
+
+        if (!needLocals && phaseName.equals("jtp.sflow")) {
+            locals.remove(sm);
+        }
+        adaptValues.clear();
+
     }
 }

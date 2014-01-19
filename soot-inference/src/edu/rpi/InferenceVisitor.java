@@ -48,8 +48,8 @@ public class InferenceVisitor extends AbstractStmtSwitch {
 
     @Override
     public void caseInvokeStmt(InvokeStmt stmt) {
-        AnnotatedValue fakeLhs = t.getAnnotatedValue("fake-" + t.getVisitorState().getSootMethod().getSignature()
-                + "<" + stmt.hashCode() + ">", VoidType.v(), Kind.CONSTANT, stmt.getInvokeExpr());
+        AnnotatedValue fakeLhs = t.getAnnotatedValue(InferenceTransformer.FAKE_PREFIX + t.getVisitorState().getSootMethod().getSignature()
+                + "<" + stmt.hashCode() + ">", VoidType.v(), Kind.LOCAL, stmt.getInvokeExpr());
         stmt.getInvokeExpr().apply(new ValueVisitor(null, fakeLhs));
     }
 

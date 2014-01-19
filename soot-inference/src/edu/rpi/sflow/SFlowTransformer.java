@@ -76,6 +76,10 @@ public class SFlowTransformer extends InferenceTransformer {
     private final Annotation POLYTHIS;
     private final Annotation SAFETHIS;
 
+    private int sourceNum; 
+
+    private int sinkNum; 
+
     public SFlowTransformer() {
         isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
         useReim = (System.getProperty(OPTION_USE_REIM) != null);
@@ -107,6 +111,9 @@ public class SFlowTransformer extends InferenceTransformer {
         androidClasses.add("android.app.Activity");
         androidClasses.add("android.app.Service");
         androidClasses.add("android.location.LocationListener");
+
+        sourceNum = 0;
+        sinkNum = 0;
     }
 
     public boolean isPolyLibrary() {
@@ -133,7 +140,7 @@ public class SFlowTransformer extends InferenceTransformer {
             annos.retainAll(sourceAnnos);
         } else if (av.getKind() == Kind.THIS) {
             annos = getVisibilityTags(av.getEnclosingMethod(), Kind.THIS);
-            annos.retainAll(thisAnnos);
+            annos.retainAll(sourceAnnos);
         }
         return annos;
     }
@@ -179,9 +186,13 @@ public class SFlowTransformer extends InferenceTransformer {
             }
             if (!invokeMethod.isStatic() && !invokeMethod.isConstructor()) {
                 AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
+                if (invokeMethod.getName().equals("openConnection"))
+                    System.out.println();
                 if (aOut != null && extractLibraryAnnos(aOut).isEmpty() 
-                        && extractLibraryAnnos(aThis).isEmpty())
+                        && extractLibraryAnnos(aThis).isEmpty()) {
                     super.addSubtypeConstraint(aThis, aOut);
+                    super.addSubtypeConstraint(aOut, aThis);
+                }
                 // if THIS is not annotated as READONLY
                 Set<Annotation> annos = getRawVisibilityTags(invokeMethod);
                 if (!annos.contains(READONLYTHIS) && !annos.contains(POLYREADTHIS) ) {
@@ -205,13 +216,15 @@ public class SFlowTransformer extends InferenceTransformer {
                 list.add(getAnnotatedReturn(invokeMethod));
             for (AnnotatedValue l : list) {
                 if (isSource(l)) {
-                    System.out.println("INFO: found the source " + l + " at " 
+                    System.out.println("INFO: found SOURCE " + l + " at " 
                             + "\n\t" + getVisitorState().getSootMethod()
                             + "\n\t" + getVisitorState().getUnit());
+                    sourceNum++;
                 } else if (isSink(l)) {
-                    System.out.println("INFO: found the sink " + l + " at " 
+                    System.out.println("INFO: found SINK " + l + " at " 
                             + "\n\t" + getVisitorState().getSootMethod()
                             + "\n\t" + getVisitorState().getUnit());
+                    sinkNum++;
                 }
             }
         }
@@ -220,7 +233,7 @@ public class SFlowTransformer extends InferenceTransformer {
 
     @Override
     protected boolean isAnnotated(AnnotatedValue v) {
-        return isAnnotated(v.getAnnotations());
+        return isAnnotated(v.getRawAnnotations());
     }
 
     private boolean isAnnotated(Set<Annotation> annos) {
@@ -228,6 +241,14 @@ public class SFlowTransformer extends InferenceTransformer {
         set.addAll(annos);
         set.retainAll(sourceAnnos);
         return !set.isEmpty();
+    }
+
+    public int getSourceNum() {
+        return sourceNum;
+    }
+
+    public int getSinkNum() {
+        return sinkNum;
     }
 
     @Override
@@ -243,7 +264,7 @@ public class SFlowTransformer extends InferenceTransformer {
             AnnotatedValue decl, AnnotatedValue assignTo) {
         String callSiteIdentifier = CALLSITE_PREFIX + getVisitorState().getSootMethod().getSignature()
             + "<" + getVisitorState().getUnit().hashCode() + ">";
-        AnnotatedValue callSite = getAnnotatedValue(callSiteIdentifier, VoidType.v(), Kind.CONSTANT, null);
+        AnnotatedValue callSite = getAnnotatedValue(callSiteIdentifier, VoidType.v(), Kind.LOCAL, callSiteIdentifier);
         return new MethodAdaptValue(callSite, decl);
     }
 
@@ -331,7 +352,8 @@ public class SFlowTransformer extends InferenceTransformer {
             // return: overrider <: overridden 
             AnnotatedValue overriderRet = getAnnotatedReturn(overrider);
             AnnotatedValue overriddenRet = getAnnotatedReturn(overridden);
-            addSubtypeConstraint(overriderRet, overriddenRet);
+            if (!isFromLibrary(overriddenRet) || isAnnotated(getVisibilityTags(overridden, Kind.RETURN)))
+                addSubtypeConstraint(overriderRet, overriddenRet);
         }
     }
 

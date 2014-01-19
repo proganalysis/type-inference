@@ -67,7 +67,9 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         + "value string, "
         + "class string, " 
         + "name string, "
-        + "method string" + ");";
+        + "method string" + ");\n"
+        + "create index " + VALUE_TABLE_NAME + "_idx "
+        + "on " + VALUE_TABLE_NAME + "(id);";
 
     /**
      * kind = 0: field adapt
@@ -95,7 +97,9 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         + "cause_1 integer, " 
         + "cause_2 integer, " 
         + "cause_3 integer, " 
-        + "kind integer" + ");";
+        + "kind integer" + ");\n"
+        + "create index " + CONSTRAINT_TABLE_NAME + "_idx " 
+        + "on " + CONSTRAINT_TABLE_NAME + "(id);";
 
 
     /**
@@ -106,7 +110,9 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         + "value_id integer,"
         + "old string,"
         + "new string,"
-        + "constraint_id integer" + ");";
+        + "constraint_id integer" + ");\n"
+        + "create index " + TRACE_TABLE_NAME + "_idx " 
+        + "on " + TRACE_TABLE_NAME + "(value_id);";
 
     public AbstractConstraintSolver(InferenceTransformer t) {
         this.t = t;
@@ -128,13 +134,17 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 	protected boolean handleConstraint(Constraint c) throws SolverException {
 		currentConstraint = c;
 		boolean hasUpdate = false;
-		if (c instanceof SubtypeConstraint) {
-			hasUpdate = handleSubtypeConstraint((SubtypeConstraint) c);
-		} else if (c instanceof EqualityConstraint) {
-			hasUpdate = handleEqualityConstraint((EqualityConstraint) c);
-		} else if (c instanceof UnequalityConstraint) {
-			hasUpdate = handleInequalityConstraint((UnequalityConstraint) c);
-		} 
+        try {
+            if (c instanceof SubtypeConstraint) {
+                hasUpdate = handleSubtypeConstraint((SubtypeConstraint) c);
+            } else if (c instanceof EqualityConstraint) {
+                hasUpdate = handleEqualityConstraint((EqualityConstraint) c);
+            } else if (c instanceof UnequalityConstraint) {
+                hasUpdate = handleInequalityConstraint((UnequalityConstraint) c);
+            } 
+        } finally {
+            currentConstraint = null;
+        }
         return hasUpdate;
 	}
 
@@ -243,13 +253,13 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 			AnnotatedValue decl = aav.getDeclValue();
 			
 			if (av instanceof FieldAdaptValue)
-				return t.adaptFieldSet(context.getAnnotations(), 
-						decl.getAnnotations());
+				return t.adaptFieldSet(context.getAnnotations(t), 
+						decl.getAnnotations(t));
 			else
-				return t.adaptMethodSet(context.getAnnotations(), 
-						decl.getAnnotations());
+				return t.adaptMethodSet(context.getAnnotations(t), 
+						decl.getAnnotations(t));
 		} else
-			return av.getAnnotations();
+			return av.getAnnotations(t);
 	}
 
 	/**
@@ -261,7 +271,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 	 */
 	protected boolean setAnnotations(AnnotatedValue av, Set<Annotation> annos)
 			throws SolverException {
-        Set<Annotation> oldAnnos = av.getAnnotations();
+        Set<Annotation> oldAnnos = av.getAnnotations(t);
 		if (av instanceof AdaptValue)
 			return setAnnotations((AdaptValue) av, annos);
 		if (oldAnnos.equals(annos))
@@ -271,7 +281,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
             insertObject(new Trace(av.getId(), oldAnnos.toString(), annos.toString(), 
                     getCurrentConstraint().getId()));
 
-        av.setAnnotations(annos);
+        av.setAnnotations(annos, t);
 
         return true;
     }
@@ -281,8 +291,8 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         AnnotatedValue context = aav.getContextValue();
         AnnotatedValue decl = aav.getDeclValue();
 
-		Set<Annotation> contextAnnos = context.getAnnotations();
-		Set<Annotation> declAnnos = decl.getAnnotations();
+		Set<Annotation> contextAnnos = context.getAnnotations(t);
+		Set<Annotation> declAnnos = decl.getAnnotations(t);
 
 		// First iterate through contextAnnos and remove infeasible annotations
 		for (Iterator<Annotation> it = contextAnnos.iterator(); it.hasNext();) {
@@ -361,7 +371,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
                 .append(" values (");
             sb.append(av.getId()).append(",\"");
             sb.append(av.getIdentifier().replace('\"', '_')).append("\",\"");
-            sb.append(av.getAnnotations().toString()).append("\",\"");
+            sb.append(av.getAnnotations(t).toString()).append("\",\"");
             sb.append(av.getType().toString()).append("\",\"");
             sb.append(av.getKind().toString()).append("\",\"");
             if (av.getValue() != null)
@@ -410,7 +420,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
             StringBuilder sbd = new StringBuilder();
             sbd.append("delete from ").append(TRACE_TABLE_NAME)
                 .append(" where value_id = ").append(t.avId)
-                .append(" and old = \"").append(t.oldAnnos).append("\"");
+                .append(" and old = \"").append(t.oldAnnos).append("\";");
             out.println(sbd.toString());
 
             StringBuilder sb = new StringBuilder();
@@ -490,9 +500,21 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
                 for (AnnotatedValue av: t.getAnnotatedValues().values()) {
                     insertObject(av);
                 }
+                BitSet inserted = new BitSet(AnnotatedValue.maxId());
                 // dump constraints
                 for (Constraint c : t.getConstraints()) {
                     insertObject(c);
+                    // also insert locals
+                    AnnotatedValue[] avs = new AnnotatedValue[]{c.getLeft(), c.getRight()};
+                    for (AnnotatedValue av : avs) {
+                        if (av instanceof AdaptValue) {
+                            av = ((AdaptValue) av).getContextValue();
+                        }
+                        if (av.getKind() == Kind.LOCAL && !inserted.get(av.getId())) {
+                            insertObject(av);
+                            inserted.flip(av.getId());
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
