@@ -9,11 +9,11 @@ import checkers.inference.reim.quals.*;
 public class Calendar implements Serializable, Cloneable, Comparable<Calendar> {
     protected Calendar() { throw new RuntimeException("skeleton method"); }
     protected Calendar(@Readonly TimeZone arg0, @Readonly Locale arg1) { throw new RuntimeException("skeleton method"); }
-    public Calendar getInstance() { throw new RuntimeException("skeleton method"); }
-    public Calendar getInstance(@Readonly TimeZone arg0) { throw new RuntimeException("skeleton method"); }
-    public Calendar getInstance(@Readonly Locale arg0) { throw new RuntimeException("skeleton method"); }
-    public Calendar getInstance(@Readonly TimeZone arg0, @Readonly Locale arg1) { throw new RuntimeException("skeleton method"); }
-    public Locale[] getAvailableLocales() { throw new RuntimeException("skeleton method"); }
+    public static Calendar getInstance() { throw new RuntimeException("skeleton method"); }
+    public static Calendar getInstance(@Readonly TimeZone arg0) { throw new RuntimeException("skeleton method"); }
+    public static Calendar getInstance(@Readonly Locale arg0) { throw new RuntimeException("skeleton method"); }
+    public static Calendar getInstance(@Readonly TimeZone arg0, @Readonly Locale arg1) { throw new RuntimeException("skeleton method"); }
+    public static Locale[] getAvailableLocales() { throw new RuntimeException("skeleton method"); }
     protected void computeTime() { throw new RuntimeException("skeleton method"); }
     protected void computeFields() { throw new RuntimeException("skeleton method"); }
     public Date getTime() { throw new RuntimeException("skeleton method"); }

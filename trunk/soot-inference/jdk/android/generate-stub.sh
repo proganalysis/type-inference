@@ -7,4 +7,4 @@ CLASS=$1
 #echo "package $PACKAGE" 
 
 #java -Xbootclasspath/p:../../binary/jsr308-all.jar -cp android-all.jar  checkers.util.stub.StubGenerator $1 | sed '/^[^()]\+;$/d' | sed 's/);$/) { throw new RuntimeException("skeleton method"); }/g' | sed 's/^class/public class/' 
-java -Xbootclasspath/p:../../binary/jsr308-all.jar -cp android-4.3.jar  checkers.util.stub.StubGenerator $1 
+java -Xbootclasspath/p:../jsr308-all.jar -cp android-latest.jar:../../binary/soot-inference.jar  checkers.util.stub.StubGenerator $1 

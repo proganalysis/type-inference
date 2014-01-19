@@ -65,7 +65,7 @@ public class TelephonyManager {
     public String getIsimImpi() { throw new RuntimeException("skeleton method"); }
     public String[] getIsimImpu() { throw new RuntimeException("skeleton method"); }
     public String getLine1AlphaTag() { throw new RuntimeException("skeleton method"); }
-    public String getLine1Number() { throw new RuntimeException("skeleton method"); }
+    public @Tainted String getLine1Number() { throw new RuntimeException("skeleton method"); }
     public int getLteOnCdmaMode() { throw new RuntimeException("skeleton method"); }
     public String getMsisdn() { throw new RuntimeException("skeleton method"); }
     public List<NeighboringCellInfo> getNeighboringCellInfo() { throw new RuntimeException("skeleton method"); }
