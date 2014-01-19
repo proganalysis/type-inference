@@ -6,10 +6,11 @@
 # Variables
 CHECKERS = ../../
 CHECKERS_JAR = $(CHECKERS)/lib/soot-inference.jar
-ANDROID_JAR = android-4.3.jar
+ANDROID_JAR = android-latest.jar
 
 JAVAC = javac -Xlint
 
+JAVA_HOME = /projects/proganalysis/Software/jdk1.6.0_27/
 RTJAR = $(JAVA_HOME)/jre/lib/rt.jar
 
 ANNOTATION_TOOLS = ../../../../annotation-tools
@@ -36,9 +37,11 @@ classes: $(SOURCES)
 	@echo "Building the JDK..."
 	@$(JAVAC) -cp $(CHECKERS_JAR):$(ANDROID_JAR) -d build $?
 	mkdir -p annotated
+	cd annotated; unzip -o $(RTJAR) > /dev/null
 	cd annotated; unzip -o ../$(ANDROID_JAR) > /dev/null
 	cp -r build/* annotated
 	cd annotated; jar cf ../jdk-android.jar .
+	cp jdk-android.jar $(CHECKERS)/binary/
 
 ############## Annotate the annotated jdk file ##############
 
