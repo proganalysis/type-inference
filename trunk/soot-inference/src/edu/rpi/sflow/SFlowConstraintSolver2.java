@@ -456,9 +456,12 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
         if (toUpdate == null) 
             return needSolve;
         AnnotatedValue[] avs;
-        if (toUpdate instanceof AdaptValue) {
+        if (toUpdate instanceof MethodAdaptValue) {
             avs = new AnnotatedValue[]{((AdaptValue) toUpdate).getContextValue(), 
                 ((AdaptValue) toUpdate).getDeclValue()};
+        } else if (toUpdate instanceof MethodAdaptValue) {
+            // skip
+            avs = new AnnotatedValue[0];
         } else 
             avs = new AnnotatedValue[]{toUpdate};
         
@@ -550,24 +553,24 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
 		boolean hasUpdate = false;
         int iterCounter = 0;
 		do {
-//            System.out.println("Iteration " + (++iterCounter) + "...");
+            System.out.println("Iteration " + (++iterCounter) + "...");
 			conflictConstraints = new LinkedHashSet<Constraint>();
 			hasUpdate = false;
             Set<Constraint> newCons = new LinkedHashSet<Constraint>();
-//            int updateNum = 0;
-//            List<Constraint> lastUpdated = new LinkedList<Constraint>();
+            int updateNum = 0;
+            List<Constraint> lastUpdated = new LinkedList<Constraint>();
 			for (Constraint c : extendedConstraints) {
 				try {
-//                    boolean b = handleConstraint(c);
-//                    if (b) {
-//                        updateNum++;
-//                        lastUpdated.add(c);
-//                        if (lastUpdated.size() > 5) {
-//                            lastUpdated.remove(0);
-//                        }
-//                    }
-//                    hasUpdate = b || hasUpdate;
-                    hasUpdate = handleConstraint(c) || hasUpdate;
+                    boolean b = handleConstraint(c);
+                    if (b) {
+                        updateNum++;
+                        lastUpdated.add(c);
+                        if (lastUpdated.size() > 5) {
+                            lastUpdated.remove(0);
+                        }
+                    }
+                    hasUpdate = b || hasUpdate;
+//                    hasUpdate = handleConstraint(c) || hasUpdate;
                     newCons.addAll(addLinearConstraints(c, extendedConstraints));
 				} catch (SolverException e) {
 					FailureStatus fs = t.getFailureStatus(c);
@@ -590,11 +593,11 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
                 extendedConstraints.addAll(newCons);
                 hasUpdate = true;
             }
-//            System.out.println("INFO: Constraints updated: " + updateNum);
-//            if (updateNum <=5 ) {
-//                for (Constraint ccc : lastUpdated)
-//                    System.out.println(ccc);
-//            }
+            System.out.println("INFO: Constraints updated: " + updateNum);
+            if (updateNum <=2 ) {
+                for (Constraint ccc : lastUpdated)
+                    System.out.println(ccc);
+            }
 
             if (!hasUpdate && isInteractive) {
                 // Interactive mode: allow user to eliminate sources or sinks
