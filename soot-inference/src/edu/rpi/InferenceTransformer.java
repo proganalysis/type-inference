@@ -160,7 +160,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected AnnotatedValue getAnnotatedClass(SootClass sc) {
-        String identifier = sc.getName();
+        String identifier = sc.getName() + "@CLASS";
         return getAnnotatedValue(identifier, sc.getType(), Kind.CLASS, sc);
     }
 
@@ -317,7 +317,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
         VisibilityParameterAnnotationTag ptag = (VisibilityParameterAnnotationTag)
             host.getTag("VisibilityParameterAnnotationTag");
         VisibilityAnnotationTag vtag = null;
-        if (ptag != null && (vtag = ptag.getVisibilityAnnotations().get(index)) != null
+        if (ptag != null && index < ptag.getVisibilityAnnotations().size() 
+                && (vtag = ptag.getVisibilityAnnotations().get(index)) != null
                 && vtag.hasAnnotations()) {
             for (AnnotationTag at : vtag.getAnnotations()) {
                 Annotation anno = AnnotationUtils.fromAnnotationTag(at);
@@ -538,6 +539,14 @@ public abstract class InferenceTransformer extends BodyTransformer {
             AnnotatedValue aField, AnnotatedValue aRhs) {
         AnnotatedValue afv = getFieldAdaptValue(aBase, aField, null);
         addSubtypeConstraint(aRhs, afv);
+    }
+
+    protected void handleStaticFieldRead(AnnotatedValue aField, AnnotatedValue aLhs) {
+        addSubtypeConstraint(aField, aLhs);
+    }
+
+    protected void handleStaticFieldWrite(AnnotatedValue aField, AnnotatedValue aRhs) {
+        addSubtypeConstraint(aRhs, aField);
     }
 
     protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {

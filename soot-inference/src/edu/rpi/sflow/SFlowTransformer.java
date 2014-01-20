@@ -141,6 +141,9 @@ public class SFlowTransformer extends InferenceTransformer {
         } else if (av.getKind() == Kind.THIS) {
             annos = getVisibilityTags(av.getEnclosingMethod(), Kind.THIS);
             annos.retainAll(sourceAnnos);
+        } else if (av.getKind() == Kind.FIELD) {
+            annos = getVisibilityTags((Host) av.getValue(), Kind.FIELD);
+            annos.retainAll(sourceAnnos);
         }
         return annos;
     }
@@ -328,6 +331,19 @@ public class SFlowTransformer extends InferenceTransformer {
             v.addAnnotation(BOTTOM);
         else
             v.setAnnotations(sourceAnnos, this);
+    }  
+
+    @Override
+    protected void handleStaticFieldRead(AnnotatedValue aField, AnnotatedValue aLhs) {
+        super.handleStaticFieldRead(aField, aLhs);
+        if (aField.toString().contains("CONTENT_URI")) 
+            System.out.println();
+        if (isSource(aField)) {
+            System.out.println("INFO: found SOURCE " + aField + " at " 
+                    + "\n\t" + getVisitorState().getSootMethod()
+                    + "\n\t" + getVisitorState().getUnit());
+            sourceNum++;
+        }
     }
 
     @Override
