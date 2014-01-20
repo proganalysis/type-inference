@@ -548,15 +548,26 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
 		Set<Constraint> warnConstraints = new HashSet<Constraint>();
 		Set<Constraint> conflictConstraints = new LinkedHashSet<Constraint>();
 		boolean hasUpdate = false;
+        int iterCounter = 0;
 		do {
+//            System.out.println("Iteration " + (++iterCounter) + "...");
 			conflictConstraints = new LinkedHashSet<Constraint>();
 			hasUpdate = false;
             Set<Constraint> newCons = new LinkedHashSet<Constraint>();
+//            int updateNum = 0;
+//            List<Constraint> lastUpdated = new LinkedList<Constraint>();
 			for (Constraint c : extendedConstraints) {
 				try {
-//                    if (c.getLeft().getId() == 47 && c.getRight().getId() == 94)
-//                        System.out.println();
-					hasUpdate = handleConstraint(c) || hasUpdate;
+//                    boolean b = handleConstraint(c);
+//                    if (b) {
+//                        updateNum++;
+//                        lastUpdated.add(c);
+//                        if (lastUpdated.size() > 5) {
+//                            lastUpdated.remove(0);
+//                        }
+//                    }
+//                    hasUpdate = b || hasUpdate;
+                    hasUpdate = handleConstraint(c) || hasUpdate;
                     newCons.addAll(addLinearConstraints(c, extendedConstraints));
 				} catch (SolverException e) {
 					FailureStatus fs = t.getFailureStatus(c);
@@ -579,6 +590,11 @@ public class SFlowConstraintSolver2 extends AbstractConstraintSolver {
                 extendedConstraints.addAll(newCons);
                 hasUpdate = true;
             }
+//            System.out.println("INFO: Constraints updated: " + updateNum);
+//            if (updateNum <=5 ) {
+//                for (Constraint ccc : lastUpdated)
+//                    System.out.println(ccc);
+//            }
 
             if (!hasUpdate && isInteractive) {
                 // Interactive mode: allow user to eliminate sources or sinks

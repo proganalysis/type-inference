@@ -146,7 +146,10 @@ public class InferenceVisitor extends AbstractStmtSwitch {
         public void caseStaticFieldRef(StaticFieldRef v) {
             SootField field = v.getField();
             AnnotatedValue aField = t.getAnnotatedField(field);
-            add(aField);
+            if (sub != null && sup == null) 
+                t.handleStaticFieldWrite(aField, sub);
+            else if (sub == null && sup != null)
+                t.handleStaticFieldRead(aField, sup);
         }
 
         @Override
