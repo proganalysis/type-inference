@@ -62,18 +62,17 @@ public class SootInference {
             "com.squareup.okhttp",
             "com.nbpcorp.mobilead",
             "com.crashlytics",
-            "com.inmobi.androidsdk",
-            "com.millennialmedia",
-            "com.admob",
+            "com.inmobi.androidsdk", //ad
+            "com.millennialmedia", //ad
+            "com.admob",  //ad
+            "com.admarvel.android.ads",  // ad
+            "com.mopub.mobileads",  //ad
+            "com.medialets", // ad
             "com.slidingmenu",
-//            "com.facebook",
-            "com.admarvel.android.ads",
             "com.amazon.inapp.purchasing",
             "com.loopj",
-            "com.mopub.mobileads",
             "com.appbrain",
             "com.heyzap.sdk",
-//            "com.dropbox",
             "net.daum.adam.publisher",
             "twitter4j.",
             "org.java_websocket",
