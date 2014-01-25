@@ -60,14 +60,14 @@ public class SootInference {
             "com.google",
             "com.yume.android",
             "com.squareup.okhttp",
-            "com.nbpcorp.mobilead",
             "com.crashlytics",
-            "com.inmobi.androidsdk", //ad
-            "com.millennialmedia", //ad
-            "com.admob",  //ad
-            "com.admarvel.android.ads",  // ad
-            "com.mopub.mobileads",  //ad
-            "com.medialets", // ad
+//            "com.nbpcorp.mobilead", // ad
+//            "com.inmobi.androidsdk", //ad
+//            "com.millennialmedia", //ad
+//            "com.admob",  //ad
+//            "com.admarvel.android.ads",  // ad
+//            "com.mopub.mobileads",  //ad
+//            "com.medialets", // ad
             "com.slidingmenu",
             "com.amazon.inapp.purchasing",
             "com.loopj",
@@ -119,7 +119,7 @@ public class SootInference {
         }
 
         System.out.println("INFO: Solving SFlow constraints:  " + sflowTransformer.getConstraints().size() + " in total...");
-        ConstraintSolver sflowSolver = new SFlowConstraintSolver2(sflowTransformer);
+        ConstraintSolver sflowSolver = new SFlowConstraintSolver(sflowTransformer);
         errors = sflowSolver.solve();
         try {
             PrintStream sflowOut = new PrintStream(outputDir + File.separator + "sflow-constraints.log");

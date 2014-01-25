@@ -188,6 +188,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected AnnotatedValue getAnnotatedField(SootField field) {
+        if (field.isPhantom())
+            field = getDeclaringField(field);
         String identifier = field.getSignature();
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
@@ -206,6 +208,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
     protected AnnotatedValue getAnnotatedParameter(SootMethod sm, int index) {
         if (index < 0 || index >= sm.getParameterCount())
             return null;
+
+        if (sm.isPhantom())
+            sm = getDeclaringMethod(sm);
+
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@parameter" + index;
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
@@ -222,6 +228,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected AnnotatedValue getAnnotatedReturn(SootMethod sm) {
+        if (sm.isPhantom())
+            sm = getDeclaringMethod(sm);
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@return";
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
@@ -238,6 +246,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected AnnotatedValue getAnnotatedThis(SootMethod sm) {
+        if (sm.isPhantom())
+            sm = getDeclaringMethod(sm);
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@this";
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
@@ -295,6 +305,32 @@ public abstract class InferenceTransformer extends BodyTransformer {
         for (SootMethod overridden : overriddenMethods.values()) {
             handleMethodOverride(sm, overridden);
         }
+    }
+
+    protected SootField getDeclaringField(SootField field) {
+        SootClass sc = field.getDeclaringClass();
+        Set<SootClass> superTypes = InferenceUtils.getSuperTypes(sc);
+        for (SootClass superClass : superTypes) {
+            if (superClass.declaresField(field.getSubSignature())) {
+                SootField f = superClass.getField(field.getSubSignature());
+                if (!f.isPhantom())
+                    return f;
+            }
+        }
+        return field;
+    }
+
+    protected SootMethod getDeclaringMethod(SootMethod method) {
+        SootClass sc = method.getDeclaringClass();
+        Set<SootClass> superTypes = InferenceUtils.getSuperTypes(sc);
+        for (SootClass superClass : superTypes) {
+            if (superClass.declaresMethod(method.getSubSignature())) {
+                SootMethod m = superClass.getMethod(method.getSubSignature());
+                if (!m.isPhantom())
+                    return m;
+            }
+        }
+        return method;
     }
 
     protected void annotateDefault(AnnotatedValue v, Kind kind, Object o) {

@@ -336,8 +336,6 @@ public class SFlowTransformer extends InferenceTransformer {
     @Override
     protected void handleStaticFieldRead(AnnotatedValue aField, AnnotatedValue aLhs) {
         super.handleStaticFieldRead(aField, aLhs);
-        if (aField.toString().contains("CONTENT_URI")) 
-            System.out.println();
         if (isSource(aField)) {
             System.out.println("INFO: found SOURCE " + aField + " at " 
                     + "\n\t" + getVisitorState().getSootMethod()
@@ -353,8 +351,9 @@ public class SFlowTransformer extends InferenceTransformer {
             // this: overridden <: overrider 
             AnnotatedValue overriderThis = getAnnotatedThis(overrider);
             AnnotatedValue overriddenThis = getAnnotatedThis(overridden);
-            if (!isFromLibrary(overriddenThis) || isAnnotated(getVisibilityTags(overridden, Kind.THIS))) 
+            if (!isFromLibrary(overriddenThis) || isAnnotated(getVisibilityTags(overridden, Kind.THIS))) {
                 addSubtypeConstraint(overriddenThis, overriderThis);
+            }
         }
         // parameter: overridden <: overrider 
         assert overrider.getParameterCount() == overridden.getParameterCount();
