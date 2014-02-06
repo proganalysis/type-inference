@@ -188,8 +188,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected AnnotatedValue getAnnotatedField(SootField field) {
-        if (field.isPhantom())
-            field = getDeclaringField(field);
+        field = getDeclaringField(field);
         String identifier = field.getSignature();
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
@@ -209,8 +208,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         if (index < 0 || index >= sm.getParameterCount())
             return null;
 
-        if (sm.isPhantom())
-            sm = getDeclaringMethod(sm);
+        sm = getDeclaringMethod(sm);
 
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@parameter" + index;
         AnnotatedValue ret = annotatedValues.get(identifier);
@@ -228,8 +226,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected AnnotatedValue getAnnotatedReturn(SootMethod sm) {
-        if (sm.isPhantom())
-            sm = getDeclaringMethod(sm);
+        sm = getDeclaringMethod(sm);
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@return";
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
@@ -246,8 +243,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected AnnotatedValue getAnnotatedThis(SootMethod sm) {
-        if (sm.isPhantom())
-            sm = getDeclaringMethod(sm);
+        sm = getDeclaringMethod(sm);
         String identifier = (isLibraryMethod(sm) ? LIB_PREFIX : "") + sm.getSignature() + "@this";
         AnnotatedValue ret = annotatedValues.get(identifier);
         if (ret == null) {
@@ -308,6 +304,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected SootField getDeclaringField(SootField field) {
+        if (!field.isPhantom())
+            return field;
         SootClass sc = field.getDeclaringClass();
         Set<SootClass> superTypes = InferenceUtils.getSuperTypes(sc);
         for (SootClass superClass : superTypes) {
@@ -321,6 +319,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected SootMethod getDeclaringMethod(SootMethod method) {
+        if (!method.isPhantom())
+            return method;
         SootClass sc = method.getDeclaringClass();
         Set<SootClass> superTypes = InferenceUtils.getSuperTypes(sc);
         for (SootClass superClass : superTypes) {
@@ -420,7 +420,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     public boolean isLibraryMethod(SootMethod sm) {
-//        return !sm.hasActiveBody() && !userMethods.contains(sm);
+        sm = getDeclaringMethod(sm);
         SootClass sc = sm.getDeclaringClass();
         return sc.isLibraryClass();
     }
