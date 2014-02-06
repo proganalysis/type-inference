@@ -476,9 +476,9 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
         if (toUpdate instanceof MethodAdaptValue) {
             avs = new AnnotatedValue[]{((AdaptValue) toUpdate).getContextValue(), 
                 ((AdaptValue) toUpdate).getDeclValue()};
-        } else if (toUpdate instanceof MethodAdaptValue) {
+        } else if (toUpdate instanceof FieldAdaptValue) {
             // skip
-            avs = new AnnotatedValue[0];
+            avs = new AnnotatedValue[]{((AdaptValue) toUpdate).getContextValue()};
         } else 
             avs = new AnnotatedValue[]{toUpdate};
         
@@ -617,6 +617,15 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
                         warnConstraints.add(c);
                     }
                 }
+            }
+        }
+        // Now make sure conflictConstraints are not satisfiable
+        for (Iterator<Constraint> it = conflictConstraints.iterator(); it.hasNext(); ) {
+            Constraint c = it.next();
+            try {
+                handleConstraint(c);
+                it.remove();
+            } catch (SolverException e) {
             }
         }
         System.out.println("Total restore number: " + restoreCounter);
