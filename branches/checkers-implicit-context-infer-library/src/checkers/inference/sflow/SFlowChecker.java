@@ -147,7 +147,7 @@ public class SFlowChecker extends InferenceChecker {
 		}
 		if (getProcessingEnvironment().getOptions().containsKey(
 				"polyLibrary")) {
-			inferLibrary = true;
+			polyLibrary = true;
 		}
 		if (getProcessingEnvironment().getOptions().containsKey(
 				"sourceSinkOnly")) {
@@ -341,6 +341,42 @@ public class SFlowChecker extends InferenceChecker {
 			return false;
 		return true;
 	}
+
+
+    public boolean isParamReturnConstraint(Constraint c) {
+        Reference left = c.getLeft();
+        Reference right = c.getRight();
+        if (isParamOrRetRef(left) && isParamOrRetRef(right)) {
+            Element lElt = null;
+            Element rElt = null;
+            // check if they are from the same method
+            lElt = getEnclosingMethod(left.getElement());
+            rElt = getEnclosingMethod(right.getElement());
+            if (lElt.equals(rElt))
+                return true;
+        }
+        return false;
+    }
+
+    public boolean isParamOrRetRef(Reference ref) {
+        if (ref != null && !(ref instanceof AdaptReference)) {
+            Element elt = null;
+            if ((elt = ref.getElement()) != null 
+                    && (elt.getKind() == ElementKind.PARAMETER 
+                        || ref.getRefName().startsWith("RET_")
+                        || ref.getRefName().startsWith("THIS_")))
+                return true;
+        }
+        return false;
+    }
+
+    public Element getEnclosingMethod(Element elt) {
+        while (elt != null && elt.getKind() != ElementKind.METHOD
+                && elt.getKind() != ElementKind.CONSTRUCTOR) {
+            elt = elt.getEnclosingElement();
+        }
+        return elt;
+    }
 
 	/**
 	 * We need to override this method because we need to distinguish primitive
@@ -659,7 +695,7 @@ public class SFlowChecker extends InferenceChecker {
 		
 		String s = "INFO: There are " + taintedNum + " ("
 				+ (((float) taintedNum / totalElementNum) * 100)
-				+ "%) secret, " + polyNum + " ("
+				+ "%) tainted, " + polyNum + " ("
 				+ (((float) polyNum / totalElementNum) * 100)
 				+ "%) poly and " + safeNum + " ("
 				+ (((float) safeNum / totalElementNum) * 100) + "%) safe"
@@ -672,7 +708,7 @@ public class SFlowChecker extends InferenceChecker {
 		
 		String s2 = "INFO: There are " + taintedNum + " ("
 				+ (((float) taintedNum / totalElementNum) * 100)
-				+ "%) secret, " + polyNum + " ("
+				+ "%) tainted, " + polyNum + " ("
 				+ (((float) polyNum / totalElementNum) * 100)
 				+ "%) poly and " + safeNum + " ("
 				+ (((float) safeNum / totalElementNum) * 100) + "%) safe"

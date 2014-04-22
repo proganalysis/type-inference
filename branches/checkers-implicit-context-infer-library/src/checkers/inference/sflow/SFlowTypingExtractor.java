@@ -67,49 +67,6 @@ public class SFlowTypingExtractor implements TypingExtractor {
 	}
 
 
-    /**
-     * Copied from WorklistSetbasedSolver
-     */
-    private boolean isParamReturnConstraint(Constraint c) {
-        Reference left = c.getLeft();
-        Reference right = c.getRight();
-        if (left != null && !(left instanceof AdaptReference) 
-                && right != null && !(right instanceof AdaptReference)) {
-            // param/this -> return/param/this
-            Element lElt = null;
-            Element rElt = null;
-             if ((lElt = left.getElement()) != null 
-                        && (lElt.getKind() == ElementKind.PARAMETER 
-                            || left.getRefName().startsWith("RET_")
-                            || left.getRefName().startsWith("THIS_"))
-                     && (rElt = right.getElement()) != null 
-                        && (right.getRefName().startsWith("RET_")
-                            || right.getRefName().startsWith("THIS_")
-                            || rElt.getKind() == ElementKind.PARAMETER)) {
-                 // check if they are from the same method
-//                 while (lElt != null && lElt.getKind() != ElementKind.METHOD 
-//                         && lElt.getKind() != ElementKind.CONSTRUCTOR)
-//                     lElt = lElt.getEnclosingElement();
-//                 while (rElt != null && rElt.getKind() != ElementKind.METHOD 
-//                         && rElt.getKind() != ElementKind.CONSTRUCTOR)
-//                     rElt = rElt.getEnclosingElement();
-                 lElt = getEnclosingMethod(lElt);
-                 rElt = getEnclosingMethod(rElt);
-                 if (lElt.equals(rElt))
-                     return true;
-            }
-        }
-        return false;
-    }
-
-    private Element getEnclosingMethod(Element elt) {
-        while (elt != null && elt.getKind() != ElementKind.METHOD
-                && elt.getKind() != ElementKind.CONSTRUCTOR) {
-            elt = elt.getEnclosingElement();
-        }
-        return elt;
-    }
-
     private List<Constraint> handleLibraryInference(List<Reference> refs, List<Constraint> cons, Map<String, Reference> solution) {
 		Set<AnnotationMirror> sflowSet = AnnotationUtils.createAnnotationSet();
 		sflowSet.add(SFlowChecker.TAINTED);
@@ -118,9 +75,9 @@ public class SFlowTypingExtractor implements TypingExtractor {
         for (Constraint c : cons) {
             Reference left = c.getLeft();
             Reference right = c.getRight();
-            if (isParamReturnConstraint(c)) {
+            if (inferenceChecker.isParamReturnConstraint(c)) {
                 // Get the method element
-                Element methodElt = getEnclosingMethod(left.getElement());
+                Element methodElt = inferenceChecker.getEnclosingMethod(left.getElement());
                 // skip non-public methods
                 if (!methodElt.getModifiers().contains(Modifier.PUBLIC))
                     continue;
@@ -154,7 +111,7 @@ public class SFlowTypingExtractor implements TypingExtractor {
         for (Reference ref : refs) {
             Element elt = ref.getElement();
             // Get the method element
-            Element methodElt = getEnclosingMethod(elt);
+            Element methodElt = inferenceChecker.getEnclosingMethod(elt);
             // skip non-public methods
             if (methodElt == null || !methodElt.getModifiers().contains(Modifier.PUBLIC))
                 continue;
@@ -189,7 +146,7 @@ public class SFlowTypingExtractor implements TypingExtractor {
         for (Reference ref : refs) {
             Element elt = ref.getElement();
             // Get the method element
-            Element methodElt = getEnclosingMethod(elt);
+            Element methodElt = inferenceChecker.getEnclosingMethod(elt);
             // skip non-public methods
             if (methodElt == null || !methodElt.getModifiers().contains(Modifier.PUBLIC))
                 continue;
