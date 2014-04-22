@@ -4,7 +4,7 @@
 
 
 # Variables
-CHECKERS = ../..
+CHECKERS = ../../
 CHECKERS_JAR = $(CHECKERS)/checkers.jar
 JAVAEE_JAR = javaee-api-6.0.jar
 STRUTS_JAR = struts-1.1.jar
