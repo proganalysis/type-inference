@@ -50,7 +50,7 @@ import checkers.util.*;
 
 public class WorklistSetbasedSolver implements ConstraintSolver {
 	
-	private InferenceChecker inferenceChecker;
+	private SFlowChecker inferenceChecker;
 	
 	private List<Reference> exprRefs;
 	
@@ -68,7 +68,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 	
 	public WorklistSetbasedSolver(InferenceChecker inferenceChecker, 
 			List<Reference> exprRefs, List<Constraint> constraints) {
-		this.inferenceChecker = inferenceChecker;
+		this.inferenceChecker = (SFlowChecker) inferenceChecker;
 		this.exprRefs = exprRefs;
         this.constraints = new LinkedHashSet<Constraint>(constraints);
 		this.refToConstraints = new HashMap<Integer, List<Constraint>>();
@@ -672,35 +672,35 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
         }
     }
 
-    private boolean isParamReturnConstraint(Constraint c) {
-        Reference left = c.getLeft();
-        Reference right = c.getRight();
-        if (left != null && !(left instanceof AdaptReference) 
-                && right != null && !(right instanceof AdaptReference)) {
-            // param/this -> return/param/this
-            Element lElt = null;
-            Element rElt = null;
-             if ((lElt = left.getElement()) != null 
-                        && (lElt.getKind() == ElementKind.PARAMETER 
-                            || left.getRefName().startsWith("RET_")
-                            || left.getRefName().startsWith("THIS_"))
-                     && (rElt = right.getElement()) != null 
-                        && (right.getRefName().startsWith("RET_")
-                            || right.getRefName().startsWith("THIS_")
-                            || rElt.getKind() == ElementKind.PARAMETER)) {
-                 // check if they are from the same method
-                 while (lElt != null && lElt.getKind() != ElementKind.METHOD 
-                         && lElt.getKind() != ElementKind.CONSTRUCTOR)
-                     lElt = lElt.getEnclosingElement();
-                 while (rElt != null && rElt.getKind() != ElementKind.METHOD 
-                         && rElt.getKind() != ElementKind.CONSTRUCTOR)
-                     rElt = rElt.getEnclosingElement();
-                 if (lElt.equals(rElt))
-                     return true;
-            }
-        }
-        return false;
-    }
+//    private boolean isParamReturnConstraint(Constraint c) {
+//        Reference left = c.getLeft();
+//        Reference right = c.getRight();
+//        if (left != null && !(left instanceof AdaptReference) 
+//                && right != null && !(right instanceof AdaptReference)) {
+//            // param/this -> return/param/this
+//            Element lElt = null;
+//            Element rElt = null;
+//             if ((lElt = left.getElement()) != null 
+//                        && (lElt.getKind() == ElementKind.PARAMETER 
+//                            || left.getRefName().startsWith("RET_")
+//                            || left.getRefName().startsWith("THIS_"))
+//                     && (rElt = right.getElement()) != null 
+//                        && (right.getRefName().startsWith("RET_")
+//                            || right.getRefName().startsWith("THIS_")
+//                            || rElt.getKind() == ElementKind.PARAMETER)) {
+//                 // check if they are from the same method
+//                 while (lElt != null && lElt.getKind() != ElementKind.METHOD 
+//                         && lElt.getKind() != ElementKind.CONSTRUCTOR)
+//                     lElt = lElt.getEnclosingElement();
+//                 while (rElt != null && rElt.getKind() != ElementKind.METHOD 
+//                         && rElt.getKind() != ElementKind.CONSTRUCTOR)
+//                     rElt = rElt.getEnclosingElement();
+//                 if (lElt.equals(rElt))
+//                     return true;
+//            }
+//        }
+//        return false;
+//    }
 
     private boolean isSame(Reference left, Reference right, Map<Integer, Reference> map) {
         if (!(left instanceof ConstantReference) && !(right instanceof ConstantReference)
@@ -995,7 +995,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             // Nov 26, 2013: add linear constraint for array fields
             if ((left instanceof FieldAdaptReference) 
                     && (ref = ((FieldAdaptReference) left).getDeclRef()) != null
-                    && (inferenceChecker instanceof SFlowChecker && ((SFlowChecker) inferenceChecker).isInferLibrary()
+                    && (inferenceChecker.isInferLibrary()
                         || ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(SFlowChecker.POLY)
                         || ((FieldAdaptReference) left).getContextRef() instanceof ArrayReference)) {
                 Constraint linear = new SubtypeConstraint(
@@ -1006,7 +1006,7 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
             // Nov 26, 2013: add linear constraint for array fields
             else if ((right instanceof FieldAdaptReference) 
                     && (ref = ((FieldAdaptReference) right).getDeclRef()) != null
-                    && (inferenceChecker instanceof SFlowChecker && ((SFlowChecker) inferenceChecker).isInferLibrary()
+                    && (inferenceChecker.isInferLibrary()
                         || ref.getAnnotations().size() == 1 && ref.getAnnotations().contains(SFlowChecker.POLY)
                         || ((FieldAdaptReference) right).getContextRef() instanceof ArrayReference)) {
                 Constraint linear = new SubtypeConstraint(
@@ -1018,21 +1018,24 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
                     && canConnectVia(left, right)) {
                 for (Constraint lc : left.getLessSet()) {
                     Reference r = lc.getLeft();
-                    if (!r.equals(right) && (right.getElement() != null || r.getElement() != null)) {
+                    if (!r.equals(right) && (right.getElement() != null || r.getElement() != null)
+                            && inferenceChecker.isParamOrRetRef(r)) {
                         Constraint linear = new SubtypeConstraint(r, right, new int[]{lc.getID(), c.getID()});
                         tmplist.add(linear);
                     }
                 }
-                for (Constraint gc : right.getGreaterSet()) {
-                    Reference r = gc.getRight();
-                    if (!left.equals(r) && (left.getElement() != null || r.getElement() != null)) {
-                        Constraint linear = new SubtypeConstraint(left, r, new int[]{c.getID(), gc.getID()});
-                        tmplist.add(linear);
+                if (inferenceChecker.isParamOrRetRef(left)) {
+                    for (Constraint gc : right.getGreaterSet()) {
+                        Reference r = gc.getRight();
+                        if (!left.equals(r) && (left.getElement() != null || r.getElement() != null)) {
+                            Constraint linear = new SubtypeConstraint(left, r, new int[]{c.getID(), gc.getID()});
+                            tmplist.add(linear);
+                        }
                     }
                 }
                 // if c is a new linear constraint between parameters
                 // and returns, add it into original constraints
-                if (!constraints.contains(c) && isParamReturnConstraint(c)) {
+                if (!constraints.contains(c) && inferenceChecker.isParamReturnConstraint(c)) {
                     // param/this -> return/param/this
                      constraints.add(c);
                 }
@@ -1123,28 +1126,31 @@ public class WorklistSetbasedSolver implements ConstraintSolver {
 //                if (!canConnectVia(linear.getLeft(), linear.getRight()))
 //                    continue;
 
-//                if (linear.getLeft().getId() == 509811 && linear.getRight().getId() == 428153) 
+//                if (linear.getLeft().getId() == 382727 && linear.getRight().getId() == 382768) 
 //                    System.out.println();
 
                 // Should be in the same file or they are subclasses
-//                String leftFile = linear.getLeft().getFileName();
-//                String rightFile = linear.getRight().getFileName();
                 TypeElement leftEType = linear.getLeft().getEnclosingType();
                 TypeElement rightEType = linear.getRight().getEnclosingType();
                 if (!c.equals(linear) && !cons.contains(linear)
                         && linear.getLeft().getId() != linear.getRight().getId()
                         && !tmpNewConstraints.contains(linear) 
                         && !newCons.contains(linear)
-//                        && (leftFile == null || rightFile == null || leftFile.equals(rightFile))
                         && (leftEType == null || rightEType == null 
                             || inferenceChecker.isSubtype(leftEType, rightEType)
                             || inferenceChecker.isSubtype(rightEType, leftEType))
                         ) {
-                    newCons.add(linear);
-//                    linear.getLeft().addGreaterRef(linear.getRight());
-//                    linear.getRight().addLessRef(linear.getLeft());
-                    buildRefToConstraintMapping(linear);
-                    queue.add(linear);
+                    // if leftEType != rightEType, then it should be
+                    // subclassing constraint
+                    Element leftElt, rightElt;
+                    if (leftEType != null && rightEType != null && leftEType.equals(rightEType) 
+                            || (leftElt = linear.getLeft().getElement()) != null
+                                && (rightElt = linear.getRight().getElement()) != null
+                                && leftElt.getKind() == rightElt.getKind()) {
+                        newCons.add(linear);
+                        buildRefToConstraintMapping(linear);
+                        queue.add(linear);
+                    }
                 } else if (!(linear.getLeft() instanceof AdaptReference) 
                         && (linear.getRight() instanceof MethodAdaptReference)) 
                     queue.add(linear); // add method adapt constraint
