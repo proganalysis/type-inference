@@ -10,6 +10,7 @@ import javax.annotation.processing.Processor;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.element.Modifier;
 
 import checkers.util.TypesUtils;
 
@@ -38,6 +39,8 @@ public class StubGenerator {
     /** the package of the class being processed */
     // As an optimization, it is ended with a '.'
     private String currentPackage = null;
+
+    private boolean needMethodBody = true;
 
     /**
      * Constructs an instanceof {@code IndexGenerator} that outputs to
@@ -72,10 +75,10 @@ public class StubGenerator {
 
         for (TypeElement element
                 : ElementFilter.typesIn(packageElement.getEnclosedElements())) {
-            if (isPublicOrProtected(element)) {
-                out.println();
-                printClass((TypeElement)element);
-            }
+//            if (isPublicOrProtected(element)) {
+            out.println();
+            printClass((TypeElement)element);
+//            }
         }
     }
 
@@ -113,12 +116,23 @@ public class StubGenerator {
      * @param typeElement
      */
     private void printClass(TypeElement typeElement) {
+        boolean prev = needMethodBody;
         indent();
-        if (typeElement.getKind() == ElementKind.INTERFACE)
+        for (Modifier mo : typeElement.getModifiers()) {
+            out.print(mo.toString() + " ");
+        }
+        boolean isEnum = false;
+        if (typeElement.getKind() == ElementKind.INTERFACE) {
             out.print("interface");
-        else if (typeElement.getKind() == ElementKind.CLASS)
+            needMethodBody = false;
+        } else if (typeElement.getKind() == ElementKind.CLASS) {
             out.print("class");
-        else
+            needMethodBody = true;
+        } else if (typeElement.getKind() == ElementKind.ENUM) {
+            out.print("class");
+            needMethodBody = true;
+            isEnum = true;
+        } else
             return;
 
         out.print(' ');
@@ -132,7 +146,7 @@ public class StubGenerator {
         }
 
         // Extends
-        if (typeElement.getSuperclass().getKind() != TypeKind.NONE
+        if (!isEnum && typeElement.getSuperclass().getKind() != TypeKind.NONE
                 && !TypesUtils.isObject(typeElement.getSuperclass())) {
             out.print(" extends ");
             out.print(formatType(typeElement.getSuperclass()));
@@ -156,6 +170,7 @@ public class StubGenerator {
         currentIndention = tempIndention;
         indent();
         out.println("}");
+        needMethodBody = prev;
     }
 
     /**
@@ -166,8 +181,8 @@ public class StubGenerator {
      */
     private void printTypeMembers(List<? extends Element> members) {
         for (Element element : members) {
-            if (isPublicOrProtected(element))
-                printMember(element);
+//            if (isPublicOrProtected(element))
+            printMember(element);
         }
     }
 
@@ -190,14 +205,45 @@ public class StubGenerator {
      */
     private void printFieldDecl(VariableElement field) {
         indent();
-        // if protected, indicate that, but not public
-        if (field.getModifiers().contains(Modifier.PROTECTED))
-            out.print("protected ");
+
+        boolean isFinal = false;
+
+        for (Modifier mo : field.getModifiers()) {
+            if (mo.toString().equals("final"))
+                isFinal = true;
+            out.print(mo.toString() + " ");
+        }
 
         out.print(formatType(field.asType()));
 
         out.print(" ");
         out.print(field.getSimpleName());
+
+        if (isFinal) {
+            out.print(" = ");
+            TypeKind kind = field.asType().getKind();
+            switch (kind) {
+                case BOOLEAN:
+                    out.print("false");
+                    break;
+                case BYTE:
+                case SHORT:
+                case INT:
+                case LONG:
+                    out.print("0");
+                    break;
+                case CHAR:
+                    out.print("\'c\'");
+                    break;
+                case FLOAT:
+                case DOUBLE:
+                    out.print("0.0");
+                    break;
+                default:
+                    out.print("null");
+            }
+        }
+
         out.println(';');
     }
 
@@ -207,10 +253,16 @@ public class StubGenerator {
      * IT indicates whether the field is {@code protected}.
      */
     private void printMethodDecl(ExecutableElement method) {
+        if (method.toString().equals("<clinit>()"))
+            return;
         indent();
-        // if protected, indicate that, but not public
-        if (method.getModifiers().contains(Modifier.PROTECTED))
-            out.print("protected ");
+        boolean prev = needMethodBody;
+
+        for (Modifier mo : method.getModifiers()) {
+            out.print(mo.toString() + " ");
+            if (mo == Modifier.ABSTRACT)
+                needMethodBody = false;
+        }
 
         // print Generic arguments
         if (!method.getTypeParameters().isEmpty()) {
@@ -244,7 +296,13 @@ public class StubGenerator {
             out.print(" throws ");
             out.print(formatType(method.getThrownTypes()));
         }
-        out.println(';');
+        if (!needMethodBody)
+            out.println(';');
+        else {
+            // Add skeleton 
+            out.println(" { throw new RuntimeException(\"skeleton method\"); }");
+        }
+        needMethodBody = prev;
     }
 
     /** Indent the current line */
@@ -283,20 +341,21 @@ public class StubGenerator {
 
     /** outputs the simple name of the type */
     private String formatType(Object typeRep) {
-        StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
-        StringBuilder sb = new StringBuilder();
+//        StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
+//        StringBuilder sb = new StringBuilder();
 
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            if (token.length() == 1
-                    || token.lastIndexOf('.') == -1)
-                sb.append(token);
-            else {
-                int index = token.lastIndexOf('.');
-                sb.append(token.substring(index + 1));
-            }
-        }
-        return sb.toString();
+//        while (tokenizer.hasMoreTokens()) {
+//            String token = tokenizer.nextToken();
+//            if (token.length() == 1
+//                    || token.lastIndexOf('.') == -1)
+//                sb.append(token);
+//            else {
+//                int index = token.lastIndexOf('.');
+//                sb.append(token.substring(index + 1));
+//            }
+//        }
+//        return sb.toString();
+        return typeRep.toString().replace('$', '.');
     }
 
     public static void main(String[] args) {

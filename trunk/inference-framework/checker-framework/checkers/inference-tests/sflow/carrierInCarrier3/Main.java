@@ -20,16 +20,16 @@ class C {}
 
 public class Main {
     public static void main() {
-	/*@Secret*/ C c = new C();
+	/*@Tainted*/ C c = new C();
 	A a = new A();
 	a.put(c,null);
-	/*@Tainted*/ C c2 = a.get2(); // This forces A.b2 to be poly.
+	/*@Safe*/ C c2 = a.get2(); // This forces A.b2 to be poly.
 
 	
-	/*@Secret*/ C c3 = new C();
+	/*@Tainted*/ C c3 = new C();
 	A a2 = new A();
 	a2.put(null,c3);
-	/*@Tainted*/ C c4 = a2.get(); // This forces A.b to be poly. 
+	/*@Safe*/ C c4 = a2.get(); // This forces A.b to be poly. 
     }
 }
 /*

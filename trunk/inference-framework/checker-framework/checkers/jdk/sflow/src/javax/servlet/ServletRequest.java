@@ -1,6 +1,6 @@
 package javax.servlet;
 
-import checkers.inference.sflow.quals.Secret;
+import checkers.inference.sflow.quals.Tainted;
 import checkers.inference.sflow.quals.Poly;
 import checkers.inference.reim.quals.*;
 import java.io.*;
@@ -16,11 +16,11 @@ public interface ServletRequest {
     int getContentLength(/*>>> @Readonly ServletRequest this*/);
     String getContentType(/*>>> @Readonly ServletRequest this*/);
     ServletInputStream getInputStream(/*>>> @Readonly ServletRequest this*/) throws IOException;
-    /*-@Secret*/ String getParameter(/*>>> @Readonly ServletRequest this,*/ String arg0);
-    /*-@Secret*/ Enumeration<String> getParameterNames(/*>>> @Readonly ServletRequest this*/ );
-    /*-@Secret*/ /*@Poly*/ String /*-@Secret*/ [] getParameterValues(/*>>> @Readonly ServletRequest this,*/ String arg0);
-    /*-@Secret*/ Map<String,String[]> getParameterMap(/*>>> @Readonly ServletRequest this*/ );
-    /*-@Secret*/ String getProtocol(/*>>> @Readonly ServletRequest this*/ );
+    /*-@Tainted*/ String getParameter(/*>>> @Readonly ServletRequest this,*/ String arg0);
+    /*-@Tainted*/ Enumeration<String> getParameterNames(/*>>> @Readonly ServletRequest this*/ );
+    /*-@Tainted*/ /*@Poly*/ String /*-@Tainted*/ [] getParameterValues(/*>>> @Readonly ServletRequest this,*/ String arg0);
+    /*-@Tainted*/ Map<String,String[]> getParameterMap(/*>>> @Readonly ServletRequest this*/ );
+    /*-@Tainted*/ String getProtocol(/*>>> @Readonly ServletRequest this*/ );
     String getScheme(/*>>> @Readonly ServletRequest this*/ );
     String getServerName(/*>>> @Readonly ServletRequest this*/ );
     int getServerPort(/*>>> @Readonly ServletRequest this*/ );

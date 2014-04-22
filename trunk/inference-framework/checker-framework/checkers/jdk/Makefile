@@ -8,6 +8,7 @@ RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 # CHECKER_DIRS = sflow igj javari
 # CHECKER_DIRS = javari
 CHECKER_DIRS = sflow
+CHECKER_DIRS = reim
 
 JAVAEE_JAR ?= $(CHECKER_DIRS)/javaee-api-6.0.jar
 STRUTS_JAR ?= $(CHECKER_DIRS)/struts-1.1.jar

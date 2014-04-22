@@ -120,7 +120,7 @@ public class CancellableFormController extends SimpleFormController {
 	 * Suppress validation for an explicit cancel request too.
 	 * @see #isCancelRequest(javax.servlet.http.HttpServletRequest)
 	 */
-	protected boolean suppressValidation(HttpServletRequest request, /*-@Secret*/ Object command) {
+	protected boolean suppressValidation(HttpServletRequest request, /*-@Tainted*/ Object command) {
 		return super.suppressValidation(request, command) || isCancelRequest(request);
 	}
 
@@ -181,7 +181,7 @@ public class CancellableFormController extends SimpleFormController {
 	 * @see #onCancel(Object)
 	 * @see #setCancelView
 	 */
-	protected ModelAndView onCancel(HttpServletRequest request, HttpServletResponse response, /*-@Secret*/ Object command)
+	protected ModelAndView onCancel(HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command)
 			throws Exception {
 
 		return onCancel(command);

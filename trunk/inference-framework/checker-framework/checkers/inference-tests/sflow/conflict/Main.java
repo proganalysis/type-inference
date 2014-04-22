@@ -20,7 +20,7 @@ class Main {
     public static void main() {
 
         A a = new A();
-        /*@Tainted*/ int i = a.m();
+        /*@Safe*/ int i = a.m();
     }
 }
 

@@ -26,7 +26,7 @@ import checkers.quals.Unqualified;
 @TypeQualifier
 @Inherited
 @SubtypeOf({Readonly.class, Polyread.class})
-//@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @ImplicitFor(
 	types={TypeKind.NULL}
