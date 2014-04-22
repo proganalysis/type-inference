@@ -14,7 +14,7 @@ JAVAP ?= $(LANGTOOLS)/dist/bin/javap
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
-ANNOTATION_TOOLS ?= ../../../../annotation-tools
+ANNOTATION_TOOLS = ../../../../annotation-tools
 AFU_SCRIPTS ?= $(ANNOTATION_TOOLS)/annotation-file-utilities/scripts
 
 all: clean classes

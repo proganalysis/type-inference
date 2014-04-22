@@ -439,6 +439,7 @@ public class InferenceUtils {
 	 * @param supType
 	 * @return
 	 */
+    @Deprecated
 	public static boolean isSubtype(ClassType subType, ClassType supType) {
 		boolean result = false;
 		Type supertype_field = ((ClassType) subType).supertype_field;

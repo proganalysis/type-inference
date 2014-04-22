@@ -5,8 +5,8 @@ import checkers.inference.sflow.quals.*;
 
 public interface Connection extends Wrapper {
     Statement createStatement() throws SQLException;
-    PreparedStatement prepareStatement(/*-@Tainted*/ String arg0) throws SQLException;
-    CallableStatement prepareCall(/*-@Tainted*/ String arg0) throws SQLException;
+    PreparedStatement prepareStatement(/*-@Safe*/ String arg0) throws SQLException;
+    CallableStatement prepareCall(/*-@Safe*/ String arg0) throws SQLException;
     String nativeSQL(String arg0) throws SQLException;
     void setAutoCommit(boolean arg0) throws SQLException;
     boolean getAutoCommit() throws SQLException;
@@ -24,8 +24,8 @@ public interface Connection extends Wrapper {
     SQLWarning getWarnings() throws SQLException;
     void clearWarnings() throws SQLException;
     Statement createStatement(int arg0, int arg1) throws SQLException;
-    PreparedStatement prepareStatement(/*-@Tainted*/ String arg0, int arg1, int arg2) throws SQLException;
-    CallableStatement prepareCall(/*-@Tainted*/ String arg0, int arg1, int arg2) throws SQLException;
+    PreparedStatement prepareStatement(/*-@Safe*/ String arg0, int arg1, int arg2) throws SQLException;
+    CallableStatement prepareCall(/*-@Safe*/ String arg0, int arg1, int arg2) throws SQLException;
     Map<String,Class<?>> getTypeMap() throws SQLException;
     void setTypeMap(Map<String,Class<?>> arg0) throws SQLException;
     void setHoldability(int arg0) throws SQLException;
@@ -35,11 +35,11 @@ public interface Connection extends Wrapper {
     void rollback(Savepoint arg0) throws SQLException;
     void releaseSavepoint(Savepoint arg0) throws SQLException;
     Statement createStatement(int arg0, int arg1, int arg2) throws SQLException;
-    PreparedStatement prepareStatement(/*-@Tainted*/ String arg0, int arg1, int arg2, int arg3) throws SQLException;
-    CallableStatement prepareCall(/*-@Tainted*/ String arg0, int arg1, int arg2, int arg3) throws SQLException;
-    PreparedStatement prepareStatement(/*-@Tainted*/ String arg0, int arg1) throws SQLException;
-    PreparedStatement prepareStatement(/*-@Tainted*/ String arg0, int[] arg1) throws SQLException;
-    PreparedStatement prepareStatement(/*-@Tainted*/ String arg0, String[] arg1) throws SQLException;
+    PreparedStatement prepareStatement(/*-@Safe*/ String arg0, int arg1, int arg2, int arg3) throws SQLException;
+    CallableStatement prepareCall(/*-@Safe*/ String arg0, int arg1, int arg2, int arg3) throws SQLException;
+    PreparedStatement prepareStatement(/*-@Safe*/ String arg0, int arg1) throws SQLException;
+    PreparedStatement prepareStatement(/*-@Safe*/ String arg0, int[] arg1) throws SQLException;
+    PreparedStatement prepareStatement(/*-@Safe*/ String arg0, String[] arg1) throws SQLException;
     Clob createClob() throws SQLException;
     Blob createBlob() throws SQLException;
     NClob createNClob() throws SQLException;

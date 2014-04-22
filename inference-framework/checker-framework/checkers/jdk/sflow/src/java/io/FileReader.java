@@ -1,18 +1,18 @@
 package java.io;
-import checkers.inference.sflow.quals.Tainted;
+import checkers.inference.sflow.quals.Safe;
 import checkers.inference.reim.quals.*;
 
 public class FileReader extends InputStreamReader {
 
-    public FileReader(/*-@Tainted*/ String fileName) throws FileNotFoundException {
+    public FileReader(/*-@Safe*/ String fileName) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 
-    public FileReader(/*Tainted*/ File file) throws FileNotFoundException {
+    public FileReader(/*Safe*/ File file) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 
-    public FileReader(/*Tainted*/ FileDescriptor fd) {
+    public FileReader(/*Safe*/ FileDescriptor fd) {
         throw new RuntimeException("skeleton method");
     }
 

@@ -302,7 +302,7 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			Element declElt = declRef.getElement();
 			
 			if (outRef.getAnnotations().size() == 1 
-					&& outRef.getAnnotations().contains(SFlowChecker.TAINTED)
+					&& outRef.getAnnotations().contains(SFlowChecker.SAFE)
 					&& ((declElt != null && !ElementUtils.isStatic(declElt) 
 							&& declElt.getKind() == ElementKind.FIELD)
 						|| 
@@ -310,7 +310,7 @@ public class MaximalTypingExtractor implements TypingExtractor {
 						)
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(SFlowChecker.POLY)
-					&& declRef.getAnnotations().contains(SFlowChecker.TAINTED)) {
+					&& declRef.getAnnotations().contains(SFlowChecker.SAFE)) {
 				if (declElt != null && declElt.toString().equals("length")
 						&& contextRef instanceof ArrayReference) {
 					// This is array.length, skip
@@ -332,7 +332,7 @@ public class MaximalTypingExtractor implements TypingExtractor {
 				if (inferenceChecker instanceof SFlowChecker
 						&& !(contextRef instanceof ArrayReference)
 						&& ((SFlowChecker) inferenceChecker).isInferLibrary()) {
-					annos.add(SFlowChecker.TAINTED);
+					annos.add(SFlowChecker.SAFE);
 				} else {
 					annos.add(SFlowChecker.POLY);
 				}
@@ -367,12 +367,12 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			Element declElt = declRef.getElement();
 			
 			if (outRef.getAnnotations().size() == 1 
-					&& outRef.getAnnotations().contains(SFlowChecker.TAINTED)
+					&& outRef.getAnnotations().contains(SFlowChecker.SAFE)
 					&& declElt != null && declElt.getKind() == ElementKind.FIELD
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(SFlowChecker.POLY)
-					&& declRef.getAnnotations().contains(SFlowChecker.TAINTED)) {
-				// set declRef as TAINTED
+					&& declRef.getAnnotations().contains(SFlowChecker.SAFE)) {
+				// set declRef as SAFE
 				if (declElt != null && declElt.toString().equals("length")
 						&& contextRef instanceof ArrayReference) {
 					// This is array.length
@@ -411,13 +411,13 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			
 			
 			if (outRef.getAnnotations().size() == 1 
-					&& outRef.getAnnotations().contains(SFlowChecker.TAINTED)
-					&& contextRef.getAnnotations().contains(SFlowChecker.TAINTED)
+					&& outRef.getAnnotations().contains(SFlowChecker.SAFE)
+					&& contextRef.getAnnotations().contains(SFlowChecker.SAFE)
 					&& contextRef.getAnnotations().contains(SFlowChecker.POLY)
 					&& (declElt == null || declElt.getKind() == ElementKind.PARAMETER)
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(SFlowChecker.POLY)
-					&& declRef.getAnnotations().contains(SFlowChecker.TAINTED)) {
+					&& declRef.getAnnotations().contains(SFlowChecker.SAFE)) {
 				
 				if (inferenceChecker instanceof SFlowChecker
 						&& ((SFlowChecker) inferenceChecker).isInferLibrary()
@@ -435,14 +435,14 @@ public class MaximalTypingExtractor implements TypingExtractor {
 				annos.clear();
 //				if (declElt == null || !ElementUtils.isStatic(declElt.getEnclosingElement())) {
 //					// Nonstatic
-//					annos.add(SFlowChecker.TAINTED);
+//					annos.add(SFlowChecker.SAFE);
 //				} else {
 //					annos.add(SFlowChecker.POLY);
 //				}
 				
 				if (inferenceChecker instanceof SFlowChecker
 						&& ((SFlowChecker) inferenceChecker).isInferLibrary()) {
-					annos.add(SFlowChecker.TAINTED);
+					annos.add(SFlowChecker.SAFE);
 					declRef.setAnnotations(annos);
 				}
 				else {	
@@ -451,13 +451,13 @@ public class MaximalTypingExtractor implements TypingExtractor {
 					declRef.setAnnotations(annos);
 	//				List<Constraint> conflicts = solveReleventConstraints(declRef);
 					if (!solveRelevantConstraints(declRef)) {
-						// set declRef as TAINTED
+						// set declRef as SAFE
 						System.out.println("WARN: Setting " + declRef + " to POLY failed.");
 						annos.clear();
-						annos.add(SFlowChecker.TAINTED);
+						annos.add(SFlowChecker.SAFE);
 						declRef.setAnnotations(annos);
 	//					if (!solveRelevantConstraints(declRef)) {
-	//						System.out.println("ERROR: Setting either POLY or TAINTED failed! " + c);
+	//						System.out.println("ERROR: Setting either POLY or SAFE failed! " + c);
 	//					}
 					}
 				}
@@ -493,13 +493,13 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			Element declElt = declRef.getElement();
 			
 			if (outRef.getAnnotations().size() == 1 
-					&& outRef.getAnnotations().contains(SFlowChecker.TAINTED)
+					&& outRef.getAnnotations().contains(SFlowChecker.SAFE)
 					&& declElt != null 
 					&& declElt.getKind() == ElementKind.METHOD
 					&& declRef.getRefName().startsWith("RET_")
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(SFlowChecker.POLY) 
-					&& declRef.getAnnotations().contains(SFlowChecker.TAINTED)) {
+					&& declRef.getAnnotations().contains(SFlowChecker.SAFE)) {
 				// FIXME: move resolution to checker
 				
 				if (inferenceChecker instanceof SFlowChecker
@@ -519,11 +519,11 @@ public class MaximalTypingExtractor implements TypingExtractor {
 						&& ((SFlowChecker) inferenceChecker).isInferLibrary()) {
 //					Set<AnnotationMirror> annos = contextRef.getAnnotations();
 //					annos.clear();
-//					// Set context to TAINTED
-//					annos.add(SFlowChecker.TAINTED);
+//					// Set context to SAFE
+//					annos.add(SFlowChecker.SAFE);
 //					contextRef.setAnnotations(annos);
 					// First try setting POLY
-					annos.add(SFlowChecker.TAINTED);
+					annos.add(SFlowChecker.SAFE);
 					declRef.setAnnotations(annos);
 				}
 				else {
@@ -531,10 +531,10 @@ public class MaximalTypingExtractor implements TypingExtractor {
 					annos.add(SFlowChecker.POLY);
 					declRef.setAnnotations(annos);
 					if (!solveRelevantConstraints(declRef)) {
-						// set declRef as TAINTED
+						// set declRef as SAFE
 						System.out.println("WARN: Setting " + declRef + " to POLY failed.");
 						annos.clear();
-						annos.add(SFlowChecker.TAINTED);
+						annos.add(SFlowChecker.SAFE);
 						declRef.setAnnotations(annos);
 					}
 				}
@@ -570,9 +570,9 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			
 			if (contextRef.getAnnotations().size() > 1 
                     && (contextElt == null || contextElt.getKind() != ElementKind.FIELD)
-					&& contextRef.getAnnotations().contains(SFlowChecker.SECRET)) {
+					&& contextRef.getAnnotations().contains(SFlowChecker.TAINTED)) {
 				Set<AnnotationMirror> annos = contextRef.getAnnotations();
-				annos.remove(SFlowChecker.SECRET);
+				annos.remove(SFlowChecker.TAINTED);
 				if (InferenceChecker.DEBUG)
 					logTrace(contextRef, annos, c);
 				contextRef.setAnnotations(annos);
@@ -617,22 +617,22 @@ public class MaximalTypingExtractor implements TypingExtractor {
 			// TODO: optimize the following
 			if (cType == ConflictType.RETURN
 					&& outRef.getAnnotations().size() == 1 
-					&& outRef.getAnnotations().contains(SFlowChecker.TAINTED)
+					&& outRef.getAnnotations().contains(SFlowChecker.SAFE)
 					&& declElt != null 
 					&& declElt.getKind() == ElementKind.METHOD
 					&& declRef.getRefName().startsWith("RET_")
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(SFlowChecker.POLY) 
-					&& declRef.getAnnotations().contains(SFlowChecker.TAINTED)
+					&& declRef.getAnnotations().contains(SFlowChecker.SAFE)
 					|| cType == ConflictType.PARAMETER
 					&& outRef.getAnnotations().size() == 1 
-					&& outRef.getAnnotations().contains(SFlowChecker.TAINTED)
-					&& contextRef.getAnnotations().contains(SFlowChecker.TAINTED)
+					&& outRef.getAnnotations().contains(SFlowChecker.SAFE)
+					&& contextRef.getAnnotations().contains(SFlowChecker.SAFE)
 					&& contextRef.getAnnotations().contains(SFlowChecker.POLY)
 					&& (declElt == null || declElt.getKind() == ElementKind.PARAMETER)
 					&& declRef.getAnnotations().size() > 1
 					&& declRef.getAnnotations().contains(SFlowChecker.POLY)
-					&& declRef.getAnnotations().contains(SFlowChecker.TAINTED)
+					&& declRef.getAnnotations().contains(SFlowChecker.SAFE)
 					) {
 				Set<AnnotationMirror> annos = declRef.getAnnotations();
 				annos.clear();
@@ -659,10 +659,10 @@ public class MaximalTypingExtractor implements TypingExtractor {
 							refAnnos.add(SFlowChecker.POLY);
 							ref.setAnnotations(refAnnos);
 							if (!solveRelevantConstraints(ref)) {
-								// set declRef as TAINTED
+								// set declRef as SAFE
 								System.out.println("WARN: Setting " + ref + " to POLY failed.");
 								refAnnos.clear();
-								refAnnos.add(SFlowChecker.TAINTED);
+								refAnnos.add(SFlowChecker.SAFE);
 								ref.setAnnotations(refAnnos);
 							}
 						}

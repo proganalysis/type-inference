@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.EnumSet;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -29,6 +30,7 @@ import checkers.inference.Reference.ExecutableReference;
 import checkers.inference.Reference.FieldAdaptReference;
 import checkers.inference.Reference.FieldAdaptReference;
 import checkers.inference.Reference.MethodAdaptReference;
+import checkers.inference.Reference.PrimitiveReference;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
@@ -46,6 +48,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -131,9 +134,10 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 			key = InferenceUtils.getElementSignature(elt);
 		} else {
 			Tree decl = checker.getDeclaration(elt);
-			key = factory.getFileName(decl) + ":"
-					+ TreeInfo.getStartPos((JCTree) decl) + ":"
-					+ decl.toString();
+            key = factory.getIdentifier(decl);
+//            key = factory.getFileName(decl) + ":"
+//                    + TreeInfo.getStartPos((JCTree) decl) + ":"
+//                    + decl.toString();
 		}
         if (key == null) 
             throw new RuntimeException("Null key!");
@@ -184,7 +188,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				ExpressionTree expr = TreeUtils.skipParens(arguments.get(0));
 			
 			if (expr instanceof LiteralTree && expr.getKind() != Kind.NULL_LITERAL
-				|| (elt = TreeUtils.elementFromUse(expr)) != null 
+				|| !(expr instanceof ArrayAccessTree) && (elt = TreeUtils.elementFromUse(expr)) != null 
 					&& elt.getModifiers().contains(Modifier.FINAL)
 				) {
 			
@@ -251,18 +255,25 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		
 		return null;
 	}
-	
-	private void addMappingConstraint(String key, Reference valueRef) {
-		Reference keyRef = mappingKeys.get(key);
-		if (keyRef == null) {
-			keyRef = Reference.createConstantReference(AnnotationUtils.createAnnotationSet(), key);
-			mappingKeys.put(key, keyRef);
-		}
-		addEqualityConstraint(keyRef, valueRef);
+
+	private void addMappingConstraint(String key, Reference valueRef, boolean isSubtype) {
+        Reference keyRef = Reference.createConstantReference(AnnotationUtils.createAnnotationSet(), key);
+        if (isSubtype)
+            addSubtypeConstraint(keyRef, valueRef);
+        else 
+            addSubtypeConstraint(valueRef, keyRef);
 		if (valueRef instanceof ArrayReference) {
 			String componentKey = key + "[]";
-			addMappingConstraint(componentKey, ((ArrayReference) valueRef).getComponentRef());
+			addMappingConstraint(componentKey, ((ArrayReference) valueRef).getComponentRef(), isSubtype);
 		}
+    }
+
+	private void addMappingConstraint(Reference valueRef, String key) {
+        addMappingConstraint(key, valueRef, false);
+    }
+	
+	private void addMappingConstraint(String key, Reference valueRef) {
+        addMappingConstraint(key, valueRef, true);
 	}
 	
 	@Override
@@ -322,48 +333,48 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	@Override
 	protected void handleArrayRead(Reference lhsRef, Reference exprRef, Reference componentRef) {
 		super.handleArrayRead(lhsRef, exprRef, componentRef);
-		// The componentRef cannot be TAINTED
+		// The componentRef cannot be SAFE
 //        if (componentRef.getAnnotations().isEmpty()) {
         if (!checker.isAnnotated(componentRef)) {
 			addInequalityConstraint(componentRef,
-					Reference.createConstantReference(checker.TAINTED));
+					Reference.createConstantReference(checker.SAFE));
 		}
 	}
 
 
 	@Override
 	protected void handleFieldRead(Reference lhsRef, Reference rcvRef, Reference fieldRef) {
-		super.handleFieldRead(lhsRef, rcvRef, fieldRef);
-		// The instant field cannot be Tainted
-		// WEI: now we enforce it in SFlowAnnotatedTypeFactory
-//		Element fieldElt = fieldRef.getElement();
-//		if (!ElementUtils.isStatic(fieldElt) && fieldRef.getAnnotations().isEmpty())
-//			addInequalityConstraint(fieldRef,
-//					Reference.createConstantReference(checker.TAINTED));
+		Element fieldElt = fieldRef.getElement();
+    	if (!ElementUtils.isStatic(fieldElt)) {
+	    	Reference msAdaptRef = getFieldAdaptReference(rcvRef, 
+	    			fieldRef, lhsRef);
+			addSubtypeConstraint(msAdaptRef, lhsRef);
+	    } else
+			addSubtypeConstraint(fieldRef, lhsRef);
 	}
 
 
 	@Override
 	protected void handleArrayWrite(Reference exprRef, Reference componentRef, Reference rhsRef) {
 		super.handleArrayWrite(exprRef, componentRef, rhsRef);
-		// The componentRef cannot be TAINTED
+		// The componentRef cannot be SAFE
 //        if (componentRef.getAnnotations().isEmpty()) {
         if (!checker.isAnnotated(componentRef)) {
 			addInequalityConstraint(componentRef,
-					Reference.createConstantReference(checker.TAINTED));
+					Reference.createConstantReference(checker.SAFE));
 		}
 	}
 
 
 	@Override
 	protected void handleFieldWrite(Reference rcvRef, Reference fieldRef, Reference rhsRef) {
-		super.handleFieldWrite(rcvRef, fieldRef, rhsRef);
-		// The instant field cannot be Tainted
-		// WEI: now we enforce it in SFlowAnnotatedTypeFactory
-//		Element fieldElt = fieldRef.getElement();
-//		if (!ElementUtils.isStatic(fieldElt) && fieldRef.getAnnotations().isEmpty())
-//			addInequalityConstraint(fieldRef,
-//					Reference.createConstantReference(checker.TAINTED));
+		Element fieldElt = fieldRef.getElement();
+		if (!ElementUtils.isStatic(fieldElt)) {
+			// Get the adapt context's reference
+			Reference adaptRef = getFieldAdaptReference(rcvRef, fieldRef, null);
+			addSubtypeConstraint(rhsRef, adaptRef);
+		} else 
+			addSubtypeConstraint(rhsRef, fieldRef);
 	}
 
 
@@ -376,7 +387,17 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 		String ownerStr = ((MethodSymbol) methodElt).owner.toString();
 		String methodStr = methodElt.toString();
 		IndexEntry ie = null;
-		Reference methodRef = Reference.createReference(methodElt, factory);
+		ExecutableReference methodRef = (ExecutableReference) Reference.createReference(methodElt, factory);
+        if (checker.isPolyLibrary() && checker.isFromLibrary(methodElt)) {
+            // Add constraints PARAM -> RET for library methods
+            if (methodElt.getReturnType().getKind() != TypeKind.VOID
+                ||  methodElt.getKind() == ElementKind.CONSTRUCTOR) {
+                for (Reference paramRef : methodRef.getParamRefs()) 
+                    super.addSubtypeConstraint(paramRef, methodRef.getReturnRef());
+                if (!ElementUtils.isStatic(methodElt))
+                    super.addSubtypeConstraint(methodRef.getReceiverRef(), methodRef.getReturnRef());
+            }
+        }
 		if (methodElt.toString().equals(
 				"arraycopy(java.lang.Object,int,java.lang.Object,int,int)")
 				&& classStr != null && classStr.equals("java.lang.System")) {
@@ -436,7 +457,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 			// FIXME: Incomplete fix for Issue-2
 			String key = ownerStr + "_" + getArgumentSignature(arguments.get(ie.keyIndex));
 			Reference valueRef = Reference.createReference(arguments.get(ie.valueIndex), factory);
-			addMappingConstraint(key, valueRef);
+			addMappingConstraint(valueRef, key);
 			// Recursively generate constraints 
 			generateConstraint(valueRef, arguments.get(ie.valueIndex));
 		}
@@ -449,9 +470,9 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				|| ownerStr.equals("javax.servlet.http.HttpServletRequest"))
 				) {
 			// FIXME:  Special-case for methods in
-            // *ServletRequest. This is to prevent a @Secret/@Tainted 
+            // *ServletRequest. This is to prevent a @Tainted/@Safe 
             // request from making all of its methods return
-            // @Secret/@Tainted values
+            // @Tainted/@Safe values
             // We only generate constraints for actual arguments,
             // ignoring return values
 			int size = arguments.size();
@@ -461,10 +482,10 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 				// Recursively generate constraints 
 				generateConstraint(argRef, argTree);
 			}
-            // If the return value is Secret, we simply enforce RET <:
+            // If the return value is Tainted, we simply enforce RET <:
             // LHS without adaptation (which is not necessary)
             if (((ExecutableReference) methodRef).getReturnRef().getAnnotations()
-                    .contains(checker.SECRET)) {
+                    .contains(checker.TAINTED)) {
                 addSubtypeConstraint(((ExecutableReference) methodRef).getReturnRef(), 
                         lhsRef);
             }
@@ -491,7 +512,7 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	/**
 	 * For special-casing getAttribute, etc.
 	 */
-	private static Map<String, Reference> mappingKeys = new HashMap<String, Reference>();
+//    private static Map<String, Reference> mappingKeys = new HashMap<String, Reference>();
 
 	@Override
 	protected void handleMethodOverride(ExecutableElement overrider, ExecutableElement overridden) {
@@ -673,36 +694,51 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	@Override
 	protected Reference getMethodAdaptReference(Reference rcvRef, 
 			Reference declRef, Reference assignToRef) {
-		switch (getMethodAdaptContext(rcvRef, declRef, assignToRef)) {
-		case NONE:
-			return declRef;
-		case RECEIVER:
-			return Reference.createMethodAdaptReference(rcvRef, declRef);
-		case ASSIGNTO:
-			return Reference.createMethodAdaptReference(assignToRef, declRef);
-		}
-		System.out.println("ERROR: No adapt context is found!");
-		return null;
+//        Reference ref = super.getMethodAdaptReference(rcvRef, declRef, assignToRef);
+//        if (getMethodAdaptContext(rcvRef, declRef, assignToRef) == AdaptContext.ASSIGNTO
+//                && (assignToRef instanceof PrimitiveReference))
+//            // SFlow does not ignore PrimitiveReference
+//            ref = Reference.createMethodAdaptReference(assignToRef, declRef);
+//        return ref;
+        // Rewrite for implicit adaptation context
+        // Use the call site as the context
+        Set<Tree.Kind> kinds = EnumSet.of(Tree.Kind.METHOD_INVOCATION, 
+            Tree.Kind.NEW_CLASS);
+        Tree tree = TreeUtils.enclosingOfKind(getInferenceTreePath(), kinds);
+        if (tree != null) {
+            // use constant reference
+			String id = factory.getFileName(tree) + ":"
+                    + factory.getLineNumber(tree) + ":(callsite)"                    
+					+ tree.toString();
+//            Reference callRef = Reference.createConstantReference(
+//                    checker.getSourceLevelQualifiers(), id);
+            Reference callRef = Reference.createConstantReference(
+                    AnnotationUtils.createAnnotationSet(), id);
+            return Reference.createMethodAdaptReference(callRef, declRef);
+        } else 
+            throw new RuntimeException("Invalid adaptation context!");
 	}
 
-    @Override
-	protected Reference getFieldAdaptReference(Reference rcvRef, 
-			Reference fieldRef, Reference assignToRef, Tree tree) {
-        Reference ref = getFieldAdaptReference(rcvRef, fieldRef, assignToRef);
-        if (ref != null && (ref instanceof FieldAdaptReference))
-            ((FieldAdaptReference) ref).setTree(tree);
-        return ref;
-    }
+    // Nov 22, 2013: Commented out 
+//    @Override
+//    protected Reference getFieldAdaptReference(Reference rcvRef, 
+//            Reference fieldRef, Reference assignToRef, Tree tree) {
+//        Reference ref = getFieldAdaptReference(rcvRef, fieldRef, assignToRef);
+//        if (ref != null && (ref instanceof FieldAdaptReference))
+//            ((FieldAdaptReference) ref).setTree(tree);
+//        return ref;
+//    }
 
 
-    @Override
-	protected Reference getMethodAdaptReference(Reference rcvRef, 
-			Reference declRef, Reference assignToRef, Tree tree) {
-        Reference ref = getMethodAdaptReference(rcvRef, declRef, assignToRef);
-        if (ref != null && (ref instanceof MethodAdaptReference))
-            ((MethodAdaptReference) ref).setTree(tree);
-        return ref;
-    }
+    // Nov 22, 2013: Commented out 
+//    @Override
+//    protected Reference getMethodAdaptReference(Reference rcvRef, 
+//            Reference declRef, Reference assignToRef, Tree tree) {
+//        Reference ref = getMethodAdaptReference(rcvRef, declRef, assignToRef);
+//        if (ref != null && (ref instanceof MethodAdaptReference))
+//            ((MethodAdaptReference) ref).setTree(tree);
+//        return ref;
+//    }
 
 	/* (non-Javadoc)
 	 * @see checkers.inference.InferenceVisitor#getFieldAdaptContext(checkers.inference_new.Reference, checkers.inference_new.Reference, checkers.inference_new.Reference)
@@ -719,6 +755,10 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 	@Override
 	public AdaptContext getMethodAdaptContext(Reference rcvRef,
 			Reference declRef, Reference assignToRef) {
+        // Nov 22, 2013: this doesn't matter. It is ignored in
+        // getMethodAdaptReference
+        return AdaptContext.NONE;
+
 //		// We may want to special-case some instance methods with viewpoint on
 //		// the left. 
 //		Element elt = null;
@@ -728,15 +768,16 @@ public class SFlowInferenceVisitor extends InferenceVisitor {
 //				&& isLeftViewpointInstanceMethod((ExecutableElement) elt)) {
 //			return AdaptContext.ASSIGNTO;
 //		}
-		// The adapt context for static method is the left-hand-side
-		// If revRef is null, then it is a static method
-		if (rcvRef == null) {
-			if (assignToRef != null)
-				return AdaptContext.ASSIGNTO;
-			else
-				return AdaptContext.NONE;
-		} else 
-			return AdaptContext.RECEIVER;
+ 
+// 		// The adapt context for static method is the left-hand-side
+// 		// If revRef is null, then it is a static method
+// 		if (rcvRef == null) {
+// 			if (assignToRef != null)
+// 				return AdaptContext.ASSIGNTO;
+// 			else
+// 				return AdaptContext.NONE;
+// 		} else 
+// 			return AdaptContext.RECEIVER;
 	}
 
 

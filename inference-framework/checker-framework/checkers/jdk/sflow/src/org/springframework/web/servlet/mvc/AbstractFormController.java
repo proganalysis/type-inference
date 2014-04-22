@@ -393,7 +393,7 @@ public abstract class AbstractFormController extends BaseCommandController {
 	 * @see #onBindOnNewForm(javax.servlet.http.HttpServletRequest, Object)
 	 * @see #setBindOnNewForm
 	 */
-	protected void onBindOnNewForm(HttpServletRequest request, /*-@Secret*/ Object command, BindException errors)
+	protected void onBindOnNewForm(HttpServletRequest request, /*-@Tainted*/ Object command, BindException errors)
 			throws Exception {
 
 		onBindOnNewForm(request, command);
@@ -412,7 +412,7 @@ public abstract class AbstractFormController extends BaseCommandController {
 	 * @see #onBindOnNewForm(HttpServletRequest, Object, BindException)
 	 * @see #setBindOnNewForm(boolean)
 	 */
-	protected void onBindOnNewForm(HttpServletRequest request, /*-@Secret*/ Object command) throws Exception {
+	protected void onBindOnNewForm(HttpServletRequest request, /*-@Tainted*/ Object command) throws Exception {
 	}
 
 
@@ -429,7 +429,7 @@ public abstract class AbstractFormController extends BaseCommandController {
 	 * @throws Exception in case of invalid state or arguments
 	 * @see #formBackingObject
 	 */
-	protected final /*-@Secret*/ Object getCommand(HttpServletRequest request) throws Exception {
+	protected final /*-@Tainted*/ Object getCommand(HttpServletRequest request) throws Exception {
 		// If not in session-form mode, create a new form-backing object.
 		if (!isSessionForm()) {
 			return formBackingObject(request);
@@ -477,7 +477,7 @@ public abstract class AbstractFormController extends BaseCommandController {
 	 * @see #setCommandClass
 	 * @see #createCommand
 	 */
-	protected /*-@Secret*/ Object formBackingObject(HttpServletRequest request) throws Exception {
+	protected /*-@Tainted*/ Object formBackingObject(HttpServletRequest request) throws Exception {
 		return createCommand();
 	}
 
@@ -491,7 +491,7 @@ public abstract class AbstractFormController extends BaseCommandController {
 	 * @return the form object to use for binding and further processing
 	 * @throws Exception in case of invalid state or arguments
 	 */
-	protected /*-@Secret*/ Object currentFormObject(HttpServletRequest request, Object sessionFormObject) throws Exception {
+	protected /*-@Tainted*/ Object currentFormObject(HttpServletRequest request, Object sessionFormObject) throws Exception {
 		return sessionFormObject;
 	}
 
@@ -601,7 +601,7 @@ public abstract class AbstractFormController extends BaseCommandController {
 	 * @throws Exception in case of invalid state or arguments
 	 * @see ModelAndView
 	 */
-	protected Map referenceData(HttpServletRequest request, /*-@Secret*/ Object command, Errors errors) throws Exception {
+	protected Map referenceData(HttpServletRequest request, /*-@Tainted*/ Object command, Errors errors) throws Exception {
 		return null;
 	}
 
@@ -633,7 +633,7 @@ public abstract class AbstractFormController extends BaseCommandController {
 	 * @see org.springframework.validation.BindException#getModel
 	 */
 	protected abstract ModelAndView processFormSubmission(
-			HttpServletRequest request, HttpServletResponse response, /*-@Secret*/ Object command, BindException errors)
+			HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command, BindException errors)
 			throws Exception;
 
 	/**

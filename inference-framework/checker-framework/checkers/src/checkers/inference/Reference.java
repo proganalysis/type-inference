@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +20,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
 import checkers.types.AnnotatedTypeMirror;
@@ -27,8 +29,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.VisitorState;
 import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
+import checkers.util.ElementUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -37,6 +41,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -56,6 +61,9 @@ public abstract class Reference {
 	
 	/** A mapping from tree (only NewClassTree and NewArrayTree) */
 	private static transient Map<Tree, Reference> trees = new HashMap<Tree, Reference>();
+
+	/** A mapping from string to constant reference */
+	private static transient Map<String, ConstantReference> constantRefs = new HashMap<String, ConstantReference>();
 	
 	private static transient List<Reference> expRefs = new LinkedList<Reference>();
 	
@@ -76,20 +84,29 @@ public abstract class Reference {
 		return createConstantReference(annotations, "");
 	}
 	
-	public static Reference createConstantReference(AnnotationMirror anno, String name) {
+	public static Reference createConstantReference(AnnotationMirror anno, String id) {
 		Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 		annotations.add(anno);
-		return createConstantReference(annotations, name);
+		return createConstantReference(annotations, id);
 	}
 	
 	public static Reference createConstantReference(Set<AnnotationMirror> annos) {
 		return createConstantReference(annos, "");
 	}
 	
-	public static Reference createConstantReference(Set<AnnotationMirror> annos, String name) {
-		ConstantReference ref = new ConstantReference(annos, name);
-		// FIXME: this is bad
-		expRefs.add(ref);
+	public static Reference createConstantReference(Set<AnnotationMirror> annos, String id) {
+        ConstantReference ref;
+        if (id.equals("")) {
+            ref = new ConstantReference(annos, id);
+            expRefs.add(ref);
+        } else {
+            ref = constantRefs.get(id);
+            if (ref == null) {
+                ref = new ConstantReference(annos, id);
+                constantRefs.put(id, ref);
+                expRefs.add(ref);
+            }
+        }
 		return ref;
 	}
 	
@@ -117,16 +134,14 @@ public abstract class Reference {
 			if (decl != null) {
 				type = factory.getAnnotatedType(decl);
 				offset = TreeInfo.getStartPos((JCTree) decl);
-				// FIXME: WEI comment it out for inserting annotations
-				// It may affect other type inferences. 
-//				if (decl instanceof MethodTree) 
-//					decl = null; // We don't need method tree
 			} else 
 				type = factory.getAnnotatedType(element);
 			
 			varRef = createReferenceImpl(decl, element,
 					factory.getFileName(element),
-					factory.getLineNumber(element), offset, type, factory);
+					factory.getLineNumber(element), offset, 
+                    ElementUtils.enclosingClass(element), 
+                    type, factory);
 			elements.put(element, varRef);
 		}
 		return varRef;
@@ -134,6 +149,15 @@ public abstract class Reference {
     
 	public static Reference createReference(ExpressionTree tree,
 			InferenceAnnotatedTypeFactory factory) {
+        ClassTree classTree = null;
+        VisitorState state = factory.getVisitorState();
+        if (state.getClassTree() != null) {
+            classTree = state.getClassTree();
+        } else 
+            classTree = TreeUtils.enclosingClass(factory.getPath(tree));
+		AnnotatedDeclaredType classType = (AnnotatedDeclaredType) factory
+				.getAnnotatedType(classTree);
+        TypeElement enclosingType = (TypeElement) classType.getUnderlyingType().asElement();
     	// Create reference for new trees
     	if (tree.getKind() == Kind.NEW_ARRAY 
     			|| tree.getKind() == Kind.NEW_CLASS) {
@@ -141,7 +165,7 @@ public abstract class Reference {
     		if (treeRef == null) {
 				treeRef = createReferenceImpl(tree, null,
 						factory.getFileName(tree), factory.getLineNumber(tree),
-						TreeInfo.getStartPos((JCTree) tree),
+						TreeInfo.getStartPos((JCTree) tree), enclosingType, 
 						factory.getAnnotatedType(tree), factory);
     			trees.put(tree, treeRef);
     		}
@@ -158,7 +182,7 @@ public abstract class Reference {
     		if (returnRef == null) {
 				returnRef = createReferenceImpl(tree, methodElt,
 						factory.getFileName(tree), factory.getLineNumber(tree),
-						TreeInfo.getStartPos((JCTree) tree),
+						TreeInfo.getStartPos((JCTree) tree), enclosingType, 
 						factory.getAnnotatedType(tree), factory);
     			elements.put(methodElt, returnRef);
     			throw new RuntimeException("Should not happen");
@@ -167,29 +191,29 @@ public abstract class Reference {
 		default:
 			return createReferenceImpl(tree, null, factory.getFileName(tree),
 					factory.getLineNumber(tree),
-					TreeInfo.getStartPos((JCTree) tree),
+					TreeInfo.getStartPos((JCTree) tree), enclosingType,
 					factory.getAnnotatedType(tree), factory);
     	}
     }
     
     private static Reference createReferenceImpl(Tree tree, Element elt, String fileName,
-			long lineNum, int offset, AnnotatedTypeMirror type, InferenceAnnotatedTypeFactory factory) {
+			long lineNum, int offset, TypeElement enclosingType, AnnotatedTypeMirror type, InferenceAnnotatedTypeFactory factory) {
 		if (type.getKind() == TypeKind.ARRAY) {
 			AnnotatedArrayType aType = (AnnotatedArrayType) type;
 			ArrayReference aRef = new ArrayReference(tree, elt, fileName,
-					lineNum, offset, aType, aType.getAnnotations());
+					lineNum, offset, enclosingType, aType, aType.getAnnotations());
 			AnnotatedTypeMirror componentType = aType.getComponentType();
-			aRef.setComponentRef(createReferenceImpl(null, null, fileName, lineNum, offset, componentType, factory));
+			aRef.setComponentRef(createReferenceImpl(null, null, fileName, lineNum, offset, enclosingType, componentType, factory));
 			expRefs.add(aRef);
 			return aRef;
 		} else if (type.getKind() == TypeKind.DECLARED) {
 			AnnotatedDeclaredType dType = (AnnotatedDeclaredType) type;
 			DeclaredReference dRef = new DeclaredReference(tree, elt, fileName,
-					lineNum, offset, type, dType.getAnnotations());
+					lineNum, offset, enclosingType, type, dType.getAnnotations());
 			dRef.setGeneric(dType.isGeneric());
 			List<Reference> typeArgs = new ArrayList<Reference>();
 			for (AnnotatedTypeMirror t : dType.getTypeArguments()) {
-				typeArgs.add(createReferenceImpl(null, null, fileName, lineNum, offset, t, factory));
+				typeArgs.add(createReferenceImpl(null, null, fileName, lineNum, offset, enclosingType, t, factory));
 			}
 			dRef.setTypeArguments(typeArgs);
 			expRefs.add(dRef);
@@ -197,15 +221,20 @@ public abstract class Reference {
 		} else if (type.getKind() == TypeKind.EXECUTABLE) {
 			AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
 			ExecutableReference dRef = new ExecutableReference(tree, elt,
-					fileName, lineNum, offset, type, type.getAnnotations());
+					fileName, lineNum, offset, enclosingType, type, type.getAnnotations());
 			
 			Reference rcvRef = createReferenceImpl(null, elt, fileName,
-					lineNum, offset, methodType.getReceiverType(), factory);
+					lineNum, offset, enclosingType, methodType.getReceiverType(), factory);
 			rcvRef.readableName = "THIS_" + elt.toString();
 			dRef.setReceiverRef(rcvRef);
 			
+            AnnotatedTypeMirror returnType;
+            if (elt.getKind() == ElementKind.CONSTRUCTOR) {
+                returnType = factory.getAnnotatedType(enclosingType);
+            } else 
+                returnType = methodType.getReturnType();
 			Reference returnRef = createReferenceImpl(null, elt, fileName,
-					lineNum, offset, methodType.getReturnType(), factory);
+					lineNum, offset, enclosingType, returnType, factory);
 			returnRef.readableName = "RET_" + elt.toString();
 			dRef.setReturnRef(returnRef);
 			
@@ -226,7 +255,7 @@ public abstract class Reference {
 					paramRef = createReferenceImpl(paramTree,
 							parameters.get(i), fileName,
 							factory.getLineNumber(parameters.get(i)),
-							paramOffset, parameterTypes.get(i), factory);
+							paramOffset, enclosingType, parameterTypes.get(i), factory);
 					elements.put(parameters.get(i), paramRef);
 				}
 				ps.add(paramRef);
@@ -236,7 +265,7 @@ public abstract class Reference {
 			List<Reference> ts = new ArrayList<Reference>();
 			for (AnnotatedTypeMirror t : methodType.getTypeVariables()) {
 				ts.add(createReferenceImpl(null, t.getElement(), fileName,
-						lineNum, offset, t, factory));
+						lineNum, offset, enclosingType, t, factory));
 			}
 			dRef.setTypeVarTypes(ts);
 			expRefs.add(dRef);
@@ -246,7 +275,7 @@ public abstract class Reference {
 //			DeclaredReference dRef = new DeclaredReference(tree, elt, fileName,
 //					lineNum, offset, type, tType.getEffectiveUpperBoundAnnotations());
 			DeclaredReference dRef = new DeclaredReference(tree, elt, fileName,
-					lineNum, offset, type, tType.getAnnotations());
+					lineNum, offset, enclosingType, type, tType.getAnnotations());
 			expRefs.add(dRef);
 			return dRef;
 		} else if (type.getKind() == TypeKind.WILDCARD) {
@@ -254,12 +283,12 @@ public abstract class Reference {
 //			DeclaredReference dRef = new DeclaredReference(tree, elt, fileName,
 //					lineNum, offset, type, wType.getExtendsBound().getAnnotations());
 			DeclaredReference dRef = new DeclaredReference(tree, elt, fileName,
-					lineNum, offset, type, wType.getAnnotations());
+					lineNum, offset, enclosingType, type, wType.getAnnotations());
 			expRefs.add(dRef);
 			return dRef;
 		} else if (type.getKind().isPrimitive()) {
 			PrimitiveReference dRef = new PrimitiveReference(tree, elt,
-					fileName, lineNum, offset, type, type.getAnnotations());
+					fileName, lineNum, offset, enclosingType, type, type.getAnnotations());
 			expRefs.add(dRef);
     		return dRef;
 		} else if (type.getKind() == TypeKind.NULL) {
@@ -296,14 +325,17 @@ public abstract class Reference {
     protected String readableName;
     
     protected AnnotatedTypeMirror type;
+
+    protected TypeElement enclosingType;
     
     /** For adding linear constraints*/
-    protected Set<Reference> lessSet = new HashSet<Reference>();
+    protected Set<Constraint> lessSet = new LinkedHashSet<Constraint>();
 
-    protected Set<Reference> greaterSet = new HashSet<Reference>();
+    protected Set<Constraint> greaterSet = new LinkedHashSet<Constraint>();
     
 	public Reference(Tree tree, Element element, String fileName,
-			long lineNum, int offset, AnnotatedTypeMirror type,
+			long lineNum, int offset, TypeElement enclosingType, 
+            AnnotatedTypeMirror type,
 			Set<AnnotationMirror> annotations) {
 		super();
 		this.id = counter++;
@@ -315,6 +347,7 @@ public abstract class Reference {
 		this.fileName = fileName;
 		this.lineNum = lineNum;
 		this.offset = offset;
+        this.enclosingType = enclosingType;
 		this.type = (type == null ? null : type.getCopy(false));
 	}
 
@@ -330,21 +363,19 @@ public abstract class Reference {
 		this.annotations.addAll(annotations);
 	}
 
-    public void addLessRef(Reference ref) {
-        if (!ref.equals(this))
-            lessSet.add(ref);
+    public void addLessConstraint(Constraint c) {
+        lessSet.add(c);
     }
 
-    public void addGreaterRef(Reference ref) {
-        if (!ref.equals(this))
-            greaterSet.add(ref);
+    public void addGreaterConstraint(Constraint c) {
+        greaterSet.add(c);
     }
 
-    public Set<Reference> getLessSet() {
+    public Set<Constraint> getLessSet() {
         return lessSet;
     }
 
-    public Set<Reference> getGreaterSet() {
+    public Set<Constraint> getGreaterSet() {
         return greaterSet;
     }
 
@@ -372,6 +403,10 @@ public abstract class Reference {
 	public int getOffset() {
 		return offset;
 	}
+
+    public TypeElement getEnclosingType() {
+        return enclosingType;
+    }
 
 	public String getIdentifier() {
 		if (element != null && element.getKind() != ElementKind.LOCAL_VARIABLE
@@ -445,7 +480,10 @@ public abstract class Reference {
 		if (readableName != null) {
 			return readableName;
 		} else if (element != null) {
-			return "VAR_" + element;
+            if (element.getKind() == ElementKind.PARAMETER)
+                return "PAR_" + element;
+            else
+                return "VAR_" + element;
 		} else if (tree != null) {
 			return "EXP_" + tree.toString();
 		} else
@@ -481,9 +519,9 @@ public static class DeclaredReference extends Reference {
     boolean isGeneric = false;
 
 	public DeclaredReference(Tree tree, Element element,
-			String fileName, long lineNum, int offset,
+			String fileName, long lineNum, int offset, TypeElement enclosingType, 
 			AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
-		super(tree, element, fileName, lineNum, offset, type, annotations);
+		super(tree, element, fileName, lineNum, offset, enclosingType, type, annotations);
 	} 
 	
     public void setTypeArguments(List<? extends Reference> ts) {
@@ -523,7 +561,7 @@ public static class DeclaredReference extends Reference {
 	@Override
 	public Reference getCopy() {
 		DeclaredReference copy = new DeclaredReference(tree, element, fileName,
-				lineNum, offset, type, getAnnotations());
+				lineNum, offset, enclosingType, type, getAnnotations());
 		copy.setGeneric(isGeneric);
 		if (typeArgs != null) {
 			List<Reference> ts = new ArrayList<Reference>(typeArgs.size());
@@ -590,9 +628,10 @@ public static class ArrayReference extends Reference {
 	Reference componentRef;
 
 	public ArrayReference(Tree tree, Element element, String fileName,
-			long lineNum, int offset, AnnotatedTypeMirror type,
+			long lineNum, int offset, TypeElement enclosingType, 
+            AnnotatedTypeMirror type,
 			Set<AnnotationMirror> annotations) {
-		super(tree, element, fileName, lineNum, offset, type, annotations);
+		super(tree, element, fileName, lineNum, offset, enclosingType, type, annotations);
 	}
 
 	public Reference getComponentRef() {
@@ -611,7 +650,7 @@ public static class ArrayReference extends Reference {
 	@Override
 	public Reference getCopy() {
 		ArrayReference copy = new ArrayReference(tree, element, fileName,
-				lineNum, offset, type, getAnnotations());
+				lineNum, offset, enclosingType, type, getAnnotations());
 		copy.setComponentRef(componentRef.getCopy());
 		copy.id = (this.getId());
 		return copy;
@@ -655,9 +694,9 @@ public static class ExecutableReference extends Reference {
 	List<Reference> typeVarTypes = new ArrayList<Reference>(0);
 	
 	public ExecutableReference(Tree tree, Element element, String fileName,
-			long lineNum, int offset, AnnotatedTypeMirror type,
-			Set<AnnotationMirror> annotations) {
-		super(tree, element, fileName, lineNum, offset, type, annotations);
+			long lineNum, int offset, TypeElement enclosingType, 
+            AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
+		super(tree, element, fileName, lineNum, offset, enclosingType, type, annotations);
 	}
 	
 	
@@ -704,7 +743,7 @@ public static class ExecutableReference extends Reference {
 	@Override
 	public Reference getCopy() {
 		ExecutableReference copy = new ExecutableReference(tree, element,
-				fileName, lineNum, offset, type, getAnnotations());
+				fileName, lineNum, offset, enclosingType, type, getAnnotations());
 		copy.setReceiverRef(receiverRef.getCopy());
 		copy.setReturnRef(returnRef.getCopy());
 		ArrayList<Reference> ps = new ArrayList<Reference>(paramRefs.size());
@@ -764,9 +803,9 @@ public static class ExecutableReference extends Reference {
 public static class PrimitiveReference extends Reference {
 	
 	public PrimitiveReference(Tree tree, Element element, String fileName,
-			long lineNum, int offset, AnnotatedTypeMirror type,
+			long lineNum, int offset, TypeElement enclosingType, AnnotatedTypeMirror type,
 			Set<AnnotationMirror> annotations) {
-		super(tree, element, fileName, lineNum, offset, type, annotations);
+		super(tree, element, fileName, lineNum, offset, enclosingType, type, annotations);
 	}
 	
 	@Override
@@ -777,7 +816,7 @@ public static class PrimitiveReference extends Reference {
 	@Override
 	public Reference getCopy() {
 		PrimitiveReference copy = new PrimitiveReference(tree, element,
-				fileName, lineNum, offset, type, this.getAnnotations());
+				fileName, lineNum, offset, enclosingType, type, this.getAnnotations());
 		copy.id = (this.getId());
 		copy.readableName = readableName;
 		return copy;
@@ -811,7 +850,7 @@ public static abstract class AdaptReference extends Reference {
 	Reference contextRef;
 	Reference declRef; 
 	public AdaptReference(Reference contextRef, Reference declRef) {
-		super(null, null, null, 0, 0, null, AnnotationUtils.createAnnotationSet());
+		super(null, null, null, 0, 0, null, null, AnnotationUtils.createAnnotationSet());
 		this.declRef = declRef;
 		this.contextRef = contextRef;
 	}
@@ -941,7 +980,7 @@ public static class MethodAdaptReference extends AdaptReference {
 public static class VoidReference extends Reference {
 	
 	public VoidReference() {
-		super(null, null, null, 0, 0, null, AnnotationUtils.createAnnotationSet());
+		super(null, null, null, 0, 0, null, null, AnnotationUtils.createAnnotationSet());
 	}
 
 	@Override
@@ -965,7 +1004,7 @@ public static class VoidReference extends Reference {
 public static class NullReference extends Reference {
 	
 	public NullReference() {
-		super(null, null, null, 0, 0, null, AnnotationUtils.createAnnotationSet());
+		super(null, null, null, 0, 0, null, null, AnnotationUtils.createAnnotationSet());
 	}
 
 	@Override
@@ -989,8 +1028,11 @@ public static class NullReference extends Reference {
 public static class ConstantReference extends Reference {
 	
 	public ConstantReference(Set<AnnotationMirror> annotations, String name) {
-		super(null, null, null, 0, 0, null, annotations);
-		this.readableName = name;
+		super(null, null, null, 0, 0, null, null, annotations);
+        // FIXME: this is only for call site adaptation context
+        int lastIndexOf = name.lastIndexOf('/');
+        int index = lastIndexOf == -1 ? 0 : lastIndexOf + 1;
+		this.readableName = name.substring(index);
 	}
 	
 	@Override

@@ -103,7 +103,7 @@ public abstract class AbstractCommandController extends BaseCommandController {
 	 * @see org.springframework.validation.BindException#getModel
 	 */
 	protected abstract ModelAndView handle(
-			HttpServletRequest request, HttpServletResponse response, /*-@Secret*/ Object command, BindException errors)
+			HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command, BindException errors)
 			throws Exception;
 
 }

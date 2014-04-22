@@ -7,6 +7,8 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import javax.lang.model.type.TypeKind;
 
@@ -15,10 +17,11 @@ import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
+@Retention(RetentionPolicy.RUNTIME) 
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Poly.class, Secret.class, Tainted.class})
+@SubtypeOf({Top.class, Poly.class, Tainted.class, Safe.class})
 //@ImplicitFor(
 //	types={TypeKind.NULL}
 //    )

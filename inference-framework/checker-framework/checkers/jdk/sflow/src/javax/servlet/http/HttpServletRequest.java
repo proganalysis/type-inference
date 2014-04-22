@@ -1,6 +1,6 @@
 package javax.servlet.http;
 
-import checkers.inference.sflow.quals.Secret;
+import checkers.inference.sflow.quals.Tainted;
 import checkers.inference.sflow.quals.Poly;
 import checkers.inference.reim.quals.*;
 import java.io.*;
@@ -9,21 +9,21 @@ import java.util.*;
 import javax.servlet.*;
 
 public interface HttpServletRequest extends ServletRequest {
-    /*-@Secret*/ /*@Poly*/ Cookie /*-@Secret*/ [] getCookies(/*>>> @Readonly HttpServletRequest this*/ );
+    /*-@Tainted*/ /*@Poly*/ Cookie /*-@Tainted*/ [] getCookies(/*>>> @Readonly HttpServletRequest this*/ );
     long getDateHeader(/*>>> @Readonly HttpServletRequest this,*/ String arg0);
-    /*-@Secret*/ String getHeader(/*>>> @Readonly HttpServletRequest this,*/ String arg0);
-    /*-@Secret*/ Enumeration<String> getHeaders(/*>>> @Readonly HttpServletRequest this,*/ String arg0);
+    /*-@Tainted*/ String getHeader(/*>>> @Readonly HttpServletRequest this,*/ String arg0);
+    /*-@Tainted*/ Enumeration<String> getHeaders(/*>>> @Readonly HttpServletRequest this,*/ String arg0);
     Enumeration<String> getHeaderNames(/*>>> @Readonly HttpServletRequest this*/ );
     int getIntHeader(/*>>> @Readonly HttpServletRequest this,*/ String arg0);
     String getMethod(/*>>> @Readonly HttpServletRequest this*/ );
     String getPathInfo(/*>>> @Readonly HttpServletRequest this*/ );
     String getPathTranslated(/*>>> @Readonly HttpServletRequest this*/ );
     String getContextPath(/*>>> @Readonly HttpServletRequest this*/ );
-    /*-@Secret*/ String getQueryString(/*>>> @Readonly HttpServletRequest this*/ );
-    /*-@Secret*/ String getRemoteUser(/*>>> @Readonly HttpServletRequest this*/ );
+    /*-@Tainted*/ String getQueryString(/*>>> @Readonly HttpServletRequest this*/ );
+    /*-@Tainted*/ String getRemoteUser(/*>>> @Readonly HttpServletRequest this*/ );
     boolean isUserInRole(/*>>> @Readonly HttpServletRequest this,*/ String arg0);
     java.security.Principal getUserPrincipal(/*>>> @Readonly HttpServletRequest this*/ );
-    /*-@Secret*/ String getRequestedSessionId(/*>>> @Readonly HttpServletRequest this*/ );
+    /*-@Tainted*/ String getRequestedSessionId(/*>>> @Readonly HttpServletRequest this*/ );
     String getRequestURI(/*>>> @Readonly HttpServletRequest this*/ );
     StringBuffer getRequestURL(/*>>> @Readonly HttpServletRequest this*/ );
     String getServletPath(/*>>> @Readonly HttpServletRequest this*/ );

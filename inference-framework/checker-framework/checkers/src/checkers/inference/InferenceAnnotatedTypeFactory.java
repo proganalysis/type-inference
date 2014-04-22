@@ -437,13 +437,13 @@ public class InferenceAnnotatedTypeFactory extends AnnotatedTypeFactory {
 	 * @param elt
 	 * @return
 	 */
-	protected String getIdentifier(Tree tree) {
+	public String getIdentifier(Tree tree) {
 		String id = getFileName(tree) + ":"
 				+ TreeInfo.getStartPos((JCTree) tree) + ":" + tree.toString();
 		return id;
 	}
 	
-	protected String getIdentifier(Element elt) {
+	public String getIdentifier(Element elt) {
 		if (elt.getKind() == ElementKind.LOCAL_VARIABLE
 				|| elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
 			return getIdentifier(getDeclaration(elt));
