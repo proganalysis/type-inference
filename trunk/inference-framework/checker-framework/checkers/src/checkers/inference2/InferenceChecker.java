@@ -60,6 +60,24 @@ import com.sun.tools.javac.tree.TreeInfo;
 @SupportedOptions( { "warn", "checking" } ) 
 public abstract class InferenceChecker extends BaseTypeChecker {
 	
+	public static boolean DEBUG = false;
+	
+    public final static String CALLSITE_PREFIX = "CALLSITE-";
+
+    public final static String FAKE_PREFIX = "FAKE-";
+
+    public final static String LIB_PREFIX = "LIB-";
+
+    public final static String THIS_PREFIX = "THIS-";
+
+    public final static String RETURN_PREFIX = "RETURN-";
+	
+	public static enum FailureStatus {
+		IGNORE,
+		WARN,
+		ERROR
+	}
+	
 	private boolean isChecking = false; 
 	
 	protected Enter enter;
@@ -70,22 +88,10 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	private Types types;
 	
-	public static boolean DEBUG = false;
-	
 	private ViewpointAdapter vpa;
-	
-    public final static String CALLSITE_PREFIX = "callsite-";
 
-    public final static String FAKE_PREFIX = "fake-";
+    private static Map<String, Reference> annotatedReferences; 
 
-    public final static String LIB_PREFIX = "lib-";
-	
-	public static enum FailureStatus {
-		IGNORE,
-		WARN,
-		ERROR
-	}
-	
 	@Override
 	public void initChecker(ProcessingEnvironment processingEnv) {
 		super.initChecker(processingEnv);
@@ -99,6 +105,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		}
         types = processingEnv.getTypeUtils();
         vpa = getViewpointAdapter();
+        annotatedReferences = new HashMap<String, Reference>();
 	}
 	
 	@Override
@@ -171,7 +178,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	 * @param fieldElt
 	 * @return
 	 */
-	protected boolean isFieldElt(AnnotatedTypeMirror type, Element fieldElt) {
+	public boolean isFieldElt(AnnotatedTypeMirror type, Element fieldElt) {
 		if (fieldElt.getKind() != ElementKind.FIELD)
 			return false;
 		if (ElementUtils.isStatic(fieldElt) 
@@ -259,21 +266,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		return result;
 	}
 
-	public boolean isAnnotated(AnnotatedTypeMirror type) {
-		return isAnnotated(type.getAnnotations());
-	}
-
-	public boolean isAnnotated(Reference ref) {
-		return isAnnotated(ref.getAnnotations());
-	}
-	
-	private boolean isAnnotated(Set<AnnotationMirror> annos) {
-        Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-        set.addAll(annos);
-        set.retainAll(getSourceLevelQualifiers());
-        return !set.isEmpty();
-	}
-
 	
 	/**
 	 * Check if the {@code elt} is from library
@@ -308,7 +300,89 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		}
         return false;
 	}
+
+
+    public long getLineNumber(Element elt) {
+    	CompilationUnitTree newRoot = getRootByElement(elt);
+    	if (newRoot == null) {
+    		// It is from library
+    		return 0;
+    	}
+    	return getLineNumber(newRoot, getDeclaration(elt));
+    }
+    
+    public long getLineNumber(Tree tree) {
+    	return getLineNumber(currentRoot, tree);
+    }
 	
+    private long getLineNumber(CompilationUnitTree root, Tree tree) {
+		long lineNum = positions.getStartPosition(root, tree);
+		lineNum = root.getLineMap().getLineNumber(lineNum);
+		return lineNum;
+    }
+    
+    public String getFileName(Element elt) {
+    	CompilationUnitTree newRoot = checker.getRootByElement(elt);
+    	if (newRoot == null) {
+    		// It is from library
+    		return LIB_PREFIX + elt.getEnclosingElement();
+    	}
+    	return getFileName(newRoot, getDeclaration(elt));
+    }
+    
+	public String getFileName(Tree tree) {
+		return getFileName(currentRoot, tree);
+	}
+	
+	private String getFileName(CompilationUnitTree root, Tree tree) {
+		String fileName = root.getSourceFile().getName();
+		// FIXME: comment out the following lines on Aug 16, 2012. It may affect
+		// the Eclipse plugin
+//		fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
+//		ExpressionTree packageName = root.getPackageName();
+//		if (packageName != null)
+//			fileName = packageName.toString().replace('.', '/') + "/" + fileName;
+		return fileName;
+	}
+
+	public String getIdentifier(Tree tree) {
+		String id = getFileName(tree) + ":"
+				+ TreeInfo.getStartPos((JCTree) tree) + ":" + tree.toString();
+		return id;
+	}
+	
+	public String getIdentifier(Element elt) {
+		if (elt.getKind() == ElementKind.LOCAL_VARIABLE
+				|| elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
+			return getIdentifier(getDeclaration(elt));
+		} else
+			return InferenceUtils.getElementSignature(elt);
+	}
+
+
+	public boolean isAnnotated(AnnotatedTypeMirror type) {
+		return isAnnotated(type.getAnnotations());
+	}
+
+	public boolean isAnnotated(Reference ref) {
+		return isAnnotated(ref.getAnnotations());
+	}
+	
+	private boolean isAnnotated(Set<AnnotationMirror> annos) {
+        Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+        set.addAll(annos);
+        set.retainAll(getSourceLevelQualifiers());
+        return !set.isEmpty();
+	}
+
+
+    public Reference getAnnotatedReference(Element elt) {
+    }
+
+    public Reference getAnnotatedReference(Tree t) {
+    }
+
+
 	public AnnotationMirror adaptField(AnnotationMirror contextAnno, 
 			AnnotationMirror declAnno) {
         return vpa.adaptField(contextAnno, declAnno);
@@ -378,6 +452,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		}
 		return comparator;
 	}
+
+
 	
 	/**
 	 * Indicate if it needs to force all elements in sup to be the super type
@@ -408,6 +484,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	public abstract boolean needCheckConflict();
 
 	public boolean isSubtype(TypeElement a1, TypeElement a2) {
+        // TODO
 	    return (a1.equals(a2)
 	            || types.isSubtype(types.erasure(a1.asType()),
 	                    types.erasure(a2.asType())));
