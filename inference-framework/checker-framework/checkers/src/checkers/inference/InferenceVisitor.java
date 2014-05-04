@@ -461,7 +461,7 @@ public abstract class InferenceVisitor extends BaseTypeVisitor<InferenceChecker>
 	 * @return <code>null</code> if it is not in a method; otherwise return the
 	 * current method element. 
 	 */
-    private ExecutableElement getCurrentMethodElt() {
+    public ExecutableElement getCurrentMethodElt() {
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(
         		this.getCurrentPath());
         if (enclosingMethod == null)
