@@ -4,6 +4,7 @@
 package checkers.inference2;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author huangw5
@@ -30,6 +31,7 @@ public abstract class Constraint {
 	
 	public Constraint() {
 		id = counter++;
+        causes = new ArrayList<Constraint>();
 	}
 
 	public Reference getLeft() {

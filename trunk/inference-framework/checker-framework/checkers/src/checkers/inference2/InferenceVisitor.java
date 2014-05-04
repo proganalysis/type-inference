@@ -21,6 +21,7 @@ import javax.lang.model.type.TypeKind;
 import checkers.inference2.Reference.ArrayReference;
 import checkers.inference2.Reference.ExecutableReference;
 import checkers.source.SourceVisitor;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypes;
@@ -68,7 +69,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     /** utilities class for annotated types **/
     protected final AnnotatedTypes annoTypes;
 
-	protected final InferenceAnnotatedTypeFactory factory;
+	protected final AnnotatedTypeFactory factory;
 	
 	/** For recording visited method invocation trees or allocation sites */
 	private Set<Tree> visited = new HashSet<Tree>();
@@ -77,7 +78,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		super(checker, root);
 		this.checker = checker;
 		this.checker.setCurrentFactory(atypeFactory);
-		this.factory = (InferenceAnnotatedTypeFactory) atypeFactory;
+		this.factory = atypeFactory;
         this.annoTypes =
             new AnnotatedTypes(checker.getProcessingEnvironment(), atypeFactory);
 	}
@@ -98,6 +99,15 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         } finally {
             checker.currentPath = prev;
         }
+    }
+
+    /**
+     * et the current path for the node, as built up by the
+     * currently active set of scan calls.
+     */
+    @Override
+    public TreePath getCurrentPath() {
+        return checker.currentPath;
     }
 	
 	@Override
@@ -194,7 +204,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 	        // In the case of arrays
         	ArrayReference arrayRef = (ArrayReference) exprRef;
         	Reference componentRef = arrayRef.getComponentRef();
-			checker.handleInstanceFieldRead(varRef, arrayRef, componentRef);
+			checker.handleInstanceFieldRead(arrayRef, componentRef, varRef);
         } else {
         	// It is an iterable type, we simply enforce iterables <: var
         	checker.addSubtypeConstraint(exprRef, varRef);
@@ -268,8 +278,8 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     	// have been visited and we skip it. 
     	// E.g. X x = new X(); this method invocation is visited in the assignment
 		if (!visited.contains(node)) {
-			// hsRef is null
-			processNewClass(node, null);
+            Reference assignTo = checker.getAnnotatedReference(node);
+			processNewClass(node, assignTo);
     	}
 		return super.visitNewClass(node, p);
 	}
@@ -511,7 +521,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         } else if (ElementUtils.isStatic(fieldElt)) {
             Reference fieldRef = checker.getAnnotatedReference(fieldElt);
             if (lhsRef != null && rhsRef == null) {
-	            checker.handleStaticFieldRead(lhsRef, fieldRef);
+	            checker.handleStaticFieldRead(fieldRef, lhsRef);
             } else if (lhsRef == null && rhsRef != null) {
             	checker.handleStaticFieldWrite(fieldRef, rhsRef);
             } 
@@ -524,7 +534,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
             // Recursively generate constraints
             generateConstraint(rcvRef, rcvExpr);
             if (lhsRef != null && rhsRef == null) {
-	            checker.handleInstanceFieldRead(lhsRef, rcvRef, fieldRef);
+	            checker.handleInstanceFieldRead(rcvRef, fieldRef, lhsRef);
             } else if (lhsRef == null && rhsRef != null) {
             	checker.handleInstanceFieldWrite(rcvRef, fieldRef, rhsRef);
             } 
@@ -545,15 +555,16 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
                 && currentMethodElt != null) {
             Reference currentMethodRef = checker.getAnnotatedReference(currentMethodElt);
             idRef = ((ExecutableReference) currentMethodRef).getThisRef();
-        } else
+        } else {
             idRef = checker.getAnnotatedReference(idElt);
+        }
         // Check if idElt is a field or not
         if (!idElt.getSimpleName().contentEquals("this")
                 && !idElt.getSimpleName().contentEquals("super")
                 && idElt.getKind() == ElementKind.FIELD) {
-        	if (!ElementUtils.isStatic(idElt)) {
+        	if (ElementUtils.isStatic(idElt)) {
 	            if (lhsRef != null && rhsRef == null) {
-		            checker.handleStaticFieldRead(lhsRef, idRef);
+		            checker.handleStaticFieldRead(idRef, lhsRef);
 	            } else if (lhsRef == null && rhsRef != null) {
 	            	checker.handleStaticFieldWrite(idRef, rhsRef);
 	            } 
@@ -571,7 +582,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 	                thisRef = getDefaultConstructorThisRefWithField(idElt); // WEI: Add on Dec 5, 2012
 	            }
 	            if (lhsRef != null && rhsRef == null) {
-		            checker.handleInstanceFieldRead(lhsRef, thisRef, idRef);
+		            checker.handleInstanceFieldRead(thisRef, idRef, lhsRef);
 	            } else if (lhsRef == null && rhsRef != null) {
 	            	checker.handleInstanceFieldWrite(thisRef, idRef, rhsRef);
 	            } 
@@ -627,7 +638,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 
 		// Now add the adapt constraint
 		if (lhsRef != null && rhsRef == null) {
-			checker.handleInstanceFieldRead(lhsRef, exprRef, componentRef);
+			checker.handleInstanceFieldRead(exprRef, componentRef, lhsRef);
 		} else if (lhsRef == null && rhsRef != null) {
 			checker.handleInstanceFieldWrite(exprRef, componentRef, rhsRef);
 		}

@@ -74,7 +74,7 @@ public class Reference {
 		if (annotations != null) 
 			this.annotations.addAll(annotations);
 		this.element = element;
-		this.name = (element != null ? element.toString() : tree.toString());
+		this.name = (element != null ? element.toString() : (tree !=  null ? tree.toString() : "ADAPT" ));
 		this.tree = tree;
         this.enclosingType = enclosingType;
 		this.type = (type == null ? null : type.getCopy(false));
