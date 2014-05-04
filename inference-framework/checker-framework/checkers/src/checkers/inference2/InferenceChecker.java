@@ -384,7 +384,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		return fileName;
 	}
 
-	public String getIdentifier(Tree tree) {
+	public String getIdentifier(ExpressionTree tree) {
 		TypeElement classElt = TreeUtils.elementFromDeclaration(TreeUtils
 				.enclosingClass(currentFactory.getPath(tree)));
 		String id = classElt.getQualifiedName() 
@@ -400,7 +400,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			break;
 		default:
 			// FIXME: may use hashCode() for the rest
-			id += tree.toString();
+			id += TreeUtils.elementFromUse(tree).toString();
 		}
 		return id;
 	}
@@ -408,8 +408,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	public String getIdentifier(Element elt) {
 		Tree decl = getDeclaration(elt);
 		ExecutableElement currentMethod; 
-		if (decl != null) {
-			return getIdentifier(decl);
+		if (decl != null && (decl instanceof ExpressionTree) ) {
+			return getIdentifier((ExpressionTree) decl);
 		} else if (elt.getSimpleName().contentEquals("this") 
 				&& (currentMethod = getCurrentMethodElt()) != null) {
 			return THIS_PREFIX + getIdentifier(currentMethod);
@@ -447,7 +447,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	}
 
     public Reference getAnnotatedReference(Tree t) {
-    	String identifier = getIdentifier(t);
+    	String identifier = getIdentifier((ExpressionTree) t);
     	AnnotatedTypeMirror type = currentFactory.getAnnotatedType(t);
 		TypeElement enclosingType = TreeUtils.elementFromDeclaration(
 				TreeUtils.enclosingClass(currentFactory.getPath(t)));
