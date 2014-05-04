@@ -351,6 +351,15 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		return lineNum;
     }
     
+    public ExecutableElement getCurrentMethodElt() {
+		MethodTree enclosingMethod = TreeUtils.enclosingMethod(currentPath);
+        if (enclosingMethod == null)
+            return null;
+        else
+            return TreeUtils.elementFromDeclaration(enclosingMethod);
+    }
+    
+    
     public String getFileName(Element elt) {
     	CompilationUnitTree newRoot = getRootByElement(elt);
     	if (newRoot == null) {
@@ -398,8 +407,12 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	
 	public String getIdentifier(Element elt) {
 		Tree decl = getDeclaration(elt);
+		ExecutableElement currentMethod; 
 		if (decl != null) {
 			return getIdentifier(decl);
+		} else if (elt.getSimpleName().contentEquals("this") 
+				&& (currentMethod = getCurrentMethodElt()) != null) {
+			return THIS_PREFIX + getIdentifier(currentMethod);
 		} else {
 			String res = LIB_PREFIX + ElementUtils.enclosingClass(elt).getQualifiedName();
 			if (elt.getKind() != ElementKind.FIELD) {
