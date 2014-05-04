@@ -45,6 +45,7 @@ import checkers.inference.Reference.DeclaredReference;
 import checkers.inference.Reference.ExecutableReference;
 import checkers.inference.Reference.PrimitiveReference;
 import checkers.inference.Reference.VoidReference;
+import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -122,7 +123,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	}
 	
 	@Override
-	protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
+	protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
 		if (!isChecking) {
 			// create inference visitor
 			return getInferenceVisitor(this, root);
