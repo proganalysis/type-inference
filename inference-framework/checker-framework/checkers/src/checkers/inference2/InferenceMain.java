@@ -98,7 +98,7 @@ public class InferenceMain {
         for (String arg : args) 
         	argList.add(arg);
         
-        info(checker.getName(), "Generating constraints...");
+        info("Generating constraints...");
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(argList.toArray(new String[0])) != Main.Result.OK)
         	return false;

@@ -390,8 +390,8 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
             sb.append(av.getId()).append(",\"");
             sb.append(av.getIdentifier().replace('\"', '_')).append("\",\"");
             sb.append(av.getAnnotations(checker).toString()).append("\",\"");
-            sb.append(av.getType().toString()).append("\",\"");
-            sb.append(av.getKind().toString()).append("\",\"");
+            sb.append(av.getType()).append("\",\"");
+            sb.append(av.getKind()).append("\",\"");
             if (av.getElement() != null) {
                 sb.append(av.getElement().toString().replace('\"', '_')).append("\",\"");
             } else if (av.getTree() != null) {
@@ -399,7 +399,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
             } else {
             	sb.append("null\", \"");
             }
-            sb.append(av.getEnclosingType().toString()).append("\",\"");
+            sb.append(av.getEnclosingType()).append("\",\"");
             sb.append(av.getName().replace('\"', '_')).append("\",\"");
             sb.append("").append("\");");
             out.println(sb.toString());

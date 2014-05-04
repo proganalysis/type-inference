@@ -3,7 +3,7 @@
  */
 package checkers.inference2;
 
-import static com.esotericsoftware.minlog.Log.LEVEL_DEBUG;
+import static com.esotericsoftware.minlog.Log.*;
 import static com.esotericsoftware.minlog.Log.error;
 
 import java.io.PrintWriter;
@@ -119,10 +119,10 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		this.enter = Enter.instance(((JavacProcessingEnvironment) env).getContext());
 		this.positions = Trees.instance(getProcessingEnvironment()).getSourcePositions();
 		InferenceMain.getInstance().setInferenceChcker(this);
-		if (getProcessingEnvironment().getOptions().containsKey(
-				"debug")) {
+//        if (getProcessingEnvironment().getOptions().containsKey(
+//                "debug")) {
 			Log.set(LEVEL_DEBUG);
-		}
+//        }
         types = processingEnv.getTypeUtils();
 	}
 	
@@ -538,13 +538,11 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				// RETURN
 				AnnotatedTypeMirror returnType = (element.getKind() == ElementKind.CONSTRUCTOR ? 
 						currentFactory.getAnnotatedType(enclosingType) : methodType.getReturnType());
-				if (returnType.getKind() != TypeKind.VOID) {
-					Reference returnRef = getAnnotatedReference(
-							RETURN_PREFIX + identifier, 
-							RefKind.RETURN, tree, element, 
-							enclosingType, returnType);
-					((ExecutableReference) ret).setReturnRef(returnRef);
-				}
+                Reference returnRef = getAnnotatedReference(
+                        RETURN_PREFIX + identifier, 
+                        RefKind.RETURN, tree, element, 
+                        enclosingType, returnType);
+                ((ExecutableReference) ret).setReturnRef(returnRef);
 				// PARAMETERS
 				List<? extends VariableElement> parameters = methodElt.getParameters();
 				List<Reference> paramRefs = new ArrayList<Reference>();
@@ -626,6 +624,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		if (sub.equals(sup)) 
 			return;
         Constraint c = new SubtypeConstraint(sub, sup);
+        debug(c.toString());
         if (!constraints.add(c))
             return;
         addComponentConstraints(sub, sup);
@@ -705,7 +704,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected void handleInstanceFieldWrite(Reference aBase,
             Reference aField, Reference aRhs) {
-        Reference afv = getFieldAdaptReference(aBase, aField, null);
+        Reference afv = getFieldAdaptReference(aBase, aField, aRhs);
         addSubtypeConstraint(aRhs, afv);
     }
 
@@ -730,7 +729,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
         // C |> ret <: x
         if (methodRef.getReturnRef().getType().getKind() != TypeKind.VOID) {
             if (assignToRef == null) {
-            	error("Null assignTo in handleMethodCall");
+            	error("Null assignTo in handleMethodCall: \n" + Thread.currentThread().getStackTrace().toString());
             }
             Reference returnRef = methodRef.getReturnRef();
             addSubtypeConstraint(getMethodAdaptReference(receiverRef, returnRef, assignToRef), assignToRef);
