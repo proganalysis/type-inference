@@ -11,7 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import checkers.inference.InferenceChecker;
+import checkers.inference2.InferenceChecker;
 import checkers.inference.InferenceUtils;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;
@@ -24,7 +24,7 @@ import com.sun.source.tree.Tree;
  */
 public class Reference {
 	
-    public enum Kind {
+    public enum RefKind {
         LOCAL, 
         COMPONENT, 
         LITERAL, 
@@ -35,6 +35,7 @@ public class Reference {
         CONSTANT,
         METHOD,
         CLASS, 
+        ALLOCATION,
         METH_ADAPT, 
         FIELD_ADAPT
     } 	
@@ -53,15 +54,17 @@ public class Reference {
     /** A unique number */
     private int id; 
     
-    private Kind kind;
+    private RefKind kind;
     
     private String identifier;
+    
+    private String name;
     
     private AnnotatedTypeMirror type;
 
     private TypeElement enclosingType;
     
-	public Reference(String identifier, Kind kind, Tree tree,
+	public Reference(String identifier, RefKind kind, Tree tree,
 			Element element, TypeElement enclosingType,
 			AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
 		super();
@@ -71,6 +74,7 @@ public class Reference {
 		if (annotations != null) 
 			this.annotations.addAll(annotations);
 		this.element = element;
+		this.name = (element != null ? element.toString() : tree.toString());
 		this.tree = tree;
         this.enclosingType = enclosingType;
 		this.type = (type == null ? null : type.getCopy(false));
@@ -87,10 +91,28 @@ public class Reference {
 		set.addAll(annotations);
 		return set;
 	}
+	
+	public void setAnnotations(Set<AnnotationMirror> annotations, InferenceChecker checker) {
+		this.annotations.removeAll(checker.getSourceLevelQualifiers());
+		this.annotations.addAll(annotations);
+	}
 
 	public void setAnnotations(Set<AnnotationMirror> annotations) {
 		this.annotations.clear();
 		this.annotations.addAll(annotations);
+	}
+	
+    public void addAnnotation(AnnotationMirror anno) {
+        this.annotations.add(anno);
+    }
+
+	
+	public static int maxId() {
+		return counter;
+	}
+	
+	public String getName() {
+		return name;
 	}
 
 	public Element getElement() {
@@ -101,7 +123,7 @@ public class Reference {
 		return tree;
 	}
 	
-	public Kind getKind() {
+	public RefKind getKind() {
 		return kind;
 	}
 
@@ -208,7 +230,7 @@ public class Reference {
 		
 		Reference componentRef;
 	
-		public ArrayReference(String identifier, Kind kind, Tree tree,
+		public ArrayReference(String identifier, RefKind kind, Tree tree,
 				Element element, TypeElement enclosingType,
 				AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
 			super(identifier, kind, tree, element, enclosingType, type, annotations);
@@ -242,7 +264,7 @@ public class Reference {
 		public ExecutableReference(String identifier, Tree tree,
 				Element element, TypeElement enclosingType,
 				AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
-			super(identifier, Kind.METHOD, tree, element, enclosingType, type, annotations);
+			super(identifier, RefKind.METHOD, tree, element, enclosingType, type, annotations);
 		}
 		
 		public Reference getThisRef() {
@@ -286,7 +308,7 @@ public class Reference {
 	public static abstract class AdaptReference extends Reference {
 		Reference contextRef;
 		Reference declRef; 
-		public AdaptReference(Reference contextRef, Reference declRef, Kind kind) {
+		public AdaptReference(Reference contextRef, Reference declRef, RefKind kind) {
 			super(contextRef.getIdentifier() + "|" + declRef.getIdentifier(),
 					kind, null, null, null, null, AnnotationUtils.createAnnotationSet());
 			this.declRef = declRef;
@@ -314,7 +336,7 @@ public class Reference {
 	public static class FieldAdaptReference extends AdaptReference {
 	
 		public FieldAdaptReference(Reference contextRef, Reference declRef) {
-			super(contextRef, declRef, Kind.FIELD_ADAPT);
+			super(contextRef, declRef, RefKind.FIELD_ADAPT);
 		}
 	
 		@Override
@@ -331,7 +353,7 @@ public class Reference {
 	public static class MethodAdaptReference extends AdaptReference {
 	
 		public MethodAdaptReference(Reference contextRef, Reference declRef) {
-			super(contextRef, declRef, Kind.METH_ADAPT);
+			super(contextRef, declRef, RefKind.METH_ADAPT);
 		}
 	
 		@Override
