@@ -56,14 +56,18 @@ public class SFlowTypingExtractor implements TypingExtractor {
 	private List<Constraint> constraints = null;
 	
 	private Map<Integer, List<Constraint>> refToConstraints; 
+
+    private Map<String, Reference> reimMaxTyping;
 	
 	public SFlowTypingExtractor(SFlowChecker inferenceChecker,
-			List<Reference> exprRefs, List<Constraint> constraints) {
+			List<Reference> exprRefs, List<Constraint> constraints, 
+            Map<String, Reference> reimMaxTyping) {
 		super();
 		this.inferenceChecker = inferenceChecker;
 		this.exprRefs = exprRefs;
 		this.constraints = constraints;
 		this.refToConstraints = new HashMap<Integer, List<Constraint>>();
+        this.reimMaxTyping = reimMaxTyping;
 	}
 
 
@@ -123,7 +127,8 @@ public class SFlowTypingExtractor implements TypingExtractor {
                 set.add(SFlowChecker.SAFE);
                 ref.setAnnotations(set);
 //                if (InferenceChecker.DEBUG) {
-//                    System.out.println("INFO: set " + ref + " from " + annos + " to " + set + " type: " + ref.getType());
+                    if (reimMaxTyping.get(ref.getIdentifier()).getAnnotations().contains(SFlowChecker.MUTABLE) && !ref.getType().getKind().isPrimitive())
+                        System.out.println("INFO: set " + ref + " from " + annos + " to " + set + " type: " + ref.getType());
 //                }
             }
         }
@@ -196,7 +201,8 @@ public class SFlowTypingExtractor implements TypingExtractor {
         List<Reference> copyRefs = copyReferences(exprRefs);
 
         if (inferenceChecker.isInferLibrary()) {
-            if (!(typeErrors = handleLibraryInference(exprRefs, constraints, maximalSolution)).isEmpty())
+            if (!(typeErrors = handleLibraryInference(
+                            exprRefs, constraints, maximalSolution)).isEmpty())
                 return typeErrors;
         }
 		for (Reference ref : exprRefs) {
