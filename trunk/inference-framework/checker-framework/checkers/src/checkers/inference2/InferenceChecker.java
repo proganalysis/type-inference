@@ -399,8 +399,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			id += tree.toString();
 			break;
 		default:
-			// FIXME: may use hashCode() for the rest
-			id += TreeUtils.elementFromUse(tree).toString();
+			Element elt = TreeUtils.elementFromUse(tree);
+			id += (elt != null ? elt.toString() : tree.toString());
 		}
 		return id;
 	}
