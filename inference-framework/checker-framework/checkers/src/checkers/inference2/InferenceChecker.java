@@ -399,7 +399,10 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			id += tree.toString();
 			break;
 		default:
-			Element elt = TreeUtils.elementFromUse(tree);
+			Element elt = null;
+			if (tree instanceof ExpressionTree) {
+				elt = TreeUtils.elementFromUse(tree);
+			}
 			id += (elt != null ? elt.toString() : tree.toString());
 		}
 		return id;
@@ -408,7 +411,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	public String getIdentifier(Element elt) {
 		Tree decl = getDeclaration(elt);
 		ExecutableElement currentMethod; 
-		if (decl != null && (decl instanceof ExpressionTree) ) {
+		if (decl != null) {
 			return getIdentifier((ExpressionTree) decl);
 		} else if (elt.getSimpleName().contentEquals("this") 
 				&& (currentMethod = getCurrentMethodElt()) != null) {
