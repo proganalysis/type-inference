@@ -3,24 +3,31 @@ package checkers.basetype;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 
-import checkers.igj.quals.*;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.util.*;
+import checkers.source.SourceVisitor;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
+import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.annotation.processing.*;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -245,7 +252,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return the type-checking visitor
      */
     @Override
-    protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
 
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.getClass();

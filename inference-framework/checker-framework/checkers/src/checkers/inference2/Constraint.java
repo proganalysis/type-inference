@@ -19,6 +19,13 @@ public abstract class Constraint {
 	
 	protected int id; 
 	
+    /**
+     * kind = 0: subkind 
+     * kind = 1: equality
+     * kind = 2: inequality
+     */
+    protected int kind;
+	
 	private static int counter = 0;
 	
 	public Constraint() {
@@ -37,6 +44,9 @@ public abstract class Constraint {
 		return id;
 	}
 	
+	public int getKind() {
+		return kind;
+	}
 
     public void addCause(Constraint c) {
         causes.add(c); 
@@ -84,6 +94,7 @@ public abstract class Constraint {
             super();
             this.left = sub;
             this.right = sup;
+            this.kind = 0;
 		}
 		
 		@Override
@@ -112,6 +123,7 @@ public abstract class Constraint {
 			super();
 			this.left = left;
 			this.right = right;
+            this.kind = 1;
 		}
 		
 		@Override
@@ -140,6 +152,7 @@ public abstract class Constraint {
 			super();
 			this.left = left;
 			this.right = right;
+            this.kind = 2;
 		}
 		
 		@Override
@@ -162,5 +175,6 @@ public abstract class Constraint {
                 this.left.equals(obj.getLeft()) && this.right.equals(obj.getRight());
         }
 	}
+
 }
 

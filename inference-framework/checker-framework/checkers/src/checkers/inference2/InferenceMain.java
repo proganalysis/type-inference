@@ -14,6 +14,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -21,6 +22,8 @@ import checkers.inference.sflow.InferenceMainSFlow;
 import checkers.util.CheckerMain;
 
 import com.sun.tools.javac.main.Main;
+
+import static com.esotericsoftware.minlog.Log.*;
 
 /**
  * Those helper methods are from {@link CheckerMain}
@@ -37,16 +40,10 @@ public class InferenceMain {
 
     protected boolean needCheck = true;
     
-    protected InferenceChecker inferenceChecker; 
-    
-    protected TypingExtractor currentExtractor;
-    
-    protected ConstraintManager constraintManager;
+    protected InferenceChecker checker; 
     
     protected InferenceMain() {
-    	constraintManager = new ConstraintManager();
-    	inferenceChecker = null;
-    	currentExtractor = null;
+    	checker = null;
     }
     
     public static InferenceMain getInstance() {
@@ -54,7 +51,6 @@ public class InferenceMain {
             if (inferenceMain == null) {
                 String mainClass = System.getProperty("mainClass");
                 if (mainClass != null) {
-                    inferenceMain = new InferenceMainSFlow();
                     try {
                         inferenceMain = (InferenceMain) Class.forName(mainClass).newInstance();
                     } catch (Exception e) {
@@ -62,8 +58,9 @@ public class InferenceMain {
                         System.exit(1);
                     }
                 }
-                else
+                else {
                     inferenceMain = new InferenceMain();
+                }
                 inferenceMain.needCheck = (System.getProperty("noCheck") == null);
             }
         }
@@ -73,24 +70,16 @@ public class InferenceMain {
     public static void destroy() {
     	inferenceMain = null;
     }
-    
-	public TypingExtractor getCurrentExtractor() {
-		return currentExtractor;
-	}
-
-	public ConstraintManager getConstraintManager() {
-		return constraintManager;
-	}
 
 	public InferenceChecker getInferenceChcker() {
-		return inferenceChecker;
+		return checker;
 	}
 
 	public void setInferenceChcker(InferenceChecker inferenceChcker) {
-		this.inferenceChecker = inferenceChcker;
+		this.checker = inferenceChcker;
 	}
 
-	public List<Reference> infer(String[] args, String jdkBootPaths, PrintWriter out) {
+	public boolean infer(String[] args, String jdkBootPaths, PrintWriter out) {
 		for (String path : jdkBootPaths.split(File.pathSeparator)) {
 			if (!path.equals("") && !new File(path).exists()) 
 				throw new RuntimeException("Cannot find the boot jar: " + path);
@@ -103,30 +92,29 @@ public class InferenceMain {
         // Add arguments
         argList.add("-Xbootclasspath/p:" + jdkBootPaths);
         argList.add("-proc:only");
+	      argList.add("-Ainfer");
         argList.add("-Awarns");
         
         for (String arg : args) 
         	argList.add(arg);
         
+        info(checker.getName(), "Generating constraints...");
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(argList.toArray(new String[0])) != Main.Result.OK)
-        	return null;
+        	return false;
 
-        List<Constraint> constraints = constraintManager.getConstraints();
-		System.out.println("INFO: Generated " + constraints.size() + " constraints in total");
-		
-		if (constraints.isEmpty()) {
-			System.out.println("WARN: No constraints generated.");
-			return null;
+		if (getInferenceChcker().getConstraints().isEmpty()) {
+			warn("No constraints generated.");
+			return false;
 		}
 		
-		ConstraintSolver solver = new SetbasedSolver(inferenceChecker, Reference.getExpReferences(), constraints);
+		ConstraintSolver solver = new SetbasedSolver(checker);
 		// FIXME: output constraints
-		if (InferenceChecker.DEBUG) {
+		if (DEBUG) {
 			try {
 				PrintWriter pw = new PrintWriter(InferenceMain.outputDir
-						+ File.separator + "tf-constraints.log");
-                for (Constraint c : constraints) {
+						+ File.separator + checker.getName() + "-constraints.log");
+                for (Constraint c : checker.getConstraints()) {
                     pw.println(c.toString());
                 }
 				pw.close();
@@ -135,18 +123,20 @@ public class InferenceMain {
 				e.printStackTrace();
 			}
 		}
-		List<Constraint> conflictConstraints = solver.solve();
-		if (!conflictConstraints.isEmpty()) {
-			System.out.println("Conflicts: ");
-			for (Constraint c : conflictConstraints) 
+		info(checker.getName(), "Solving "
+				+ getInferenceChcker().getConstraints().size()
+				+ " constraints in total");
+        Set<Constraint> errors = solver.solve();
+		if (!errors.isEmpty()) {
+			for (Constraint c : errors) 
 				System.out.println(c);
 		}
+		info(checker.getName(), "Finish solving constraints. " + errors.size() + " error(s)");
 		
-		currentExtractor = new MaximalTypingExtractor(inferenceChecker, Reference.getExpReferences(), constraints);
-		currentExtractor.extractConcreteTyping(0);
+//		currentExtractor = new MaximalTypingExtractor(checker, Reference.getExpReferences(), constraints);
+//		currentExtractor.extractConcreteTyping(0);
 		
-		Reference.clearup();
-		return currentExtractor.getInferredReferences();
+		return true;
 	}
 	
   public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
@@ -158,7 +148,6 @@ public class InferenceMain {
         argList.add(arg);
 
       argList.add("-Xbootclasspath/p:" + jdkBootPaths);
-      argList.add("-Achecking");
       argList.add("-Awarns");
       argList.add("-proc:only");
       com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
@@ -175,65 +164,56 @@ public class InferenceMain {
 	public static void main(String[] args) {
 		String jdkBootPaths = findPathJar(InferenceMain.class);
 		if (jdkBootPaths == "" || !jdkBootPaths.contains("jdk.jar")) {
-            String customJDK = System.getProperty("jdk");
-            if (customJDK != null)
-                jdkBootPaths += File.pathSeparator + customJDK;
-            else
-                jdkBootPaths += File.pathSeparator + jdkJar();
-        }
+			String customJDK = System.getProperty("jdk");
+			if (customJDK != null)
+				jdkBootPaths += File.pathSeparator + customJDK;
+			else
+				jdkBootPaths += File.pathSeparator + jdkJar();
+		}
 		String bootStr = "-Xbootclasspath/p:";
 		for (String arg : args) {
 			if (arg.startsWith(bootStr)) {
-				jdkBootPaths += File.pathSeparator + arg.substring(bootStr.length());
+				jdkBootPaths += File.pathSeparator
+						+ arg.substring(bootStr.length());
 				break;
 			}
-		}	
-		System.out.println("Boot path: " + jdkBootPaths);
+		}
+		info("Boot path: " + jdkBootPaths);
 		if (outputDir != null && outputDir.compareTo(".") != 0) {
 			File dir = new File(outputDir);
 			if (!dir.exists()) {
 				dir.mkdir();
 			}
 		}
-		
+
 		InferenceMain inferenceMain = InferenceMain.getInstance();
 		long startTime = System.currentTimeMillis();
-		List<Reference> inferredRefs = null;
-		if ((inferredRefs = inferenceMain.infer(args, jdkBootPaths, new PrintWriter(System.err, true))) == null) {
+		if (!inferenceMain.infer(args, jdkBootPaths, new PrintWriter(
+				System.err, true))) {
 			return;
 		}
-		
-		if (inferredRefs != null && !inferredRefs.isEmpty()) {
-			// print results
-			PrintWriter pw = null;
-			try {
-				pw = new PrintWriter(outputDir + File.separator + "result.csv");
-				inferenceMain.getCurrentExtractor().printAllVariables(pw);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-			if (pw != null)
-				pw.close();
-		}
-		
-		System.out.println("INFO: Inference finished");
-		System.out.println("INFO: inference_time:\t"
+
+		info("Inference finished");
+		info("inference_time:\t"
 				+ String.format("%6.1f seconds",
 						(float) (System.currentTimeMillis() - startTime) / 1000));
-		
-    if (inferenceMain.needCheck) {
-      startTime = System.currentTimeMillis();
-      inferenceMain.check(args, jdkBootPaths, new PrintWriter(System.err, true));
-      System.out.println("INFO: Checking finished");
-      System.out.println("INFO: checking_time:\t"
-          + String.format("%6.1f seconds",
-            (float)(System.currentTimeMillis() - startTime) / 1000));
-    } else 
-      System.out.println("INFO: Skip checking");
+
+		if (inferenceMain.needCheck) {
+			startTime = System.currentTimeMillis();
+			inferenceMain.check(args, jdkBootPaths, new PrintWriter(System.err,
+					true));
+			info("Checking finished");
+			info("checking_time:\t"
+					+ String.format(
+							"%6.1f seconds",
+							(float) (System.currentTimeMillis() - startTime) / 1000));
+		} else {
+			info("Skip checking");
+		}
 	}
 	
 	
-    private static File tempJDKPath() {
+    protected static File tempJDKPath() {
         String userSupplied = System.getProperty("jsr308.jdk");
         if (userSupplied != null)
             return new File(userSupplied);
@@ -244,7 +224,7 @@ public class InferenceMain {
     }
 	
 	/** returns the path to annotated JDK */
-    private static String jdkJar() {
+    protected static String jdkJar() {
         // case 1: running from binary
         String thisJar = findPathJar(InferenceMain.class);
         File potential = new File(new File(thisJar).getParentFile(), "jdk.jar");
@@ -276,7 +256,7 @@ public class InferenceMain {
         throw new AssertionError("Couldn't find annotated JDK");
     }
 
-    private static void extractFile(String jar, String fileName, File output) throws Exception {
+    protected static void extractFile(String jar, String fileName, File output) throws Exception {
         int BUFFER = 2048;
 
         File jarFile = new File(jar);
@@ -307,7 +287,7 @@ public class InferenceMain {
      * Find the jar file containing the annotated JDK (i.e. jar containing
      * this file
      */
-    public static String findPathJar(Class<?> context) throws IllegalStateException {
+    protected static String findPathJar(Class<?> context) throws IllegalStateException {
         if (context == null) context = CheckerMain.class;
         String rawName = context.getName();
         String classFileName;
