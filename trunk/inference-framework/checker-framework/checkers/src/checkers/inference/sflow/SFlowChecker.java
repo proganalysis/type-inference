@@ -186,12 +186,6 @@ public class SFlowChecker extends InferenceChecker {
 	public boolean isInferLibrary() {
 		return inferLibrary;
 	}
-	
-	
-//    public void setInferLibrary(boolean inferLibrary) {
-//        this.inferLibrary = inferLibrary;
-//    }
-
 
 	public boolean isPolyLibrary() {
 		return polyLibrary;

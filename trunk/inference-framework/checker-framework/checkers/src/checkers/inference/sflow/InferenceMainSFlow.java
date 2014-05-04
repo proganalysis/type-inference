@@ -146,7 +146,7 @@ public class InferenceMainSFlow extends InferenceMain {
 //        }
 		conflictConstraints = solver.solve();
 //        currentExtractor = new MaximalTypingExtractor(inferenceChecker, Reference.getExpReferences(), constraints);
-		currentExtractor = new SFlowTypingExtractor((SFlowChecker)inferenceChecker, Reference.getExpReferences(), solver.getUpdatedConstraints());
+		currentExtractor = new SFlowTypingExtractor((SFlowChecker)inferenceChecker, Reference.getExpReferences(), solver.getUpdatedConstraints(), reimMaxTyping);
 		List<Constraint> typeErrors = currentExtractor.extractConcreteTyping(conflictConstraints.size());
 		boolean beforeResolve = false;
 		if (typeErrors.isEmpty()) {
