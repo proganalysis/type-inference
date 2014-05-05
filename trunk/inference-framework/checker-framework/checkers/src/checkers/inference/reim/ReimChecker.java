@@ -551,7 +551,7 @@ public class ReimChecker extends InferenceChecker {
 					out.println("\n    field " + elt.toString() + ":");
 					Reference ref = solution.get(
 							InferenceUtils.getElementSignature(elt));
-					if (ref != null && !(ref instanceof PrimitiveReference)) {
+					if (ref != null/* && !(ref instanceof PrimitiveReference)*/) {
 						out.print("        type: ");
 						out.println(mapToJavarifier(ref));
 						int i = 0;
@@ -560,7 +560,7 @@ public class ReimChecker extends InferenceChecker {
 							ref = ((ArrayReference) ref).getComponentRef();
 							out.print(prefix + "            inner-type " + i + ":");
 							if (ref == null 
-									|| ref instanceof PrimitiveReference) {
+									/*|| ref instanceof PrimitiveReference*/) {
 								out.println();
 								break;
 							}
@@ -597,8 +597,8 @@ public class ReimChecker extends InferenceChecker {
                     }
 					out.print("        return:");
 					Reference returnRef = methodRef.getReturnRef();
-					if ((returnRef instanceof PrimitiveReference)
-							|| (returnRef instanceof VoidReference))
+					if (/*(returnRef instanceof PrimitiveReference)
+							|| */(returnRef instanceof VoidReference))
 						out.println();
 					else {
 						out.println(" " + mapToJavarifier(returnRef));
@@ -617,7 +617,7 @@ public class ReimChecker extends InferenceChecker {
 							out.println("        parameter " + /*e.toString()*/ "#" + (counter++) + ":");
 							Reference paramRef = solution.get(
 									InferenceUtils.getElementSignature(e));
-							if (paramRef != null && !(paramRef instanceof PrimitiveReference)) {
+							if (paramRef != null/* && !(paramRef instanceof PrimitiveReference)*/) {
 								out.print("            type: ");
 								out.println(mapToJavarifier(paramRef));
 								int i = 0;
@@ -626,7 +626,7 @@ public class ReimChecker extends InferenceChecker {
 									paramRef = ((ArrayReference) paramRef).getComponentRef();
 									out.print(prefix + "                inner-type " + i + ":");
 									if (paramRef == null 
-											|| paramRef instanceof PrimitiveReference) {
+											/*|| paramRef instanceof PrimitiveReference*/) {
 										out.println();
 										break;
 									}
