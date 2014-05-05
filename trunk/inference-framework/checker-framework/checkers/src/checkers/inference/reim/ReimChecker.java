@@ -286,7 +286,7 @@ public class ReimChecker extends InferenceChecker {
 		List<Reference> lst = new ArrayList<Reference>(values.size());
 		for (Reference ref : values) {
 			if (ref.getElement() != null 
-					&& !ref.getType().getKind().isPrimitive()
+//					&& !ref.getType().getKind().isPrimitive()
 					&& !ref.getFileName().startsWith("zLIB")
 					&& ref.getLineNum() > 0
 							) {
