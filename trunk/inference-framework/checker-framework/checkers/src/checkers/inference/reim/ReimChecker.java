@@ -653,18 +653,12 @@ public class ReimChecker extends InferenceChecker {
     	AnnotationMirror[] array = annotations.toArray(new AnnotationMirror[0]);
     	Arrays.sort(array, getComparator());
     	AnnotationMirror anno = array[0];
-//    	res = anno.toString();
-    	if (anno.toString().equals("@checkers.inference.reim.quals.Readonly"))
-    		res = "@checkers.javari.quals.ReadOnly";
-    	else if (anno.toString().equals("@checkers.inference.reim.quals.Polyread"))
-    		res = "@checkers.javari.quals.PolyRead";
-    	else if (anno.toString().equals("@checkers.inference.reim.quals.Mutable"))
-    		res = "@checkers.javari.quals.Mutable";
-//    	if (anno.toString().equals("@checkers.immutability.quals.I"))
+    	res = anno.toString();
+//    	if (anno.toString().equals("@checkers.inference.reim.quals.Readonly"))
 //    		res = "@checkers.javari.quals.ReadOnly";
-//    	else if (anno.toString().equals("@checkers.immutability.quals.P"))
+//    	else if (anno.toString().equals("@checkers.inference.reim.quals.Polyread"))
 //    		res = "@checkers.javari.quals.PolyRead";
-//    	else if (anno.toString().equals("@checkers.immutability.quals.M"))
+//    	else if (anno.toString().equals("@checkers.inference.reim.quals.Mutable"))
 //    		res = "@checkers.javari.quals.Mutable";
     	return res;
     }
