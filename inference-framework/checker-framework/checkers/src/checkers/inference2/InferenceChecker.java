@@ -75,6 +75,7 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
+import static com.esotericsoftware.minlog.Log.*;
 
 /**
  * @author huangw5
@@ -125,6 +126,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Log.set(LEVEL_DEBUG);
 //        }
         types = processingEnv.getTypeUtils();
+        info(getName(), "Generating constraints...");
 	}
 	
 
@@ -848,7 +850,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		});
 		for (Reference r : references) {
 			Element  elt = r.getElement();
-			debug(r.toAnnotatedString());
 			if (elt == null 
 					|| r.getIdentifier().startsWith(LIB_PREFIX)
 					|| r.getKind() == RefKind.CONSTANT

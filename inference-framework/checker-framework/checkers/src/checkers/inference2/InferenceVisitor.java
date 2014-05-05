@@ -256,7 +256,6 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 					.getAnnotatedReference(TreeUtils.elementFromUse(node));
 			// Assume the LHS is the node
 			assignTo = checker.getAnnotatedReference(node);
-			debug(node.toString());
 			processMethodCall(node, assignTo); 
     	}
 		return super.visitMethodInvocation(node, p);

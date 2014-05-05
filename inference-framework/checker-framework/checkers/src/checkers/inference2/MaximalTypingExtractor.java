@@ -13,6 +13,9 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.util.AnnotationUtils;
 
+import static com.esotericsoftware.minlog.Log.*;
+
+
 /**
  * @author huangw5
  *
@@ -29,6 +32,9 @@ public class MaximalTypingExtractor extends AbstractTypingExtractor {
 	@Override
 	public List<Constraint> extract() {
 		Collection<Reference> references = checker.getAnnotatedReferences().values();
+		info(this.getClass().getSimpleName(),
+				"Picking up the maximal qualifier for " + references.size()
+						+ " variable...");
 		Comparator<AnnotationMirror> comparator = checker.getComparator();
 		for (Reference r : references) {
 			AnnotationMirror[] annos = r.getAnnotations(checker).toArray(
@@ -41,6 +47,7 @@ public class MaximalTypingExtractor extends AbstractTypingExtractor {
 			// get the maximal annotation
 			Set<AnnotationMirror> maxAnnos = AnnotationUtils.createAnnotationSet();
 			maxAnnos.add(annos[0]);
+			r.setAnnotations(maxAnnos, checker);
 		}
 		return typeCheck();
 	}
