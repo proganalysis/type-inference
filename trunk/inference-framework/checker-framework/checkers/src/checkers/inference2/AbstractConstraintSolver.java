@@ -129,7 +129,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         this.checker = t;
         needTrace = !(System.getProperty("noTrace") != null);
         DB_SCRIPT = InferenceMain.outputDir + File.separator + t.getName() + "-traces.sql";
-        info("needTrace = " + needTrace);
+        info(this.getClass().getSimpleName(), "needTrace = " + needTrace);
     }
     
     public Constraint getCurrentConstraint() {
@@ -485,7 +485,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 
     private void endLog() {
         try {
-            System.out.println("INFO: Finished solving. Waiting for log worker thread...");
+            info(this.getClass().getSimpleName(), "Finished solving. Waiting for log worker thread...");
             stop = true;
             worker.join();
             out.close();    
@@ -495,6 +495,8 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
     
     
     public Set<Constraint> solve() {
+		info(checker.getName(), "Solving " + checker.getConstraints().size()
+				+ " constraints in total");
         Set<Constraint> set;
         try {
             if (needTrace)
@@ -529,6 +531,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         } finally {
             endLog();
         }
+		info(checker.getName(), "Finished solving constraints. " + set.size() + " error(s).");
         return set;
      }
 

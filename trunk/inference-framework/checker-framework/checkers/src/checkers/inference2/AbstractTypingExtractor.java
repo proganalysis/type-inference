@@ -9,6 +9,9 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import static com.esotericsoftware.minlog.Log.*;
+
+
 /**
  * @author huangw5
  *
@@ -28,6 +31,7 @@ public abstract class AbstractTypingExtractor implements TypingExtractor {
 	 * @return a list of type errors
 	 */
 	public List<Constraint> typeCheck() {
+		info(this.getClass().getSimpleName(), "Verifying the concrete typing...");
 		Set<Constraint> constraints = checker.getConstraints();
 		List<Constraint> errors = new ArrayList<Constraint>();
 		for (Constraint c : constraints) {
@@ -45,6 +49,9 @@ public abstract class AbstractTypingExtractor implements TypingExtractor {
 				}
 			}
 		}
+		info(this.getClass().getSimpleName(),
+				"Finished verifying the concrete typing. " + errors.size()
+						+ " errors(0)");
 		return errors;
 		
 	}

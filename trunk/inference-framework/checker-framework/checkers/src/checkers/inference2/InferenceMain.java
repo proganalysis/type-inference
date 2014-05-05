@@ -98,17 +98,15 @@ public class InferenceMain {
         for (String arg : args) 
         	argList.add(arg);
         
-        info("Generating constraints...");
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(argList.toArray(new String[0])) != Main.Result.OK)
         	return false;
 
 		if (getInferenceChcker().getConstraints().isEmpty()) {
-			warn("No constraints generated.");
+			warn(checker.getName(), "No constraints generated.");
 			return false;
 		}
 		
-		ConstraintSolver solver = new SetbasedSolver(checker);
 		// FIXME: output constraints
 		if (DEBUG) {
 			try {
@@ -123,19 +121,18 @@ public class InferenceMain {
 				e.printStackTrace();
 			}
 		}
-		info(checker.getName(), "Solving "
-				+ getInferenceChcker().getConstraints().size()
-				+ " constraints in total");
-        Set<Constraint> errors = solver.solve();
-		if (!errors.isEmpty()) {
-			for (Constraint c : errors) 
+		ConstraintSolver solver = new SetbasedSolver(checker);
+        Set<Constraint> setErrors = solver.solve();
+		if (!setErrors.isEmpty()) {
+			for (Constraint c : setErrors) 
 				System.out.println(c);
+			info(checker.getName(), setErrors.size() + " error(s) in the set-based solution.");
+			return false;
 		}
-		info(checker.getName(), "Finish solving constraints. " + errors.size() + " error(s)");
-		
-//		currentExtractor = new MaximalTypingExtractor(checker, Reference.getExpReferences(), constraints);
-//		currentExtractor.extractConcreteTyping(0);
-		
+		info(checker.getName(), "Extracting a concete typing...");
+		TypingExtractor extractor = new MaximalTypingExtractor(checker);
+		List<Constraint> typeErrors = extractor.extract();
+		info(checker.getName(), "Finish extracting typing.");
 		try {
 			PrintWriter pw = new PrintWriter(InferenceMain.outputDir
 					+ File.separator + checker.getName() + "-result.csv");
@@ -144,6 +141,12 @@ public class InferenceMain {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		if (!typeErrors.isEmpty()) {
+			for (Constraint c : setErrors) 
+				System.out.println(c);
+			info(checker.getName(), typeErrors.size() + " error(s) in the concrete typing.");
+			return false;
 		}
 	
 		return true;
@@ -188,7 +191,7 @@ public class InferenceMain {
 				break;
 			}
 		}
-		info("Boot path: " + jdkBootPaths);
+		info("main", "Boot path: " + jdkBootPaths);
 		if (outputDir != null && outputDir.compareTo(".") != 0) {
 			File dir = new File(outputDir);
 			if (!dir.exists()) {
@@ -203,8 +206,8 @@ public class InferenceMain {
 			return;
 		}
 
-		info("Inference finished");
-		info("inference_time:\t"
+		info("main", "Inference finished");
+		info("main", "inference_time:\t"
 				+ String.format("%6.1f seconds",
 						(float) (System.currentTimeMillis() - startTime) / 1000));
 
@@ -212,13 +215,13 @@ public class InferenceMain {
 			startTime = System.currentTimeMillis();
 			inferenceMain.check(args, jdkBootPaths, new PrintWriter(System.err,
 					true));
-			info("Checking finished");
-			info("checking_time:\t"
+			info("main", "Checking finished");
+			info("main", "checking_time:\t"
 					+ String.format(
 							"%6.1f seconds",
 							(float) (System.currentTimeMillis() - startTime) / 1000));
 		} else {
-			info("Skip checking");
+			info("main", "Skip checking");
 		}
 	}
 	
