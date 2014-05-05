@@ -33,6 +33,11 @@ public abstract class Constraint {
 		id = counter++;
         causes = new ArrayList<Constraint>();
 	}
+	
+	public static int maxId() {
+		return counter;
+	}
+	
 
 	public Reference getLeft() {
 		return left;

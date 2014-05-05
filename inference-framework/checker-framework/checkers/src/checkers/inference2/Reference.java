@@ -64,6 +64,10 @@ public class Reference {
 
     private TypeElement enclosingType;
     
+    private String fileName; 
+    
+    private int lineNum;
+    
 	public Reference(String identifier, RefKind kind, Tree tree,
 			Element element, TypeElement enclosingType,
 			AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
@@ -74,19 +78,30 @@ public class Reference {
 		if (annotations != null) 
 			this.annotations.addAll(annotations);
 		this.element = element;
-		this.name = (element != null ? element.toString() : (tree !=  null ? tree.toString() : "ADAPT" ));
 		this.tree = tree;
         this.enclosingType = enclosingType;
 		this.type = (type == null ? null : type.getCopy(false));
+		this.kind = kind;
+		String[] split = identifier.split(":");
+		if (split.length == 3) {
+			fileName = split[0];
+			lineNum = Integer.valueOf(split[1]);
+			name = split[2];
+		} else {
+			fileName = identifier;
+			lineNum = -1;
+			name = (element != null ? element.toString() : (tree != null ? tree
+					.toString() : kind.toString()));
+		}
 	}
 	
 	public Set<AnnotationMirror> getAnnotations(InferenceChecker checker) {
-		Set<AnnotationMirror> set = getAnnotations();
+		Set<AnnotationMirror> set = getRawAnnotations();
 		set.retainAll(checker.getSourceLevelQualifiers());
 		return set;
 	}
 
-	public Set<AnnotationMirror> getAnnotations() {
+	public Set<AnnotationMirror> getRawAnnotations() {
 		Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
 		set.addAll(annotations);
 		return set;
@@ -97,7 +112,7 @@ public class Reference {
 		this.annotations.addAll(annotations);
 	}
 
-	public void setAnnotations(Set<AnnotationMirror> annotations) {
+	public void setRawAnnotations(Set<AnnotationMirror> annotations) {
 		this.annotations.clear();
 		this.annotations.addAll(annotations);
 	}
@@ -111,6 +126,14 @@ public class Reference {
 		return counter;
 	}
 	
+	public String getFileName() {
+		return fileName;
+	}
+
+	public int getLineNum() {
+		return lineNum;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -338,6 +361,12 @@ public class Reference {
 		public FieldAdaptReference(Reference contextRef, Reference declRef) {
 			super(contextRef, declRef, RefKind.FIELD_ADAPT);
 		}
+		
+		@Override
+		public Set<AnnotationMirror> getAnnotations(InferenceChecker checker) {
+			return checker.adaptFieldSet(contextRef.getAnnotations(checker),
+					declRef.getAnnotations(checker));
+		}
 	
 		@Override
 		public String toString() {
@@ -354,6 +383,13 @@ public class Reference {
 	
 		public MethodAdaptReference(Reference contextRef, Reference declRef) {
 			super(contextRef, declRef, RefKind.METH_ADAPT);
+		}
+		
+		
+		@Override
+		public Set<AnnotationMirror> getAnnotations(InferenceChecker checker) {
+			return checker.adaptMethodSet(contextRef.getAnnotations(checker),
+					declRef.getAnnotations(checker));
 		}
 	
 		@Override

@@ -122,6 +122,18 @@ public class ReimChecker extends InferenceChecker {
 	}
 
 	
+	@Override
+	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
+			Reference aRhs) {
+		Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+		set.add(MUTABLE);
+		Reference mutableRef = getAnnotatedReference(set.toString(),
+				RefKind.CONSTANT, null,
+				MUTABLE.getAnnotationType().asElement(), null, null, set);
+		addEqualityConstraint(aBase, mutableRef);
+		super.handleInstanceFieldWrite(aBase, aField, aRhs);
+	}
+
 	/**
 	 * Get the mutateStatic of library methodElt. If no input file is given, 
 	 * then assume it doesn't mutate statics

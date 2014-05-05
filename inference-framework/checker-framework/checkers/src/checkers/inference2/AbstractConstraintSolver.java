@@ -256,21 +256,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
     }
 
 	protected Set<AnnotationMirror> getAnnotations(Reference av) {
-		if (av instanceof AdaptReference) {
-			AdaptReference aav = (AdaptReference) av;
-			Reference context = aav.getContextRef();
-			Reference decl = aav.getDeclRef();
-			
-			if (av instanceof FieldAdaptReference) {
-				return checker.adaptFieldSet(context.getAnnotations(checker), 
-						decl.getAnnotations(checker));
-			} else {
-				return checker.adaptMethodSet(context.getAnnotations(checker), 
-						decl.getAnnotations(checker));
-			}
-		} else {
-			return av.getAnnotations(checker);
-		}
+		return av.getAnnotations(checker);
 	}
 
 	/**

@@ -3,7 +3,7 @@
  */
 package checkers.inference2;
 
-import static com.esotericsoftware.minlog.Log.warn;
+import static com.esotericsoftware.minlog.Log.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -246,14 +246,17 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     	// E.g. X x = y.m(z); this method invocation is visited in the assignment
     	// E.g. y.m(x.n(z));  the x.n(z) is visited as an argument   
     	// it could have been visited in generateConstraints
+    	if (node.toString().equals("super()") 
+    			|| node.toString().equals("Object()")) {
+			return super.visitMethodInvocation(node, p);
+    	}
 		if (!visited.contains(node)) {
 			Reference assignTo = null;
 			ExecutableReference invokeMethodRef = (ExecutableReference) checker
 					.getAnnotatedReference(TreeUtils.elementFromUse(node));
-			if (invokeMethodRef.getReturnRef().getType().getKind() != TypeKind.VOID) {
-				// Assume the LHS is the node
-				assignTo = checker.getAnnotatedReference(node);
-			}
+			// Assume the LHS is the node
+			assignTo = checker.getAnnotatedReference(node);
+			debug(node.toString());
 			processMethodCall(node, assignTo); 
     	}
 		return super.visitMethodInvocation(node, p);
@@ -303,12 +306,12 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 
 	@Override
 	public Void visitVariable(VariableTree node, Void p) {
+		VariableElement varElt = TreeUtils.elementFromDeclaration(node);
+		Reference varRef = checker.getAnnotatedReference(varElt);
 		ExpressionTree initializer = node.getInitializer();
-		Reference initializerRef = null;
 		if (initializer != null) {
-			initializerRef = checker.getAnnotatedReference(initializer);
+			generateConstraint(varRef, initializer);
 		}
-		processVariableTree(node, initializerRef);
 		return super.visitVariable(node, p);
 	}
 	
@@ -442,11 +445,6 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     
     private void processMethodCall(MethodInvocationTree node, Reference assignToRef) {
     	ExecutableElement invokeMethodElt = TreeUtils.elementFromUse(node);
-    	if (node.toString().equals("super()") 
-    			&& invokeMethodElt.toString().equals("Object()")) {
-    		// skip
-    		return;
-    	}
 		ExecutableReference invokeMethodRef = (ExecutableReference) checker
 				.getAnnotatedReference(invokeMethodElt);
 		// Get the receiver
