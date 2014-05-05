@@ -136,6 +136,16 @@ public class InferenceMain {
 //		currentExtractor = new MaximalTypingExtractor(checker, Reference.getExpReferences(), constraints);
 //		currentExtractor.extractConcreteTyping(0);
 		
+		try {
+			PrintWriter pw = new PrintWriter(InferenceMain.outputDir
+					+ File.separator + checker.getName() + "-result.csv");
+			checker.printResult(pw);
+			pw.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
 		return true;
 	}
 	
