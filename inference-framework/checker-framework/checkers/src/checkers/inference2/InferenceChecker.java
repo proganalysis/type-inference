@@ -4,15 +4,15 @@
 package checkers.inference2;
 
 import static com.esotericsoftware.minlog.Log.LEVEL_DEBUG;
-import static com.esotericsoftware.minlog.Log.debug;
 import static com.esotericsoftware.minlog.Log.error;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,6 +25,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -39,6 +40,7 @@ import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.Reference.AdaptReference;
 import checkers.inference2.Reference.ArrayReference;
 import checkers.inference2.Reference.ExecutableReference;
+import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Reference.RefKind;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
@@ -63,19 +65,21 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
-
-import static com.esotericsoftware.minlog.Log.*;
 
 /**
  * @author huangw5
@@ -114,6 +118,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
     private AnnotatedTypeFactory currentFactory;
     
+    private Set<TypeElement> visitedClasses = new HashSet<TypeElement>();
+    
 	@Override
 	public void initChecker(ProcessingEnvironment processingEnv) {
 		super.initChecker(processingEnv);
@@ -126,7 +132,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Log.set(LEVEL_DEBUG);
 //        }
         types = processingEnv.getTypeUtils();
-        info(getName(), "Generating constraints...");
 	}
 	
 
@@ -148,21 +153,22 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	}
 	
 	
-//	@Override
-//	protected TypeHierarchy createTypeHierarchy() {
-//    	return new InferenceTypeHierarchy(this, getQualifierHierarchy());
-//	}
-//	
-//	
-//    /** Factory method to easily change what Factory is used to
-//     * create a QualifierHierarchy.
-//     */
-//	@Override
-//    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-//        return new InferenceGraphQualifierHierarchy.InferenceGraphFactory(this);
-//    }
-
-
+	@Override
+    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
+		// TODO: We return true if one of them is not annotated
+		if (!sub.isAnnotated() || !sup.isAnnotated()) {
+			return true;
+		}
+		if (!getQualifierHierarchy().isSubtype(sub.getAnnotations(), sup.getAnnotations())) {
+			return false;
+		}
+        if (sub.getKind() == TypeKind.ARRAY && sup.getKind() == TypeKind.ARRAY) {
+            AnnotatedTypeMirror subComponent = ((AnnotatedArrayType) sub).getComponentType();
+            AnnotatedTypeMirror supComponent = ((AnnotatedArrayType) sup).getComponentType();
+            return isSubtype(subComponent, supComponent);
+        } 
+    	return true;
+    }
 
 	public void setCurrentFactory(AnnotatedTypeFactory factory) {
 		this.currentFactory = factory;
@@ -362,6 +368,56 @@ public abstract class InferenceChecker extends BaseTypeChecker {
             return TreeUtils.elementFromDeclaration(enclosingMethod);
     }
     
+    /**
+     * Get the method element which is a sibling of elt 
+     * This is necessary to ensure it gets the correct receiver
+     * In most cases, this is the current visiting method
+     */
+    public ExecutableElement getEnclosingMethodWithElt(ExecutableElement elt) {
+        TreePath p = currentPath;
+        while (p != null) {
+            Tree leaf = p.getLeaf();
+            assert leaf != null; /*nninvariant*/
+            if (leaf.getKind() == Tree.Kind.METHOD ) {
+                p = p.getParentPath();
+                Tree t = p.getLeaf();
+                if (t.getKind() == Tree.Kind.CLASS) {
+                   TypeElement classElt = TreeUtils.elementFromDeclaration((ClassTree) t);
+                   if (classElt.equals(elt.getEnclosingElement()))
+                        return TreeUtils.elementFromDeclaration((MethodTree) leaf);
+                }
+            }
+            p = p.getParentPath();
+        }
+        return null;
+    }
+
+    /**
+     * Get the method element which is a sibling of fieldElt
+     * In most cases, this is the current visiting method
+     */
+    public ExecutableElement getEnclosingMethodWithField(Element fieldElt) {
+        if (!fieldElt.getKind().isField())
+            return null;
+        TreePath p = currentPath;
+        while (p != null) {
+            Tree leaf = p.getLeaf();
+            assert leaf != null; /*nninvariant*/
+            if (leaf.getKind() == Tree.Kind.METHOD) {
+                p = p.getParentPath();
+                Tree t = p.getLeaf();
+                if (t.getKind() == Tree.Kind.CLASS) {
+					AnnotatedDeclaredType classType = (AnnotatedDeclaredType) currentFactory
+							.getAnnotatedType((ClassTree) t);
+                    if (isFieldElt(classType, fieldElt))
+                        return TreeUtils.elementFromDeclaration((MethodTree) leaf);
+                }
+            }
+            p = p.getParentPath();
+        }
+        return null;
+    }
+    
     
     public String getFileName(Element elt) {
     	CompilationUnitTree newRoot = getRootByElement(elt);
@@ -399,8 +455,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				&& !idElt.getKind().isField()) {
 			return getIdentifier(idElt);
 		}
-//		TypeElement classElt = TreeUtils.elementFromDeclaration(TreeUtils
-//				.enclosingClass(currentFactory.getPath(tree)));
 		String id = getFileName(tree) //classElt.getQualifiedName() 
 				+ ":" + getLineNumber(tree)
 				+ ":";
@@ -408,16 +462,19 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		case METHOD:
 			id += TreeUtils.elementFromDeclaration((MethodTree) tree).toString();
 			break;
-		case NEW_ARRAY:
-		case NEW_CLASS:
-			id += tree.toString();
+		case CLASS:
+			id += TreeUtils.elementFromDeclaration((ClassTree) tree).toString();
 			break;
+		case VARIABLE:
+			id += TreeUtils.elementFromDeclaration((VariableTree) tree).toString();
+			break;
+		case NEW_CLASS:
+//			id += "new " + ((NewClassTree) tree).getIdentifier().toString()
+//					+ ((NewClassTree) tree).getArguments().toString();
+//			break;
+		case NEW_ARRAY:
 		default:
-			Element elt = null;
-			if (tree instanceof VariableTree) {
-				elt = TreeUtils.elementFromDeclaration((VariableTree) tree);
-			}
-			id += (elt != null ? elt.toString() : tree.toString());
+			id += tree.toString();
 		}
 		return id;
 	}
@@ -467,10 +524,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				TreeUtils.enclosingClass(currentFactory.getPath(t)));
     	Kind tKind = t.getKind();
     	Reference ret = null;
-//    	if (tKind == Kind.IDENTIFIER) {
-//    		ret = getAnnotatedReference(TreeUtils.elementFromUse((IdentifierTree) t));
-//    		return ret;
-//    	}
     	RefKind rk; 
     	switch (tKind) {
         case INT_LITERAL:
@@ -546,7 +599,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	    			AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
 	    			String componentIdentifier = identifier + ARRAY_SUFFIX;
 					Reference componentRef = getAnnotatedReference(
-							componentIdentifier, RefKind.COMPONENT, null, null,
+							componentIdentifier, RefKind.COMPONENT, null, element,
 							enclosingType, componentType);
 	    			((ArrayReference) ret).setComponentRef(componentRef);
 	    			break;
@@ -556,13 +609,13 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 					ExecutableElement methodElt = (ExecutableElement) element;
 					AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
 					// THIS
-					if (!ElementUtils.isStatic(methodElt)) {
-						Reference thisRef = getAnnotatedReference(
-								identifier + THIS_SUFFIX, 
-								RefKind.THIS, tree, element,
-								enclosingType, methodType.getReceiverType());
-						((ExecutableReference) ret).setThisRef(thisRef);
-					}
+//					if (!ElementUtils.isStatic(methodElt)) {
+					Reference thisRef = getAnnotatedReference(
+							identifier + THIS_SUFFIX, 
+							RefKind.THIS, tree, element,
+							enclosingType, methodType.getReceiverType());
+					((ExecutableReference) ret).setThisRef(thisRef);
+//					}
 					// RETURN
 					AnnotatedTypeMirror returnType = (element.getKind() == ElementKind.CONSTRUCTOR ? 
 							currentFactory.getAnnotatedType(enclosingType) : methodType.getReturnType());
@@ -627,6 +680,9 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		return annotatedReferences;
 	}
 
+    protected void addVisitedClass(TypeElement te) {
+    	visitedClasses.add(te);
+    }
 
 	protected Reference getFieldAdaptReference(Reference context, Reference decl,
 			Reference assignTo) {
@@ -658,7 +714,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
         Constraint c = new SubtypeConstraint(sub, sup);
         if (!constraints.add(c))
             return;
-        addComponentConstraints(sub, sup);
+        addComponentConstraints(sub, sup, false);
 	}
 	
 	protected void addEqualityConstraint(Reference left, Reference right) {
@@ -667,7 +723,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
         Constraint c = new EqualityConstraint(left, right);
         if (!constraints.add(c))
             return;
-        addComponentConstraints(left, right);
+        addComponentConstraints(left, right, true);
 	}
 	
 	protected void addUnequalityConstraint(Reference left, Reference right) {
@@ -676,20 +732,34 @@ public abstract class InferenceChecker extends BaseTypeChecker {
         Constraint c = new UnequalityConstraint(left, right);
         if (!constraints.add(c))
             return;
-        addComponentConstraints(left, right);
 
 	}
 	
-    private void addComponentConstraints(Reference sub, Reference sup) {
+	/**
+	 * If the given <code>equality</code> is true, then we always enforce 
+	 * equality constraint for components; otherwise, we enforce equality
+	 * constraint there is a field adaptation.
+	 * @param sub
+	 * @param sup
+	 * @param equality
+	 */
+    private void addComponentConstraints(Reference sub, Reference sup, boolean equality) {
         if (sub.getType() instanceof AnnotatedArrayType && sup instanceof AdaptReference) {
             sup = ((AdaptReference) sup).getDeclRef();
-        } else if (sub instanceof AdaptReference && sup.getType() instanceof AnnotatedArrayType)
+            equality = equality || (sup instanceof FieldAdaptReference);
+        } else if (sub instanceof AdaptReference && sup.getType() instanceof AnnotatedArrayType) {
             sub = ((AdaptReference) sub).getDeclRef();
+            equality = equality || (sup instanceof FieldAdaptReference);
+        }
 
         if (sub.getType() instanceof AnnotatedArrayType && sup.getType() instanceof AnnotatedArrayType) {
             Reference subComponent = ((ArrayReference) sub).getComponentRef();
             Reference supComponent = ((ArrayReference) sup).getComponentRef();
-            addEqualityConstraint(subComponent, supComponent);
+            if (equality) {
+	            addEqualityConstraint(subComponent, supComponent);
+            } else {
+            	addSubtypeConstraint(subComponent, supComponent);
+            }
         }
     }
     
@@ -723,7 +793,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		Iterator<Reference> overriderIt = overriderRef.getParamRefs().iterator();
 		Iterator<Reference> overriddenIt = overriddenRef.getParamRefs().iterator();
 		for (; overriderIt.hasNext() && overriddenIt.hasNext(); ) {
-			addSubtypeConstraint(overriderIt.next(), overriddenIt.next());
+			addSubtypeConstraint(overriddenIt.next(), overriderIt.next());
 		}
 	}
 
@@ -845,30 +915,201 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				if (ret == 0) {
 					ret = o1.getLineNum() - o2.getLineNum();
 				}
+				if (ret == 0) {
+					ret = o1.getName().compareTo(o2.getName());
+				}
 				return ret;
 			}
 		});
 		for (Reference r : references) {
 			Element  elt = r.getElement();
-			if (elt == null 
+			if ((elt == null && r.getKind() != RefKind.ALLOCATION) 
 					|| r.getIdentifier().startsWith(LIB_PREFIX)
+					|| (elt instanceof ExecutableElement)
+						&& isCompilerAddedConstructor((ExecutableElement) elt)
 					|| r.getKind() == RefKind.CONSTANT
-					|| r.getKind() == RefKind.METHOD) {
+					|| r.getKind() == RefKind.COMPONENT
+					|| r.getKind() == RefKind.THIS
+					|| r.getKind() == RefKind.RETURN) {
 				continue;
 			}
+			AnnotatedTypeMirror type = r.getType();
+			annotateInferredType(type, r);
 			StringBuilder sb = new StringBuilder();
 			sb.append(r.getFileName()).append("\t");
 			sb.append(r.getLineNum()).append("\t");
-			sb.append(r.getName()).append("\t");
-			sb.append(InferenceUtils.formatAnnotationString(r.getRawAnnotations()));
+			sb.append(r.getName()).append("\t\t");
+			sb.append(type.toString()).append("\t");
+//			sb.append(InferenceUtils.formatAnnotationString(r.getRawAnnotations()));
+			sb.append("(" + r.getId() + ")");
 			out.println(sb.toString());
 		}
 	}
 	
 	public void printJaif(PrintWriter out) {
-		
+		TypeElement[] vcs = visitedClasses.toArray(new TypeElement[0]);
+        // First sort the visitedClasses 
+		Arrays.sort(vcs, new Comparator<TypeElement>() {
+			@Override
+			public int compare(TypeElement o1, TypeElement o2) {
+				Element elt1 = o1.getEnclosingElement();
+				while (elt1.getKind() != ElementKind.PACKAGE) {
+					elt1 = elt1.getEnclosingElement();
+				}
+				PackageElement packageElt1 = (PackageElement) elt1;
+				String packageName1 = packageElt1.getQualifiedName().toString();
+				packageName1 = packageElt1.isUnnamed() ? "" : packageName1;
+
+				Element elt2 = o2.getEnclosingElement();
+				while (elt2.getKind() != ElementKind.PACKAGE) {
+					elt2 = elt2.getEnclosingElement();
+				}
+				PackageElement packageElt2 = (PackageElement) elt2;
+				String packageName2 = packageElt2.getQualifiedName().toString();
+				packageName2 = packageElt2.isUnnamed() ? "" : packageName2;
+
+				int res = packageName1.compareTo(packageName2);
+				if (res != 0)
+					return res;
+
+				String className1 = ((ClassSymbol) o1).flatName().toString();
+				if (!packageElt1.isUnnamed()) {
+					className1 = className1.substring(packageName1.length() + 1);
+				}
+
+				String className2 = ((ClassSymbol) o2).flatName().toString();
+				if (!packageElt2.isUnnamed()) {
+					className2 = className2.substring(packageName2.length() + 1);
+				}
+				res = className1.compareTo(className2);
+				return res;
+			}
+		});
+        for (TypeElement te : vcs) {
+            printJaifClass(te, "", out);
+        }	
 	}
 	
+    protected void printJaifClass(TypeElement clazz, String indent, PrintWriter out) {
+	    PackageElement pk = ElementUtils.enclosingPackage(clazz);
+        out.println(indent + "package " + (pk.isUnnamed() ? "" : pk.getQualifiedName().toString()) + ":");
+		// Output class name
+		String className = ((ClassSymbol) clazz).flatName().toString();
+		if (!pk.isUnnamed()) {
+			className = className.substring(pk.getQualifiedName().toString().length() + 1);
+		}
+        out.println(indent + "class " + className + ":");
+        out.println();
+        // Output members
+        List<? extends Element> enclosedElements = clazz.getEnclosedElements();
+        for (Element elt : enclosedElements) {
+        	if (elt.getKind() == ElementKind.FIELD) {
+	            printJaifField(elt, indent + "    ", out);
+	            out.println();
+        	}
+        }
+        for (Element elt : enclosedElements) {
+        	if (elt.getKind() == ElementKind.METHOD 
+        			|| elt.getKind() == ElementKind.CONSTRUCTOR) {
+	            printJaifMethod((ExecutableElement) elt, indent + "    ", out);
+	            out.println();
+        	}
+        }
+    }
+    
+    protected void printJaifField(Element sf, String indent, PrintWriter out) {
+        out.println(indent + "field " + sf.toString() + ":");
+        printAnnotatedValue(getAnnotatedReference(sf), "type", indent + "    ", out);
+    }
+    
+    protected void printJaifMethod(ExecutableElement methodElt, String indent, PrintWriter out) {
+    	ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(methodElt);
+    	Type t = ((MethodSymbol) methodElt).type;
+        if (t instanceof MethodType) {
+            MethodType mt = (MethodType) ((MethodSymbol) methodElt).type;
+            String javadocSig = "(" + mt.argtypes(false) + ")";
+            String javadocReturnType = mt.restype.toString();
+            String jvmSig = DescriptorUtil.convert(javadocSig, javadocReturnType);
+            out.println(indent + "method "
+                    + ((MethodSymbol) methodElt).name + jvmSig
+                    + ":");
+		} else {
+            out.println(indent + "method " + methodElt + ":");
+        }
+        if (methodElt.getKind() == ElementKind.CONSTRUCTOR 
+        		|| methodElt.getReturnType().getKind() != TypeKind.VOID) {
+            printAnnotatedValue(methodRef.getReturnRef(), "return", indent + "    ", out);
+        } else {
+            printAnnotatedValue(null, "return", indent + "    ", out);
+        }
+        if (!ElementUtils.isStatic(methodElt)) {
+            printAnnotatedValue(methodRef.getThisRef(), "receiver", indent + "    ", out);
+        }
+        indent += "    ";
+		List<? extends VariableElement> parameters = methodElt.getParameters();
+		List<Reference> paramRefs = methodRef.getParamRefs();
+        for (int i = 0; i < parameters.size(); i++) {
+            out.println(indent + "parameter #" + i + ":");
+            printAnnotatedValue(paramRefs.get(i), "type", indent + "    ", out);
+        }
+    }
+    
+    protected void printAnnotatedValue(Reference ref, String typeStr, String indent, PrintWriter out) {
+    	String annoStr = ""; 
+    	if (ref != null) {
+	    	Set<AnnotationMirror> annos = ref.getAnnotations(this);
+	    	if (annos.isEmpty()) {
+	    		annoStr = "unannotated";
+	    	} else {
+	    		annoStr = annos.iterator().next().toString();
+	    	}
+    	}
+        out.println(indent + typeStr + ": " + annoStr);
+        if (ref instanceof ArrayReference) {
+            Reference component = ((ArrayReference) ref).getComponentRef();
+            printAnnotatedValue(component, "inner-type 0", indent + "    ", out);
+        }
+    }
+    
+    public void annotateInferredType(AnnotatedTypeMirror type, Reference ref) {
+    	type.clearAnnotations();
+    	type.addAnnotations(ref.getAnnotations(this));
+    	if (type.getKind() == TypeKind.ARRAY) {
+			annotateInferredType(
+					((AnnotatedArrayType) type).getComponentType(),
+					((ArrayReference) ref).getComponentRef());
+    	} else if (type.getKind() == TypeKind.EXECUTABLE) {
+    		AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
+    		ExecutableReference methodRef = (ExecutableReference) ref;
+    		// THIS
+    		methodType.getReceiverType().clearAnnotations();
+    		annotateInferredType(methodType.getReceiverType(), methodRef.getThisRef());
+    		// RETURN
+    		methodType.getReturnType().clearAnnotations();
+    		annotateInferredType(methodType.getReturnType(), methodRef.getReturnRef());
+    		Iterator<AnnotatedTypeMirror> typeIt = methodType.getParameterTypes().iterator();
+    		Iterator<Reference> refIt = methodRef.getParamRefs().iterator();
+    		for (; typeIt.hasNext() && refIt.hasNext(); ) {
+    			annotateInferredType(typeIt.next(), refIt.next());
+    		}
+    	}
+    }
+    
+    public void annotateInferredType(AnnotatedTypeMirror type, Element elt) {
+    	String identifier = getIdentifier(elt);
+    	Reference ref = getAnnotatedReferenceByIdentifier(identifier);
+    	if (ref != null) {
+	    	annotateInferredType(type, ref);
+    	}
+    }
+    
+    public void annotateInferredType(AnnotatedTypeMirror type, Tree tree) {
+    	String identifier = getIdentifier(tree);
+    	Reference ref = getAnnotatedReferenceByIdentifier(identifier);
+    	if (ref != null) {
+	    	annotateInferredType(type, ref);
+    	}
+    }
 	
     protected abstract Reference createFieldAdaptReference(Reference context, 
             Reference decl, Reference assignTo);
@@ -879,6 +1120,10 @@ public abstract class InferenceChecker extends BaseTypeChecker {
     
     protected abstract void annotateDefault(Reference r, RefKind kind, Element elt, Tree t);
 
+    /**
+     * @param r
+     * @param elt could be null. 
+     */
     protected abstract void annotateArrayComponent(Reference r, Element elt);
 
     protected abstract void annotateField(Reference r, Element fieldElt);

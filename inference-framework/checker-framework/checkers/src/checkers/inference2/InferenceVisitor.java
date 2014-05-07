@@ -309,7 +309,13 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		Reference varRef = checker.getAnnotatedReference(varElt);
 		ExpressionTree initializer = node.getInitializer();
 		if (initializer != null) {
-			generateConstraint(varRef, initializer);
+			if (varElt.getKind().isField()) {
+				Reference initRef = checker.getAnnotatedReference(initializer);
+				generateConstraint(initRef, initializer);
+				processVariableTree(node, initRef);
+			} else {
+				generateConstraint(varRef, initializer);
+			}
 		}
 		return super.visitVariable(node, p);
 	}
@@ -317,8 +323,8 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 	
 	@Override
 	public Void visitClass(ClassTree node, Void p) {
-//		TypeElement classElt = TreeUtils.elementFromDeclaration(node);
-//		InferenceMain.getInstance().getConstraintManager().addVisitedClass(classElt);
+		TypeElement classElt = TreeUtils.elementFromDeclaration(node);
+		checker.addVisitedClass(classElt);
 		return super.visitClass(node, p);
 	}
 
@@ -390,56 +396,6 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         return null;
     }
 
-    /**
-     * Get the method element which is a sibling of elt 
-     * This is necessary to ensure it gets the correct receiver
-     * In most cases, this is the current visiting method
-     */
-    private ExecutableElement getEnclosingMethodWithElt(Element elt) {
-        TreePath p = getCurrentPath();
-        while (p != null) {
-            Tree leaf = p.getLeaf();
-            assert leaf != null; /*nninvariant*/
-            if (leaf.getKind() == Tree.Kind.METHOD ) {
-                p = p.getParentPath();
-                Tree t = p.getLeaf();
-                if (t.getKind() == Tree.Kind.CLASS) {
-                   TypeElement classElt = TreeUtils.elementFromDeclaration((ClassTree) t);
-                   if (classElt.equals(elt.getEnclosingElement()))
-                        return TreeUtils.elementFromDeclaration((MethodTree) leaf);
-                }
-            }
-            p = p.getParentPath();
-        }
-        return null;
-    }
-
-    /**
-     * Get the method element which is a sibling of fieldElt
-     * In most cases, this is the current visiting method
-     */
-    private ExecutableElement getEnclosingMethodWithField(Element fieldElt) {
-        if (!fieldElt.getKind().isField())
-            return null;
-        TreePath p = getCurrentPath();
-        while (p != null) {
-            Tree leaf = p.getLeaf();
-            assert leaf != null; /*nninvariant*/
-            if (leaf.getKind() == Tree.Kind.METHOD) {
-                p = p.getParentPath();
-                Tree t = p.getLeaf();
-                if (t.getKind() == Tree.Kind.CLASS) {
-                    AnnotatedDeclaredType classType = (AnnotatedDeclaredType) factory
-                            .getAnnotatedType((ClassTree) t);
-                    if (checker.isFieldElt(classType, fieldElt))
-                        return TreeUtils.elementFromDeclaration((MethodTree) leaf);
-                }
-            }
-            p = p.getParentPath();
-        }
-        return null;
-    }
-    
 	
     
     private void processMethodCall(MethodInvocationTree node, Reference assignToRef) {
@@ -453,7 +409,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 			if (rcvTree == null) {
 				// This may be a a self invocation like x = m(z); 
 				// WEI: Need considering method calls to outer class
-				ExecutableElement currentMethodElt = getEnclosingMethodWithElt(invokeMethodElt);
+				ExecutableElement currentMethodElt = checker.getEnclosingMethodWithElt(invokeMethodElt);
 				// TODO: What if this method is called in a static initializer? Need tests;
 				if(currentMethodElt != null) {
 					Reference currentMethodRef = checker.getAnnotatedReference(currentMethodElt);
@@ -480,6 +436,8 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     private void processNewClass(NewClassTree node, Reference assignToRef) {
 		// Receiver
 		Reference rcvRef = checker.getAnnotatedReference(node);
+		// always connect to the LHS
+		checker.addSubtypeConstraint(rcvRef, assignToRef);
 		// Arguments
 		List<? extends ExpressionTree> arguments = node.getArguments();
 		List<Reference> argumentRefs = new ArrayList<Reference>(arguments.size());
@@ -567,7 +525,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 	            } 
         	} else {
 	            Reference thisRef = null;
-	            ExecutableElement enclosingMethodElt = getEnclosingMethodWithField(idElt);
+	            ExecutableElement enclosingMethodElt = checker.getEnclosingMethodWithField(idElt);
 	            if (enclosingMethodElt != null) {
 	                // If there is an enclosing method. In most cases, it is just the current
 	            	// visiting method
