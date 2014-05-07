@@ -91,7 +91,7 @@ public class Reference {
 			fileName = identifier;
 			lineNum = -1;
 			name = (element != null ? element.toString() : (tree != null ? tree
-					.toString() : kind.toString()));
+					.toString() : identifier));
 		}
 	}
 	
@@ -190,7 +190,7 @@ public class Reference {
 
 	@Override
 	public String toString() {
-		return "(" + id + ")" + identifier;
+		return "(" + id + ")" + identifier + " " + formatAnnotations();
 	}
 	
 	public String toAnnotatedString() {

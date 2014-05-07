@@ -34,7 +34,7 @@ public class MaximalTypingExtractor extends AbstractTypingExtractor {
 		Collection<Reference> references = checker.getAnnotatedReferences().values();
 		info(this.getClass().getSimpleName(),
 				"Picking up the maximal qualifier for " + references.size()
-						+ " variable...");
+						+ " variables...");
 		Comparator<AnnotationMirror> comparator = checker.getComparator();
 		for (Reference r : references) {
 			AnnotationMirror[] annos = r.getAnnotations(checker).toArray(

@@ -51,7 +51,7 @@ public abstract class AbstractTypingExtractor implements TypingExtractor {
 		}
 		info(this.getClass().getSimpleName(),
 				"Finished verifying the concrete typing. " + errors.size()
-						+ " errors(0)");
+						+ " error(s)");
 		return errors;
 		
 	}

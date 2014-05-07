@@ -98,6 +98,7 @@ public class InferenceMain {
         for (String arg : args) 
         	argList.add(arg);
         
+        info("main", "Generating constraints...");
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(argList.toArray(new String[0])) != Main.Result.OK)
         	return false;
@@ -142,9 +143,19 @@ public class InferenceMain {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		try {
+			PrintWriter pw = new PrintWriter(InferenceMain.outputDir
+					+ File.separator + checker.getName() + "-result.jaif");
+			checker.printJaif(pw);
+			pw.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		if (!typeErrors.isEmpty()) {
-			for (Constraint c : setErrors) 
+			for (Constraint c : typeErrors)  {
 				System.out.println(c);
+			}
 			info(checker.getName(), typeErrors.size() + " error(s) in the concrete typing.");
 			return false;
 		}

@@ -16,6 +16,9 @@ import checkers.inference2.Constraint.SubtypeConstraint;
 import checkers.inference2.Constraint.UnequalityConstraint;
 import checkers.inference2.Reference.AdaptReference;
 
+
+import static com.esotericsoftware.minlog.Log.*;
+
 public class SetbasedSolver extends AbstractConstraintSolver {
 	
 	private Set<Constraint> worklist = new LinkedHashSet<Constraint>();
@@ -100,7 +103,7 @@ public class SetbasedSolver extends AbstractConstraintSolver {
                     conflictConstraints.add(c);
                 } else if (fs == FailureStatus.WARN) {
                     if (!warnConstraints.get(c.getId())) {
-                        System.out.println("WARN: handling constraint " + c + " failed.");
+                        warn(this.getClass().getSimpleName(), "Failed handling constraint " + c);
                         warnConstraints.set(c.getId());
                     }
                 }

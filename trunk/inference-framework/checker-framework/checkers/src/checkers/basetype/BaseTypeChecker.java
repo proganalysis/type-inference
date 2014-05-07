@@ -247,6 +247,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
      *
      * Subclasses have to override this method to create the appropriate
      * visitor if they do not follow the checker naming convention.
+     * 
+     * WEI: Change the return value from BaseTypeVisitor<?> to SourceVisitor<?, ?>
      *
      * @param root  the compilation unit currently being visited
      * @return the type-checking visitor

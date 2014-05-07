@@ -14,7 +14,7 @@ import checkers.inference2.InferenceChecker;
  */
 public class ReimAnnotatedTypeFactory extends InferenceAnnotatedTypeFactory {
 
-	public ReimAnnotatedTypeFactory(InferenceChecker checker,
+	public ReimAnnotatedTypeFactory(ReimChecker checker,
 			CompilationUnitTree root) {
 		super(checker, root);
 		// TODO Auto-generated constructor stub

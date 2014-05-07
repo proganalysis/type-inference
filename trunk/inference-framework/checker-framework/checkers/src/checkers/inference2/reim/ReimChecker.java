@@ -47,7 +47,7 @@ import com.sun.source.tree.Tree;
 @TypeQualifiers({Readonly.class, Polyread.class, Mutable.class})
 public class ReimChecker extends InferenceChecker {
 	
-	private AnnotationMirror READONLY, POLYREAD, MUTABLE;
+	public AnnotationMirror READONLY, POLYREAD, MUTABLE;
 	
 	private Set<AnnotationMirror> sourceLevelQuals; 
 	
@@ -100,7 +100,13 @@ public class ReimChecker extends InferenceChecker {
 	public boolean isDefaultReadonlyType(AnnotatedTypeMirror t) {
         if (t.getKind().isPrimitive())
             return true;
-        if (defaultReadonlyRefTypes.contains(t.toString()))
+		TypeElement elt = null;
+		if (t.getKind() == TypeKind.DECLARED) {
+			AnnotatedDeclaredType dt = (AnnotatedDeclaredType) t;
+	        elt = (TypeElement)dt.getUnderlyingType().asElement();
+		}
+        if (elt != null &&
+        		defaultReadonlyRefTypes.contains(elt.getQualifiedName().toString()))
             return true;
         return false;
     }
@@ -129,7 +135,7 @@ public class ReimChecker extends InferenceChecker {
 		set.add(MUTABLE);
 		Reference mutableRef = getAnnotatedReference(set.toString(),
 				RefKind.CONSTANT, null,
-				MUTABLE.getAnnotationType().asElement(), null, null, set);
+				null, null, null, set);
 		addEqualityConstraint(aBase, mutableRef);
 		super.handleInstanceFieldWrite(aBase, aField, aRhs);
 	}
@@ -191,7 +197,7 @@ public class ReimChecker extends InferenceChecker {
 	protected void annotateArrayComponent(Reference r, Element elt) {
 		if (!isAnnotated(r)) {
 			r.addAnnotation(POLYREAD);
-			if (!isFromLibrary(elt)) {
+			if (elt == null || !isFromLibrary(elt)) {
 				r.addAnnotation(READONLY);
 			}
 		}
