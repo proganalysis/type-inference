@@ -13,6 +13,7 @@ public class AnnotatedValue {
 
     public enum Kind {
         LOCAL, 
+        COMPONENT, 
         LITERAL, 
         FIELD, 
         PARAMETER,
@@ -41,6 +42,8 @@ public class AnnotatedValue {
     private SootMethod enclosingMethod;
 
     private String name; 
+
+    private int restoreNum = 0;
 
     protected Set<Annotation> annos;
 
@@ -116,6 +119,14 @@ public class AnnotatedValue {
         this.enclosingMethod = sm;
     }
 
+    public int getRestoreNum() {
+        return restoreNum;
+    }
+
+    public void setRestored() {
+        restoreNum++;
+    }
+
     public int getId() {
         return id;
     }
@@ -183,6 +194,7 @@ public class AnnotatedValue {
 
         public abstract Set<Annotation> getAnnotations(ViewpointAdapter va);
 
+        @Deprecated
         public abstract void setAnnotations(ViewpointAdapter va, Set<Annotation> annos);
 
         public AnnotatedValue getContextValue() {

@@ -282,6 +282,14 @@ public class SFlowTransformer extends InferenceTransformer {
 	}
 
     @Override
+    protected void annotateArrayComponent(AnnotatedValue v, Object o) {
+        if (!isAnnotated(v)) {
+            v.addAnnotation(TAINTED);
+            v.addAnnotation(POLY);
+        }
+    }
+
+    @Override
     protected void annotateField(AnnotatedValue v, SootField field) {
         if (!isAnnotated(v)) {
             if (field.getName().equals("this$0")) {

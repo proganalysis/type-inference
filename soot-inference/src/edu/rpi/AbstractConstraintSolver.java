@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.concurrent.*;
 
 import soot.SourceLocator;
+import soot.SootClass;
 import soot.SootMethod;
 
 import edu.rpi.ConstraintSolver.FailureStatus;
@@ -378,7 +379,10 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
                 sb.append(av.getValue().toString().replace('\"', '_')).append("\",\"");
             else 
                 sb.append("null\", \"");
-            sb.append(av.getEnclosingClass().getName()).append("\",\"");
+            SootClass sc = av.getEnclosingClass();
+//            if (sc == null)
+//                System.err.println("Enclosing class is null: " + av);
+            sb.append(sc != null ? sc.getName() : "").append("\",\"");
             sb.append(av.getName().replace('\"', '_')).append("\",\"");
             SootMethod sm = av.getEnclosingMethod();
             sb.append(sm != null ? sm.getSubSignature() : "").append("\");");

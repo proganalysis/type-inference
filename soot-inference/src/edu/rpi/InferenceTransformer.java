@@ -60,7 +60,13 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     private static Map<String, AnnotatedValue> adaptValues = new HashMap<String, AnnotatedValue>();
 
+    /**
+     * This is actually static, because AnnotatedValueMap.v() always
+     * return the same object.
+     */
     private AnnotatedValueMap annotatedValues = AnnotatedValueMap.v();
+
+    private ViewpointAdapter vpa = getViewpointAdapter();
 
     public final static String CALLSITE_PREFIX = "callsite-";
 
@@ -150,8 +156,12 @@ public abstract class InferenceTransformer extends BodyTransformer {
                     annotatedValues.put(identifier, ret);
             }
         }
-        if (!isAnnotated(ret))
-            annotateDefault(ret, kind, v);
+        if (!isAnnotated(ret)) {
+            if (kind == Kind.COMPONENT) 
+                annotateArrayComponent(ret, v);
+            else
+                annotateDefault(ret, kind, v);
+        }
         return ret;
     }
 
@@ -286,9 +296,9 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
         if (sub.getType() instanceof ArrayType && sup.getType() instanceof ArrayType) {
             AnnotatedValue subComponent = getAnnotatedValue(sub.getIdentifier() + "[]", 
-                    ((ArrayType) sub.getType()).getElementType(), Kind.LOCAL, null);
+                    ((ArrayType) sub.getType()).getElementType(), Kind.COMPONENT, null);
             AnnotatedValue supComponent = getAnnotatedValue(sup.getIdentifier() + "[]", 
-                    ((ArrayType) sup.getType()).getElementType(), Kind.LOCAL, null);
+                    ((ArrayType) sup.getType()).getElementType(), Kind.COMPONENT, null);
             addEqualityConstraint(subComponent, supComponent);
         } 
     }
@@ -334,6 +344,9 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected void annotateDefault(AnnotatedValue v, Kind kind, Object o) {
+    }
+
+    protected void annotateArrayComponent(AnnotatedValue v, Object o) {
     }
 
     protected void annotateField(AnnotatedValue v, SootField field) {
@@ -493,19 +506,19 @@ public abstract class InferenceTransformer extends BodyTransformer {
         out.println(indent + typeStr + ": " + av.getAnnotations(this) + " (" + av.getId() + ")");
         if (av.getType() instanceof ArrayType) {
             AnnotatedValue component = getAnnotatedValue(av.getIdentifier() + "[]", 
-                    ((ArrayType) av.getType()).getElementType(), Kind.LOCAL, null);
+                    ((ArrayType) av.getType()).getElementType(), Kind.COMPONENT, null);
             printAnnotatedValue(component, "inner-type", indent + "\t", out);
         }
     }
 
     public Annotation adaptField(Annotation contextAnno, Annotation declAnno) {
-        ViewpointAdapter vp = getViewpointAdapter();
-        return vp.adaptField(contextAnno, declAnno);
+//        ViewpointAdapter vp = getViewpointAdapter();
+        return vpa.adaptField(contextAnno, declAnno);
     }
 	
     public Annotation adaptMethod(Annotation contextAnno, Annotation declAnno) {
-        ViewpointAdapter vp = getViewpointAdapter();
-        return vp.adaptMethod(contextAnno, declAnno);
+//        ViewpointAdapter vp = getViewpointAdapter();
+        return vpa.adaptMethod(contextAnno, declAnno);
     }
 
 	/**

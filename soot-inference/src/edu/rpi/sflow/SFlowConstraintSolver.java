@@ -72,6 +72,7 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
     private boolean isInteractive = false;
 
     private BitSet updated = new BitSet(AnnotatedValue.maxId());
+//    private BitSet restored = new BitSet(AnnotatedValue.maxId());
 
     private byte[] initAnnos = new byte[AnnotatedValue.maxId()];
 
@@ -331,7 +332,7 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
             else if ((right instanceof FieldAdaptValue) ) {
                 if ((ref = ((FieldAdaptValue) right).getDeclValue()) != null
                     && (ref.getAnnotations(st).size() == 1 && ref.getAnnotations(st).contains(st.POLY)
-                        || preferSource
+//                        || preferSource  // FIXED fields on May 7, 2014
                         || ((FieldAdaptValue) right).getContextValue().getType() instanceof ArrayType)) {
                     Constraint linear = new SubtypeConstraint(
                                 left, ((FieldAdaptValue) right).getContextValue());
@@ -478,7 +479,13 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
                 ((AdaptValue) toUpdate).getDeclValue()};
         } else if (toUpdate instanceof FieldAdaptValue) {
             // skip
-            avs = new AnnotatedValue[]{((AdaptValue) toUpdate).getContextValue()};
+            AnnotatedValue fieldAv = ((AdaptValue) toUpdate).getDeclValue();
+            Set<Annotation> set = fieldAv.getAnnotations(st);
+            if (preferSource && set.size() == 1 && set.contains(st.TAINTED)) 
+                avs = new AnnotatedValue[]{fieldAv};
+            else
+                avs = new AnnotatedValue[]{((AdaptValue) toUpdate).getContextValue()};
+//            System.out.println("Restoring " + c);
         } else 
             avs = new AnnotatedValue[]{toUpdate};
         
@@ -486,13 +493,14 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
             int id = av.getId();
             if (beenUpdated) {
                 // only restore values that have been updated before
-                if (updated.get(id)) {
+                if (updated.get(id) && av.getRestoreNum() < 3) {
                     Set<Annotation> initAnnos = getInitAnnos(id);
 //                    System.out.println("Restoring " + av + " to " + initAnnos);
                     // restore
                     av.setAnnotations(initAnnos, st);
                     needSolve = true;
                     restoreCounter++;
+                    av.setRestored();
                 }
             } else if (av.getKind() != Kind.CONSTANT) {
                 // restore values that have never been updated

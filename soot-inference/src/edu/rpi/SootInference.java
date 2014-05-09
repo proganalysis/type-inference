@@ -34,11 +34,13 @@ import soot.options.Options;
 import soot.tagkit.*; 
 import edu.rpi.sflow.*;
 import edu.rpi.reim.*;
+import static com.esotericsoftware.minlog.Log.*;
 
 
 public class SootInference {
 	
 	public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
 		
 		//prefer Android APK files// -src-prec apk
 //        Options.v().set_src_prec(Options.src_prec_apk);
@@ -82,6 +84,8 @@ public class SootInference {
         List<String> exclude = new ArrayList<String>(Arrays.asList(excludes));
         Options.v().set_exclude(exclude);
 
+        set(LEVEL_DEBUG);
+
         InferenceTransformer reimTransformer = new ReimTransformer();
         InferenceTransformer sflowTransformer = new SFlowTransformer();
         PackManager.v().getPack("jtp").add(new Transform("jtp.reim", reimTransformer));
@@ -89,9 +93,9 @@ public class SootInference {
 
 		soot.Main.main(args);
 
-        System.out.println(String.format("%6s: %14d", "size", AnnotatedValueMap.v().size()));
-        System.out.println(String.format("%6s: %14f MB", "free", ((float) Runtime.getRuntime().freeMemory()) / (1024*1024)));
-        System.out.println(String.format("%6s: %14f MB", "total", ((float) Runtime.getRuntime().totalMemory()) / (1024*1024)));
+        info(String.format("%6s: %14d", "size", AnnotatedValueMap.v().size()));
+        info(String.format("%6s: %14f MB", "free", ((float) Runtime.getRuntime().freeMemory()) / (1024*1024)));
+        info(String.format("%6s: %14f MB", "total", ((float) Runtime.getRuntime().totalMemory()) / (1024*1024)));
 
         String outputDir = SourceLocator.v().getOutputDir();
 
@@ -142,5 +146,7 @@ public class SootInference {
 
         System.out.println("INFO: Annotated value size: " + AnnotatedValueMap.v().size());
 		
+        long endTime   = System.currentTimeMillis();
+        System.out.println("INFO: Total running time: " + ((float)(endTime - startTime) / 1000) + " sec");
 	}
 }
