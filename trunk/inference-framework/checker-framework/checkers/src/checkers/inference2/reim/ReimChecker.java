@@ -56,7 +56,7 @@ public class ReimChecker extends InferenceChecker {
 	
     private Set<String> defaultReadonlyRefTypes;
 	
-	private Map<String, AnnotationMirror> libMutateStatics;
+	private Map<String, AnnotationMirror> libStaticTypeOf;
 	
 	private AnnotationUtils annoFactory;
 	

@@ -51,6 +51,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import checkers.util.TreeUtils;
 
 import com.esotericsoftware.minlog.Log;
@@ -153,6 +154,12 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	}
 	
 	
+	@Override
+	protected MultiGraphFactory createQualifierHierarchyFactory() {
+        return new InferenceGraphQualifierHierarchy.InferenceGraphFactory(this);
+	}
+
+
 	@Override
     public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
 		// TODO: We return true if one of them is not annotated
@@ -488,8 +495,18 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				&& (currentMethod = getCurrentMethodElt()) != null) {
 			return getIdentifier(currentMethod) + THIS_SUFFIX;
 		} else {
-			String res = LIB_PREFIX + ElementUtils.enclosingClass(elt).getQualifiedName() + ":0";
-			res = res + ":" + elt.toString();
+			String res = LIB_PREFIX + ElementUtils.enclosingClass(elt).getQualifiedName();
+			Element pElt = elt.getEnclosingElement();
+			while (pElt != null && !pElt.getKind().isClass()
+					&& !pElt.getKind().isInterface()) {
+				if (pElt.getKind() == ElementKind.METHOD
+						|| pElt.getKind() == ElementKind.CONSTRUCTOR) {
+					res = res + "." + pElt.toString();
+					break;
+				}
+				pElt = pElt.getEnclosingElement();
+			}
+			res = res + "." + elt.toString();
 			return res;
 		}
 	}
@@ -1161,7 +1178,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	
 	public abstract boolean needCheckConflict();
 
-	public boolean isSubtype(TypeElement a1, TypeElement a2) {
+	private boolean isSubtype(TypeElement a1, TypeElement a2) {
         // TODO
 	    return (a1.equals(a2)
 	            || types.isSubtype(types.erasure(a1.asType()),

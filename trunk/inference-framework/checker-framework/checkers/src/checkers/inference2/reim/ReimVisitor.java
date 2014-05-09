@@ -3,7 +3,6 @@
  */
 package checkers.inference2.reim;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +11,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+
+import checkers.inference2.InferenceTypeVisitor;
+import checkers.source.Result;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.TreeUtils;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -24,23 +30,16 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-
-import checkers.basetype.BaseTypeVisitor;
-import checkers.source.Result;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.TreeUtils;
 
 /**
  * @author huangw5
  *
  */
-public class ReimVisitor extends BaseTypeVisitor<ReimChecker> {
+public class ReimVisitor extends InferenceTypeVisitor<ReimChecker> {
 	
 	private ReimChecker checker;
 
@@ -255,35 +254,6 @@ public class ReimVisitor extends BaseTypeVisitor<ReimChecker> {
         return true;
 	}
 	
-//	@Override
-//	protected void checkArguments(List<? extends AnnotatedTypeMirror> requiredArgs,
-//			List<? extends ExpressionTree> passedArgs) {
-//        assert requiredArgs.size() == passedArgs.size();
-//        for (int i = 0; i < requiredArgs.size(); ++i) {
-//        	AnnotatedTypeMirror requiredType = requiredArgs.get(i);
-//        	// get the methodinvocationtree or newclasstree
-//        	Set<Tree.Kind> kinds = new HashSet<Tree.Kind>(2);
-//        	kinds.add(Tree.Kind.METHOD_INVOCATION);
-//        	kinds.add(Tree.Kind.NEW_CLASS);
-//        	Tree methodInvokeTree = TreeUtils.enclosingOfKind(getCurrentPath(), kinds);
-//        	
-//        	// get adapt context type
-//        	AnnotatedTypeMirror adaptContextType = getAdaptContextType(methodInvokeTree);
-//        	if (adaptContextType != null) {
-//				Set<AnnotationMirror> adaptedAnnos = checker.adaptMethodSet(
-//						adaptContextType.getAnnotations(), 
-//						requiredType.getAnnotations());
-//				if (!adaptedAnnos.isEmpty()) {
-//					requiredType.clearAnnotations();
-//					requiredType.addAnnotations(adaptedAnnos);
-//				}
-//        	}
-//        	
-//            commonAssignmentCheck(requiredType,
-//                    passedArgs.get(i),
-//                    "argument.type.incompatible");
-//        }
-//	}
 	
 	@Override
 	protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
@@ -316,5 +286,11 @@ public class ReimVisitor extends BaseTypeVisitor<ReimChecker> {
         
         commonAssignmentCheck(varType, valueType, valueExp, errorKey);
     }
+
+	@Override
+	public Void visitTypeCast(TypeCastTree node, Void p) {
+		return super.visitTypeCast(node, p);
+	}
+	
 	
 }

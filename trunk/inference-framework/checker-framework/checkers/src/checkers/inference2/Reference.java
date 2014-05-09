@@ -321,8 +321,8 @@ public class Reference {
 	
 		@Override
 		public String toString() {
-			return returnRef.toString()
-					+ getElement().getSimpleName().toString()
+			return returnRef.toString() + " "
+					+ getElement().getSimpleName().toString() + " "
 					+ (paramRefs.isEmpty() ? "()" : "(" + paramRefs + ")") + " "
 					+ thisRef;
 		}

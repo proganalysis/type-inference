@@ -13,6 +13,8 @@ import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 
+import static com.esotericsoftware.minlog.Log.*;
+
 /**
  * This is the same as {@link GraphQualifierHierarchy} except that it returns
  * an instance of {@link InferenceGraphQualifierHierarchy} instead.
@@ -80,7 +82,7 @@ public class InferenceGraphQualifierHierarchy extends GraphQualifierHierarchy {
     public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
         if (lhs.isEmpty() || rhs.isEmpty()) {
 //            throw new RuntimeException("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
-//            System.err.println("WARN: QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs + " -- ignored");
+            warn("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs + " -- ignored");
             return false;
         }
         for (AnnotationMirror lhsAnno : lhs) {

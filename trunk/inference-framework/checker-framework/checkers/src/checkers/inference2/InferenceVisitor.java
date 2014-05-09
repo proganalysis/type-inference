@@ -410,7 +410,10 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 				// This may be a a self invocation like x = m(z); 
 				// WEI: Need considering method calls to outer class
 				ExecutableElement currentMethodElt = checker.getEnclosingMethodWithElt(invokeMethodElt);
-				// TODO: What if this method is called in a static initializer? Need tests;
+				// If the invokeMethod is from the super class, then currentMethodElt could be null
+				if (currentMethodElt == null) {
+					currentMethodElt = getCurrentMethodElt();
+				}
 				if(currentMethodElt != null) {
 					Reference currentMethodRef = checker.getAnnotatedReference(currentMethodElt);
 					rcvRef = ((ExecutableReference) currentMethodRef).getThisRef();
