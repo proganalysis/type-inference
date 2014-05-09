@@ -9,6 +9,8 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.inference2.ConstraintSolver.FailureStatus;
+
 import static com.esotericsoftware.minlog.Log.*;
 
 
@@ -44,7 +46,8 @@ public abstract class AbstractTypingExtractor implements TypingExtractor {
 			} else {
 				AnnotationMirror leftAnno = leftAnnos.iterator().next();
 				AnnotationMirror rightAnno = rightAnnos.iterator().next();
-				if (!checker.getQualifierHierarchy().isSubtype(leftAnno, rightAnno)) {
+				if (!checker.getQualifierHierarchy().isSubtype(leftAnno, rightAnno)
+						&& checker.getFailureStatus(c) == FailureStatus.ERROR) {
 					errors.add(c);
 				}
 			}
