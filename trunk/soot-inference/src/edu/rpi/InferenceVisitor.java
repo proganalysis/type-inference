@@ -183,7 +183,7 @@ public class InferenceVisitor extends AbstractStmtSwitch {
             assert base instanceof Local;
             AnnotatedValue aBase = t.getAnnotatedValue((Local) base);
             AnnotatedValue aComponent = t.getAnnotatedValue(aBase.getIdentifier() + "[]", 
-                    ((ArrayType) base.getType()).getElementType(), Kind.LOCAL, base);
+                    ((ArrayType) base.getType()).getElementType(), Kind.COMPONENT, base);
             if (sub != null && sup == null) 
                 t.handleInstanceFieldWrite(aBase, aComponent, sub);
             else if (sub == null && sup != null)

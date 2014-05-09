@@ -7,6 +7,8 @@ import soot.tagkit.*;
 
 import checkers.quals.SubtypeOf;
 
+import static com.esotericsoftware.minlog.Log.*;
+
 public class AnnotationUtils {
 
     private static AnnotationUtils instance;
@@ -48,8 +50,8 @@ public class AnnotationUtils {
                         && annotationType().equals(((Annotation) obj).annotationType());
                 }
             };
-        } catch (ClassNotFoundException e) {
-            System.out.println("ERROR: Cannot find class: " + name);
+        } catch (Exception e) {
+            error("Cannot find class: " + name);
         }
 
         return ret;

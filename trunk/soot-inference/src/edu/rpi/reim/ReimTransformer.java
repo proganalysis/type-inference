@@ -152,6 +152,14 @@ public class ReimTransformer extends InferenceTransformer {
 	}
 
     @Override
+    protected void annotateArrayComponent(AnnotatedValue v, Object o) {
+        if (!isAnnotated(v)) {
+            v.addAnnotation(READONLY);
+            v.addAnnotation(POLYREAD);
+        }
+    }
+
+    @Override
     protected void annotateField(AnnotatedValue v, SootField field) {
         if (!isAnnotated(v)) {
             if (field.getName().equals("this$0")) {
