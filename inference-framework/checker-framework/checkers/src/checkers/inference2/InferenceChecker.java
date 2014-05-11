@@ -117,7 +117,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
     
     private Set<Constraint> constraints = new LinkedHashSet<Constraint>();
 
-    private AnnotatedTypeFactory currentFactory;
+    protected AnnotatedTypeFactory currentFactory;
     
     private Set<TypeElement> visitedClasses = new HashSet<TypeElement>();
     
@@ -462,7 +462,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				&& !idElt.getKind().isField()) {
 			return getIdentifier(idElt);
 		}
-		String id = getFileName(tree) //classElt.getQualifiedName() 
+		String id = getFileName(tree) 
 				+ ":" + getLineNumber(tree)
 				+ ":";
 		switch (tree.getKind()) {
@@ -626,13 +626,11 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 					ExecutableElement methodElt = (ExecutableElement) element;
 					AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
 					// THIS
-//					if (!ElementUtils.isStatic(methodElt)) {
 					Reference thisRef = getAnnotatedReference(
 							identifier + THIS_SUFFIX, 
 							RefKind.THIS, tree, element,
 							enclosingType, methodType.getReceiverType());
 					((ExecutableReference) ret).setThisRef(thisRef);
-//					}
 					// RETURN
 					AnnotatedTypeMirror returnType = (element.getKind() == ElementKind.CONSTRUCTOR ? 
 							currentFactory.getAnnotatedType(enclosingType) : methodType.getReturnType());

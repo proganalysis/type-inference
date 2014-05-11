@@ -19,7 +19,7 @@ import checkers.inference2.Reference.AdaptReference;
 
 import static com.esotericsoftware.minlog.Log.*;
 
-public class SetbasedSolver extends AbstractConstraintSolver {
+public class SetbasedSolver extends AbstractConstraintSolver<InferenceChecker> {
 	
 	private Set<Constraint> worklist = new LinkedHashSet<Constraint>();
 

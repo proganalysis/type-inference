@@ -3,10 +3,13 @@
  */
 package checkers.inference2;
 
+import static com.esotericsoftware.minlog.Log.DEBUG;
+import static com.esotericsoftware.minlog.Log.info;
+import static com.esotericsoftware.minlog.Log.warn;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -18,12 +21,9 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import checkers.inference.sflow.InferenceMainSFlow;
 import checkers.util.CheckerMain;
 
 import com.sun.tools.javac.main.Main;
-
-import static com.esotericsoftware.minlog.Log.*;
 
 /**
  * Those helper methods are from {@link CheckerMain}
