@@ -13,7 +13,7 @@ import com.sun.source.tree.Tree;
 public abstract class InferenceTypeVisitor<Checker extends InferenceChecker>
 		extends BaseTypeVisitor<InferenceChecker> {
 
-	public InferenceTypeVisitor(InferenceChecker checker,
+	public InferenceTypeVisitor(Checker checker,
 			CompilationUnitTree root) {
 		super(checker, root);
 	}

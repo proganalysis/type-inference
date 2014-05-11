@@ -21,6 +21,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.inference.reim.quals.Mutable;
 import checkers.inference.reim.quals.Polyread;
@@ -32,6 +33,7 @@ import checkers.inference.sflow.quals.Tainted;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
+import checkers.inference2.InferenceVisitor;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.AdaptReference;
 import checkers.inference2.Reference.ExecutableReference;
@@ -39,12 +41,15 @@ import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.Reference.RefKind;
 import checkers.quals.TypeQualifiers;
+import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -166,7 +171,6 @@ public class SFlowChecker extends InferenceChecker {
         return inferAndroidApp; 
     }
 
-    @Deprecated
 	public boolean isDefaultReadonlyType(AnnotatedTypeMirror t) {
         if (t.getKind().isPrimitive())
             return true;
@@ -392,11 +396,11 @@ public class SFlowChecker extends InferenceChecker {
 	@Override
 	public AnnotationMirror adaptMethod(AnnotationMirror contextAnno,
 			AnnotationMirror declAnno) {
-		if (declAnno.toString().equals(READONLY.toString()))
-			return READONLY;
-		else if (declAnno.toString().equals(MUTABLE.toString()))
-			return MUTABLE;
-		else if (declAnno.toString().equals(POLYREAD.toString()))
+		if (declAnno.toString().equals(TAINTED.toString()))
+			return TAINTED;
+		else if (declAnno.toString().equals(SAFE.toString()))
+			return SAFE;
+		else if (declAnno.toString().equals(POLY.toString()))
 			return contextAnno;
 		else
 			return null;
@@ -435,7 +439,7 @@ public class SFlowChecker extends InferenceChecker {
 			return 1;
 		else if (anno.toString().equals(POLY.toString()))
 			return 2;
-		else if (anno.toString().equals(MUTABLE.toString()))
+		else if (anno.toString().equals(SAFE.toString()))
 			return 3;
 		else 
 			return Integer.MAX_VALUE;
@@ -447,6 +451,83 @@ public class SFlowChecker extends InferenceChecker {
 	@Override
 	public boolean needCheckConflict() {
 		return false;
+	}
+	
+	@Override
+	protected void addSubtypeConstraint(Reference sub, Reference sup) {
+		super.addSubtypeConstraint(sub, sup);
+		if (!containsReadonly(sub) && !containsReadonly(sup)) {
+			// add a subtying constraint with opposite direction
+			super.addSubtypeConstraint(sup, sub);
+		}
+	}
+
+	private boolean containsReadonly(Reference ref) {
+		AnnotatedTypeMirror type = ref.getType();
+		if (type != null && isDefaultReadonlyType(type))
+			return true;
+		if (ref instanceof AdaptReference) {
+			Reference contextRef = ((AdaptReference) ref).getContextRef();
+			Reference declRef = ((AdaptReference) ref).getDeclRef();
+			if (ref instanceof FieldAdaptReference) {
+				if (containsReadonly(contextRef) || containsReadonly(declRef)) {
+					return true;
+				}
+			} else if (containsReadonly(declRef)) {
+				return true;
+			}
+		}
+		for (AnnotationMirror a : ref.getRawAnnotations()) {
+			if (a.toString().equals(READONLY.toString())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	protected SourceVisitor<?, ?> getInferenceVisitor(
+			InferenceChecker inferenceChecker, CompilationUnitTree root) {
+		return new SFlowInferenceVisitor(this, root);
+	}
+	
+	private class SFlowInferenceVisitor extends InferenceVisitor {
+
+		public SFlowInferenceVisitor(InferenceChecker checker,
+				CompilationUnitTree root) {
+			super(checker, root);
+		}
+
+		@Override
+		public Void visitMethod(MethodTree node, Void p) {
+			// Connect THIS for special Android methods.
+			ExecutableElement methodElt = TreeUtils
+					.elementFromDeclaration(node);
+			if (isInferAndroidApp()) {
+				TypeElement enclosingClass = ElementUtils
+						.enclosingClass(methodElt);
+				TypeMirror superclass = enclosingClass.getSuperclass();
+				boolean needConnect = false;
+				if (androidClasses.contains(superclass.toString())) {
+					needConnect = true;
+				} else {
+					for (TypeMirror t : enclosingClass.getInterfaces()) {
+						if (androidClasses.contains(t.toString())) {
+							needConnect = true;
+							break;
+						}
+					}
+				}
+				if (needConnect) {
+					ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(methodElt);
+					Reference classRef = getAnnotatedReference(enclosingClass);
+					addEqualityConstraint(methodRef.getThisRef(), classRef);
+				}
+			}
+			return super.visitMethod(node, p);
+		}
+		
+		
 	}
 
 }
