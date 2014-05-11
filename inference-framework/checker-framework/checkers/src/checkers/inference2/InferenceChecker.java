@@ -148,12 +148,17 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
 		if (isInferring) {
 			// create inference visitor
-			return new InferenceVisitor(this, root);
+			return getInferenceVisitor(this, root);
 		}
 		return super.createSourceVisitor(root);
 	}
 	
 	
+	protected SourceVisitor<?, ?> getInferenceVisitor(
+			InferenceChecker inferenceChecker, CompilationUnitTree root) {
+		return new InferenceVisitor(this, root);
+	}
+
 	@Override
 	protected MultiGraphFactory createQualifierHierarchyFactory() {
         return new InferenceGraphQualifierHierarchy.InferenceGraphFactory(this);

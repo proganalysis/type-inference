@@ -214,6 +214,8 @@ public class SFlowChecker extends InferenceChecker {
             return true;
         return false;
     }
+
+    @Deprecated
     public boolean isSpecialAndroidMethod(ExecutableElement methodElt) {
 		if (methodElt instanceof MethodSymbol) {
             String ownerStr = ((MethodSymbol) methodElt).owner.toString();
