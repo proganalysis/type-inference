@@ -28,7 +28,7 @@ import checkers.inference2.Reference.AdaptReference;
  * @author huangw5
  *
  */
-public abstract class AbstractConstraintSolver implements ConstraintSolver {
+public abstract class AbstractConstraintSolver<Checker extends InferenceChecker> implements ConstraintSolver {
 
     public static class Trace {
         public int avId;
@@ -43,7 +43,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         } 
     }   
         
-    protected InferenceChecker checker;
+    protected Checker checker;
     
     protected Constraint currentConstraint;
         
@@ -125,7 +125,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         + "on " + TRACE_TABLE_NAME + "(value_id);";
     
     
-    public AbstractConstraintSolver(InferenceChecker t) {
+    public AbstractConstraintSolver(Checker t) {
         this.checker = t;
         needTrace = !(System.getProperty("noTrace") != null);
         DB_SCRIPT = InferenceMain.outputDir + File.separator + t.getName() + "-traces.sql";

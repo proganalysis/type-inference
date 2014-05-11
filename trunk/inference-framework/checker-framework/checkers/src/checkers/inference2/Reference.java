@@ -36,6 +36,7 @@ public class Reference {
         METHOD,
         CLASS, 
         ALLOCATION,
+        CALL_SITE,
         METH_ADAPT, 
         FIELD_ADAPT
     } 	
