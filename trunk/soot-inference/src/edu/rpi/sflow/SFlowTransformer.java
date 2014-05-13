@@ -367,8 +367,15 @@ public class SFlowTransformer extends InferenceTransformer {
         for (int i = 0; i < overrider.getParameterCount(); i++) {
             AnnotatedValue overriderParam = getAnnotatedParameter(overrider, i);
             AnnotatedValue overriddenParam = getAnnotatedParameter(overridden, i);
-            if (!isFromLibrary(overriddenParam) || isAnnotated(getVisibilitParameterTags(overridden, i))) 
+            if (!isFromLibrary(overriddenParam) || isAnnotated(getVisibilitParameterTags(overridden, i))) {
                 addSubtypeConstraint(overriddenParam, overriderParam);
+                if (isSource(overriddenParam)) {
+					System.out.println("INFO: found SOURCE " + overriddenParam + " at "
+							+ "\n\t" + getVisitorState().getSootMethod()
+							+ "\n\t" + getVisitorState().getUnit());
+					sourceNum++;
+                }
+            }
         }
         if (overrider.getReturnType() != VoidType.v()) {
             // return: overrider <: overridden 
