@@ -173,12 +173,13 @@ public class SFlowTransformer extends InferenceTransformer {
         if (isPolyLibrary() && isLibraryMethod(invokeMethod)) {
             // Add constraints PARAM -> RET for library methods if 
             // there are no sources or sinks. Otherwise, it may 
-            // lead to unncessary progations...
+            // lead to unnecessary propagations...
             AnnotatedValue aOut = null;
-            if (invokeMethod.isConstructor())
+            if (invokeMethod.isConstructor()) {
                 aOut = getAnnotatedThis(invokeMethod);
-            else if (invokeMethod.getReturnType() != VoidType.v()) 
+            } else if (invokeMethod.getReturnType() != VoidType.v()) {
                 aOut = getAnnotatedReturn(invokeMethod);
+            }
             if (aOut != null) {
                 for (int i = 0; i < invokeMethod.getParameterCount(); i++) {
                     AnnotatedValue aIn = getAnnotatedParameter(invokeMethod, i);
@@ -189,8 +190,6 @@ public class SFlowTransformer extends InferenceTransformer {
             }
             if (!invokeMethod.isStatic() && !invokeMethod.isConstructor()) {
                 AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
-                if (invokeMethod.getName().equals("openConnection"))
-                    System.out.println();
                 if (aOut != null && extractLibraryAnnos(aOut).isEmpty() 
                         && extractLibraryAnnos(aThis).isEmpty()) {
                     super.addSubtypeConstraint(aThis, aOut);
