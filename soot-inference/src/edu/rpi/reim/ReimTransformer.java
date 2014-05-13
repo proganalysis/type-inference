@@ -177,7 +177,7 @@ public class ReimTransformer extends InferenceTransformer {
     @Override
     protected void annotateThis(AnnotatedValue v, SootMethod method) {
         if (!isAnnotated(v) && !method.isStatic()) {
-            if (isDefaultReadonlyType(v.getType())) {
+            if (isDefaultReadonlyType(v.getType()) && !method.isConstructor()) {
                 v.addAnnotation(READONLY);
             } else if (isLibraryMethod(method)) {
                 v.addAnnotation(MUTABLE);
