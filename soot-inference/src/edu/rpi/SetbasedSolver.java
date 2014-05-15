@@ -21,6 +21,10 @@ public class SetbasedSolver extends AbstractConstraintSolver {
         super(t);
     }
 
+    public SetbasedSolver(InferenceTransformer t, boolean b) {
+        super(t, b);
+    }
+
 	private void buildRefToConstraintMapping(Constraint c) {
         AnnotatedValue left = null, right = null; 
         if (c instanceof SubtypeConstraint

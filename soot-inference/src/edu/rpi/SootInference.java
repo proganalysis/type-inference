@@ -86,6 +86,7 @@ public class SootInference {
 
         set(LEVEL_DEBUG);
 
+
         InferenceTransformer reimTransformer = new ReimTransformer();
         InferenceTransformer sflowTransformer = new SFlowTransformer();
         PackManager.v().getPack("jtp").add(new Transform("jtp.reim", reimTransformer));
@@ -99,8 +100,10 @@ public class SootInference {
 
         String outputDir = SourceLocator.v().getOutputDir();
 
+        boolean needTrace = !(System.getProperty("noTrace") != null);
+
         System.out.println("INFO: Solving Reim constraints:  " + reimTransformer.getConstraints().size() + " in total...");
-        ConstraintSolver cs = new SetbasedSolver(reimTransformer);
+        ConstraintSolver cs = new SetbasedSolver(reimTransformer, false);
         Set<Constraint> errors = cs.solve();
         try {
             PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-constraints.log");
@@ -123,7 +126,7 @@ public class SootInference {
         }
 
         System.out.println("INFO: Solving SFlow constraints:  " + sflowTransformer.getConstraints().size() + " in total...");
-        ConstraintSolver sflowSolver = new SFlowConstraintSolver(sflowTransformer);
+        ConstraintSolver sflowSolver = new SFlowConstraintSolver(sflowTransformer, needTrace);
         errors = sflowSolver.solve();
         try {
             PrintStream sflowOut = new PrintStream(outputDir + File.separator + "sflow-constraints.log");

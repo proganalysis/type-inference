@@ -82,7 +82,11 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
     private final byte BOTTOM_MASK = 0x08;
 
     public SFlowConstraintSolver(InferenceTransformer t) {
-        super(t);
+    	this(t, false);
+    }
+
+    public SFlowConstraintSolver(InferenceTransformer t, boolean b) {
+        super(t, b);
         if (!(t instanceof SFlowTransformer)) 
             throw new RuntimeException("SFlowConstraintSolver expects SFlowTransformer");
         this.st = (SFlowTransformer) t;
@@ -93,7 +97,6 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
         if (preferSink && preferSource) {
             throw new RuntimeException("Can only have one of {preferSource, preferSource}!");
         }
-
     }
 
 
