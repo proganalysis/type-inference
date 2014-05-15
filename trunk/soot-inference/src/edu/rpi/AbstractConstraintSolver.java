@@ -116,8 +116,13 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         + "on " + TRACE_TABLE_NAME + "(value_id);";
 
     public AbstractConstraintSolver(InferenceTransformer t) {
+//        needTrace = !(System.getProperty("noTrace") != null);
+    	this(t, false);
+    }
+
+    public AbstractConstraintSolver(InferenceTransformer t, boolean b) {
+    	this.needTrace = b;
         this.t = t;
-        needTrace = !(System.getProperty("noTrace") != null);
         DB_NAME = SourceLocator.v().getOutputDir() + File.separator + t.getName() + "-traces.sqlite";
         DB_SCRIPT = SourceLocator.v().getOutputDir() + File.separator + t.getName() + "-traces.sql";
         tFactory =  Executors.defaultThreadFactory();
