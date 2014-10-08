@@ -6,7 +6,6 @@ package checkers.inference2.reim;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -34,8 +33,6 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
-import checkers.util.TypesUtils;
-
 import com.sun.source.tree.Tree;
 
 /**
@@ -55,8 +52,6 @@ public class ReimChecker extends InferenceChecker {
 	private List<Pattern> defaultPurePatterns;
 	
     private Set<String> defaultReadonlyRefTypes;
-	
-	private Map<String, AnnotationMirror> libStaticTypeOf;
 	
 	private AnnotationUtils annoFactory;
 	
@@ -131,13 +126,14 @@ public class ReimChecker extends InferenceChecker {
 	@Override
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
 			Reference aRhs) {
-		Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-		set.add(MUTABLE);
-		Reference mutableRef = getAnnotatedReference(set.toString(),
-				RefKind.CONSTANT, null,
-				null, null, null, set);
-		addEqualityConstraint(aBase, mutableRef);
-		super.handleInstanceFieldWrite(aBase, aField, aRhs);
+		if (aBase != null) {
+			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+			set.add(MUTABLE);
+			Reference mutableRef = getAnnotatedReference(set.toString(),
+					RefKind.CONSTANT, null, null, null, null, set);
+			addEqualityConstraint(aBase, mutableRef);
+			super.handleInstanceFieldWrite(aBase, aField, aRhs);
+		}
 	}
 
 	/**

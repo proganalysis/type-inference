@@ -22,6 +22,7 @@ import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Constraint.EqualityConstraint;
 import checkers.inference2.Constraint.SubtypeConstraint;
 import checkers.inference2.Constraint.UnequalityConstraint;
+import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.Reference.AdaptReference;
 
 /**
@@ -154,6 +155,9 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
         } finally {
             currentConstraint = null;
         }
+	//        if (hasUpdate) {
+        //	System.out.println(c.toString("aaa", "bbb"));
+        //}
         return hasUpdate;
 	}
 
@@ -192,7 +196,7 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
 		// Now update the right: If a right annotation is not super type 
 		// of any left annotation, remove it
 		// We only do this if it is strict subtyping
-		if (checker.isStrictSubtyping()) {
+		if (checker.isStrictSubtyping() && checker.getFailureStatus(c) != FailureStatus.WARN) {
 			for (Iterator<AnnotationMirror> it = supAnnos.iterator(); 
 					it.hasNext();) {
 				AnnotationMirror supAnno = it.next();

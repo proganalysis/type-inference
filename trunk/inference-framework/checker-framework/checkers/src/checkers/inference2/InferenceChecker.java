@@ -121,6 +121,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
     
     private Set<TypeElement> visitedClasses = new HashSet<TypeElement>();
     
+    private CompilationUnitTree currentNewRoot;
+    
 	@Override
 	public void initChecker(ProcessingEnvironment processingEnv) {
 		super.initChecker(processingEnv);
@@ -363,7 +365,11 @@ public abstract class InferenceChecker extends BaseTypeChecker {
     }
     
     public long getLineNumber(Tree tree) {
-    	return getLineNumber(currentRoot, tree);
+    	if (currentNewRoot == null) {
+			return getLineNumber(currentRoot, tree);
+		} else {
+			return getLineNumber(currentNewRoot, tree);
+		}
     }
 	
     public long getLineNumber(CompilationUnitTree root, Tree tree) {
@@ -441,14 +447,18 @@ public abstract class InferenceChecker extends BaseTypeChecker {
     }
     
 	public String getFileName(Tree tree) {
-		return getFileName(currentRoot, tree);
+		if (currentNewRoot == null) {
+			return getFileName(currentRoot, tree);
+		} else {
+			return getFileName(currentNewRoot, tree);
+		}
 	}
 	
 	public String getFileName(CompilationUnitTree root, Tree tree) {
 		String fileName = root.getSourceFile().getName();
 		return fileName;
 	}
-
+	
 	public String getIdentifier(Tree tree) {
 		// Handle "this"
 		if (tree.toString().equals("this")) {
@@ -492,6 +502,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	}
 	
 	public String getIdentifier(Element elt) {
+		currentNewRoot = getRootByElement(elt);
 		Tree decl = getDeclaration(elt);
 		ExecutableElement currentMethod; 
 		if (decl != null) {
@@ -540,6 +551,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	}
 
     public Reference getAnnotatedReference(Tree t) {
+    	currentNewRoot = null;
     	String identifier = getIdentifier(t);
     	AnnotatedTypeMirror type = currentFactory.getAnnotatedType(t);
 		TypeElement enclosingType = TreeUtils.elementFromDeclaration(
@@ -941,6 +953,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				return ret;
 			}
 		});
+		int totalElementNum = 0, readNum = 0;
 		for (Reference r : references) {
 			Element  elt = r.getElement();
 			if ((elt == null && r.getKind() != RefKind.ALLOCATION) 
@@ -948,11 +961,27 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 					|| (elt instanceof ExecutableElement)
 						&& isCompilerAddedConstructor((ExecutableElement) elt)
 					|| r.getKind() == RefKind.CONSTANT
-					|| r.getKind() == RefKind.COMPONENT
-					|| r.getKind() == RefKind.THIS
-					|| r.getKind() == RefKind.RETURN) {
+					|| r.getKind() == RefKind.CALL_SITE
+					|| r.getKind() == RefKind.CLASS
+					|| r.getKind() == RefKind.FIELD_ADAPT
+					|| r.getKind() == RefKind.LITERAL
+					|| r.getKind() == RefKind.METH_ADAPT
+					|| r.getKind() == RefKind.METHOD
+					|| (r.getKind() == RefKind.PARAMETER
+					&& r.getName().equals("this"))) {
 				continue;
 			}
+			
+			totalElementNum++;
+			Iterator<AnnotationMirror> annoIter = r.getAnnotations(this).iterator();
+			if (annoIter.hasNext()) {
+				if (getAnnotaionWeight(annoIter.next()) == 1) {
+					readNum++;
+				}
+			} else {
+				totalElementNum--;
+			}
+				
 			AnnotatedTypeMirror type = r.getType();
 			annotateInferredType(type, r);
 			StringBuilder sb = new StringBuilder();
@@ -962,8 +991,13 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			sb.append(type.toString()).append("\t");
 //			sb.append(InferenceUtils.formatAnnotationString(r.getRawAnnotations()));
 			sb.append("(" + r.getId() + ")");
+			sb.append(r.getKind());
 			out.println(sb.toString());
 		}
+		
+		out.println("There are  " + readNum + " ("
+				+ (((float) readNum / totalElementNum) * 100)
+				+ "%) readonly references out of " + totalElementNum + " references.");
 	}
 	
 	public void printJaif(PrintWriter out) {
@@ -1124,6 +1158,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
     }
     
     public void annotateInferredType(AnnotatedTypeMirror type, Tree tree) {
+    	currentNewRoot = null;
     	String identifier = getIdentifier(tree);
     	Reference ref = getAnnotatedReferenceByIdentifier(identifier);
     	if (ref != null) {

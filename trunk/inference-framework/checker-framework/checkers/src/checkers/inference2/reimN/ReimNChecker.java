@@ -4,7 +4,6 @@
 package checkers.inference2.reimN;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +37,6 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.Tree;
 
@@ -64,7 +62,7 @@ public class ReimNChecker extends InferenceChecker {
 
 	private AnnotationUtils annoFactory;
 	
-	private static int count = 0; // count reference in handleInstanceFieldWrite()
+	private static int count; // count reference in handleInstanceFieldWrite()
 
 	@Override
 	public void initChecker(ProcessingEnvironment processingEnv) {
@@ -107,6 +105,8 @@ public class ReimNChecker extends InferenceChecker {
 		defaultReadonlyRefTypes.add("java.util.concurrent.atomic.AtomicLong");
 		defaultReadonlyRefTypes.add("java.math.BigDecimal");
 		defaultReadonlyRefTypes.add("java.math.BigInteger");
+		
+		count = 0;
 	}
 
 	public boolean isDefaultReadonlyType(AnnotatedTypeMirror t) {
@@ -144,22 +144,18 @@ public class ReimNChecker extends InferenceChecker {
 	@Override
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
 			Reference aRhs) {		
-		/*Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-		set.add(MUTABLE);
-		Reference mutableRef = getAnnotatedReference(set.toString(),
-				RefKind.CONSTANT, null,
-				null, null, null, set);
-		addEqualityConstraint(aBase, mutableRef);*/
-		count++;
-		Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-		set.add(READMUT);
-		set.add(POLYMUT);
-		set.add(MUTMUT);
-		Reference mutableRef = getAnnotatedReference(set.toString()+count,
-				RefKind.CONSTANT, null,
-				null, null, null, set);
-		addEqualityConstraint(aBase, mutableRef);
-		super.handleInstanceFieldWrite(aBase, aField, aRhs);
+		if (aBase != null) {
+			count++;
+			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+			set.add(READMUT);
+			set.add(POLYMUT);
+			set.add(MUTMUT);
+			Reference mutableRef = getAnnotatedReference(
+					set.toString() + count, RefKind.CONSTANT, null, null, null,
+					null, set);
+			addEqualityConstraint(aBase, mutableRef);
+			super.handleInstanceFieldWrite(aBase, aField, aRhs);
+		}		
 	}
 
 	/**
@@ -199,23 +195,11 @@ public class ReimNChecker extends InferenceChecker {
 	@Override
 	protected Reference createMethodAdaptReference(Reference context,
 			Reference decl, Reference assignTo) {
-		// Use callsite as context
-        Set<Tree.Kind> kinds = EnumSet.of(Tree.Kind.METHOD_INVOCATION, 
-            Tree.Kind.NEW_CLASS);
-        Tree tree = TreeUtils.enclosingOfKind(currentPath, kinds);
-        if (tree != null) {
-            // use constant reference
-        	String identifier = CALLSITE_PREFIX + getIdentifier(tree);
-			TypeElement enclosingType = TreeUtils
-					.elementFromDeclaration(TreeUtils
-							.enclosingClass(currentFactory.getPath(tree)));
-			Reference callsiteRef = getAnnotatedReference(identifier,
-					RefKind.CALL_SITE, null, null, enclosingType,
-					currentFactory.getAnnotatedType(tree));
-            return new MethodAdaptReference(callsiteRef, decl);
-        } else {
-            throw new RuntimeException("Invalid adaptation context!");
-        }
+        if (assignTo == null)
+            return decl;
+        else 
+            return new MethodAdaptReference(assignTo, decl);
+
 	}
 
 	/*
@@ -252,6 +236,7 @@ public class ReimNChecker extends InferenceChecker {
 	protected void annotateArrayComponent(Reference r, Element elt) {
 		if (!isAnnotated(r)) {
 			r.addAnnotation(POLYPOLY);
+			r.addAnnotation(READPOLY);
 			if (elt == null || !isFromLibrary(elt)) {
 				r.addAnnotation(READREAD);
 			}
@@ -390,7 +375,7 @@ public class ReimNChecker extends InferenceChecker {
 	 */
 	@Override
 	public boolean isStrictSubtyping() {
-		return false;
+		return true;
 	}
 
 	/*
