@@ -21,7 +21,7 @@ import checkers.quals.TypeQualifier;
 @TypeQualifier
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@SubtypeOf({PolyPoly.class})
+@SubtypeOf({PolyPoly.class, ReadRead.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PolyMut {
 

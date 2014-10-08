@@ -27,8 +27,8 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 @Documented
 @TypeQualifier
 @Inherited
-@Retention(RetentionPolicy.RUNTIME)
 @SubtypeOf({Unqualified.class})
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @ImplicitFor(
     treeClasses={LiteralTree.class, BinaryTree.class, CompoundAssignmentTree.class},
