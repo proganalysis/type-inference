@@ -509,10 +509,13 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         Element idElt = TreeUtils.elementFromUse(idTree);
         // If idElt is "this", then we create the thisRef
         Reference idRef = null;
-        if (idElt.getSimpleName().contentEquals("this")
-                && currentMethodElt != null) {
-            Reference currentMethodRef = checker.getAnnotatedReference(currentMethodElt);
-            idRef = ((ExecutableReference) currentMethodRef).getThisRef();
+        if (idElt.getSimpleName().contentEquals("this")) {
+        	if (currentMethodElt != null) {
+        		Reference currentMethodRef = checker.getAnnotatedReference(currentMethodElt);
+                idRef = ((ExecutableReference) currentMethodRef).getThisRef();
+        	} else { // handle instance initialization blocks 
+        		idRef = lhsRef;
+        	}
         } else {
             idRef = checker.getAnnotatedReference(idElt);
         }

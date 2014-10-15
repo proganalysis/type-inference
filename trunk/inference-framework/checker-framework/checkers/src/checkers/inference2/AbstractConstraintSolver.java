@@ -9,10 +9,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayDeque;
-import java.util.BitSet;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +20,6 @@ import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Constraint.EqualityConstraint;
 import checkers.inference2.Constraint.SubtypeConstraint;
 import checkers.inference2.Constraint.UnequalityConstraint;
-import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.Reference.AdaptReference;
 
 /**
@@ -155,9 +152,9 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
         } finally {
             currentConstraint = null;
         }
-	//        if (hasUpdate) {
-        //	System.out.println(c.toString("aaa", "bbb"));
-        //}
+	    if (hasUpdate) {
+        	System.out.println(c.toString("aaa", "bbb"));
+        }
         return hasUpdate;
 	}
 

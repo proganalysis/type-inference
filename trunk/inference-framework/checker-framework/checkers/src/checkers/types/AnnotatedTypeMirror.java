@@ -21,7 +21,6 @@ import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 import checkers.nullness.quals.NonNull;
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol;
