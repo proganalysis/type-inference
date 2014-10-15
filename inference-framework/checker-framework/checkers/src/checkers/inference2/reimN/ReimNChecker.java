@@ -199,7 +199,6 @@ public class ReimNChecker extends InferenceChecker {
             return decl;
         else 
             return new MethodAdaptReference(assignTo, decl);
-
 	}
 
 	/*
@@ -236,10 +235,11 @@ public class ReimNChecker extends InferenceChecker {
 	protected void annotateArrayComponent(Reference r, Element elt) {
 		if (!isAnnotated(r)) {
 			r.addAnnotation(POLYPOLY);
-			r.addAnnotation(READPOLY);
-			if (elt == null || !isFromLibrary(elt)) {
-				r.addAnnotation(READREAD);
-			}
+//			r.addAnnotation(READPOLY);
+			r.addAnnotation(READREAD);
+//			if (elt == null || !isFromLibrary(elt)) {
+//				r.addAnnotation(READREAD);
+//			}
 		}
 	}
 
@@ -261,6 +261,9 @@ public class ReimNChecker extends InferenceChecker {
 				r.addAnnotation(READPOLY);
 			} else {
 				r.setAnnotations(getSourceLevelQualifiers(), this);
+//				r.addAnnotation(READREAD);
+//				r.addAnnotation(READMUT);
+//				r.addAnnotation(MUTMUT);
 			}
 		}
 	}
@@ -318,9 +321,12 @@ public class ReimNChecker extends InferenceChecker {
 			if (isDefaultReadonlyType(r.getType())) {
 				r.addAnnotation(READREAD);
 			} else {
+				//r.setAnnotations(getSourceLevelQualifiers(), this);
 				r.addAnnotation(READREAD);
 				r.addAnnotation(POLYPOLY);
 				r.addAnnotation(READPOLY);
+//				r.addAnnotation(READMUT);
+//				r.addAnnotation(POLYMUT);
 			}
 		}
 	}
@@ -425,9 +431,9 @@ public class ReimNChecker extends InferenceChecker {
 			return 1;
 		else if (anno.toString().equals(READPOLY.toString()))
 			return 2;
-		else if (anno.toString().equals(READMUT.toString()))
-			return 3;
 		else if (anno.toString().equals(POLYPOLY.toString()))
+			return 3;
+		else if (anno.toString().equals(READMUT.toString()))
 			return 4;
 		else if (anno.toString().equals(POLYMUT.toString()))
 			return 5;

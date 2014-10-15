@@ -507,7 +507,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		ExecutableElement currentMethod; 
 		if (decl != null) {
 			return getIdentifier(decl);
-		} else if (elt.getSimpleName().contentEquals("this") 
+		} else if (elt.getSimpleName().contentEquals("this")
 				&& (currentMethod = getCurrentMethodElt()) != null) {
 			return getIdentifier(currentMethod) + THIS_SUFFIX;
 		} else {
@@ -852,7 +852,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	protected void handleMethodCall(ExecutableElement invokeMethod,
 			Reference receiverRef, Reference assignToRef, List<Reference> argumentRefs) {
 		ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
-        if (!ElementUtils.isStatic(invokeMethod)) {
+        if (!ElementUtils.isStatic(invokeMethod) && !receiverRef.getName().equals("super")) {
             // receiver: y <: C |> this
             addSubtypeConstraint(receiverRef, 
             		getMethodAdaptReference(receiverRef, methodRef.getThisRef(), assignToRef));

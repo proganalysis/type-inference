@@ -211,7 +211,9 @@ public class ReimChecker extends InferenceChecker {
                 r.addAnnotation(READONLY);
                 r.addAnnotation(POLYREAD);
             } else {
-                r.setAnnotations(getSourceLevelQualifiers(), this);
+                //r.setAnnotations(getSourceLevelQualifiers(), this);
+            	r.addAnnotation(READONLY);
+                r.addAnnotation(MUTABLE);
             }
         }
 	}
