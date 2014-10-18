@@ -1,5 +1,5 @@
 package java.net;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +22,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public static void setFileNameMap(@ReadRead FileNameMap map) {
+    public static void setFileNameMap(@Readonly FileNameMap map) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -32,7 +32,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getConnectTimeout(@ReadRead URLConnection this)  {
+    public int getConnectTimeout(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -40,71 +40,71 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getReadTimeout(@ReadRead URLConnection this)  {
+    public int getReadTimeout(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    protected URLConnection(@ReadRead URLConnection this, @ReadRead URL url)  {
+    protected URLConnection(@Readonly URLConnection this, @Readonly URL url)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public URL getURL(@ReadRead URLConnection this)  {
+    public URL getURL(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getContentLength(@ReadRead URLConnection this)  {
+    public int getContentLength(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getContentLengthLong(@ReadRead URLConnection this)  {
+    public long getContentLengthLong(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getContentType(@ReadRead URLConnection this)  {
+    public String getContentType(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getContentEncoding(@ReadRead URLConnection this)  {
+    public String getContentEncoding(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getExpiration(@ReadRead URLConnection this)  {
+    public long getExpiration(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getDate(@ReadRead URLConnection this)  {
+    public long getDate(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getLastModified(@ReadRead URLConnection this)  {
+    public long getLastModified(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHeaderField(@ReadRead URLConnection this, String name)  {
+    public String getHeaderField(@Readonly URLConnection this, String name)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public @ReadRead Map<String, @ReadRead List<String>> getHeaderFields(@ReadRead URLConnection this)  {
+    public @Readonly Map<String, @Readonly List<String>> getHeaderFields(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getHeaderFieldInt(@ReadRead URLConnection this, String name, int Default)  {
+    public int getHeaderFieldInt(@Readonly URLConnection this, String name, int Default)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getHeaderFieldLong(@ReadRead URLConnection this, String name, long Default)  {
+    public long getHeaderFieldLong(@Readonly URLConnection this, String name, long Default)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getHeaderFieldDate(@ReadRead URLConnection this, String name, long Default)  {
+    public long getHeaderFieldDate(@Readonly URLConnection this, String name, long Default)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHeaderFieldKey(@ReadRead URLConnection this, int n)  {
+    public String getHeaderFieldKey(@Readonly URLConnection this, int n)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHeaderField(@ReadRead URLConnection this, int n)  {
+    public String getHeaderField(@Readonly URLConnection this, int n)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -116,7 +116,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public Permission getPermission(@ReadRead URLConnection this)  throws IOException {
+    public Permission getPermission(@Readonly URLConnection this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -128,7 +128,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toString(@ReadRead URLConnection this)  {
+    public String toString(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -136,7 +136,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getDoInput(@ReadRead URLConnection this)  {
+    public boolean getDoInput(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -144,7 +144,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getDoOutput(@ReadRead URLConnection this)  {
+    public boolean getDoOutput(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -152,7 +152,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getAllowUserInteraction(@ReadRead URLConnection this)  {
+    public boolean getAllowUserInteraction(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -168,7 +168,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getUseCaches(@ReadRead URLConnection this)  {
+    public boolean getUseCaches(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -176,11 +176,11 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getIfModifiedSince(@ReadRead URLConnection this)  {
+    public long getIfModifiedSince(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getDefaultUseCaches(@ReadRead URLConnection this)  {
+    public boolean getDefaultUseCaches(@Readonly URLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -196,11 +196,11 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getRequestProperty(@ReadRead URLConnection this, String key)  {
+    public String getRequestProperty(@Readonly URLConnection this, String key)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public @ReadRead Map<String, @ReadRead List<String>> getRequestProperties() {
+    public @Readonly Map<String, @Readonly List<String>> getRequestProperties() {
         throw new RuntimeException("skeleton method");
     }
 
@@ -214,7 +214,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public static synchronized void setContentHandlerFactory(@ReadRead ContentHandlerFactory fac) {
+    public static synchronized void setContentHandlerFactory(@Readonly ContentHandlerFactory fac) {
         throw new RuntimeException("skeleton method");
     }
 

@@ -1,6 +1,6 @@
 package com.sun.source.tree;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface ArrayTypeTree extends Tree {
-    @PolyPoly Tree getType(@PolyPoly ArrayTypeTree this) ;
+    @Polyread Tree getType(@Polyread ArrayTypeTree this) ;
 }

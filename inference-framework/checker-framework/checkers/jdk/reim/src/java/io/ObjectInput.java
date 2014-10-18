@@ -1,9 +1,9 @@
 package java.io;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface ObjectInput extends DataInput {
-    public int available(@ReadRead ObjectInput this)  throws IOException;
+    public int available(@Readonly ObjectInput this)  throws IOException;
     public void close() throws IOException;
     public int read() throws IOException;
     public int read(byte[] b) throws IOException;

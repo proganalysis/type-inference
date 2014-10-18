@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public final class Long extends Number implements Comparable<Long> {
     public static final long MIN_VALUE = 0x8000000000000000L;
@@ -111,7 +111,7 @@ public final class Long extends Number implements Comparable<Long> {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadRead Object obj) {
+    public boolean equals(@Readonly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 

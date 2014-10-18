@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface ImportTree extends Tree {
-    boolean isStatic(@ReadRead ImportTree this) ;
-    @PolyPoly Tree getQualifiedIdentifier(@PolyPoly ImportTree this) ;
+    boolean isStatic(@Readonly ImportTree this) ;
+    @Polyread Tree getQualifiedIdentifier(@Polyread ImportTree this) ;
 }

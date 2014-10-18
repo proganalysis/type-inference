@@ -1,7 +1,7 @@
 package java.util;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface Comparator<T> {
-    int compare(@ReadRead Comparator<T> this, @ReadRead T o1, @ReadRead T o2) ; //WEI
-    boolean equals(@ReadRead Comparator<T> this, @ReadRead Object obj)  ;   //WEI
+    int compare(@Readonly Comparator<T> this, @Readonly T o1, @Readonly T o2) ; //WEI
+    boolean equals(@Readonly Comparator<T> this, @Readonly Object obj)  ;   //WEI
 }

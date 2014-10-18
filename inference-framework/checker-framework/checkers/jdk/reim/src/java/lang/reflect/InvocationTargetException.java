@@ -1,5 +1,5 @@
 package java.lang.reflect;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 // should extend ReflectiveOperationException in JDK7
 public class InvocationTargetException extends Exception {
@@ -17,11 +17,11 @@ public class InvocationTargetException extends Exception {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable getTargetException(@ReadRead InvocationTargetException this)  {
+    public Throwable getTargetException(@Readonly InvocationTargetException this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable getCause(@ReadRead InvocationTargetException this)  {
+    public Throwable getCause(@Readonly InvocationTargetException this)  {
         throw new RuntimeException("skeleton method");
     }
 }

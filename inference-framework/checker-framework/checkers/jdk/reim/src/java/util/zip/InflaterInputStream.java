@@ -1,5 +1,5 @@
 package java.util.zip;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.FilterInputStream;
 import java.io.InputStream;
@@ -29,7 +29,7 @@ public class InflaterInputStream extends FilterInputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public int available(@ReadRead InflaterInputStream this)  throws IOException {
+    public int available(@Readonly InflaterInputStream this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -41,7 +41,7 @@ public class InflaterInputStream extends FilterInputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported(@ReadRead InflaterInputStream this)  {
+    public boolean markSupported(@Readonly InflaterInputStream this)  {
         throw new RuntimeException("skeleton method");
     }
 

@@ -1,5 +1,5 @@
 package com.sun.source.tree;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface EnhancedForLoopTree extends StatementTree {
     VariableTree getVariable();

@@ -1,6 +1,6 @@
 // This class could be better annotated.
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.InputStream;
 import java.io.IOException;

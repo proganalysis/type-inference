@@ -1,5 +1,5 @@
 package java.util;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public
 class Random implements java.io.Serializable {
@@ -15,39 +15,39 @@ class Random implements java.io.Serializable {
       throw new RuntimeException("skeleton method");
     }
 
-  protected int next(@ReadRead Random this, int bits)  {
+  protected int next(@Readonly Random this, int bits)  {
       throw new RuntimeException("skeleton method");
     }
 
-    public void nextBytes(@ReadRead Random this, byte @ReadRead [] bytes)  {
+    public void nextBytes(@Readonly Random this, byte @Readonly [] bytes)  {
       throw new RuntimeException("skeleton method");
     }
 
-    public int nextInt(@ReadRead Random this)  {
+    public int nextInt(@Readonly Random this)  {
       throw new RuntimeException("skeleton method");
     }
 
-    public int nextInt(@ReadRead Random this, int n)  {
+    public int nextInt(@Readonly Random this, int n)  {
       throw new RuntimeException("skeleton method");
     }
 
-    public long nextLong(@ReadRead Random this)  {
+    public long nextLong(@Readonly Random this)  {
       throw new RuntimeException("skeleton method");
     }
 
-    public boolean nextBoolean(@ReadRead Random this)  {
+    public boolean nextBoolean(@Readonly Random this)  {
       throw new RuntimeException("skeleton method");
     }
 
-    public float nextFloat(@ReadRead Random this)  {
+    public float nextFloat(@Readonly Random this)  {
       throw new RuntimeException("skeleton method");
     }
 
-    public double nextDouble(@ReadRead Random this)  {
+    public double nextDouble(@Readonly Random this)  {
       throw new RuntimeException("skeleton method");
     }
 
-    synchronized public double nextGaussian(@ReadRead Random this)  {
+    synchronized public double nextGaussian(@Readonly Random this)  {
       throw new RuntimeException("skeleton method");
     }
 }

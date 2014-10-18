@@ -1,5 +1,5 @@
 package java.lang.reflect;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.lang.annotation.Annotation;
 
@@ -12,7 +12,7 @@ public class AccessibleObject implements AnnotatedElement {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean isAccessible(@ReadRead AccessibleObject this)  {
+    public boolean isAccessible(@Readonly AccessibleObject this)  {
         throw new RuntimeException("skeleton method");
     }
 

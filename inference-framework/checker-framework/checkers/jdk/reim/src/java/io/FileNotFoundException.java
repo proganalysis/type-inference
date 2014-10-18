@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class FileNotFoundException extends IOException {
     private static final long serialVersionUID = -897856973823710492L;

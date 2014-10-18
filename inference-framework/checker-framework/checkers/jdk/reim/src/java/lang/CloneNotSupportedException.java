@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class CloneNotSupportedException extends Exception {
     private static final long serialVersionUID = 0L;

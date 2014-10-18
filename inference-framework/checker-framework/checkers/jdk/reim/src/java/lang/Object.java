@@ -1,31 +1,31 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class Object {
 
     private static native void registerNatives();
-    public final native Class<?> getClass(@ReadRead Object this) ;
-    public native int hashCode(@ReadRead Object this) ;
+    public final native Class<?> getClass(@Readonly Object this) ;
+    public native int hashCode(@Readonly Object this) ;
 
-    public boolean equals(@ReadRead Object this, @ReadRead Object obj) {
+    public boolean equals(@Readonly Object this, @Readonly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
-    protected native Object clone(@ReadRead Object this)  throws CloneNotSupportedException ;
+    protected native Object clone(@Readonly Object this)  throws CloneNotSupportedException ;
 
-    public String toString(@ReadRead Object this)  {
+    public String toString(@Readonly Object this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public final native void notify(@ReadRead Object this) ;
-    public final native void notifyAll(@ReadRead Object this) ;
-    public final native void wait(@ReadRead Object this, long timeout)  throws InterruptedException;
+    public final native void notify(@Readonly Object this) ;
+    public final native void notifyAll(@Readonly Object this) ;
+    public final native void wait(@Readonly Object this, long timeout)  throws InterruptedException;
 
-    public final void wait(@ReadRead Object this, long timeout, int nanos)  throws InterruptedException  {
+    public final void wait(@Readonly Object this, long timeout, int nanos)  throws InterruptedException  {
         throw new RuntimeException("skeleton method");
     }
 
-    public final void wait(@ReadRead Object this)  throws InterruptedException  {
+    public final void wait(@Readonly Object this)  throws InterruptedException  {
         throw new RuntimeException("skeleton method");
     }
 

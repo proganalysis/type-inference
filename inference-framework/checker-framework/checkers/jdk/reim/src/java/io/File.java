@@ -13,7 +13,7 @@ import java.security.SecureRandom;
 //import java.nio.file.Paths;
 //import java.nio.file.attribute.FileAttribute;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class File implements Serializable, Comparable<File> {
     private static final long serialVersionUID = 0L;
@@ -31,69 +31,69 @@ public class File implements Serializable, Comparable<File> {
     public File(String parent, String child) {
         throw new RuntimeException("skeleton method");
     }
-    public File(@PolyPoly File this, @PolyPoly File parent, String child)  {
+    public File(@Polyread File this, @Polyread File parent, String child)  {
       throw new RuntimeException("skeleton method");
     }
-    public File(@ReadRead URI uri) {
+    public File(@Readonly URI uri) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getName(@ReadRead File this)  {
+    public String getName(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public String getParent(@ReadRead File this)  {
+    public String getParent(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public File getParentFile(@PolyPoly File this)  {
+    public @Polyread File getParentFile(@Polyread File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public String getPath(@ReadRead File this)  {
+    public String getPath(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public boolean isAbsolute(@ReadRead File this)  {
+    public boolean isAbsolute(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public String getAbsolutePath(@ReadRead File this)  {
+    public String getAbsolutePath(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyPoly File getAbsoluteFile(@PolyPoly File this)  {
+    public @Polyread File getAbsoluteFile(@Polyread File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public String getCanonicalPath(@ReadRead File this)  throws IOException {
+    public String getCanonicalPath(@Readonly File this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyPoly File getCanonicalFile(@PolyPoly File this)  throws IOException {
+    public @Polyread File getCanonicalFile(@Polyread File this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
     @Deprecated
-    public @PolyPoly URL toURL(@PolyPoly File this)  throws MalformedURLException {
+    public @Polyread URL toURL(@Polyread File this)  throws MalformedURLException {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyPoly URI toURI(@PolyPoly File this)  {
+    public @Polyread URI toURI(@Polyread File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public boolean canRead(@ReadRead File this)  {
+    public boolean canRead(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public boolean canWrite(@ReadRead File this)  {
+    public boolean canWrite(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public boolean exists(@ReadRead File this)  {
+    public boolean exists(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public boolean isDirectory(@ReadRead File this)  {
+    public boolean isDirectory(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public boolean isFile(@ReadRead File this)  {
+    public boolean isFile(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public boolean isHidden(@ReadRead File this)  {
+    public boolean isHidden(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public long lastModified(@ReadRead File this)  {
+    public long lastModified(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public long length(@ReadRead File this)  {
+    public long length(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
     public boolean createNewFile() throws IOException {
@@ -105,19 +105,19 @@ public class File implements Serializable, Comparable<File> {
     public void deleteOnExit() {
         throw new RuntimeException("skeleton method");
     }
-    public String[] list(@ReadRead File this)  {
+    public String[] list(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public String[] list(@ReadRead File this, FilenameFilter filter)  {
+    public String[] list(@Readonly File this, FilenameFilter filter)  {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyPoly File [] listFiles(@PolyPoly File this)  {
+    public @Polyread File [] listFiles(@Polyread File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyPoly File [] listFiles(@PolyPoly File this, FilenameFilter filter)  {
+    public @Polyread File [] listFiles(@Polyread File this, FilenameFilter filter)  {
         throw new RuntimeException("skeleton method");
     }
-    public @PolyPoly File [] listFiles(@PolyPoly File this, FileFilter filter)  {
+    public @Polyread File [] listFiles(@Polyread File this, FileFilter filter)  {
         throw new RuntimeException("skeleton method");
     }
     public boolean mkdir() {
@@ -153,19 +153,19 @@ public class File implements Serializable, Comparable<File> {
     public boolean setExecutable(boolean executable) {
         throw new RuntimeException("skeleton method");
     }
-    public boolean canExecute(@ReadRead File this)  {
+    public boolean canExecute(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
     public static File[] listRoots() {
         throw new RuntimeException("skeleton method");
     }
-    public long getTotalSpace(@ReadRead File this)  {
+    public long getTotalSpace(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public long getFreeSpace(@ReadRead File this)  {
+    public long getFreeSpace(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public long getUsableSpace(@ReadRead File this)  {
+    public long getUsableSpace(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
     public static File createTempFile(String prefix, String suffix, File directory) throws IOException {
@@ -174,22 +174,22 @@ public class File implements Serializable, Comparable<File> {
     public static File createTempFile(String prefix, String suffix) throws IOException {
         throw new RuntimeException("skeleton method");
     }
-//     public static File createTemporaryFile(String prefix, String suffx, @ReadRead FileAttribute<?>... attrs) {
+//     public static File createTemporaryFile(String prefix, String suffx, @Readonly FileAttribute<?>... attrs) {
 //         throw new RuntimeException("skeleton method");
 //     }
-    public int compareTo(@ReadRead File this, @ReadRead File pathname)  {
+    public int compareTo(@Readonly File this, @Readonly File pathname)  {
         throw new RuntimeException("skeleton method");
     }
-    public boolean equals(@ReadRead File this, @ReadRead Object obj)  {
+    public boolean equals(@Readonly File this, @Readonly Object obj)  {
         throw new RuntimeException("skeleton method");
     }
-    public int hashCode(@ReadRead File this)  {
+    public int hashCode(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public String toString(@ReadRead File this)  {
+    public String toString(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-//     public Path toPath(@ReadRead File this)  {
+//     public Path toPath(@Readonly File this)  {
 //         throw new RuntimeException("skeleton method");
 //     }
 

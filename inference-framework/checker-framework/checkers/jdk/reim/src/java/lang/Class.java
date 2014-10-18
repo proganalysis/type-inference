@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
@@ -58,7 +58,7 @@ public final class Class<T> implements java.io.Serializable,
         throw new RuntimeException("skeleton method");
     }
 
-    public native boolean isInstance(@ReadRead Object obj);
+    public native boolean isInstance(@Readonly Object obj);
     public native boolean isAssignableFrom(Class<?> cls);
     public native boolean isInterface();
     public native boolean isArray();
@@ -225,7 +225,7 @@ public final class Class<T> implements java.io.Serializable,
         throw new RuntimeException("skeleton method");
     }
 
-    public @PolyPoly T cast(@PolyPoly Object obj) {
+    public @Polyread T cast(@Polyread Object obj) {
         throw new RuntimeException("skeleton method");
     }
 

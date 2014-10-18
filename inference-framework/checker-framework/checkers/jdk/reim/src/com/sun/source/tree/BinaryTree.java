@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface BinaryTree extends ExpressionTree {
-    @PolyPoly ExpressionTree getLeftOperand(@PolyPoly BinaryTree this) ;
-    @PolyPoly ExpressionTree getRightOperand(@PolyPoly BinaryTree this) ;
+    @Polyread ExpressionTree getLeftOperand(@Polyread BinaryTree this) ;
+    @Polyread ExpressionTree getRightOperand(@Polyread BinaryTree this) ;
 }

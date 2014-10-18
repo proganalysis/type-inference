@@ -1,7 +1,7 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 import java.util.*;
 
 public interface Comparable<T> {
-    public int compareTo(@PolyPoly Comparable<T> this, @PolyPoly T o) ;
+    public int compareTo(@Readonly Comparable<T> this, T o) ;
 }

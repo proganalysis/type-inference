@@ -25,7 +25,7 @@
 
 package com.sun.source.tree;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 /**
  * A tree node for compound assignment operator.
@@ -43,6 +43,6 @@ import checkers.inference2.reimN.quals.*;
  * @since 1.6
  */
 public interface CompoundAssignmentTree extends ExpressionTree {
-    @PolyPoly ExpressionTree getVariable(@PolyPoly CompoundAssignmentTree this) ;
-    @PolyPoly ExpressionTree getExpression(@PolyPoly CompoundAssignmentTree this) ;
+    @Polyread ExpressionTree getVariable(@Polyread CompoundAssignmentTree this) ;
+    @Polyread ExpressionTree getExpression(@Polyread CompoundAssignmentTree this) ;
 }

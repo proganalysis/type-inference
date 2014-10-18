@@ -1,30 +1,30 @@
 package java.lang.reflect;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.lang.annotation.Annotation;
 
 public final class Field extends AccessibleObject implements Member {
-    public Class<?> getDeclaringClass(@ReadRead Field this)  {
+    public Class<?> getDeclaringClass(@Readonly Field this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getName(@ReadRead Field this)  {
+    public String getName(@Readonly Field this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getModifiers(@ReadRead Field this)  {
+    public int getModifiers(@Readonly Field this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean isEnumConstant(@ReadRead Field this)  {
+    public boolean isEnumConstant(@Readonly Field this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean isSynthetic(@ReadRead Field this)  {
+    public boolean isSynthetic(@Readonly Field this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Class<?> getType(@ReadRead Field this)  {
+    public Class<?> getType(@Readonly Field this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -32,7 +32,7 @@ public final class Field extends AccessibleObject implements Member {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadRead Field this, @ReadRead Object obj)  {
+    public boolean equals(@Readonly Field this, @Readonly Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 

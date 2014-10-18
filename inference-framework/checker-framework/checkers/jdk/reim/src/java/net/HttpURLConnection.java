@@ -1,5 +1,5 @@
 package java.net;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -27,7 +27,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHeaderField(@ReadRead HttpURLConnection this, int n)  {
+    public String getHeaderField(@Readonly HttpURLConnection this, int n)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -43,7 +43,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean getInstanceFollowRedirects(@ReadRead HttpURLConnection this)  {
+    public boolean getInstanceFollowRedirects(@Readonly HttpURLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -51,7 +51,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getRequestMethod(@ReadRead HttpURLConnection this)  {
+    public String getRequestMethod(@Readonly HttpURLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -63,7 +63,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    public long getHeaderFieldDate(@ReadRead HttpURLConnection this, String name, long Default)  {
+    public long getHeaderFieldDate(@Readonly HttpURLConnection this, String name, long Default)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -71,11 +71,11 @@ abstract public class HttpURLConnection extends URLConnection {
 
     public abstract boolean usingProxy();
 
-    public Permission getPermission(@ReadRead HttpURLConnection this)  throws IOException {
+    public Permission getPermission(@Readonly HttpURLConnection this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public InputStream getErrorStream(@ReadRead HttpURLConnection this)  {
+    public InputStream getErrorStream(@Readonly HttpURLConnection this)  {
         throw new RuntimeException("skeleton method");
     }
 
