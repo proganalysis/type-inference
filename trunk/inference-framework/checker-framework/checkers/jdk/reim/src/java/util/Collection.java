@@ -5,7 +5,7 @@ public interface Collection<E> extends Iterable<E> {
     int size(@Readonly Collection<E> this) ;
     boolean isEmpty(@Readonly Collection<E> this) ;
     boolean contains(@Readonly Collection<E> this, @Readonly Object o) ;
-    @Polyread Iterator<E> iterator(@Polyread Collection<E> this) ;
+    @Polyread Iterator<E> iterator(Collection<E> this) ;
     @Readonly Object [] toArray(@Readonly Collection<E> this) ;
     <T> T[] toArray(@Readonly Collection<E> this, T[] a) ;
     boolean add(E e);

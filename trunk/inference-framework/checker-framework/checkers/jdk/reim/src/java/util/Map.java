@@ -11,8 +11,9 @@ public interface Map<K,V> {
     V remove(@Readonly Object key);
     void putAll(@Readonly Map<? extends K, ? extends V> m);
     void clear();
-    @Polyread Set<K> keySet(@Polyread Map<K,V> this) ;
-    @Polyread Collection<V> values(@Polyread Map<K,V> this) ;
+    //@Polyread Set<K> keySet(@Polyread Map<K,V> this) ;
+    Set<K> keySet(@Polyread Map<K,V> this) ;  //Yao
+    Collection<V> values(@Polyread Map<K,V> this) ;
     @Polyread Set<@Polyread Map.Entry<K, V>> entrySet(@Polyread Map<K,V> this) ;
     interface Entry<K,V> {
         K getKey(@Polyread Entry<K,V> this) ;  //WEI
