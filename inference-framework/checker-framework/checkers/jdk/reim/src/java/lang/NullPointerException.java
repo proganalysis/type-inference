@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class NullPointerException extends RuntimeException {
     private static final long serialVersionUID = 5162710183389028792L;

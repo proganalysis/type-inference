@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface InstanceOfTree extends ExpressionTree {
-    @Polyread ExpressionTree getExpression(@Polyread InstanceOfTree this) ;
-    @Polyread Tree getType(@Polyread InstanceOfTree this) ;
+    @PolyPoly ExpressionTree getExpression(@PolyPoly InstanceOfTree this) ;
+    @PolyPoly Tree getType(@PolyPoly InstanceOfTree this) ;
 }

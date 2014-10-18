@@ -1,26 +1,26 @@
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface NavigableMap<K, V> extends SortedMap<K, V> {
-  public abstract @Polyread Map.Entry<K, V> lowerEntry(@Polyread NavigableMap<K, V> this, K a1) ;
-  public abstract K lowerKey(@Readonly NavigableMap<K, V> this, K a1) ;
-  public abstract @Polyread Map.Entry<K, V> floorEntry(@Polyread NavigableMap<K, V> this, K a1) ;
-  public abstract K floorKey(@Readonly NavigableMap<K, V> this, K a1) ;
-  public abstract @Polyread Map.Entry<K, V> ceilingEntry(@Polyread NavigableMap<K, V> this, K a1) ;
-  public abstract K ceilingKey(@Readonly NavigableMap<K, V> this, K a1) ;
-  public abstract @Polyread Map.Entry<K, V> higherEntry(@Polyread NavigableMap<K, V> this, K a1) ;
-  public abstract K higherKey(@Readonly NavigableMap<K, V> this, K a1) ;
-  public abstract @Polyread Map.Entry<K, V> firstEntry(@Polyread NavigableMap<K, V> this) ;
-  public abstract @Polyread Map.Entry<K, V> lastEntry(@Polyread NavigableMap<K, V> this) ;
+  public abstract @PolyPoly Map.Entry<K, V> lowerEntry(@PolyPoly NavigableMap<K, V> this, K a1) ;
+  public abstract K lowerKey(@ReadRead NavigableMap<K, V> this, K a1) ;
+  public abstract @PolyPoly Map.Entry<K, V> floorEntry(@PolyPoly NavigableMap<K, V> this, K a1) ;
+  public abstract K floorKey(@ReadRead NavigableMap<K, V> this, K a1) ;
+  public abstract @PolyPoly Map.Entry<K, V> ceilingEntry(@PolyPoly NavigableMap<K, V> this, K a1) ;
+  public abstract K ceilingKey(@ReadRead NavigableMap<K, V> this, K a1) ;
+  public abstract @PolyPoly Map.Entry<K, V> higherEntry(@PolyPoly NavigableMap<K, V> this, K a1) ;
+  public abstract K higherKey(@ReadRead NavigableMap<K, V> this, K a1) ;
+  public abstract @PolyPoly Map.Entry<K, V> firstEntry(@PolyPoly NavigableMap<K, V> this) ;
+  public abstract @PolyPoly Map.Entry<K, V> lastEntry(@PolyPoly NavigableMap<K, V> this) ;
   public abstract Map.Entry<K, V> pollFirstEntry();
   public abstract Map.Entry<K, V> pollLastEntry();
-  public abstract @Polyread NavigableMap<K, V> descendingMap(@Polyread NavigableMap<K, V> this) ;
-  public abstract @Polyread NavigableSet<K> navigableKeySet(@Polyread NavigableMap<K, V> this) ;
-  public abstract @Polyread NavigableSet<K> descendingKeySet(@Polyread NavigableMap<K, V> this) ;
-  public abstract @Polyread NavigableMap<K, V> subMap(@Polyread NavigableMap<K, V> this, K a1, boolean a2, K a3, boolean a4) ;
-  public abstract @Polyread NavigableMap<K, V> headMap(@Polyread NavigableMap<K, V> this, K a1, boolean a2) ;
-  public abstract @Polyread NavigableMap<K, V> tailMap(@Polyread NavigableMap<K, V> this, K a1, boolean a2) ;
-  public abstract @Polyread SortedMap<K, V> subMap(@Polyread NavigableMap<K, V> this, K a1, K a2) ;
-  public abstract @Polyread SortedMap<K, V> headMap(@Polyread NavigableMap<K, V> this, K a1) ;
-  public abstract @Polyread SortedMap<K, V> tailMap(@Polyread NavigableMap<K, V> this, K a1) ;
+  public abstract @PolyPoly NavigableMap<K, V> descendingMap(@PolyPoly NavigableMap<K, V> this) ;
+  public abstract @PolyPoly NavigableSet<K> navigableKeySet(@PolyPoly NavigableMap<K, V> this) ;
+  public abstract @PolyPoly NavigableSet<K> descendingKeySet(@PolyPoly NavigableMap<K, V> this) ;
+  public abstract @PolyPoly NavigableMap<K, V> subMap(@PolyPoly NavigableMap<K, V> this, K a1, boolean a2, K a3, boolean a4) ;
+  public abstract @PolyPoly NavigableMap<K, V> headMap(@PolyPoly NavigableMap<K, V> this, K a1, boolean a2) ;
+  public abstract @PolyPoly NavigableMap<K, V> tailMap(@PolyPoly NavigableMap<K, V> this, K a1, boolean a2) ;
+  public abstract @PolyPoly SortedMap<K, V> subMap(@PolyPoly NavigableMap<K, V> this, K a1, K a2) ;
+  public abstract @PolyPoly SortedMap<K, V> headMap(@PolyPoly NavigableMap<K, V> this, K a1) ;
+  public abstract @PolyPoly SortedMap<K, V> tailMap(@PolyPoly NavigableMap<K, V> this, K a1) ;
 }

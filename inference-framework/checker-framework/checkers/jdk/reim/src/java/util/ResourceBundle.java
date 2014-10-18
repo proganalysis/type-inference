@@ -1,5 +1,5 @@
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.io.IOException;
 
@@ -24,7 +24,7 @@ public abstract class ResourceBundle {
         throw new RuntimeException("skeleton method");
     }
 
-    public Locale getLocale(@Readonly ResourceBundle this)  {
+    public Locale getLocale(@ReadRead ResourceBundle this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -101,15 +101,15 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        public List<String> getFormats(@Readonly Control this, String baseName)  {
+        public List<String> getFormats(@ReadRead Control this, String baseName)  {
             throw new RuntimeException("skeleton method");
         }
 
-        public List<Locale> getCandidateLocales(@Readonly Control this, String baseName, Locale locale)  {
+        public List<Locale> getCandidateLocales(@ReadRead Control this, String baseName, Locale locale)  {
             throw new RuntimeException("skeleton method");
         }
 
-        public Locale getFallbackLocale(@Readonly Control this, String baseName, Locale locale)  {
+        public Locale getFallbackLocale(@ReadRead Control this, String baseName, Locale locale)  {
             throw new RuntimeException("skeleton method");
         }
 
@@ -118,7 +118,7 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        public long getTimeToLive(@Readonly Control this, String baseName, Locale locale)  {
+        public long getTimeToLive(@ReadRead Control this, String baseName, Locale locale)  {
             throw new RuntimeException("skeleton method");
         }
 
@@ -128,11 +128,11 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        public String toBundleName(@Readonly Control this, String baseName, Locale locale)  {
+        public String toBundleName(@ReadRead Control this, String baseName, Locale locale)  {
             throw new RuntimeException("skeleton method");
         }
 
-        public final String toResourceName(@Readonly Control this, String bundleName, String suffix)  {
+        public final String toResourceName(@ReadRead Control this, String bundleName, String suffix)  {
             throw new RuntimeException("skeleton method");
         }
     }

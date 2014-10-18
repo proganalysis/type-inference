@@ -1,16 +1,16 @@
 package java.io;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public abstract class Reader implements Readable, Closeable {
 
-    protected @Readonly Object lock;
+    protected @ReadRead Object lock;
 
     protected Reader() {
         throw new RuntimeException("skeleton method");
     }
 
-    protected Reader(@Readonly Object lock) {
+    protected Reader(@ReadRead Object lock) {
        throw new RuntimeException("skeleton method");
     }
 
@@ -36,11 +36,11 @@ public abstract class Reader implements Readable, Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean ready(@Readonly Reader this)  throws IOException {
+    public boolean ready(@ReadRead Reader this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported(@Readonly Reader this)  {
+    public boolean markSupported(@ReadRead Reader this)  {
         throw new RuntimeException("skeleton method");
     }
 

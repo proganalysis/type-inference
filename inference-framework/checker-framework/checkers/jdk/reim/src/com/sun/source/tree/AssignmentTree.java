@@ -1,7 +1,7 @@
 package com.sun.source.tree;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface AssignmentTree extends ExpressionTree {
-    @Polyread ExpressionTree getVariable(@Polyread AssignmentTree this) ;
-    @Polyread ExpressionTree getExpression(@Polyread AssignmentTree this) ;
+    @PolyPoly ExpressionTree getVariable(@PolyPoly AssignmentTree this) ;
+    @PolyPoly ExpressionTree getExpression(@PolyPoly AssignmentTree this) ;
 }

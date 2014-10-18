@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 // In openjdk7 this class extends ReflectiveOperationException.
 public class IllegalAccessException extends Exception {

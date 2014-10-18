@@ -1,7 +1,7 @@
 package com.sun.source.tree;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface WildcardTree extends Tree {
-    @Polyread Tree getBound(@Polyread WildcardTree this) ;
+    @PolyPoly Tree getBound(@PolyPoly WildcardTree this) ;
 }

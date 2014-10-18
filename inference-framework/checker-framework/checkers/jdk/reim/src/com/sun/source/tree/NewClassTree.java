@@ -1,12 +1,12 @@
 package com.sun.source.tree;
 
 import java.util.List;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface NewClassTree extends ExpressionTree {
-    @Polyread ExpressionTree getEnclosingExpression(@Polyread NewClassTree this) ;
-    @Polyread List<? extends Tree> getTypeArguments(@Polyread NewClassTree this) ;
-    @Polyread ExpressionTree getIdentifier(@Polyread NewClassTree this) ;
-    @Polyread List<? extends ExpressionTree> getArguments(@Polyread NewClassTree this) ;
-    @Polyread ClassTree getClassBody(@Polyread NewClassTree this) ;
+    @PolyPoly ExpressionTree getEnclosingExpression(@PolyPoly NewClassTree this) ;
+    @PolyPoly List<? extends Tree> getTypeArguments(@PolyPoly NewClassTree this) ;
+    @PolyPoly ExpressionTree getIdentifier(@PolyPoly NewClassTree this) ;
+    @PolyPoly List<? extends ExpressionTree> getArguments(@PolyPoly NewClassTree this) ;
+    @PolyPoly ClassTree getClassBody(@PolyPoly NewClassTree this) ;
 }

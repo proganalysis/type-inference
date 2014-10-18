@@ -1,5 +1,5 @@
 package java.net;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +16,7 @@ public final class URL implements java.io.Serializable {
     }
 
     public URL(String protocol, String host, int port, String file,
-               @Readonly URLStreamHandler handler) throws MalformedURLException {
+               @ReadRead URLStreamHandler handler) throws MalformedURLException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -28,71 +28,71 @@ public final class URL implements java.io.Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    public URL(URL context, String spec, @Readonly URLStreamHandler handler) throws MalformedURLException {
+    public URL(URL context, String spec, @ReadRead URLStreamHandler handler) throws MalformedURLException {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getQuery(@Readonly URL this)  {
+    public String getQuery(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getPath(@Readonly URL this)  {
+    public String getPath(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getUserInfo(@Readonly URL this)  {
+    public String getUserInfo(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getAuthority(@Readonly URL this)  {
+    public String getAuthority(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getPort(@Readonly URL this)  {
+    public int getPort(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getDefaultPort(@Readonly URL this)  {
+    public int getDefaultPort(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getProtocol(@Readonly URL this)  {
+    public String getProtocol(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getHost(@Readonly URL this)  {
+    public String getHost(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getFile(@Readonly URL this)  {
+    public String getFile(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getRef(@Readonly URL this)  {
+    public String getRef(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@Readonly URL this, @Readonly Object obj)  {
+    public boolean equals(@ReadRead URL this, @ReadRead Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int hashCode(@Readonly URL this)  {
+    public synchronized int hashCode(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean sameFile(@Readonly URL this, @Readonly URL other)  {
+    public boolean sameFile(@ReadRead URL this, @ReadRead URL other)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toString(@Readonly URL this)  {
+    public String toString(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toExternalForm(@Readonly URL this)  {
+    public String toExternalForm(@ReadRead URL this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public URI toURI(@Readonly URL this)  throws URISyntaxException {
+    public URI toURI(@ReadRead URL this)  throws URISyntaxException {
         throw new RuntimeException("skeleton method");
     }
 

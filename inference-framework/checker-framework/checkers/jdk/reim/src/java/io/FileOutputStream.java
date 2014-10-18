@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.nio.channels.FileChannel;
 
@@ -26,11 +26,11 @@ public class FileOutputStream extends OutputStream {
 
     public native void write(int b) throws IOException;
 
-    public void write(byte b @Readonly []) throws IOException {
+    public void write(byte b @ReadRead []) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public void write(byte b @Readonly [], int off, int len) throws IOException {
+    public void write(byte b @ReadRead [], int off, int len) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -38,7 +38,7 @@ public class FileOutputStream extends OutputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public final FileDescriptor getFD(@Readonly FileOutputStream this)  throws IOException {
+    public final FileDescriptor getFD(@ReadRead FileOutputStream this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

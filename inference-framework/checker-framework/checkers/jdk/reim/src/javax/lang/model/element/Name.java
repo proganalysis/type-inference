@@ -1,9 +1,9 @@
 package javax.lang.model.element;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface Name extends CharSequence {
-    boolean equals(@Readonly Name this, @Readonly Object obj) ;
-    int hashCode(@Readonly Name this) ;
-    boolean contentEquals(@Readonly Name this, @Readonly CharSequence cs) ;
+    boolean equals(@ReadRead Name this, @ReadRead Object obj) ;
+    int hashCode(@ReadRead Name this) ;
+    boolean contentEquals(@ReadRead Name this, @ReadRead CharSequence cs) ;
 }

@@ -1,9 +1,9 @@
 package com.sun.source.tree;
 
 import java.util.List;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface AnnotationTree extends ExpressionTree {
-    @Polyread Tree getAnnotationType(@Polyread AnnotationTree this) ;
-    @Polyread List<? extends ExpressionTree> getArguments(@Polyread AnnotationTree this) ;
+    @PolyPoly Tree getAnnotationType(@PolyPoly AnnotationTree this) ;
+    @PolyPoly List<? extends ExpressionTree> getArguments(@PolyPoly AnnotationTree this) ;
 }

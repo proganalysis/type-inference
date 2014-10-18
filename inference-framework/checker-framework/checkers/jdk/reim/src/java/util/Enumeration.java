@@ -1,7 +1,7 @@
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface Enumeration<E> {
-    boolean hasMoreElements(@Readonly Enumeration<E> this) ;
-    E nextElement(@Polyread Enumeration<E> this) ;
+    boolean hasMoreElements(@ReadRead Enumeration<E> this) ;
+    E nextElement(@ReadRead Enumeration<E> this) ;
 }

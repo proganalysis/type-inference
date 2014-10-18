@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;

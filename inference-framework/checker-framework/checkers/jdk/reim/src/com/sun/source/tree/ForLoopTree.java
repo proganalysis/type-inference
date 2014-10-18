@@ -1,11 +1,11 @@
 package com.sun.source.tree;
 
 import java.util.List;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface ForLoopTree extends StatementTree {
-    @Polyread List<? extends StatementTree> getInitializer(@Polyread ForLoopTree this) ;
-    @Polyread ExpressionTree getCondition(@Polyread ForLoopTree this) ;
-    @Polyread List<? extends ExpressionStatementTree> getUpdate(@Polyread ForLoopTree this) ;
-    @Polyread StatementTree getStatement(@Polyread ForLoopTree this) ;
+    @PolyPoly List<? extends StatementTree> getInitializer(@PolyPoly ForLoopTree this) ;
+    @PolyPoly ExpressionTree getCondition(@PolyPoly ForLoopTree this) ;
+    @PolyPoly List<? extends ExpressionStatementTree> getUpdate(@PolyPoly ForLoopTree this) ;
+    @PolyPoly StatementTree getStatement(@PolyPoly ForLoopTree this) ;
 }

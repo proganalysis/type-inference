@@ -1,6 +1,6 @@
 package java.io;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface DataInput {
     public boolean readBoolean() throws IOException;

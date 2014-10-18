@@ -1,9 +1,9 @@
 package com.sun.source.tree;
 
 import java.util.List;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface CaseTree extends Tree {
-    @Polyread ExpressionTree getExpression(@Polyread CaseTree this) ;
-    @Polyread List<? extends StatementTree> getStatements(@Polyread CaseTree this) ;
+    @PolyPoly ExpressionTree getExpression(@PolyPoly CaseTree this) ;
+    @PolyPoly List<? extends StatementTree> getStatements(@PolyPoly CaseTree this) ;
 }

@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class IllegalStateException extends RuntimeException {
     public IllegalStateException() {

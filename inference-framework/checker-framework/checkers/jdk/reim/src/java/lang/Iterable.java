@@ -1,8 +1,8 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.util.Iterator;
 
 public interface Iterable<T> {
-     @Polyread Iterator<T> iterator(@Polyread Iterable<T> this) ;
+     @PolyPoly Iterator<T> iterator(@PolyPoly Iterable<T> this) ;
 }

@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public abstract class InputStream implements Closeable {
     public abstract int read() throws IOException;
@@ -16,7 +16,7 @@ public abstract class InputStream implements Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public int available(@Readonly InputStream this)  throws IOException {
+    public int available(@ReadRead InputStream this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -28,7 +28,7 @@ public abstract class InputStream implements Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported(@Readonly InputStream this)  {
+    public boolean markSupported(@ReadRead InputStream this)  {
         throw new RuntimeException("skeleton method");
     }
 }

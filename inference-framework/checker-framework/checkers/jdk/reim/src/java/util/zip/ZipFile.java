@@ -1,5 +1,5 @@
 package java.util.zip;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.io.Closeable;
 import java.io.InputStream;
@@ -36,7 +36,7 @@ public class ZipFile implements ZipConstants, Closeable {
         throw new RuntimeException("skeleton method");
     }
     
-    public String getComment(@Readonly ZipFile this)  {
+    public String getComment(@ReadRead ZipFile this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -48,7 +48,7 @@ public class ZipFile implements ZipConstants, Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getName(@Readonly ZipFile this)  {
+    public String getName(@ReadRead ZipFile this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -56,7 +56,7 @@ public class ZipFile implements ZipConstants, Closeable {
         throw new RuntimeException("skeleton method");
     }
 
-    public int size(@Readonly ZipFile this)  {
+    public int size(@ReadRead ZipFile this)  {
         throw new RuntimeException("skeleton method");
     }
 

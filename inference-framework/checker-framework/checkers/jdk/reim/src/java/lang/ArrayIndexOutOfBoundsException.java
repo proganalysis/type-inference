@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class ArrayIndexOutOfBoundsException extends IndexOutOfBoundsException {
     private static final long serialVersionUID = -5116101128118950844L;

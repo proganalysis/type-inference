@@ -4,13 +4,13 @@ import java.util.List;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface TypeElement extends Element, Parameterizable, QualifiedNameable {
-    NestingKind getNestingKind(@Readonly TypeElement this) ;
-    @Polyread Name getQualifiedName(@Polyread TypeElement this) ;
+    NestingKind getNestingKind(@ReadRead TypeElement this) ;
+    @PolyPoly Name getQualifiedName(@PolyPoly TypeElement this) ;
     TypeMirror getSuperclass();
-    @Polyread List<? extends TypeMirror> getInterfaces(@Polyread TypeElement this) ;
-    @Polyread List<? extends TypeParameterElement> getTypeParameters(@Polyread TypeElement this) ;
-    @Polyread List<? extends Element> getEnclosedElements(@Polyread TypeElement this) ;
+    @PolyPoly List<? extends TypeMirror> getInterfaces(@PolyPoly TypeElement this) ;
+    @PolyPoly List<? extends TypeParameterElement> getTypeParameters(@PolyPoly TypeElement this) ;
+    @PolyPoly List<? extends Element> getEnclosedElements(@PolyPoly TypeElement this) ;
 }

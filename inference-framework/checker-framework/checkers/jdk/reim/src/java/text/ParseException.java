@@ -1,5 +1,5 @@
 package java.text;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class ParseException extends Exception {
     // Added to avoid a warning
@@ -9,7 +9,7 @@ public class ParseException extends Exception {
         throw new RuntimeException("skeleton method");
     }
 
-    public int getErrorOffset (@Readonly ParseException this)  {
+    public int getErrorOffset (@ReadRead ParseException this)  {
         throw new RuntimeException("skeleton method");
     }
 }

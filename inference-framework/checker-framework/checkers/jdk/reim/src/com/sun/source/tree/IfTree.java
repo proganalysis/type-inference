@@ -1,9 +1,9 @@
 package com.sun.source.tree;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface IfTree extends StatementTree {
-    @Polyread ExpressionTree getCondition(@Polyread IfTree this) ;
-    @Polyread StatementTree getThenStatement(@Polyread IfTree this) ;
-    @Polyread StatementTree getElseStatement(@Polyread IfTree this) ;
+    @PolyPoly ExpressionTree getCondition(@PolyPoly IfTree this) ;
+    @PolyPoly StatementTree getThenStatement(@PolyPoly IfTree this) ;
+    @PolyPoly StatementTree getElseStatement(@PolyPoly IfTree this) ;
 }

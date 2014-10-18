@@ -1,7 +1,7 @@
 package java.io;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface FileFilter {
-    public boolean accept(@Readonly File pathname);
+    public boolean accept(@ReadRead File pathname);
 }
