@@ -519,6 +519,9 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         } else {
             idRef = checker.getAnnotatedReference(idElt);
         }
+        if (idElt.getSimpleName().contentEquals("super")) {
+        	idRef = lhsRef;
+        }
         // Check if idElt is a field or not
         if (!idElt.getSimpleName().contentEquals("this")
                 && !idElt.getSimpleName().contentEquals("super")
