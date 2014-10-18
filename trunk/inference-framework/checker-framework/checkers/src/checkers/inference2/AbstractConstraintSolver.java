@@ -152,9 +152,9 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
         } finally {
             currentConstraint = null;
         }
-	    if (hasUpdate) {
-        	System.out.println(c.toString("aaa", "bbb"));
-        }
+	//	    if (hasUpdate) {
+        //	System.out.println(c.toString("aaa", "bbb"));
+        //}
         return hasUpdate;
 	}
 
