@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
 import javax.lang.model.type.TypeKind;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface PrimitiveTypeTree extends Tree {
-    @Polyread TypeKind getPrimitiveTypeKind(@Polyread PrimitiveTypeTree this) ;
+    @PolyPoly TypeKind getPrimitiveTypeKind(@PolyPoly PrimitiveTypeTree this) ;
 }

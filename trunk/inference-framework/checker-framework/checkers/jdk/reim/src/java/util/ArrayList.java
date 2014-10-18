@@ -6,7 +6,7 @@
  */
 
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 /**
  * Resizable-array implementation of the <tt>List</tt> interface.  Implements
@@ -128,7 +128,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param c the collection whose elements are to be placed into this list
      * @throws NullPointerException if the specified collection is null
      */
-    public ArrayList( @Readonly Collection<? extends E> c) {
+    public ArrayList( @ReadRead Collection<? extends E> c) {
     elementData = c.toArray();
     size = elementData.length;
     // c.toArray might (incorrectly) not return Object[] (see 6260652)
@@ -141,7 +141,7 @@ public class ArrayList<E> extends AbstractList<E>
      * list's current size.  An application can use this operation to minimize
      * the storage of an <tt>ArrayList</tt> instance.
      */
-    public void trimToSize(@Readonly ArrayList<E> this)  {
+    public void trimToSize(@ReadRead ArrayList<E> this)  {
     modCount++;
     int oldCapacity = elementData.length;
     if (size < oldCapacity) {
@@ -156,7 +156,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @param   minCapacity   the desired minimum capacity
      */
-    public void ensureCapacity(@Readonly ArrayList<E> this, int minCapacity)  {
+    public void ensureCapacity(@ReadRead ArrayList<E> this, int minCapacity)  {
     modCount++;
     int oldCapacity = elementData.length;
     if (minCapacity > oldCapacity) {
@@ -174,7 +174,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return the number of elements in this list
      */
-    public int size(@Readonly ArrayList<E> this)  {
+    public int size(@ReadRead ArrayList<E> this)  {
     return size;
     }
 
@@ -183,7 +183,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return <tt>true</tt> if this list contains no elements
      */
-    public boolean isEmpty(@Readonly ArrayList<E> this)  {
+    public boolean isEmpty(@ReadRead ArrayList<E> this)  {
     return size == 0;
     }
 
@@ -196,7 +196,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param o element whose presence in this list is to be tested
      * @return <tt>true</tt> if this list contains the specified element
      */
-    public boolean contains(@Readonly ArrayList<E> this, @Readonly Object o)  {
+    public boolean contains(@ReadRead ArrayList<E> this, @ReadRead Object o)  {
     return indexOf(o) >= 0;
     }
 
@@ -207,7 +207,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    public int indexOf(@Readonly ArrayList<E> this, @Readonly Object o)  {
+    public int indexOf(@ReadRead ArrayList<E> this, @ReadRead Object o)  {
     if (o == null) {
         for (int i = 0; i < size; i++)
         if (elementData[i]==null)
@@ -227,7 +227,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    public int lastIndexOf(@Readonly ArrayList<E> this, @Readonly Object o)  {
+    public int lastIndexOf(@ReadRead ArrayList<E> this, @ReadRead Object o)  {
     if (o == null) {
         for (int i = size-1; i >= 0; i--)
         if (elementData[i]==null)
@@ -246,7 +246,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @return a clone of this <tt>ArrayList</tt> instance
      */
-    public  Object clone(@Readonly ArrayList<E> this)  {
+    public  Object clone(@ReadRead ArrayList<E> this)  {
     try {
         @SuppressWarnings("unchecked")
         ArrayList<E> v = (ArrayList<E>) super.clone();
@@ -273,7 +273,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return an array containing all of the elements in this list in
      *         proper sequence
      */
-    public @Readonly Object[] toArray(@Readonly ArrayList<E> this)  {
+    public @ReadRead Object[] toArray(@ReadRead ArrayList<E> this)  {
         return Arrays.copyOf(elementData, size);
     }
 
@@ -302,7 +302,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws NullPointerException if the specified array is null
      */
      @SuppressWarnings("unchecked")
-    public <T> T[] toArray(@Readonly ArrayList<E> this, T[] a)  {
+    public <T> T[] toArray(@ReadRead ArrayList<E> this, T[] a)  {
         if (a.length < size)
             // Make a new array of a's runtime type, but my contents:
             return (T[]) Arrays.copyOf(elementData, size, a.getClass());
@@ -322,7 +322,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public E get(@Polyread ArrayList<E> this, int index)  { //WEI
+    public E get(@PolyPoly ArrayList<E> this, int index)  { //WEI
     RangeCheck(index);
 
     return (E) elementData[index];
@@ -337,7 +337,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return the element previously at the specified position
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public E set(int index, @Readonly E element) { //WEI
+    public E set(int index, @ReadRead E element) { //WEI
     RangeCheck(index);
 
     @SuppressWarnings("unchecked")
@@ -352,7 +352,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param e element to be appended to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      */
-    public boolean add(@Readonly E e) { //WEI
+    public boolean add(@ReadRead E e) { //WEI
     ensureCapacity(size + 1);  // Increments modCount!!
     elementData[size++] = e;
     return true;
@@ -367,7 +367,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param element element to be inserted
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    public void add(int index, @Readonly E element) { //WEI
+    public void add(int index, @ReadRead E element) { //WEI
     if (index > size || index < 0)
         throw new IndexOutOfBoundsException(
         "Index: "+index+", Size: "+size);
@@ -417,7 +417,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param o element to be removed from this list, if present
      * @return <tt>true</tt> if this list contained the specified element
      */
-    public boolean remove(@Readonly Object o) {
+    public boolean remove(@ReadRead Object o) {
     if (o == null) {
             for (int index = 0; index < size; index++)
         if (elementData[index] == null) {
@@ -474,7 +474,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return <tt>true</tt> if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll( @Readonly Collection<? extends E> c) {
+    public boolean addAll( @ReadRead Collection<? extends E> c) {
     Object[] a = c.toArray();
         int numNew = a.length;
     ensureCapacity(size + numNew);  // Increments modCount
@@ -498,7 +498,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll(int index,  @Readonly Collection<? extends E> c) {
+    public boolean addAll(int index,  @ReadRead Collection<? extends E> c) {
     if (index > size || index < 0)
         throw new IndexOutOfBoundsException(
         "Index: " + index + ", Size: " + size);

@@ -1,5 +1,5 @@
 package java.lang.reflect;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface Member {
     public static final int PUBLIC = 0;

@@ -1,5 +1,5 @@
 package java.text;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.io.Serializable;
 

@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.nio.channels.FileChannel;
 
@@ -28,13 +28,13 @@ public class FileInputStream extends InputStream {
 
     public native long skip(long n) throws IOException;
 
-    public native int available(@Readonly FileInputStream this)  throws IOException;
+    public native int available(@ReadRead FileInputStream this)  throws IOException;
 
     public void close() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public final FileDescriptor getFD(@Readonly FileInputStream this)  throws IOException {
+    public final FileDescriptor getFD(@ReadRead FileInputStream this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

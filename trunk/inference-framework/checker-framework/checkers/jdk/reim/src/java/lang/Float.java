@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public final class Float extends Number implements Comparable<Float> {
     public static final float POSITIVE_INFINITY = 1.0f / 0.0f;
@@ -95,7 +95,7 @@ public final class Float extends Number implements Comparable<Float> {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@Readonly Object obj) {
+    public boolean equals(@ReadRead Object obj) {
         throw new RuntimeException("skeleton method");
     }
 

@@ -1,13 +1,13 @@
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface ListIterator<E> extends Iterator<E> {
-    boolean hasNext(@Readonly ListIterator<E> this) ;
-    E next(@Readonly ListIterator<E> this) ;
-    boolean hasPrevious(@Readonly ListIterator<E> this) ;
-    E previous(@Readonly ListIterator<E> this) ;
-    int nextIndex(@Readonly ListIterator<E> this) ;
-    int previousIndex(@Readonly ListIterator<E> this) ;
+    boolean hasNext(@ReadRead ListIterator<E> this) ;
+    E next(@ReadRead ListIterator<E> this) ;
+    boolean hasPrevious(@ReadRead ListIterator<E> this) ;
+    E previous(@ReadRead ListIterator<E> this) ;
+    int nextIndex(@ReadRead ListIterator<E> this) ;
+    int previousIndex(@ReadRead ListIterator<E> this) ;
     void remove();
     void set(E e);
     void add(E e);

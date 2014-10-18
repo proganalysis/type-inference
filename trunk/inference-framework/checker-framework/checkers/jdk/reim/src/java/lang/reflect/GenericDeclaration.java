@@ -1,6 +1,6 @@
 package java.lang.reflect;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
-public @Readonly interface GenericDeclaration {
+public @ReadRead interface GenericDeclaration {
     public TypeVariable<?>[] getTypeParameters();
 }

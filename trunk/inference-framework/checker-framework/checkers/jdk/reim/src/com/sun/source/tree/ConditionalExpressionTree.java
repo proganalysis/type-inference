@@ -1,9 +1,9 @@
 package com.sun.source.tree;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface ConditionalExpressionTree extends ExpressionTree {
-    @Polyread ExpressionTree getCondition(@Polyread ConditionalExpressionTree this) ;
-    @Polyread ExpressionTree getTrueExpression(@Polyread ConditionalExpressionTree this) ;
-    @Polyread ExpressionTree getFalseExpression(@Polyread ConditionalExpressionTree this) ;
+    @PolyPoly ExpressionTree getCondition(@PolyPoly ConditionalExpressionTree this) ;
+    @PolyPoly ExpressionTree getTrueExpression(@PolyPoly ConditionalExpressionTree this) ;
+    @PolyPoly ExpressionTree getFalseExpression(@PolyPoly ConditionalExpressionTree this) ;
 }

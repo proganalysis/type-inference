@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface DoWhileLoopTree extends StatementTree {
-    @Polyread ExpressionTree getCondition(@Polyread DoWhileLoopTree this) ;
-    @Polyread StatementTree getStatement(@Polyread DoWhileLoopTree this) ;
+    @PolyPoly ExpressionTree getCondition(@PolyPoly DoWhileLoopTree this) ;
+    @PolyPoly StatementTree getStatement(@PolyPoly DoWhileLoopTree this) ;
 }

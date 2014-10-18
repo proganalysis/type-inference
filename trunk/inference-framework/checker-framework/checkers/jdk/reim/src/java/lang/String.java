@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.io.ObjectStreamClass;
 import java.io.ObjectStreamField;
@@ -34,67 +34,67 @@ public final class String
         throw new RuntimeException("skeleton method");
     }
 
-    public String(char @Readonly [] value) {
+    public String(char @ReadRead [] value) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(char @Readonly [] value, int offset, int count) {
+    public String(char @ReadRead [] value, int offset, int count) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(int @Readonly [] codePoints, int offset, int count) {
-        throw new RuntimeException("skeleton method");
-    }
-
-    @Deprecated
-    public String(byte @Readonly [] ascii, int hibyte, int offset, int count) {
+    public String(int @ReadRead [] codePoints, int offset, int count) {
         throw new RuntimeException("skeleton method");
     }
 
     @Deprecated
-    public String(byte @Readonly [] ascii, int hibyte) {
+    public String(byte @ReadRead [] ascii, int hibyte, int offset, int count) {
         throw new RuntimeException("skeleton method");
     }
 
-    private static void checkBounds(byte @Readonly [] bytes, int offset, int length) {
+    @Deprecated
+    public String(byte @ReadRead [] ascii, int hibyte) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(byte @Readonly [] bytes, int offset, int length, String charsetName)
+    private static void checkBounds(byte @ReadRead [] bytes, int offset, int length) {
+        throw new RuntimeException("skeleton method");
+    }
+
+    public String(byte @ReadRead [] bytes, int offset, int length, String charsetName)
     throws UnsupportedEncodingException {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(byte @Readonly [] bytes, int offset, int length, Charset charset) {
+    public String(byte @ReadRead [] bytes, int offset, int length, Charset charset) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(byte @Readonly [] bytes, String charsetName)
+    public String(byte @ReadRead [] bytes, String charsetName)
     throws UnsupportedEncodingException {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(byte @Readonly [] bytes,  Charset charset) {
+    public String(byte @ReadRead [] bytes,  Charset charset) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(byte @Readonly [] bytes, int offset, int length) {
+    public String(byte @ReadRead [] bytes, int offset, int length) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(byte @Readonly [] bytes) {
+    public String(byte @ReadRead [] bytes) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(@Readonly StringBuffer buffer) {
+    public String(@ReadRead StringBuffer buffer) {
         throw new RuntimeException("skeleton method");
     }
 
-    public String(@Readonly StringBuilder builder) {
+    public String(@ReadRead StringBuilder builder) {
         throw new RuntimeException("skeleton method");
     }
 
-    String(int offset, int count, char @Readonly [] value) {
+    String(int offset, int count, char @ReadRead [] value) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -139,7 +139,7 @@ public final class String
         throw new RuntimeException("skeleton method");
     }
 
-    public byte[] getBytes(@Readonly String this,  String charsetName) 
+    public byte[] getBytes(@ReadRead String this,  String charsetName) 
     throws UnsupportedEncodingException {
         throw new RuntimeException("skeleton method");
     }
@@ -152,15 +152,15 @@ public final class String
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@Readonly Object anObject) {
+    public boolean equals(@ReadRead Object anObject) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean contentEquals(@Readonly StringBuffer sb) {
+    public boolean contentEquals(@ReadRead StringBuffer sb) {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean contentEquals(@Readonly CharSequence cs) {
+    public boolean contentEquals(@ReadRead CharSequence cs) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -235,8 +235,8 @@ public final class String
         throw new RuntimeException("skeleton method");
     }
 
-    static int indexOf(char @Readonly [] source, int sourceOffset, int sourceCount,
-                       char @Readonly [] target, int targetOffset, int targetCount,
+    static int indexOf(char @ReadRead [] source, int sourceOffset, int sourceCount,
+                       char @ReadRead [] target, int targetOffset, int targetCount,
                        int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
@@ -249,8 +249,8 @@ public final class String
         throw new RuntimeException("skeleton method");
     }
 
-    static int lastIndexOf(char @Readonly [] source, int sourceOffset, int sourceCount,
-                           char @Readonly [] target, int targetOffset, int targetCount,
+    static int lastIndexOf(char @ReadRead [] source, int sourceOffset, int sourceCount,
+                           char @ReadRead [] target, int targetOffset, int targetCount,
                            int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
@@ -279,7 +279,7 @@ public final class String
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean contains(@Readonly CharSequence s) {
+    public boolean contains(@ReadRead CharSequence s) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -331,31 +331,31 @@ public final class String
         throw new RuntimeException("skeleton method");
     }
 
-    public static String format(String format, @Readonly Object ... args) {
+    public static String format(String format, @ReadRead Object ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public static String format( Locale l, String format, @Readonly Object ... args) {
+    public static String format( Locale l, String format, @ReadRead Object ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public static String valueOf(@Readonly Object obj) {
+    public static String valueOf(@ReadRead Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
-    public static String valueOf(char @Readonly [] data) {
+    public static String valueOf(char @ReadRead [] data) {
         throw new RuntimeException("skeleton method");
     }
 
-    public static String valueOf(char @Readonly [] data, int offset, int count) {
+    public static String valueOf(char @ReadRead [] data, int offset, int count) {
         throw new RuntimeException("skeleton method");
     }
 
-    public static String copyValueOf(char @Readonly [] data, int offset, int count) {
+    public static String copyValueOf(char @ReadRead [] data, int offset, int count) {
         throw new RuntimeException("skeleton method");
     }
 
-    public static String copyValueOf(char @Readonly [] data) {
+    public static String copyValueOf(char @ReadRead [] data) {
         throw new RuntimeException("skeleton method");
     }
 

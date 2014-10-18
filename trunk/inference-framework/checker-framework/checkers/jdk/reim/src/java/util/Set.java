@@ -1,20 +1,20 @@
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface Set<E> extends Collection<E> {
-    int size(@Readonly Set<E> this) ;
-    boolean isEmpty(@Readonly Set<E> this) ;
-    boolean contains(@Readonly Set<E> this, @Readonly Object o) ;
-    @Polyread Iterator<E> iterator(@Polyread Set<E> this) ;
-    @Readonly Object [] toArray(@Readonly Set<E> this) ;
-    <T> T[] toArray(@Readonly Set<E> this, T[] a) ;
-    boolean add(@Readonly E e); //WEI
-    boolean remove(@Readonly Object o);
-    boolean containsAll(@Readonly Set<E> this, @Readonly Collection<?> c) ;
-    boolean addAll(@Readonly Collection<? extends E> c);
-    boolean retainAll(@Readonly Collection<?> c);
-    boolean removeAll(@Readonly Collection<?> c);
+    int size(@ReadRead Set<E> this) ;
+    boolean isEmpty(@ReadRead Set<E> this) ;
+    boolean contains(@ReadRead Set<E> this, @ReadRead Object o) ;
+    @PolyPoly Iterator<E> iterator(@PolyPoly Set<E> this) ;
+    @ReadRead Object [] toArray(@ReadRead Set<E> this) ;
+    <T> T[] toArray(@ReadRead Set<E> this, T[] a) ;
+    boolean add(@ReadRead E e); //WEI
+    boolean remove(@ReadRead Object o);
+    boolean containsAll(@ReadRead Set<E> this, @ReadRead Collection<?> c) ;
+    boolean addAll(@ReadRead Collection<? extends E> c);
+    boolean retainAll(@ReadRead Collection<?> c);
+    boolean removeAll(@ReadRead Collection<?> c);
     void clear();
-    boolean equals(@Readonly Set<E> this, @Readonly Object o) ;
-    int hashCode(@Readonly Set<E> this) ;
+    boolean equals(@ReadRead Set<E> this, @ReadRead Object o) ;
+    int hashCode(@ReadRead Set<E> this) ;
 }

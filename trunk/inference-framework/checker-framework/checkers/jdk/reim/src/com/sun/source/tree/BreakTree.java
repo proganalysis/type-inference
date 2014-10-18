@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
 import javax.lang.model.element.Name;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface BreakTree extends StatementTree {
-    @Polyread Name getLabel(@Polyread BreakTree this) ;
+    @PolyPoly Name getLabel(@PolyPoly BreakTree this) ;
 }

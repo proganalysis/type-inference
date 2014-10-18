@@ -10,18 +10,18 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface Element {
-    TypeMirror asType(@Readonly Element this) ;
-    ElementKind getKind(@Readonly Element this) ;
-    List<? extends AnnotationMirror> getAnnotationMirrors(@Readonly Element this) ;
-    <A extends Annotation> @Polyread A getAnnotation(@Polyread Element this, Class<A> annotationType) ;
-    @Polyread Set<Modifier> getModifiers(@Polyread Element this) ;
-    @Polyread Name getSimpleName(@Polyread Element this) ;
-    @Polyread Element getEnclosingElement(@Polyread Element this) ;
-    @Polyread List<? extends Element> getEnclosedElements(@Polyread Element this) ;
-    boolean equals(@Readonly Element this, @Readonly Object obj) ;
-    int hashCode(@Readonly Element this) ;
-    <R, P> R accept(@Readonly Element this, ElementVisitor<R, P> v, P p) ;
+    TypeMirror asType(@ReadRead Element this) ;
+    ElementKind getKind(@ReadRead Element this) ;
+    List<? extends AnnotationMirror> getAnnotationMirrors(@ReadRead Element this) ;
+    <A extends Annotation> @PolyPoly A getAnnotation(@PolyPoly Element this, Class<A> annotationType) ;
+    @PolyPoly Set<Modifier> getModifiers(@PolyPoly Element this) ;
+    @PolyPoly Name getSimpleName(@PolyPoly Element this) ;
+    @PolyPoly Element getEnclosingElement(@PolyPoly Element this) ;
+    @PolyPoly List<? extends Element> getEnclosedElements(@PolyPoly Element this) ;
+    boolean equals(@ReadRead Element this, @ReadRead Object obj) ;
+    int hashCode(@ReadRead Element this) ;
+    <R, P> R accept(@ReadRead Element this, ElementVisitor<R, P> v, P p) ;
 }

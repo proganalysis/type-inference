@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class SecurityException extends RuntimeException {
     private static final long serialVersionUID = 6878364983674394167L;

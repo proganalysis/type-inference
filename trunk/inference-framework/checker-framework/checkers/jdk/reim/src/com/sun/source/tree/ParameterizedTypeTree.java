@@ -1,9 +1,9 @@
 package com.sun.source.tree;
 
 import java.util.List;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface ParameterizedTypeTree extends Tree {
-    @Polyread Tree getType(@Polyread ParameterizedTypeTree this) ;
-    @Polyread List<? extends Tree> getTypeArguments(@Polyread ParameterizedTypeTree this) ;
+    @PolyPoly Tree getType(@PolyPoly ParameterizedTypeTree this) ;
+    @PolyPoly List<? extends Tree> getTypeArguments(@PolyPoly ParameterizedTypeTree this) ;
 }

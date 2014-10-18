@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class StringReader extends Reader {
     public StringReader(String s) {
@@ -18,11 +18,11 @@ public class StringReader extends Reader {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean ready(@Readonly StringReader this)  throws IOException {
+    public boolean ready(@ReadRead StringReader this)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported(@Readonly StringReader this)  {
+    public boolean markSupported(@ReadRead StringReader this)  {
         throw new RuntimeException("skeleton method"); 
     }
 

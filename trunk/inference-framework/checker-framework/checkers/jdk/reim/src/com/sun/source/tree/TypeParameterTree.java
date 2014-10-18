@@ -3,10 +3,10 @@ package com.sun.source.tree;
 import java.util.List;
 import javax.lang.model.element.Name;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface TypeParameterTree extends Tree {
-    @Polyread Name getName(@Polyread TypeParameterTree this) ;
-    @Polyread List<? extends AnnotationTree> getAnnotations(@Polyread TypeParameterTree this) ;
-    @Polyread List<? extends Tree> getBounds(@Polyread TypeParameterTree this) ;
+    @PolyPoly Name getName(@PolyPoly TypeParameterTree this) ;
+    @PolyPoly List<? extends AnnotationTree> getAnnotations(@PolyPoly TypeParameterTree this) ;
+    @PolyPoly List<? extends Tree> getBounds(@PolyPoly TypeParameterTree this) ;
 }

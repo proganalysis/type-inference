@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class FilterInputStream extends InputStream {
     protected volatile InputStream in;
@@ -40,7 +40,7 @@ public class FilterInputStream extends InputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported(@Readonly FilterInputStream this)  {
+    public boolean markSupported(@ReadRead FilterInputStream this)  {
         throw new RuntimeException("skeleton method");
     }
 }

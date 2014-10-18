@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public abstract class Number implements java.io.Serializable {
     public abstract int intValue();

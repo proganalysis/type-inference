@@ -1,30 +1,30 @@
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface List<E> extends Collection<E> {
-    int size(@Readonly List<E> this) ;
-    boolean isEmpty(@Readonly List<E> this) ;
-    boolean contains(@Readonly List<E> this, @Readonly Object o) ;
-    @Polyread Iterator<E> iterator(@Polyread List<E> this) ;
-    @Readonly Object [] toArray(@Readonly List<E> this) ;
-    <T> T[] toArray(@Readonly List<E> this, T[] a) ;
-    boolean add(@Readonly E e); //WEI
-    boolean remove(@Readonly Object o);
-    boolean containsAll(@Readonly List<E> this, @Readonly Collection<?> c) ;
-    boolean addAll(@Readonly Collection<? extends E> c);
-    boolean addAll(int index, @Readonly Collection<? extends E> c);
-    boolean removeAll(@Readonly Collection<?> c);
-    boolean retainAll(@Readonly Collection<?> c);
+    int size(@ReadRead List<E> this) ;
+    boolean isEmpty(@ReadRead List<E> this) ;
+    boolean contains(@ReadRead List<E> this, @ReadRead Object o) ;
+    @PolyPoly Iterator<E> iterator(@PolyPoly List<E> this) ;
+    @ReadRead Object [] toArray(@ReadRead List<E> this) ;
+    <T> T[] toArray(@ReadRead List<E> this, T[] a) ;
+    boolean add(@ReadRead E e); //WEI
+    boolean remove(@ReadRead Object o);
+    boolean containsAll(@ReadRead List<E> this, @ReadRead Collection<?> c) ;
+    boolean addAll(@ReadRead Collection<? extends E> c);
+    boolean addAll(int index, @ReadRead Collection<? extends E> c);
+    boolean removeAll(@ReadRead Collection<?> c);
+    boolean retainAll(@ReadRead Collection<?> c);
     void clear();
-    boolean equals(@Readonly List<E> this, @Readonly Object o) ;
-    int hashCode(@Readonly List<E> this) ;
-    E get(@Polyread List<E> this, int index) ; //WEI
-    E set(int index, @Readonly E element); //WEI
-    void add(int index, @Readonly E element); //WEI
+    boolean equals(@ReadRead List<E> this, @ReadRead Object o) ;
+    int hashCode(@ReadRead List<E> this) ;
+    E get(@PolyPoly List<E> this, int index) ; //WEI
+    E set(int index, @ReadRead E element); //WEI
+    void add(int index, @ReadRead E element); //WEI
     E remove(int index);
-    int indexOf(@Readonly List<E> this, @Readonly Object o) ;
-    int lastIndexOf(@Readonly List<E> this, @Readonly Object o) ;
-    @Polyread ListIterator<E> listIterator(@Polyread List<E> this) ;
-    @Polyread ListIterator<E> listIterator(@Polyread List<E> this, int index) ;
-    @Polyread List<E> subList(@Polyread List<E> this, int fromIndex, int toIndex) ;
+    int indexOf(@ReadRead List<E> this, @ReadRead Object o) ;
+    int lastIndexOf(@ReadRead List<E> this, @ReadRead Object o) ;
+    @PolyPoly ListIterator<E> listIterator(@PolyPoly List<E> this) ;
+    @PolyPoly ListIterator<E> listIterator(@PolyPoly List<E> this, int index) ;
+    @PolyPoly List<E> subList(@PolyPoly List<E> this, int fromIndex, int toIndex) ;
 }

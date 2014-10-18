@@ -1,10 +1,10 @@
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface Iterator<E> {
-    boolean hasNext(@Readonly Iterator<E> this) ;
+    boolean hasNext(@ReadRead Iterator<E> this) ;
     // For a justification of this annotation, see section
     // "Iterators and their abstract state" in the Checker Framework manual.
-    E next(@Polyread Iterator<E> this) ;
+    E next(@PolyPoly Iterator<E> this) ;
     void remove();
 }

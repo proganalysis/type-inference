@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class ExceptionInInitializerError extends LinkageError {
     private static final long serialVersionUID = 1521711792217232256L;
@@ -16,11 +16,11 @@ public class ExceptionInInitializerError extends LinkageError {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable getException(@Readonly ExceptionInInitializerError this)  {
+    public Throwable getException(@ReadRead ExceptionInInitializerError this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable getCause(@Readonly ExceptionInInitializerError this)  {
+    public Throwable getCause(@ReadRead ExceptionInInitializerError this)  {
         throw new RuntimeException("skeleton method");
     }
 }

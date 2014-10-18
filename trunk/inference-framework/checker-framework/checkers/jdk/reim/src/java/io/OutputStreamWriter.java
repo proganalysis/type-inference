@@ -3,7 +3,7 @@ package java.io;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class OutputStreamWriter extends Writer {
     protected OutputStreamWriter() {}
@@ -37,7 +37,7 @@ public class OutputStreamWriter extends Writer {
         throw new RuntimeException("skeleton method");
     }
 
-    public void write(char @Readonly [] cbuf, int off, int len) throws IOException {
+    public void write(char @ReadRead [] cbuf, int off, int len) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

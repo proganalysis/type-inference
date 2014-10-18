@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public final class Short extends Number implements Comparable<Short> {
 
@@ -83,7 +83,7 @@ public final class Short extends Number implements Comparable<Short> {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@Readonly Object obj) {
+    public boolean equals(@ReadRead Object obj) {
         throw new RuntimeException("skeleton method");
     }
 

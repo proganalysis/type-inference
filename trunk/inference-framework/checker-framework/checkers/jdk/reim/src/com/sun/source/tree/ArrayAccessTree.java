@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public interface ArrayAccessTree extends ExpressionTree {
-    @Polyread ExpressionTree getExpression(@Polyread ArrayAccessTree this) ;
-    @Polyread ExpressionTree getIndex(@Polyread ArrayAccessTree this) ;
+    @PolyPoly ExpressionTree getExpression(@PolyPoly ArrayAccessTree this) ;
+    @PolyPoly ExpressionTree getIndex(@PolyPoly ArrayAccessTree this) ;
 }

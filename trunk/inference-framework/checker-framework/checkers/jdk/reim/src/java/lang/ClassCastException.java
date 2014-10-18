@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class ClassCastException extends RuntimeException {
     private static final long serialVersionUID = -9223365651070458532L;

@@ -1,5 +1,5 @@
 package java.util;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -35,15 +35,15 @@ public class Properties extends Hashtable<Object,Object> {
     }
 
     @Deprecated
-    public synchronized void save(@Readonly Properties this, OutputStream out, String comments)  {
+    public synchronized void save(@ReadRead Properties this, OutputStream out, String comments)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public void store(@Readonly Properties this, Writer writer, String comments)  throws IOException {
+    public void store(@ReadRead Properties this, Writer writer, String comments)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public void store(@Readonly Properties this, OutputStream out, String comments)  throws IOException {
+    public void store(@ReadRead Properties this, OutputStream out, String comments)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -53,37 +53,37 @@ public class Properties extends Hashtable<Object,Object> {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized void storeToXML(@Readonly Properties this, OutputStream os, String comment)  throws IOException {
+    public synchronized void storeToXML(@ReadRead Properties this, OutputStream os, String comment)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized void storeToXML(@Readonly Properties this, OutputStream os, String comment, String encoding) 
+    public synchronized void storeToXML(@ReadRead Properties this, OutputStream os, String comment, String encoding) 
         throws IOException
     {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getProperty(@Readonly Properties this, String key)  {
+    public String getProperty(@ReadRead Properties this, String key)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getProperty(@Readonly Properties this, String key, String defaultValue)  {
+    public String getProperty(@ReadRead Properties this, String key, String defaultValue)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Enumeration<?> propertyNames(@Readonly Properties this)  {
+    public Enumeration<?> propertyNames(@ReadRead Properties this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Set<String> stringPropertyNames(@Readonly Properties this)  {
+    public Set<String> stringPropertyNames(@ReadRead Properties this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public void list(@Readonly Properties this, PrintStream out)  {
+    public void list(@ReadRead Properties this, PrintStream out)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public void list(@Readonly Properties this, PrintWriter out)  {
+    public void list(@ReadRead Properties this, PrintWriter out)  {
         throw new RuntimeException("skeleton method");
     }
 }

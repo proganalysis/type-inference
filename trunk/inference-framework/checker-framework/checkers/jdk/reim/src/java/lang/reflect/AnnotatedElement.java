@@ -1,9 +1,9 @@
 package java.lang.reflect;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 import java.lang.annotation.Annotation;
 
-public @Readonly interface AnnotatedElement {
+public @ReadRead interface AnnotatedElement {
 
     boolean isAnnotationPresent(Class<? extends Annotation> annotationClass);
     <T extends Annotation> T getAnnotation(Class<T> annotationClass);

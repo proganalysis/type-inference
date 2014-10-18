@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class ByteArrayInputStream extends InputStream {
     protected byte buf[];
@@ -27,11 +27,11 @@ public class ByteArrayInputStream extends InputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int available(@Readonly ByteArrayInputStream this)  {
+    public synchronized int available(@ReadRead ByteArrayInputStream this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean markSupported(@Readonly ByteArrayInputStream this)  {
+    public boolean markSupported(@ReadRead ByteArrayInputStream this)  {
         throw new RuntimeException("skeleton method");
     }
 

@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public final class StringBuilder
     extends AbstractStringBuilder
@@ -20,11 +20,11 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder(@Readonly CharSequence seq) {
+    public StringBuilder(@ReadRead CharSequence seq) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder append(@Readonly Object obj) {
+    public StringBuilder append(@ReadRead Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -36,23 +36,23 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder append(@Readonly StringBuffer sb) {
+    public StringBuilder append(@ReadRead StringBuffer sb) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder append(@Readonly CharSequence s) {
+    public StringBuilder append(@ReadRead CharSequence s) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder append(@Readonly CharSequence s, int start, int end) {
+    public StringBuilder append(@ReadRead CharSequence s, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder append(char @Readonly [] str) {
+    public StringBuilder append(char @ReadRead [] str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder append(char @Readonly [] str, int offset, int len) {
+    public StringBuilder append(char @ReadRead [] str, int offset, int len) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -96,11 +96,11 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder insert(int index, char @Readonly [] str, int offset, int len) {
+    public StringBuilder insert(int index, char @ReadRead [] str, int offset, int len) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder insert(int offset, @Readonly Object obj) {
+    public StringBuilder insert(int offset, @ReadRead Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -108,15 +108,15 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder insert(int offset, char @Readonly [] str) {
+    public StringBuilder insert(int offset, char @ReadRead [] str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder insert(int dstOffset, @Readonly CharSequence s) {
+    public StringBuilder insert(int dstOffset, @ReadRead CharSequence s) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuilder insert(int dstOffset, @Readonly CharSequence s, int start, int end) {
+    public StringBuilder insert(int dstOffset, @ReadRead CharSequence s, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -144,19 +144,19 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    public int indexOf(@Readonly StringBuilder this, String str)  {
+    public int indexOf(@ReadRead StringBuilder this, String str)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int indexOf(@Readonly StringBuilder this, String str, int fromIndex)  {
+    public int indexOf(@ReadRead StringBuilder this, String str, int fromIndex)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int lastIndexOf(@Readonly StringBuilder this, String str)  {
+    public int lastIndexOf(@ReadRead StringBuilder this, String str)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int lastIndexOf(@Readonly StringBuilder this, String str, int fromIndex)  {
+    public int lastIndexOf(@ReadRead StringBuilder this, String str, int fromIndex)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -164,7 +164,7 @@ public final class StringBuilder
         throw new RuntimeException("skeleton method");
     }
 
-    public String toString(@Readonly StringBuilder this)  {
+    public String toString(@ReadRead StringBuilder this)  {
         throw new RuntimeException("skeleton method");
     }
 

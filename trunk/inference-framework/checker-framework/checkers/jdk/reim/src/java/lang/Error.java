@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class Error extends Throwable {
     static final long serialVersionUID = 4980196508277280342L;

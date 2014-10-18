@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
 public class FileWriter extends OutputStreamWriter {
     public FileWriter(String fileName) throws IOException {

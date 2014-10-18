@@ -1,4 +1,4 @@
 package java.lang.reflect;
-import checkers.inference.reim.quals.*;
+import checkers.inference2.reimN.quals.*;
 
-public @Readonly interface Type {}
+public @ReadRead interface Type {}
