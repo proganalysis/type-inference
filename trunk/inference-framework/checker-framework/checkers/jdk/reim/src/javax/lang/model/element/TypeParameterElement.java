@@ -4,9 +4,9 @@ import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface TypeParameterElement extends Element {
-    @PolyPoly Element getGenericElement(@PolyPoly TypeParameterElement this) ;
-    @PolyPoly List<? extends TypeMirror> getBounds(@PolyPoly TypeParameterElement this) ;
+    @Polyread Element getGenericElement(@Polyread TypeParameterElement this) ;
+    @Polyread List<? extends TypeMirror> getBounds(@Polyread TypeParameterElement this) ;
 }

@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class BufferedOutputStream extends FilterOutputStream {
     protected byte buf[];
@@ -17,7 +17,7 @@ public class BufferedOutputStream extends FilterOutputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized void write(byte b @ReadRead [], int off, int len) throws IOException {
+    public synchronized void write(byte b @Readonly [], int off, int len) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

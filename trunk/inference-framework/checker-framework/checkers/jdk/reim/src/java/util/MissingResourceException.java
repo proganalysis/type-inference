@@ -1,5 +1,5 @@
 package java.util;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class MissingResourceException extends RuntimeException {
     private static final long serialVersionUID = -4876345176062000401L;
@@ -12,11 +12,11 @@ public class MissingResourceException extends RuntimeException {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getClassName(@ReadRead MissingResourceException this)  {
+    public String getClassName(@Readonly MissingResourceException this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String getKey(@ReadRead MissingResourceException this)  {
+    public String getKey(@Readonly MissingResourceException this)  {
         throw new RuntimeException("skeleton method");
     }
 }

@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public final class Integer extends Number implements Comparable<Integer> {
     public static final int   MIN_VALUE = 0x80000000;
@@ -145,7 +145,7 @@ public final class Integer extends Number implements Comparable<Integer> {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadRead Object obj) {
+    public boolean equals(@Readonly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 

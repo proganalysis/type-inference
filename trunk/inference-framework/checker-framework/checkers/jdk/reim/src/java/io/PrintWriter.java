@@ -3,7 +3,7 @@ package java.io;
 import java.util.Formatter;
 import java.util.Locale;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class PrintWriter extends Writer {
 
@@ -79,11 +79,11 @@ public class PrintWriter extends Writer {
         throw new RuntimeException("skeleton method");
     }
 
-    public void write(char @ReadRead [] buf, int off, int len) {
+    public void write(char @Readonly [] buf, int off, int len) {
         throw new RuntimeException("skeleton method");
     }
 
-    public void write(char @ReadRead [] buf) {
+    public void write(char @Readonly [] buf) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -123,7 +123,7 @@ public class PrintWriter extends Writer {
         throw new RuntimeException("skeleton method");
     }
 
-    public void print(char @ReadRead [] s) {
+    public void print(char @Readonly [] s) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -131,7 +131,7 @@ public class PrintWriter extends Writer {
         throw new RuntimeException("skeleton method");
     }
 
-    public void print(@ReadRead Object obj) {
+    public void print(@Readonly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -163,7 +163,7 @@ public class PrintWriter extends Writer {
         throw new RuntimeException("skeleton method");
     }
 
-    public void println(char @ReadRead [] x) {
+    public void println(char @Readonly [] x) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -171,31 +171,31 @@ public class PrintWriter extends Writer {
         throw new RuntimeException("skeleton method");
     }
 
-    public void println(@ReadRead Object x) {
+    public void println(@Readonly Object x) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintWriter printf(String format, @ReadRead Object ... args) {
+    public PrintWriter printf(String format, @Readonly Object ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintWriter printf(Locale l, String format, @ReadRead Object ... args) {
+    public PrintWriter printf(Locale l, String format, @Readonly Object ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintWriter format(String format, @ReadRead Object ... args) {
+    public PrintWriter format(String format, @Readonly Object ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintWriter format(Locale l, String format, @ReadRead Object ... args) {
+    public PrintWriter format(Locale l, String format, @Readonly Object ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintWriter append(@ReadRead CharSequence csq) {
+    public PrintWriter append(@Readonly CharSequence csq) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintWriter append(@ReadRead CharSequence csq, int start, int end) {
+    public PrintWriter append(@Readonly CharSequence csq, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 

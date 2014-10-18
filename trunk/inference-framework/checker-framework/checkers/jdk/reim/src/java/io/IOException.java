@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class IOException extends Exception {
     static final long serialVersionUID = 7818375828146090155L;

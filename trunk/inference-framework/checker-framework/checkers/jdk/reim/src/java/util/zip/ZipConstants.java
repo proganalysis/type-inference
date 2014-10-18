@@ -1,5 +1,5 @@
 package java.util.zip;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 interface ZipConstants {
     static long LOCSIG = 0x04034b50L;

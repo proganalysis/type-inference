@@ -1,5 +1,5 @@
 package java.net;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.IOException;
 

@@ -1,6 +1,6 @@
 package java.io;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class FilterOutputStream extends OutputStream {
     protected OutputStream out;
@@ -12,11 +12,11 @@ public class FilterOutputStream extends OutputStream {
         throw new RuntimeException("skeleton method");
     }
 
-    public void write(byte @ReadRead [] b) throws IOException {
+    public void write(byte @Readonly [] b) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    public void write(byte @ReadRead [] b, int off, int len) throws IOException {
+    public void write(byte @Readonly [] b, int off, int len) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

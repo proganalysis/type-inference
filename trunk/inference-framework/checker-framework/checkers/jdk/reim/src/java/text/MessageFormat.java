@@ -1,5 +1,5 @@
 package java.text;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.InvalidObjectException;
 import java.util.Locale;
@@ -19,7 +19,7 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    public Locale getLocale(@ReadRead MessageFormat this)  {
+    public Locale getLocale(@Readonly MessageFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -27,7 +27,7 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toPattern(@ReadRead MessageFormat this)  {
+    public String toPattern(@Readonly MessageFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -47,55 +47,55 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    public Format[] getFormatsByArgumentIndex(@ReadRead MessageFormat this)  {
+    public Format[] getFormatsByArgumentIndex(@Readonly MessageFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Format[] getFormats(@ReadRead MessageFormat this)  {
+    public Format[] getFormats(@Readonly MessageFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public final StringBuffer format(@ReadRead MessageFormat this, @ReadRead Object[] arguments, StringBuffer result,
+    public final StringBuffer format(@Readonly MessageFormat this, @Readonly Object[] arguments, StringBuffer result,
                                      FieldPosition pos) 
     {
         throw new RuntimeException("skeleton method");
     }
 
-    public static String format(String pattern, @ReadRead Object ... arguments) {
+    public static String format(String pattern, @Readonly Object ... arguments) {
         throw new RuntimeException("skeleton method");
     }
 
-    public final StringBuffer format(@ReadRead MessageFormat this, @ReadRead Object arguments, StringBuffer result,
+    public final StringBuffer format(@Readonly MessageFormat this, @Readonly Object arguments, StringBuffer result,
                                      FieldPosition pos) 
     {
         throw new RuntimeException("skeleton method");
     }
 
-    public AttributedCharacterIterator formatToCharacterIterator(@ReadRead MessageFormat this, @ReadRead Object arguments)  {
+    public AttributedCharacterIterator formatToCharacterIterator(@Readonly MessageFormat this, @Readonly Object arguments)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object[] parse(@ReadRead MessageFormat this, String source, ParsePosition pos)  {
+    public Object[] parse(@Readonly MessageFormat this, String source, ParsePosition pos)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object[] parse(@ReadRead MessageFormat this, String source)  throws ParseException {
+    public Object[] parse(@Readonly MessageFormat this, String source)  throws ParseException {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object parseObject(@ReadRead MessageFormat this, String source, ParsePosition pos)  {
+    public Object parseObject(@Readonly MessageFormat this, String source, ParsePosition pos)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object clone(@ReadRead MessageFormat this)  {
+    public Object clone(@Readonly MessageFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadRead MessageFormat this, Object obj)  {
+    public boolean equals(@Readonly MessageFormat this, Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int hashCode(@ReadRead MessageFormat this)  {
+    public int hashCode(@Readonly MessageFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -107,7 +107,7 @@ public class MessageFormat extends Format {
             throw new RuntimeException("skeleton method");
         }
 
-        protected Object readResolve(@ReadRead Field this)  throws InvalidObjectException {
+        protected Object readResolve(@Readonly Field this)  throws InvalidObjectException {
             throw new RuntimeException("skeleton method");
         }
 

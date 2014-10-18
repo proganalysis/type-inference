@@ -1,7 +1,7 @@
 package com.sun.source.tree;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface ParenthesizedTree extends ExpressionTree {
-    @PolyPoly ExpressionTree getExpression(@PolyPoly ParenthesizedTree this) ;
+    @Polyread ExpressionTree getExpression(@Polyread ParenthesizedTree this) ;
 }

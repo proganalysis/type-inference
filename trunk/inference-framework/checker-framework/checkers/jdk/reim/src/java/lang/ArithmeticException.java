@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class ArithmeticException extends RuntimeException {
     private static final long serialVersionUID = 2256477558314496007L;

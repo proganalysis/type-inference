@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface CatchTree extends Tree {
-    @PolyPoly VariableTree getParameter(@PolyPoly CatchTree this) ;
-    @PolyPoly BlockTree getBlock(@PolyPoly CatchTree this) ;
+    @Polyread VariableTree getParameter(@Polyread CatchTree this) ;
+    @Polyread BlockTree getBlock(@Polyread CatchTree this) ;
 }

@@ -1,5 +1,5 @@
 package java.io;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class BufferedWriter extends Writer {
     public BufferedWriter(Writer out) {
@@ -14,7 +14,7 @@ public class BufferedWriter extends Writer {
         throw new RuntimeException("skeleton method");
     }
 
-    public void write(char cbuf @ReadRead [], int off, int len) throws IOException {
+    public void write(char cbuf @Readonly [], int off, int len) throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

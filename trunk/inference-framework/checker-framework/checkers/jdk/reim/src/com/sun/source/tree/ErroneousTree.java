@@ -1,8 +1,8 @@
 package com.sun.source.tree;
 
 import java.util.List;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface ErroneousTree extends ExpressionTree {
-    @PolyPoly List<? extends Tree> getErrorTrees(@PolyPoly ErroneousTree this) ;
+    @Polyread List<? extends Tree> getErrorTrees(@Polyread ErroneousTree this) ;
 }

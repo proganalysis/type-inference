@@ -1,5 +1,5 @@
 package java.util.zip;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.InputStream;
 import java.io.IOException;

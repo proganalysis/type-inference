@@ -1,10 +1,10 @@
 package com.sun.source.tree;
 
 import java.util.List;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface TryTree extends StatementTree {
-    @PolyPoly BlockTree getBlock(@PolyPoly TryTree this) ;
-    @PolyPoly List<? extends CatchTree> getCatches(@PolyPoly TryTree this) ;
-    @PolyPoly BlockTree getFinallyBlock(@PolyPoly TryTree this) ;
+    @Polyread BlockTree getBlock(@Polyread TryTree this) ;
+    @Polyread List<? extends CatchTree> getCatches(@Polyread TryTree this) ;
+    @Polyread BlockTree getFinallyBlock(@Polyread TryTree this) ;
 }

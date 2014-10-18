@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.Serializable;
 
@@ -25,7 +25,7 @@ public abstract class Enum<E extends Enum<E>>
         throw new RuntimeException("skeleton method");
     }
 
-    public final boolean equals(@ReadRead Object other) {
+    public final boolean equals(@Readonly Object other) {
         throw new RuntimeException("skeleton method");
     }
 

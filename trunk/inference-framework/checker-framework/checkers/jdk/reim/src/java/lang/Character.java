@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
@@ -105,7 +105,7 @@ public final class Character extends Object implements java.io.Serializable, Com
     public static class Subset  {
         protected Subset() {}
         protected Subset(String name) {}
-        public final boolean equals(@ReadRead Object obj) { throw new RuntimeException("skeleton method"); }
+        public final boolean equals(@Readonly Object obj) { throw new RuntimeException("skeleton method"); }
         public final int hashCode() { throw new RuntimeException("skeleton method"); }
         public final String toString() { throw new RuntimeException("skeleton method"); }
     }
@@ -269,7 +269,7 @@ public final class Character extends Object implements java.io.Serializable, Com
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadRead Object obj) {
+    public boolean equals(@Readonly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 

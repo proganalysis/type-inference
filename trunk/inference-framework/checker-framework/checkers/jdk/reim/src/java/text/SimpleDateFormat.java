@@ -1,5 +1,5 @@
 package java.text;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.util.Date;
 import java.util.Locale;
@@ -23,11 +23,11 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    public void set2DigitYearStart(@ReadRead Date startDate) {
+    public void set2DigitYearStart(@Readonly Date startDate) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Date get2DigitYearStart(@ReadRead SimpleDateFormat this)  {
+    public Date get2DigitYearStart(@Readonly SimpleDateFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -43,11 +43,11 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toPattern(@ReadRead SimpleDateFormat this)  {
+    public String toPattern(@Readonly SimpleDateFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public String toLocalizedPattern(@ReadRead SimpleDateFormat this)  {
+    public String toLocalizedPattern(@Readonly SimpleDateFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -59,23 +59,23 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    public DateFormatSymbols getDateFormatSymbols(@ReadRead SimpleDateFormat this)  {
+    public DateFormatSymbols getDateFormatSymbols(@Readonly SimpleDateFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public void setDateFormatSymbols(@ReadRead DateFormatSymbols newFormatSymbols) {
+    public void setDateFormatSymbols(@Readonly DateFormatSymbols newFormatSymbols) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Object clone(@ReadRead SimpleDateFormat this)  {
+    public Object clone(@Readonly SimpleDateFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int hashCode(@ReadRead SimpleDateFormat this)  {
+    public int hashCode(@Readonly SimpleDateFormat this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public boolean equals(@ReadRead SimpleDateFormat this, @ReadRead Object obj)  {
+    public boolean equals(@Readonly SimpleDateFormat this, @Readonly Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 }

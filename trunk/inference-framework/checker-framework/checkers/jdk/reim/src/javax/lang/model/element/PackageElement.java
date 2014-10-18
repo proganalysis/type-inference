@@ -1,8 +1,8 @@
 package javax.lang.model.element;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface PackageElement extends Element, QualifiedNameable {
-    @PolyPoly Name getQualifiedName(@PolyPoly PackageElement this) ;
-    boolean isUnnamed(@ReadRead PackageElement this) ;
+    @Polyread Name getQualifiedName(@Polyread PackageElement this) ;
+    boolean isUnnamed(@Readonly PackageElement this) ;
 }

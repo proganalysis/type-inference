@@ -6,23 +6,23 @@ import java.util.Map;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface Elements {
-    @PolyPoly PackageElement getPackageElement(@PolyPoly CharSequence name);
-    @PolyPoly TypeElement getTypeElement(@PolyPoly CharSequence name);
-    @PolyPoly Map<? extends ExecutableElement, ? extends AnnotationValue>
-        getElementValuesWithDefaults(@PolyPoly AnnotationMirror a);
-    @PolyPoly String getDocComment(@PolyPoly Element e);
-    boolean isDeprecated(@ReadRead Element e);
-    @PolyPoly Name getBinaryName(@PolyPoly TypeElement type);
-    @PolyPoly PackageElement getPackageOf(@PolyPoly Element type);
-    @PolyPoly List<? extends Element> getAllMembers(@PolyPoly TypeElement type);
-    @PolyPoly List<? extends AnnotationMirror> getAllAnnotationMirrors(@PolyPoly Element e);
-    boolean hides(@ReadRead Element hider, @ReadRead Element hidden);
-    boolean overrides(@ReadRead ExecutableElement overrider, @ReadRead ExecutableElement overridden,
-              @ReadRead TypeElement type);
-    @PolyPoly String getConstantExpression(@PolyPoly Object value);
-    void printElements(java.io.Writer w, @ReadRead Element... elements);
-    @PolyPoly Name getName(@PolyPoly CharSequence cs);
+    @Polyread PackageElement getPackageElement(@Polyread CharSequence name);
+    @Polyread TypeElement getTypeElement(@Polyread CharSequence name);
+    @Polyread Map<? extends ExecutableElement, ? extends AnnotationValue>
+        getElementValuesWithDefaults(@Polyread AnnotationMirror a);
+    @Polyread String getDocComment(@Polyread Element e);
+    boolean isDeprecated(@Readonly Element e);
+    @Polyread Name getBinaryName(@Polyread TypeElement type);
+    @Polyread PackageElement getPackageOf(@Polyread Element type);
+    @Polyread List<? extends Element> getAllMembers(@Polyread TypeElement type);
+    @Polyread List<? extends AnnotationMirror> getAllAnnotationMirrors(@Polyread Element e);
+    boolean hides(@Readonly Element hider, @Readonly Element hidden);
+    boolean overrides(@Readonly ExecutableElement overrider, @Readonly ExecutableElement overridden,
+              @Readonly TypeElement type);
+    @Polyread String getConstantExpression(@Polyread Object value);
+    void printElements(java.io.Writer w, @Readonly Element... elements);
+    @Polyread Name getName(@Polyread CharSequence cs);
 }

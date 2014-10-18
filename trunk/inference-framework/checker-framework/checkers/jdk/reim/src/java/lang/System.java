@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 import java.io.*;
 import java.util.Properties;
@@ -50,11 +50,11 @@ public final class System {
     public static native long currentTimeMillis();
     public static native long nanoTime();
 
-    public static native void arraycopy(@ReadRead Object src,  int  srcPos,
+    public static native void arraycopy(@Readonly Object src,  int  srcPos,
                                         Object dest, int destPos,
                                         int length);
 
-    public static native int identityHashCode(@ReadRead Object x);
+    public static native int identityHashCode(@Readonly Object x);
 
     public static Properties getProperties() {
         throw new RuntimeException("skeleton method");
@@ -84,7 +84,7 @@ public final class System {
         throw new RuntimeException("skeleton method");
     }
 
-    public static @ReadRead java.util.Map< String, String> getenv() {
+    public static @Readonly java.util.Map< String, String> getenv() {
         throw new RuntimeException("skeleton method");
     }
 

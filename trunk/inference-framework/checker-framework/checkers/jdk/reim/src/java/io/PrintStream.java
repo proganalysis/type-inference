@@ -3,7 +3,7 @@ package java.io;
 import java.util.Formatter;
 import java.util.Locale;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class PrintStream extends FilterOutputStream
     implements Appendable, Closeable
@@ -62,7 +62,7 @@ public class PrintStream extends FilterOutputStream
         throw new RuntimeException("skeleton method");
     }
 
-    public void write(byte @ReadRead [] buf, int off, int len) {
+    public void write(byte @Readonly [] buf, int off, int len) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -90,7 +90,7 @@ public class PrintStream extends FilterOutputStream
         throw new RuntimeException("skeleton method");
     }
 
-    public void print(char @ReadRead [] s) {
+    public void print(char @Readonly [] s) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -98,7 +98,7 @@ public class PrintStream extends FilterOutputStream
         throw new RuntimeException("skeleton method");
     }
 
-    public void print(@ReadRead Object obj) {
+    public void print(@Readonly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -130,7 +130,7 @@ public class PrintStream extends FilterOutputStream
         throw new RuntimeException("skeleton method");
     }
 
-    public void println(char @ReadRead [] x) {
+    public void println(char @Readonly [] x) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -138,31 +138,31 @@ public class PrintStream extends FilterOutputStream
         throw new RuntimeException("skeleton method");
     }
 
-    public void println(@ReadRead Object x) {
+    public void println(@Readonly Object x) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream printf(String format, @ReadRead Object @ReadRead ... args) {
+    public PrintStream printf(String format, @Readonly Object @Readonly ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream printf(Locale l, String format, @ReadRead Object @ReadRead ... args) {
+    public PrintStream printf(Locale l, String format, @Readonly Object @Readonly ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream format(String format, @ReadRead Object @ReadRead ... args) {
+    public PrintStream format(String format, @Readonly Object @Readonly ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream format(Locale l, String format, @ReadRead Object @ReadRead ... args) {
+    public PrintStream format(Locale l, String format, @Readonly Object @Readonly ... args) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream append(@ReadRead CharSequence csq) {
+    public PrintStream append(@Readonly CharSequence csq) {
         throw new RuntimeException("skeleton method");
     }
 
-    public PrintStream append(@ReadRead CharSequence csq, int start, int end) {
+    public PrintStream append(@Readonly CharSequence csq, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 

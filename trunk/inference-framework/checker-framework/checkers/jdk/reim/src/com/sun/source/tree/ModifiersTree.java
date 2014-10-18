@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 /**
  * A tree node for the modifiers, including annotations, for a declaration.
@@ -49,6 +49,6 @@ import checkers.inference2.reimN.quals.*;
  * @since 1.6
  */
 public interface ModifiersTree extends Tree {
-    @PolyPoly Set<Modifier> getFlags(@PolyPoly ModifiersTree this) ;
-    @PolyPoly List<? extends AnnotationTree> getAnnotations(@PolyPoly ModifiersTree this) ;
+    @Polyread Set<Modifier> getFlags(@Polyread ModifiersTree this) ;
+    @Polyread List<? extends AnnotationTree> getAnnotations(@Polyread ModifiersTree this) ;
 }

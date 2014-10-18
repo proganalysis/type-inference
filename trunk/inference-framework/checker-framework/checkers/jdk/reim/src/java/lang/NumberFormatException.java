@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public class NumberFormatException extends IllegalArgumentException {
     static final long serialVersionUID = -2848938806368998894L;

@@ -1,6 +1,6 @@
 package com.sun.source.tree;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface ExpressionStatementTree extends StatementTree {
-    @PolyPoly ExpressionTree getExpression(@PolyPoly ExpressionStatementTree this) ;
+    @Polyread ExpressionTree getExpression(@Polyread ExpressionStatementTree this) ;
 }

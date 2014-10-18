@@ -1,7 +1,7 @@
 package com.sun.source.tree;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface AssertTree extends StatementTree {
-    @PolyPoly ExpressionTree getCondition(@PolyPoly AssertTree this) ;
-    @PolyPoly ExpressionTree getDetail(@PolyPoly AssertTree this) ;
+    @Polyread ExpressionTree getCondition(@Polyread AssertTree this) ;
+    @Polyread ExpressionTree getDetail(@Polyread AssertTree this) ;
 }

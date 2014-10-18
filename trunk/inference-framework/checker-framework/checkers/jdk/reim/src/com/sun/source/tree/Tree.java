@@ -1,10 +1,10 @@
 package com.sun.source.tree;
 
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface Tree {
 
-    @ReadRead public enum Kind {
+    @Readonly public enum Kind {
         ANNOTATION(AnnotationTree.class),
         ARRAY_ACCESS(ArrayAccessTree.class),
         ARRAY_TYPE(ArrayTypeTree.class),
@@ -111,6 +111,6 @@ public interface Tree {
         private final Class<? extends Tree> associatedInterface;
     }
 
-    @PolyPoly Kind getKind(@PolyPoly Tree this) ;
-    <R,D> R accept(@ReadRead Tree this, TreeVisitor<R,D> visitor, D data) ;
+    @Polyread Kind getKind(@Polyread Tree this) ;
+    <R,D> R accept(@Readonly Tree this, TreeVisitor<R,D> visitor, D data) ;
 }

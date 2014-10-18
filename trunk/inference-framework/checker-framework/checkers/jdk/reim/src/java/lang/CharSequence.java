@@ -1,12 +1,12 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public interface CharSequence {
 
-    int length(@ReadRead CharSequence this) ;
+    int length(@Readonly CharSequence this) ;
 
-    char charAt(@ReadRead CharSequence this, int index) ;
-    @PolyPoly CharSequence subSequence(@PolyPoly CharSequence this, int start, int end) ;
-    public String toString(@ReadRead CharSequence this) ;
+    char charAt(@Readonly CharSequence this, int index) ;
+    @Polyread CharSequence subSequence(@Polyread CharSequence this, int start, int end) ;
+    public String toString(@Readonly CharSequence this) ;
 
 }

@@ -1,5 +1,5 @@
 package java.lang;
-import checkers.inference2.reimN.quals.*;
+import checkers.inference.reim.quals.*;
 
 public final class StringBuffer
     extends AbstractStringBuilder
@@ -19,15 +19,15 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuffer(@ReadRead CharSequence seq) {
+    public StringBuffer(@Readonly CharSequence seq) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int length(@ReadRead StringBuffer this)  {
+    public synchronized int length(@Readonly StringBuffer this)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int capacity(@ReadRead StringBuffer this)  {
+    public synchronized int capacity(@Readonly StringBuffer this)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -43,27 +43,27 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized char charAt(@ReadRead StringBuffer this, int index)  {
+    public synchronized char charAt(@Readonly StringBuffer this, int index)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int codePointAt(@ReadRead StringBuffer this, int index)  {
+    public synchronized int codePointAt(@Readonly StringBuffer this, int index)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int codePointBefore(@ReadRead StringBuffer this, int index)  {
+    public synchronized int codePointBefore(@Readonly StringBuffer this, int index)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int codePointCount(@ReadRead StringBuffer this, int beginIndex, int endIndex)  {
+    public synchronized int codePointCount(@Readonly StringBuffer this, int beginIndex, int endIndex)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int offsetByCodePoints(@ReadRead StringBuffer this, int index, int codePointOffset)  {
+    public synchronized int offsetByCodePoints(@Readonly StringBuffer this, int index, int codePointOffset)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized void getChars(@ReadRead StringBuffer this, int srcBegin, int srcEnd, char dst[],
+    public synchronized void getChars(@Readonly StringBuffer this, int srcBegin, int srcEnd, char dst[],
                                       int dstBegin) {
         throw new RuntimeException("skeleton method");
     }
@@ -72,31 +72,31 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer append(@ReadRead Object obj) {
+    public synchronized StringBuffer append(@Readonly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer append(@ReadRead String str) {
+    public synchronized StringBuffer append(@Readonly String str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer append(@ReadRead StringBuffer sb) {
+    public synchronized StringBuffer append(@Readonly StringBuffer sb) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuffer append(@ReadRead CharSequence s) {
+    public StringBuffer append(@Readonly CharSequence s) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer append(@ReadRead CharSequence s, int start, int end) {
+    public synchronized StringBuffer append(@Readonly CharSequence s, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer append(char @ReadRead [] str) {
+    public synchronized StringBuffer append(char @Readonly [] str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer append(char @ReadRead [] str, int offset, int len) {
+    public synchronized StringBuffer append(char @Readonly [] str, int offset, int len) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -140,23 +140,23 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized String substring(@ReadRead StringBuffer this, int start)  {
+    public synchronized String substring(@Readonly StringBuffer this, int start)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized @ReadRead CharSequence subSequence(@ReadRead StringBuffer this, int start, int end)  {
+    public synchronized @Readonly CharSequence subSequence(@Readonly StringBuffer this, int start, int end)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized String substring(@ReadRead StringBuffer this, int start, int end)  {
+    public synchronized String substring(@Readonly StringBuffer this, int start, int end)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer insert(int index, char @ReadRead [] str, int offset, int len) {
+    public synchronized StringBuffer insert(int index, char @Readonly [] str, int offset, int len) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer insert(int offset, @ReadRead Object obj) {
+    public synchronized StringBuffer insert(int offset, @Readonly Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -164,15 +164,15 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized  StringBuffer insert(int offset, char @ReadRead [] str) {
+    public synchronized  StringBuffer insert(int offset, char @Readonly [] str) {
         throw new RuntimeException("skeleton method");
     }
 
-    public StringBuffer insert(int dstOffset, @ReadRead CharSequence s) {
+    public StringBuffer insert(int dstOffset, @Readonly CharSequence s) {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized StringBuffer insert(int dstOffset, @ReadRead CharSequence s, int start, int end) {
+    public synchronized StringBuffer insert(int dstOffset, @Readonly CharSequence s, int start, int end) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -200,19 +200,19 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public int indexOf(@ReadRead StringBuffer this, String str)  {
+    public int indexOf(@Readonly StringBuffer this, String str)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int indexOf(@ReadRead StringBuffer this, String str, int fromIndex)  {
+    public synchronized int indexOf(@Readonly StringBuffer this, String str, int fromIndex)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public int lastIndexOf(@ReadRead StringBuffer this,  String str)  {
+    public int lastIndexOf(@Readonly StringBuffer this,  String str)  {
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized int lastIndexOf(@ReadRead StringBuffer this, String str, int fromIndex)  {
+    public synchronized int lastIndexOf(@Readonly StringBuffer this, String str, int fromIndex)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -220,7 +220,7 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    public synchronized String toString(@ReadRead StringBuffer this)  {
+    public synchronized String toString(@Readonly StringBuffer this)  {
         throw new RuntimeException("skeleton method");
     }
 
