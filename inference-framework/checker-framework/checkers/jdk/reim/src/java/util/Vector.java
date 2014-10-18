@@ -15,7 +15,7 @@ public class Vector<E> extends AbstractList<E> implements List<E>, RandomAccess,
   public synchronized int capacity(@Readonly Vector<E> this)  { throw new RuntimeException(("skeleton method")); }
   public synchronized int size(@Readonly Vector<E> this)  { throw new RuntimeException(("skeleton method")); }
   public synchronized boolean isEmpty(@Readonly Vector<E> this)  { throw new RuntimeException(("skeleton method")); }
-  public @Polyread Enumeration<E> elements(@Polyread Vector<E> this)  { throw new RuntimeException(("skeleton method")); }
+  public Enumeration<E> elements(@Polyread Vector<E> this)  { throw new RuntimeException(("skeleton method")); }
   public boolean contains(@Readonly Vector<E> this, @Readonly Object a1)  { throw new RuntimeException(("skeleton method")); }
   public int indexOf(@Readonly Vector<E> this, @Readonly Object a1)  { throw new RuntimeException(("skeleton method")); }
   public synchronized int indexOf(@Readonly Vector<E> this, @Readonly Object a1, int a2)  { throw new RuntimeException(("skeleton method")); }

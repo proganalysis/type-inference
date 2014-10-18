@@ -44,7 +44,7 @@ public class File implements Serializable, Comparable<File> {
     public String getParent(@Readonly File this)  {
         throw new RuntimeException("skeleton method");
     }
-    public @Polyread File getParentFile(@Polyread File this)  {
+    public File getParentFile(@Polyread File this)  {
         throw new RuntimeException("skeleton method");
     }
     public String getPath(@Readonly File this)  {

@@ -24,7 +24,7 @@ public class HashMap<K,V>
     public void clear() { throw new RuntimeException("skeleton method"); }
     public boolean containsValue(@Readonly HashMap<K,V> this, @Readonly Object value)  { throw new RuntimeException("skeleton method"); }
     public Object clone(@Readonly HashMap<K,V> this)  { throw new RuntimeException("skeleton method"); }
-    public @Polyread Set<K> keySet(@Polyread HashMap<K,V> this)  { throw new RuntimeException("skeleton method"); }
-    public @Polyread Collection<V> values(@Polyread HashMap<K,V> this)  { throw new RuntimeException("skeleton method"); }
+    public Set<K> keySet(@Polyread HashMap<K,V> this)  { throw new RuntimeException("skeleton method"); }
+    public Collection<V> values(@Polyread HashMap<K,V> this)  { throw new RuntimeException("skeleton method"); }
     public @Polyread Set<@Polyread Map.Entry<K,V>> entrySet(@Polyread HashMap<K,V> this)  { throw new RuntimeException("skeleton method"); }
 }
