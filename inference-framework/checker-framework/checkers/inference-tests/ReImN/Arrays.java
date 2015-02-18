@@ -10,23 +10,6 @@ public class Arrays {
         public void setDay(/*@MutMut*/ Day this, int d) /*mutable*/ { this.day = d; }
     }
 
-//    public void foo() /*readonly*/ {
-//        /*readonly*/ Day[/*mutable*/] ma = new Day[1];
-//        /*readonly*/ Day d = new Day();
-//        ma[0] = d;
-//        /*readonly*/ Day x = ma[0];
-//        int y = x.getDay();
-//    }
-
-//    public void bar() /*readonly*/ {
-//        /*mutable*/ Day[/*mutable*/] ma = new Day[1];
-//        /*mutable*/ Day d = new Day();
-//        ma[0] = d;
-//        /*mutable*/ Day x = ma[0];
-//        int y = x.getDay();
-//        x.setDay(y);
-//    }
-
     public void baz() /*readonly*/ {
         /*mutable*/ Day[/*mutable*/] ma = new Day[1];
         ma[0] = new Day();
@@ -38,15 +21,4 @@ public class Arrays {
 
      }
 
-
-//    public void quax() /*readonly*/ {
-//        /*mutable*/ Day[/*mutable*/] ma = new Day[1];
-//        /*mutable*/ Day d = new Day();
-//        ma[0] = d;
-
-//        /*mutable*/ Day[/*readonly*/] ra = ma;
-//        /*mutable*/ Day x = ra[0];
-//        int y = x.getDay();
-//        x.setDay(y);
-//    }
 }
