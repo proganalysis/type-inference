@@ -195,10 +195,14 @@ public class ReimNChecker extends InferenceChecker {
 	@Override
 	protected Reference createMethodAdaptReference(Reference context,
 			Reference decl, Reference assignTo) {
-        if (assignTo == null)
-            return decl;
-        else 
-            return new MethodAdaptReference(assignTo, decl);
+	    //if (assignTo == null)
+	    //          return decl;
+	    //      else 
+	    //          return new MethodAdaptReference(assignTo, decl);
+		    if (context == null)
+		    	return decl;
+		    else
+		    	return new MethodAdaptReference(context, decl);
 	}
 
 	/*
@@ -235,11 +239,11 @@ public class ReimNChecker extends InferenceChecker {
 	protected void annotateArrayComponent(Reference r, Element elt) {
 		if (!isAnnotated(r)) {
 			r.addAnnotation(POLYPOLY);
-//			r.addAnnotation(READPOLY);
-			r.addAnnotation(READREAD);
-//			if (elt == null || !isFromLibrary(elt)) {
-//				r.addAnnotation(READREAD);
-//			}
+			r.addAnnotation(READPOLY);
+//			r.addAnnotation(READREAD);
+			if (elt == null || !isFromLibrary(elt)) {
+				r.addAnnotation(READREAD);
+			}
 		}
 	}
 
@@ -321,12 +325,10 @@ public class ReimNChecker extends InferenceChecker {
 			if (isDefaultReadonlyType(r.getType())) {
 				r.addAnnotation(READREAD);
 			} else {
-				//r.setAnnotations(getSourceLevelQualifiers(), this);
-				r.addAnnotation(READREAD);
-				r.addAnnotation(POLYPOLY);
-				r.addAnnotation(READPOLY);
-//				r.addAnnotation(READMUT);
-//				r.addAnnotation(POLYMUT);
+			    r.setAnnotations(getSourceLevelQualifiers(), this);
+			    //	r.addAnnotation(READREAD);
+			    //	r.addAnnotation(POLYPOLY);
+			    //	r.addAnnotation(READPOLY);
 			}
 		}
 	}
