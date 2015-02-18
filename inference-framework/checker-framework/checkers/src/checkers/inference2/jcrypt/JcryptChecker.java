@@ -1,11 +1,14 @@
 /**
  * 
  */
-package checkers.inference2.sflow;
+package checkers.inference2.jcrypt;
 
 import static com.esotericsoftware.minlog.Log.info;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,10 +29,10 @@ import javax.lang.model.type.TypeMirror;
 import checkers.inference.reim.quals.Mutable;
 import checkers.inference.reim.quals.Polyread;
 import checkers.inference.reim.quals.Readonly;
-import checkers.inference.sflow.quals.Bottom;
-import checkers.inference.sflow.quals.Poly;
-import checkers.inference.sflow.quals.Safe;
-import checkers.inference.sflow.quals.Tainted;
+import checkers.inference2.jcrypt.quals.Bottom;
+import checkers.inference2.jcrypt.quals.Poly;
+import checkers.inference2.jcrypt.quals.Clear;
+import checkers.inference2.jcrypt.quals.Sensitive;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
@@ -58,11 +61,11 @@ import com.sun.source.tree.Tree;
  */
 @SupportedOptions({ "warn", "infer", "debug", "noReim", "inferLibrary", "polyLibrary", "inferAndroidApp" })
 @TypeQualifiers({ Readonly.class, Polyread.class, Mutable.class, Poly.class,
-		Tainted.class, Safe.class, Bottom.class })
-public class SFlowChecker extends InferenceChecker {
+		Sensitive.class, Clear.class, Bottom.class })
+public class JcryptChecker extends InferenceChecker {
 	
 	
-	public AnnotationMirror READONLY, POLYREAD, MUTABLE, POLY, TAINTED, SAFE;
+	public static AnnotationMirror READONLY, POLYREAD, MUTABLE, POLY, SENSITIVE, CLEAR;
 //			BOTTOM;	
 	
 	private Set<AnnotationMirror> sourceAnnos;
@@ -82,24 +85,24 @@ public class SFlowChecker extends InferenceChecker {
     private Set<String> defaultReadonlyRefTypes;
 
     private Set<String> androidClasses; 
-
-
+    
 	public void initChecker(ProcessingEnvironment processingEnv) {
 		super.initChecker(processingEnv);
+//		InferenceMainJcrypt.getInstance().setInferenceChcker(this);
 		annoFactory = AnnotationUtils.getInstance(env);
 		POLY = annoFactory.fromClass(Poly.class);
-		TAINTED = annoFactory.fromClass(Tainted.class);
-		SAFE = annoFactory.fromClass(Safe.class);
+		SENSITIVE = annoFactory.fromClass(Sensitive.class);
+		CLEAR = annoFactory.fromClass(Clear.class);
 //		BOTTOM = annoFactory.fromClass(Bottom.class);
 
 		READONLY = annoFactory.fromClass(Readonly.class);
 		POLYREAD = annoFactory.fromClass(Polyread.class);
 		MUTABLE = annoFactory.fromClass(Mutable.class);
 
-		sourceAnnos = new HashSet<AnnotationMirror>(4);
-		sourceAnnos.add(TAINTED);
+		sourceAnnos = AnnotationUtils.createAnnotationSet();
+		sourceAnnos.add(SENSITIVE);
 		sourceAnnos.add(POLY);
-		sourceAnnos.add(SAFE);
+		sourceAnnos.add(CLEAR);
 
         defaultReadonlyRefTypes = new HashSet<String>();
         defaultReadonlyRefTypes.add("java.lang.String");
@@ -306,7 +309,7 @@ public class SFlowChecker extends InferenceChecker {
 			Tree t) {
 		if (!isAnnotated(r)) {
 			if (kind == RefKind.LITERAL) {
-				r.addAnnotation(SAFE);
+				r.addAnnotation(CLEAR);
 			} else {
 				r.setAnnotations(sourceAnnos, this);
 			}
@@ -319,7 +322,7 @@ public class SFlowChecker extends InferenceChecker {
 	@Override
 	protected void annotateArrayComponent(Reference r, Element elt) {
 		if (!isAnnotated(r)) {
-			r.addAnnotation(TAINTED);
+			r.addAnnotation(SENSITIVE);
 			r.addAnnotation(POLY);
 		}
 	}
@@ -331,7 +334,7 @@ public class SFlowChecker extends InferenceChecker {
 	protected void annotateField(Reference r, Element fieldElt) {
         if (!isAnnotated(r)) {
             if (!ElementUtils.isStatic(fieldElt)) {
-                r.addAnnotation(TAINTED);
+                r.addAnnotation(CLEAR);
                 r.addAnnotation(POLY);
             } else {
                 r.setAnnotations(getSourceLevelQualifiers(), this);
@@ -396,10 +399,10 @@ public class SFlowChecker extends InferenceChecker {
 	@Override
 	public AnnotationMirror adaptMethod(AnnotationMirror contextAnno,
 			AnnotationMirror declAnno) {
-		if (declAnno.toString().equals(TAINTED.toString()))
-			return TAINTED;
-		else if (declAnno.toString().equals(SAFE.toString()))
-			return SAFE;
+		if (declAnno.toString().equals(SENSITIVE.toString()))
+			return SENSITIVE;
+		else if (declAnno.toString().equals(CLEAR.toString()))
+			return CLEAR;
 		else if (declAnno.toString().equals(POLY.toString()))
 			return contextAnno;
 		else
@@ -435,11 +438,11 @@ public class SFlowChecker extends InferenceChecker {
 	 */
 	@Override
 	public int getAnnotaionWeight(AnnotationMirror anno) {
-		if (anno.toString().equals(TAINTED.toString()))
+		if (anno.toString().equals(SENSITIVE.toString()))
 			return 3;
 		else if (anno.toString().equals(POLY.toString()))
 			return 2;
-		else if (anno.toString().equals(SAFE.toString()))
+		else if (anno.toString().equals(CLEAR.toString()))
 			return 1;
 		else 
 			return Integer.MAX_VALUE;
@@ -488,12 +491,12 @@ public class SFlowChecker extends InferenceChecker {
 	@Override
 	protected SourceVisitor<?, ?> getInferenceVisitor(
 			InferenceChecker inferenceChecker, CompilationUnitTree root) {
-		return new SFlowInferenceVisitor(this, root);
+		return new JcryptInferenceVisitor(this, root);
 	}
 	
-	private class SFlowInferenceVisitor extends InferenceVisitor {
+	private class JcryptInferenceVisitor extends InferenceVisitor {
 
-		public SFlowInferenceVisitor(InferenceChecker checker,
+		public JcryptInferenceVisitor(InferenceChecker checker,
 				CompilationUnitTree root) {
 			super(checker, root);
 		}
@@ -529,5 +532,77 @@ public class SFlowChecker extends InferenceChecker {
 		
 		
 	}
-
+	
+	@Override
+	public void printResult(PrintWriter out) {
+		List<Reference> references = new ArrayList<Reference>(annotatedReferences.values());
+		Collections.sort(references, new Comparator<Reference>() {
+			@Override
+			public int compare(Reference o1, Reference o2) {
+				int ret = o1.getFileName().compareTo(o2.getFileName());
+				if (ret == 0) {
+					ret = o1.getLineNum() - o2.getLineNum();
+				}
+				if (ret == 0) {
+					ret = o1.getName().compareTo(o2.getName());
+				}
+				return ret;
+			}
+		});
+		
+		for (Reference r : references) {
+			Element  elt = r.getElement();
+			if ((elt == null && r.getKind() != RefKind.ALLOCATION) 
+					|| r.getIdentifier().startsWith(LIB_PREFIX)
+					|| (elt instanceof ExecutableElement)
+							&& isCompilerAddedConstructor((ExecutableElement) elt)
+					|| r.getKind() == RefKind.CONSTANT
+					|| r.getKind() == RefKind.CALL_SITE
+					|| r.getKind() == RefKind.CLASS
+					|| r.getKind() == RefKind.FIELD_ADAPT
+					|| r.getKind() == RefKind.LITERAL
+					|| r.getKind() == RefKind.METH_ADAPT
+					|| r.getKind() == RefKind.METHOD
+					|| r.getKind() == RefKind.ALLOCATION
+					|| r.getKind() == RefKind.COMPONENT
+					|| r.getType().getKind() == TypeKind.VOID
+					|| (r.getKind() == RefKind.PARAMETER && r.getName().equals("this"))) {
+				continue;
+			}
+				
+			AnnotatedTypeMirror type = r.getType();
+			annotateInferredType(type, r);
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(r.getFileName()).append("\t");
+			sb.append(r.getLineNum()).append("\t");
+			sb.append(r.getName()).append("\t\t");
+			sb.append(type.toString()).append("\t");
+			sb.append("(" + r.getId() + ")");
+			sb.append(r.getKind());
+			out.println(sb.toString());
+		}
+	}
+	
+	@Override
+	public Reference getAnnotatedReference(String identifier, RefKind kind,
+			Tree tree, Element element, TypeElement enclosingType,
+			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
+		Reference ret = super.getAnnotatedReference(identifier, kind, tree,
+				element, enclosingType, type, annos);
+		// we have reim annotation, now we want to add sflow annotation
+		Set<AnnotationMirror> reimAnnos = ret.getRawAnnotations();
+		if (!isAnnotated(ret)) {
+			annotatedReferences.remove(identifier);
+			Reference newRef = super.getAnnotatedReference(identifier, kind, tree,
+					element, enclosingType, type, annos);
+			for (AnnotationMirror anno : reimAnnos) {
+				newRef.addAnnotation(anno);
+			}
+			annotatedReferences.put(identifier, newRef);
+			return newRef;
+		}
+		return ret;
+	}
+	
 }

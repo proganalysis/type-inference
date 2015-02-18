@@ -113,7 +113,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	private Types types;
 	
-    private static Map<String, Reference> annotatedReferences = new HashMap<String, Reference>();
+    protected static Map<String, Reference> annotatedReferences = new HashMap<String, Reference>();
     
     private Set<Constraint> constraints = new LinkedHashSet<Constraint>();
 
@@ -718,26 +718,28 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected Reference getFieldAdaptReference(Reference context, Reference decl,
 			Reference assignTo) {
-        Reference av = createFieldAdaptReference(context, decl, assignTo);
-        String identifier = av.getIdentifier();
-        Reference ret = annotatedReferences.get(identifier);
-        if (ret == null) {
-            ret = av;
-            annotatedReferences.put(identifier, ret);
-        }
-        return ret;
+		return createFieldAdaptReference(context, decl, assignTo);
+//        Reference av = createFieldAdaptReference(context, decl, assignTo);
+//        String identifier = av.getIdentifier();
+//        Reference ret = annotatedReferences.get(identifier);
+//        if (ret == null) {
+//            ret = av;
+//            annotatedReferences.put(identifier, ret);
+//        }
+//        return ret;
 	}
     
     protected Reference getMethodAdaptReference(Reference context, Reference decl,
 			Reference assignTo) {
-        Reference av = createMethodAdaptReference(context, decl, assignTo);
-        String identifier = av.getIdentifier();
-        Reference ret = annotatedReferences.get(identifier);
-        if (ret == null) {
-            ret = av;
-            annotatedReferences.put(identifier, ret);
-        }
-        return ret;
+    	return createMethodAdaptReference(context, decl, assignTo);
+//        Reference av = createMethodAdaptReference(context, decl, assignTo);
+//        String identifier = av.getIdentifier();
+//        Reference ret = annotatedReferences.get(identifier);
+//        if (ret == null) {
+//            ret = av;
+//            annotatedReferences.put(identifier, ret);
+//        }
+//        return ret;
 	}
 	
 	protected void addSubtypeConstraint(Reference sub, Reference sup) {
@@ -967,6 +969,10 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 					|| r.getKind() == RefKind.LITERAL
 					|| r.getKind() == RefKind.METH_ADAPT
 					|| r.getKind() == RefKind.METHOD
+					|| r.getKind() == RefKind.ALLOCATION
+					|| r.getKind() == RefKind.COMPONENT
+					|| r.getType().getKind().isPrimitive()
+					|| r.getType().getKind() == TypeKind.VOID
 					|| (r.getKind() == RefKind.PARAMETER
 					&& r.getName().equals("this"))) {
 				continue;
@@ -984,6 +990,10 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				
 			AnnotatedTypeMirror type = r.getType();
 			annotateInferredType(type, r);
+			if (!type.toString().contains("@")) {
+				totalElementNum--;
+				continue;
+			}
 			StringBuilder sb = new StringBuilder();
 			sb.append(r.getFileName()).append("\t");
 			sb.append(r.getLineNum()).append("\t");
@@ -1216,7 +1226,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	
 	public abstract boolean needCheckConflict();
 
-	private boolean isSubtype(TypeElement a1, TypeElement a2) {
+	public boolean isSubtype(TypeElement a1, TypeElement a2) {
         // TODO
 	    return (a1.equals(a2)
 	            || types.isSubtype(types.erasure(a1.asType()),

@@ -4,6 +4,7 @@
 package checkers.inference2;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,7 +13,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import checkers.inference2.InferenceChecker;
-import checkers.inference.InferenceUtils;
+import checkers.inference2.Constraint;
+import checkers.inference2.InferenceUtils;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;
 
@@ -68,6 +70,11 @@ public class Reference {
     private String fileName; 
     
     private int lineNum;
+    
+    /** For adding linear constraints*/
+    protected Set<Constraint> lessSet = new LinkedHashSet<Constraint>();
+
+    protected Set<Constraint> greaterSet = new LinkedHashSet<Constraint>();
     
 	public Reference(String identifier, RefKind kind, Tree tree,
 			Element element, TypeElement enclosingType,
@@ -142,6 +149,22 @@ public class Reference {
 	public Element getElement() {
 		return element;
 	}
+	
+	public void addLessConstraint(Constraint c) {
+        lessSet.add(c);
+    }
+
+    public void addGreaterConstraint(Constraint c) {
+        greaterSet.add(c);
+    }
+	
+	public Set<Constraint> getLessSet() {
+        return lessSet;
+    }
+
+    public Set<Constraint> getGreaterSet() {
+        return greaterSet;
+    }
 
 	public Tree getTree() {
 		return tree;

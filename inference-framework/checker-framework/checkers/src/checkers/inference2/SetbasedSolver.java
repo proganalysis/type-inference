@@ -3,6 +3,7 @@ package checkers.inference2;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,21 +16,25 @@ import checkers.inference2.Constraint.EqualityConstraint;
 import checkers.inference2.Constraint.SubtypeConstraint;
 import checkers.inference2.Constraint.UnequalityConstraint;
 import checkers.inference2.Reference.AdaptReference;
-
-
 import static com.esotericsoftware.minlog.Log.*;
 
 public class SetbasedSolver extends AbstractConstraintSolver<InferenceChecker> {
 	
-	private Set<Constraint> worklist = new LinkedHashSet<Constraint>();
+	protected Set<Constraint> worklist = new LinkedHashSet<Constraint>();
 
-	private Map<Integer, Set<Constraint>> refToConstraints = new HashMap<Integer, Set<Constraint>>();
+	protected Map<Integer, Set<Constraint>> refToConstraints = new HashMap<Integer, Set<Constraint>>();
 
+	protected Map<String, List<Constraint>> adaptRefToConstraints; 
+
+	protected Map<Integer, Set<Reference>> declRefToContextRefs; 
+	
 	public SetbasedSolver(InferenceChecker t) {
 		super(t);
+		adaptRefToConstraints = new HashMap<String, List<Constraint>>();
+		declRefToContextRefs = new HashMap<Integer, Set<Reference>>();
 	}
 	
-	private void buildRefToConstraintMapping(Constraint c) {
+	protected void buildRefToConstraintMapping(Constraint c) {
         Reference left = null, right = null; 
         if (c instanceof SubtypeConstraint
                 || c instanceof EqualityConstraint
@@ -46,6 +51,20 @@ public class SetbasedSolver extends AbstractConstraintSolver<InferenceChecker> {
                     Reference context = ((AdaptReference) ref).getContextRef();
                     avs.add(decl);
                     avs.add(context);
+                    
+                    String key = ref.getName();
+                    List<Constraint> l = adaptRefToConstraints.get(key);
+                    if (l == null) {
+                        l = new ArrayList<Constraint>(2);
+                        adaptRefToConstraints.put(key, l);
+                    }
+                    l.add(c);
+                    Set<Reference> contextSet = declRefToContextRefs.get(decl.getId());
+                    if (contextSet == null) {
+                        contextSet = new HashSet<Reference>();
+                        declRefToContextRefs.put(decl.getId(), contextSet);
+                    }
+                    contextSet.add(((AdaptReference) ref).getContextRef());
                 } else
                     avs.add(ref);
                 for (Reference av : avs) {
@@ -57,6 +76,12 @@ public class SetbasedSolver extends AbstractConstraintSolver<InferenceChecker> {
                     set.add(c);
                 }
             }
+        }
+        if ((c instanceof SubtypeConstraint)
+                && !(left instanceof AdaptReference)
+                && !(right instanceof AdaptReference)) {
+            left.addGreaterConstraint(c);
+            right.addLessConstraint(c);
         }
     }
 	
@@ -82,7 +107,6 @@ public class SetbasedSolver extends AbstractConstraintSolver<InferenceChecker> {
 
         return super.setAnnotations(av, annos);
     }
-
 
 	@Override
 	protected Set<Constraint> solveImpl() {
