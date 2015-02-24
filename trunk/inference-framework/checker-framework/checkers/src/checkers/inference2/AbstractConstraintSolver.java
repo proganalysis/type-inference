@@ -45,7 +45,7 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
     
     protected Constraint currentConstraint;
         
-    private boolean needTrace = true;;
+    private boolean needTrace = true;
         
     /** for storing traces */
     private Thread worker;
@@ -153,8 +153,8 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
             currentConstraint = null;
         }
 		if (hasUpdate) {
-        	System.out.println(c.toString("aaa", "bbb"));
-        }
+			System.out.println(c.toString("aaa", "bbb"));
+		}
         return hasUpdate;
 	}
 
