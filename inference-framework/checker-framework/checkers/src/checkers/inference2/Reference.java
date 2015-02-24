@@ -45,6 +45,8 @@ public class Reference {
     
     private static int counter = 0;
     
+    private int restoreNum = 0;
+    
 	/** The annotations for the Reference */
     private Set<AnnotationMirror> annotations;
     
@@ -129,7 +131,14 @@ public class Reference {
         this.annotations.add(anno);
     }
 
-	
+    public int getRestoreNum() {
+        return restoreNum;
+    }
+
+    public void setRestored() {
+        restoreNum++;
+    }
+    
 	public static int maxId() {
 		return counter;
 	}
