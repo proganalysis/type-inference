@@ -93,12 +93,12 @@ for i in "$@" ; do
 done
 unset DUALCASE
 
-toolOpts=$toolOpts$nl" -processor checkers.inference2.reim.ReimChecker -Adebug "
-mainClass=" checkers.inference2.InferenceMain "
-javaOpts=$javaOpts" -Xmx2048m " 
-#"-DnoCheck"
+toolOpts=$toolOpts$nl" -processor checkers.inference2.jcrypt.JcryptChecker "
+main=" checkers.inference2.InferenceMain "
+mainClass="checkers.inference2.jcrypt.InferenceMainJcrypt"
+javaOpts="-Xmx2048m "$javaOpts" -DmainClass="$mainClass" -DnoCheck"
 
 IFS=$nl
 #eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} -jar "${mydir}"/jsr308-all.jar ${cpOpt} ${toolOpts}
-echo "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${mainClass} ${cpOpt} ${toolOpts}
-eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${mainClass} ${cpOpt} ${toolOpts}
+echo "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${main} ${cpOpt} ${toolOpts}
+eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${main} ${cpOpt} ${toolOpts}
