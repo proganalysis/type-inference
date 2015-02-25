@@ -93,7 +93,7 @@ for i in "$@" ; do
 done
 unset DUALCASE
 
-toolOpts=$toolOpts$nl" -processor checkers.inference2.reim.ReimChecker -Adebug "
+toolOpts=$toolOpts$nl" -processor checkers.inference2.reimN.ReimNChecker -Adebug "
 mainClass=" checkers.inference2.InferenceMain "
 javaOpts=$javaOpts" -Xmx2048m " 
 #"-DnoCheck"
@@ -101,4 +101,4 @@ javaOpts=$javaOpts" -Xmx2048m "
 IFS=$nl
 #eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} -jar "${mydir}"/jsr308-all.jar ${cpOpt} ${toolOpts}
 echo "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${mainClass} ${cpOpt} ${toolOpts}
-eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${mainClass} ${cpOpt} ${toolOpts}
+eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} ${mainClass} ${cpOpt} ${toolOpts} -encoding UTF-8
