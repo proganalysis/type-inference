@@ -2,7 +2,7 @@ import checkers.inference2.jcrypt.quals.*;
 
 public class FieldSensitivity2 {
 	protected void something() {
-		Data dt = new Data();
+		/*-@Sensitive*/ Data dt = new Data();
 		/*@Sensitive*/ String sim = new String("Something");
 
 		dt.set(sim);
