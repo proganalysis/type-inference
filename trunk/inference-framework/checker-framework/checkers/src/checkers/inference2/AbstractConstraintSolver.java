@@ -45,7 +45,7 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
     
     protected Constraint currentConstraint;
         
-    private boolean needTrace = true;
+    private boolean needTrace = false;
         
     /** for storing traces */
     private Thread worker;
@@ -125,7 +125,7 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
     
     public AbstractConstraintSolver(Checker t) {
         this.checker = t;
-        needTrace = !(System.getProperty("noTrace") != null);
+        //needTrace = !(System.getProperty("noTrace") != null);
         DB_SCRIPT = InferenceMain.outputDir + File.separator + t.getName() + "-traces.sql";
         info(this.getClass().getSimpleName(), "needTrace = " + needTrace);
     }
@@ -152,9 +152,10 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
         } finally {
             currentConstraint = null;
         }
-		if (hasUpdate) {
-			System.out.println(c.toString("aaa", "bbb"));
-		}
+        //if (hasUpdate && checker instanceof checkers.inference2.jcrypt.JcryptChecker) {
+//		if (hasUpdate) {
+//			System.out.println(c.toString("aaa", "bbb"));
+//		}
         return hasUpdate;
 	}
 

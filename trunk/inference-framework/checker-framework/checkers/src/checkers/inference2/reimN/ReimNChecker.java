@@ -3,8 +3,12 @@
  */
 package checkers.inference2.reimN;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -61,7 +65,7 @@ public class ReimNChecker extends InferenceChecker {
 	private Set<String> defaultReadonlyRefTypes;
 
 	private AnnotationUtils annoFactory;
-	
+
 	private static int count; // count reference in handleInstanceFieldWrite()
 
 	@Override
@@ -105,7 +109,7 @@ public class ReimNChecker extends InferenceChecker {
 		defaultReadonlyRefTypes.add("java.util.concurrent.atomic.AtomicLong");
 		defaultReadonlyRefTypes.add("java.math.BigDecimal");
 		defaultReadonlyRefTypes.add("java.math.BigInteger");
-		
+
 		count = 0;
 	}
 
@@ -143,7 +147,7 @@ public class ReimNChecker extends InferenceChecker {
 
 	@Override
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs) {		
+			Reference aRhs) {
 		if (aBase != null) {
 			count++;
 			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
@@ -155,7 +159,7 @@ public class ReimNChecker extends InferenceChecker {
 					null, set);
 			addEqualityConstraint(aBase, mutableRef);
 			super.handleInstanceFieldWrite(aBase, aField, aRhs);
-		}		
+		}
 	}
 
 	/**
@@ -195,14 +199,14 @@ public class ReimNChecker extends InferenceChecker {
 	@Override
 	protected Reference createMethodAdaptReference(Reference context,
 			Reference decl, Reference assignTo) {
-	    //if (assignTo == null)
-	    //          return decl;
-	    //      else 
-	    //          return new MethodAdaptReference(assignTo, decl);
-		    if (context == null)
-		    	return decl;
-		    else
-		    	return new MethodAdaptReference(context, decl);
+		// if (assignTo == null)
+		// return decl;
+		// else
+		// return new MethodAdaptReference(assignTo, decl);
+		if (context == null)
+			return decl;
+		else
+			return new MethodAdaptReference(context, decl);
 	}
 
 	/*
@@ -240,7 +244,7 @@ public class ReimNChecker extends InferenceChecker {
 		if (!isAnnotated(r)) {
 			r.addAnnotation(POLYPOLY);
 			r.addAnnotation(READPOLY);
-//			r.addAnnotation(READREAD);
+			// r.addAnnotation(READREAD);
 			if (elt == null || !isFromLibrary(elt)) {
 				r.addAnnotation(READREAD);
 			}
@@ -265,9 +269,9 @@ public class ReimNChecker extends InferenceChecker {
 				r.addAnnotation(READPOLY);
 			} else {
 				r.setAnnotations(getSourceLevelQualifiers(), this);
-//				r.addAnnotation(READREAD);
-//				r.addAnnotation(READMUT);
-//				r.addAnnotation(MUTMUT);
+				// r.addAnnotation(READREAD);
+				// r.addAnnotation(READMUT);
+				// r.addAnnotation(MUTMUT);
 			}
 		}
 	}
@@ -325,10 +329,10 @@ public class ReimNChecker extends InferenceChecker {
 			if (isDefaultReadonlyType(r.getType())) {
 				r.addAnnotation(READREAD);
 			} else {
-			    r.setAnnotations(getSourceLevelQualifiers(), this);
-			    //	r.addAnnotation(READREAD);
-			    //	r.addAnnotation(POLYPOLY);
-			    //	r.addAnnotation(READPOLY);
+				r.setAnnotations(getSourceLevelQualifiers(), this);
+				// r.addAnnotation(READREAD);
+				// r.addAnnotation(POLYPOLY);
+				// r.addAnnotation(READPOLY);
 			}
 		}
 	}
@@ -441,7 +445,7 @@ public class ReimNChecker extends InferenceChecker {
 			return 5;
 		else if (anno.toString().equals(MUTMUT.toString()))
 			return 6;
-		else 
+		else
 			return Integer.MAX_VALUE;
 	}
 
@@ -455,4 +459,68 @@ public class ReimNChecker extends InferenceChecker {
 		return false;
 	}
 
+	@Override
+	public void printResult(PrintWriter out) {
+		List<Reference> references = new ArrayList<Reference>(
+				annotatedReferences.values());
+		Collections.sort(references, new Comparator<Reference>() {
+			@Override
+			public int compare(Reference o1, Reference o2) {
+				int ret = o1.getFileName().compareTo(o2.getFileName());
+				if (ret == 0) {
+					ret = o1.getLineNum() - o2.getLineNum();
+				}
+				if (ret == 0) {
+					ret = o1.getName().compareTo(o2.getName());
+				}
+				return ret;
+			}
+		});
+		int totalElementNum = 0, readNum = 0;
+		for (Reference r : references) {
+			Element elt = r.getElement();
+			if ((elt == null && r.getKind() != RefKind.ALLOCATION)
+					|| r.getIdentifier().startsWith(LIB_PREFIX)
+					|| (elt instanceof ExecutableElement)
+					&& isCompilerAddedConstructor((ExecutableElement) elt)
+					|| r.getKind() == RefKind.CONSTANT
+					|| r.getKind() == RefKind.CALL_SITE
+					|| r.getKind() == RefKind.CLASS
+					|| r.getKind() == RefKind.FIELD_ADAPT
+					|| r.getKind() == RefKind.LITERAL
+					|| r.getKind() == RefKind.METH_ADAPT
+					|| r.getKind() == RefKind.METHOD
+					|| (r.getKind() == RefKind.PARAMETER && r.getName().equals(
+							"this"))) {
+				continue;
+			}
+
+			totalElementNum++;
+			Iterator<AnnotationMirror> annoIter = r.getAnnotations(this)
+					.iterator();
+			if (annoIter.hasNext()) {
+				if (getAnnotaionWeight(annoIter.next()) == 1) {
+					readNum++;
+				}
+			} else {
+				totalElementNum--;
+			}
+
+			AnnotatedTypeMirror type = r.getType();
+			annotateInferredType(type, r);
+			StringBuilder sb = new StringBuilder();
+			sb.append(r.getFileName()).append("\t");
+			sb.append(r.getLineNum()).append("\t");
+			sb.append(r.getName()).append("\t\t");
+			sb.append(type.toString()).append("\t");
+			sb.append("(" + r.getId() + ")");
+			sb.append(r.getKind());
+			out.println(sb.toString());
+		}
+
+		out.println("There are  " + readNum + " ("
+				+ (((float) readNum / totalElementNum) * 100)
+				+ "%) readonly references out of " + totalElementNum
+				+ " references.");
+	}
 }

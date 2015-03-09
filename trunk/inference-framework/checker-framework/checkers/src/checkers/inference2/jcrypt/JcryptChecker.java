@@ -54,6 +54,7 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * @author huangw5
@@ -242,6 +243,7 @@ public class JcryptChecker extends InferenceChecker {
 			Reference overriderThisRef = overriderRef.getThisRef();
 			Reference overriddenThisRef = overriddenRef.getThisRef();
 			if (!isFromLibrary(overridden) || isAnnotated(overriddenThisRef)) {
+			//if (!isFromLibrary(overridden)) {
 				addSubtypeConstraint(overriddenThisRef, overriderThisRef);
 			}
 		}
@@ -251,6 +253,7 @@ public class JcryptChecker extends InferenceChecker {
 			Reference overriderReturnRef = overriderRef.getReturnRef();
 			Reference overriddenReturnRef = overriddenRef.getReturnRef();
 			if (!isFromLibrary(overridden) || isAnnotated(overriddenReturnRef)) {
+			//if (!isFromLibrary(overridden)) {
 				addSubtypeConstraint(overriderReturnRef, overriddenReturnRef);
 			}
 		}
@@ -263,6 +266,7 @@ public class JcryptChecker extends InferenceChecker {
 		for (; overriderIt.hasNext() && overriddenIt.hasNext();) {
 			Reference oerriddenParam = overriddenIt.next();
 			if (!isFromLibrary(overridden) || isAnnotated(oerriddenParam)) {
+			//if (!isFromLibrary(overridden)) {
 				addSubtypeConstraint(oerriddenParam, overriderIt.next());
 			}
 		}
@@ -324,8 +328,8 @@ public class JcryptChecker extends InferenceChecker {
 	protected void annotateDefault(Reference r, RefKind kind, Element elt,
 			Tree t) {
 		if (!isAnnotated(r)) {
-			if (kind == RefKind.LITERAL) {
-			//if (kind == RefKind.LITERAL && t.getKind() != Kind.NULL_LITERAL) {
+			//if (kind == RefKind.LITERAL) {
+			if (kind == RefKind.LITERAL && t.getKind() != Kind.NULL_LITERAL) {
 				r.addAnnotation(CLEAR);
 				//r.addAnnotation(BOTTOM);
 			} else {

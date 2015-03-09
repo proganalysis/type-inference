@@ -26,6 +26,7 @@ import checkers.inference2.ConstraintSolver;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.InferenceMain;
 import checkers.inference2.MaximalTypingExtractor;
+import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.SetbasedSolver;
 import checkers.inference2.TypingExtractor;
 import checkers.util.CheckerMain;
@@ -148,6 +149,9 @@ public class InferenceMainJcrypt extends InferenceMain {
 		}
 		if (!typeErrors.isEmpty()) {
 			for (Constraint c : typeErrors)  {
+				if (c.getLeft() instanceof MethodAdaptReference
+						|| c.getRight() instanceof MethodAdaptReference)
+					continue;
 				System.out.println(c);
 			}
 			info(checker.getName(), typeErrors.size() + " error(s) in the concrete typing.");

@@ -61,7 +61,6 @@ public class JcryptConstraintSolver extends SetbasedSolver {
 		BitSet warnConstraints = new BitSet(Constraint.maxId());
 		Set<Constraint> newConstraints = new LinkedHashSet<Constraint>();
 		worklist.addAll(constraints);
-		//boolean hasUpdate = false;
 		while (!worklist.isEmpty()) {
 			Iterator<Constraint> it = worklist.iterator();
 			Constraint c = it.next();
@@ -70,9 +69,9 @@ public class JcryptConstraintSolver extends SetbasedSolver {
 				handleConstraint(c);
 				Set<Constraint> newCons = addLinearConstraints(c, constraints,
 					newConstraints);
-				for (Constraint con : newCons) {
-					System.out.println(con.toString());
-				}
+//				for (Constraint con : newCons) {
+//					System.out.println(con.toString());
+//				}
 				if (!newCons.isEmpty()) {
 					worklist.addAll(newCons);
 					worklist.addAll(constraints);
@@ -92,15 +91,6 @@ public class JcryptConstraintSolver extends SetbasedSolver {
 					}
 				}
 			}
-			//if (worklist.isEmpty() && hasUpdate) {
-			//	worklist.addAll(newConstraints);
-			//	info(checker.getName(), "Added " + newConstraints.size()
-			//			+ " new constraints.");
-				//for (Constraint con : newConstraints) {
-				//	System.out.println(con.toString());
-				//}
-			//	newConstraints.clear();
-			//}
 		}
 		return conflictCons;
 	}
