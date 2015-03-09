@@ -3,8 +3,12 @@
  */
 package checkers.inference2.reim;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -33,6 +37,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
+
 import com.sun.source.tree.Tree;
 
 /**
@@ -193,9 +198,10 @@ public class ReimChecker extends InferenceChecker {
 	protected void annotateArrayComponent(Reference r, Element elt) {
 		if (!isAnnotated(r)) {
 			r.addAnnotation(POLYREAD);
-			if (elt == null || !isFromLibrary(elt)) {
-				r.addAnnotation(READONLY);
-			}
+			r.addAnnotation(READONLY);
+//			if (elt == null || !isFromLibrary(elt)) {
+//				r.addAnnotation(READONLY);
+//			}
 		}
 	}
 
@@ -211,9 +217,9 @@ public class ReimChecker extends InferenceChecker {
                 r.addAnnotation(READONLY);
                 r.addAnnotation(POLYREAD);
             } else {
-                //r.setAnnotations(getSourceLevelQualifiers(), this);
-            	r.addAnnotation(READONLY);
-                r.addAnnotation(MUTABLE);
+                r.setAnnotations(getSourceLevelQualifiers(), this);
+            	//r.addAnnotation(READONLY);
+                //r.addAnnotation(MUTABLE);
             }
         }
 	}
@@ -341,6 +347,70 @@ public class ReimChecker extends InferenceChecker {
 	@Override
 	public boolean needCheckConflict() {
 		return false;
+	}
+	
+	public void printResult(PrintWriter out) {
+		List<Reference> references = new ArrayList<Reference>(
+				annotatedReferences.values());
+		Collections.sort(references, new Comparator<Reference>() {
+			@Override
+			public int compare(Reference o1, Reference o2) {
+				int ret = o1.getFileName().compareTo(o2.getFileName());
+				if (ret == 0) {
+					ret = o1.getLineNum() - o2.getLineNum();
+				}
+				if (ret == 0) {
+					ret = o1.getName().compareTo(o2.getName());
+				}
+				return ret;
+			}
+		});
+		int totalElementNum = 0, readNum = 0;
+		for (Reference r : references) {
+			Element elt = r.getElement();
+			if ((elt == null && r.getKind() != RefKind.ALLOCATION)
+					|| r.getIdentifier().startsWith(LIB_PREFIX)
+					|| (elt instanceof ExecutableElement)
+					&& isCompilerAddedConstructor((ExecutableElement) elt)
+					|| r.getKind() == RefKind.CONSTANT
+					|| r.getKind() == RefKind.CALL_SITE
+					|| r.getKind() == RefKind.CLASS
+					|| r.getKind() == RefKind.FIELD_ADAPT
+					|| r.getKind() == RefKind.LITERAL
+					|| r.getKind() == RefKind.METH_ADAPT
+					|| r.getKind() == RefKind.METHOD
+					|| (r.getKind() == RefKind.PARAMETER && r.getName().equals(
+							"this"))) {
+				continue;
+			}
+
+			totalElementNum++;
+			Iterator<AnnotationMirror> annoIter = r.getAnnotations(this)
+					.iterator();
+			if (annoIter.hasNext()) {
+				if (getAnnotaionWeight(annoIter.next()) == 1) {
+					readNum++;
+				}
+			} else {
+				totalElementNum--;
+			}
+
+			AnnotatedTypeMirror type = r.getType();
+			annotateInferredType(type, r);
+			StringBuilder sb = new StringBuilder();
+			sb.append(r.getFileName()).append("\t");
+			sb.append(r.getLineNum()).append("\t");
+			sb.append(r.getName()).append("\t\t");
+			sb.append(type.toString()).append("\t");
+			sb.append("(" + r.getId() + ")");
+			sb.append(r.getKind());
+			out.println(sb.toString());
+		}
+
+		out.println("There are  " + readNum + " ("
+				+ (((float) readNum / totalElementNum) * 100)
+				+ "%) readonly references out of " + totalElementNum
+				+ " references.");
 	}
 
 }

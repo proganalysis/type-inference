@@ -382,7 +382,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		} else {
 			return getLineNumber(currentNewRoot, tree);
 		}
-		//return getLineNumber(currentRoot, tree);
+		// return getLineNumber(currentRoot, tree);
 	}
 
 	public long getLineNumber(CompilationUnitTree root, Tree tree) {
@@ -467,7 +467,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		} else {
 			return getFileName(currentNewRoot, tree);
 		}
-		//return getFileName(currentRoot, tree);
+		// return getFileName(currentRoot, tree);
 	}
 
 	public String getFileName(CompilationUnitTree root, Tree tree) {
@@ -495,14 +495,15 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			return getIdentifier(idElt);
 		}
 		if (tree.getKind() == Kind.VARIABLE
-				&& (idElt = TreeUtils.elementFromDeclaration((VariableTree) tree)) != null) {
+				&& (idElt = TreeUtils
+						.elementFromDeclaration((VariableTree) tree)) != null) {
 			currentNewRoot = getRootByElement(idElt);
 		}
-		
-//		idElt = InternalUtils.symbol(tree);
-//		if (idElt != null) {
-//			currentNewRoot = getRootByElement(idElt);
-//		}		
+
+		// idElt = InternalUtils.symbol(tree);
+		// if (idElt != null) {
+		// currentNewRoot = getRootByElement(idElt);
+		// }
 		String id = getFileName(tree) + ":" + getLineNumber(tree) + ":";
 		currentNewRoot = null;
 		switch (tree.getKind()) {
@@ -1007,7 +1008,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				return ret;
 			}
 		});
-		int totalElementNum = 0, readNum = 0;
 		for (Reference r : references) {
 			Element elt = r.getElement();
 			if ((elt == null && r.getKind() != RefKind.ALLOCATION)
@@ -1015,53 +1015,21 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 					|| (elt instanceof ExecutableElement)
 					&& isCompilerAddedConstructor((ExecutableElement) elt)
 					|| r.getKind() == RefKind.CONSTANT
-					|| r.getKind() == RefKind.CALL_SITE
-					|| r.getKind() == RefKind.CLASS
-					|| r.getKind() == RefKind.FIELD_ADAPT
-					|| r.getKind() == RefKind.LITERAL
-					|| r.getKind() == RefKind.METH_ADAPT
-					|| r.getKind() == RefKind.METHOD
-					|| r.getKind() == RefKind.ALLOCATION
 					|| r.getKind() == RefKind.COMPONENT
-					|| r.getType().getKind().isPrimitive()
-					|| r.getType().getKind() == TypeKind.VOID
-					|| (r.getKind() == RefKind.PARAMETER && r.getName().equals(
-							"this"))) {
+					|| r.getKind() == RefKind.THIS
+					|| r.getKind() == RefKind.RETURN) {
 				continue;
 			}
-
-			totalElementNum++;
-			Iterator<AnnotationMirror> annoIter = r.getAnnotations(this)
-					.iterator();
-			if (annoIter.hasNext()) {
-				if (getAnnotaionWeight(annoIter.next()) == 1) {
-					readNum++;
-				}
-			} else {
-				totalElementNum--;
-			}
-
 			AnnotatedTypeMirror type = r.getType();
 			annotateInferredType(type, r);
-			if (!type.toString().contains("@")) {
-				totalElementNum--;
-				continue;
-			}
 			StringBuilder sb = new StringBuilder();
 			sb.append(r.getFileName()).append("\t");
 			sb.append(r.getLineNum()).append("\t");
 			sb.append(r.getName()).append("\t\t");
 			sb.append(type.toString()).append("\t");
-			// sb.append(InferenceUtils.formatAnnotationString(r.getRawAnnotations()));
 			sb.append("(" + r.getId() + ")");
-			sb.append(r.getKind());
 			out.println(sb.toString());
 		}
-
-		out.println("There are  " + readNum + " ("
-				+ (((float) readNum / totalElementNum) * 100)
-				+ "%) readonly references out of " + totalElementNum
-				+ " references.");
 	}
 
 	public void printJaif(PrintWriter out) {
