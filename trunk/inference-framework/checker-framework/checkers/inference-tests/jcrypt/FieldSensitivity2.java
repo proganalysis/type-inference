@@ -8,5 +8,9 @@ public class FieldSensitivity2 {
 		dt.set(sim);
 		Data dt2 = dt;
 		String sim2 = dt2.get();
+		
+		if (sim.equals(sim2)) {
+			
+		}
 	}
 }
