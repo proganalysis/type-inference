@@ -454,7 +454,7 @@ public class SFlowChecker extends InferenceChecker {
 	}
 	
 	@Override
-	protected void addSubtypeConstraint(Reference sub, Reference sup) {
+	public void addSubtypeConstraint(Reference sub, Reference sup) {
 		super.addSubtypeConstraint(sub, sup);
 		if (!containsReadonly(sub) && !containsReadonly(sup)) {
 			// add a subtying constraint with opposite direction

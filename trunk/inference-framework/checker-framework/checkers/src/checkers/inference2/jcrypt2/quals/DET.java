@@ -1,7 +1,7 @@
 /**
  * 
  */
-package checkers.inference2.jcrypt.quals;
+package checkers.inference2.jcrypt2.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -12,18 +12,13 @@ import java.lang.annotation.RetentionPolicy;
 
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
 
 @Retention(RetentionPolicy.RUNTIME) 
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Unqualified.class})
-//@ImplicitFor(
-//	types={TypeKind.NULL}
-//    )
+@SubtypeOf({RND.class, AH.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Top {
+public @interface DET {
     
 }
-

@@ -773,7 +773,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		// return ret;
 	}
 
-	protected void addSubtypeConstraint(Reference sub, Reference sup) {
+	public void addSubtypeConstraint(Reference sub, Reference sup) {
 		if (sub.equals(sup))
 			return;
 		Constraint c = new SubtypeConstraint(sub, sup);

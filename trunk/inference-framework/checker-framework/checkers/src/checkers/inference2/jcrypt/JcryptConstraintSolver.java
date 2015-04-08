@@ -3,14 +3,19 @@
  */
 package checkers.inference2.jcrypt;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -25,13 +30,15 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.Tree.Kind;
 
+import checkers.inference2.AbstractConstraintSolver;
 import checkers.inference2.Constraint;
+import checkers.inference2.Constraint.EqualityConstraint;
 import checkers.inference2.Constraint.SubtypeConstraint;
+import checkers.inference2.Constraint.UnequalityConstraint;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.AdaptReference;
 import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Reference.MethodAdaptReference;
-import checkers.inference2.SetbasedSolver;
 import checkers.util.TreeUtils;
 import static com.esotericsoftware.minlog.Log.*;
 
@@ -39,16 +46,101 @@ import static com.esotericsoftware.minlog.Log.*;
  * @author huangw5
  * 
  */
-public class JcryptConstraintSolver extends SetbasedSolver {
+public class JcryptConstraintSolver extends AbstractConstraintSolver<JcryptChecker> {
 
+	protected Set<Constraint> worklist = new LinkedHashSet<Constraint>();
+
+	protected Map<Integer, Set<Constraint>> refToConstraints = new HashMap<Integer, Set<Constraint>>();
+
+	protected Map<String, List<Constraint>> adaptRefToConstraints; 
+
+	protected Map<Integer, Set<Reference>> declRefToContextRefs; 
+	
 	private JcryptChecker checker;
+	
 	private Set<Constraint> constraints;
 
 	public JcryptConstraintSolver(JcryptChecker t) {
 		super(t);
 		this.checker = t;
 		constraints = checker.getConstraints();
+		adaptRefToConstraints = new HashMap<String, List<Constraint>>();
+		declRefToContextRefs = new HashMap<Integer, Set<Reference>>();
 	}
+	
+	protected void buildRefToConstraintMapping(Constraint c) {
+        Reference left = null, right = null; 
+        if (c instanceof SubtypeConstraint
+                || c instanceof EqualityConstraint
+                || c instanceof UnequalityConstraint) {
+            left = c.getLeft();
+            right = c.getRight();
+        }
+        if (left != null && right != null) {
+            Reference[] refs = {left, right};
+            for (Reference ref : refs) {
+                List<Reference> avs = new ArrayList<Reference>(2);
+                if (ref instanceof AdaptReference) {
+                    Reference decl = ((AdaptReference) ref).getDeclRef();
+                    Reference context = ((AdaptReference) ref).getContextRef();
+                    avs.add(decl);
+                    avs.add(context);
+                    
+                    String key = ref.getName();
+                    List<Constraint> l = adaptRefToConstraints.get(key);
+                    if (l == null) {
+                        l = new ArrayList<Constraint>(2);
+                        adaptRefToConstraints.put(key, l);
+                    }
+                    l.add(c);
+                    Set<Reference> contextSet = declRefToContextRefs.get(decl.getId());
+                    if (contextSet == null) {
+                        contextSet = new HashSet<Reference>();
+                        declRefToContextRefs.put(decl.getId(), contextSet);
+                    }
+                    contextSet.add(((AdaptReference) ref).getContextRef());
+                } else
+                    avs.add(ref);
+                for (Reference av : avs) {
+                    Set<Constraint> set = refToConstraints.get(av.getId());
+                    if (set == null) {
+                        set = new LinkedHashSet<Constraint>();
+                        refToConstraints.put(av.getId(), set);
+                    }
+                    set.add(c);
+                }
+            }
+        }
+        if ((c instanceof SubtypeConstraint)
+                && !(left instanceof AdaptReference)
+                && !(right instanceof AdaptReference)) {
+            left.addGreaterConstraint(c);
+            right.addLessConstraint(c);
+        }
+    }
+	
+	private void buildRefToConstraintMapping(Set<Constraint> cons) {
+		for (Constraint c : cons) {
+            buildRefToConstraintMapping(c);
+		}
+	}
+
+	@Override
+	protected boolean setAnnotations(Reference av, Set<AnnotationMirror> annos) 
+			throws SolverException {
+        Set<AnnotationMirror> oldAnnos = av.getAnnotations(checker);
+		if (av instanceof AdaptReference)
+			return setAnnotations((AdaptReference) av, annos);
+		if (oldAnnos.equals(annos))
+			return false;
+
+        Set<Constraint> relatedConstraints = refToConstraints.get(av.getId());
+        if (relatedConstraints != null) {
+            worklist.addAll(relatedConstraints);
+        }
+
+        return super.setAnnotations(av, annos);
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -56,11 +148,13 @@ public class JcryptConstraintSolver extends SetbasedSolver {
 	 * @see checkers.inference2.AbstractConstraintSolver#solveImpl()
 	 */
 	@Override
-	protected Set<Constraint> solveImpl() {
-		Set<Constraint> conflictCons = super.solveImpl();
+	public Set<Constraint> solveImpl() {
+		Set<Constraint> constraints = checker.getConstraints();
 		BitSet warnConstraints = new BitSet(Constraint.maxId());
-		Set<Constraint> newConstraints = new LinkedHashSet<Constraint>();
+		buildRefToConstraintMapping(constraints);
 		worklist.addAll(constraints);
+		Set<Constraint> conflictConstraints = new LinkedHashSet<Constraint>();
+		Set<Constraint> newConstraints = new LinkedHashSet<Constraint>();
 		while (!worklist.isEmpty()) {
 			Iterator<Constraint> it = worklist.iterator();
 			Constraint c = it.next();
@@ -68,21 +162,17 @@ public class JcryptConstraintSolver extends SetbasedSolver {
 			try {
 				handleConstraint(c);
 				Set<Constraint> newCons = addLinearConstraints(c, constraints,
-					newConstraints);
-//				for (Constraint con : newCons) {
-//					System.out.println(con.toString());
-//				}
+						newConstraints);
 				if (!newCons.isEmpty()) {
 					worklist.addAll(newCons);
 					worklist.addAll(constraints);
 				}
 				
 				newConstraints.addAll(newCons);
-
 			} catch (SolverException e) {
 				FailureStatus fs = checker.getFailureStatus(c);
 				if (fs == FailureStatus.ERROR) {
-					conflictCons.add(c);
+					conflictConstraints.add(c);
 				} else if (fs == FailureStatus.WARN) {
 					if (!warnConstraints.get(c.getId())) {
 						warn(this.getClass().getSimpleName(),
@@ -92,7 +182,7 @@ public class JcryptConstraintSolver extends SetbasedSolver {
 				}
 			}
 		}
-		return conflictCons;
+		return conflictConstraints;
 	}
 
 	private boolean canConnectVia(Reference left, Reference right) {
