@@ -7,8 +7,9 @@ RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
 # CHECKER_DIRS = sflow igj javari
 # CHECKER_DIRS = javari
-# CHECKER_DIRS = reim 
-CHECKER_DIRS = reimN
+CHECKER_DIRS = reim 
+# CHECKER_DIRS = reimN
+# CHECKER_DIRS = jcrypt
 
 JAVAEE_JAR ?= $(CHECKER_DIRS)/javaee-api-6.0.jar
 STRUTS_JAR ?= $(CHECKER_DIRS)/struts-1.1.jar
@@ -35,12 +36,15 @@ jdk.jar:
 ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
 # All class files that contain some annotation, possibly with duplicates.
 # These, and only these, need to be extracted from $(RTJAR).
+#ANNOTATED_CLASSES = \
+#	$(patsubst sflow/build/%.class,annotated/%.class, \
+#	  $(patsubst igj/build/%.class,annotated/%.class, \
+#	    $(patsubst javari/build/%.class,annotated/%.class, \
+#			$(patsubst jcrypt/build/%.class,annotated/%.class, \
+#		  $(ANNOTATED_CLASSES_BY_DIR)))))
 ANNOTATED_CLASSES = \
-	$(patsubst sflow/build/%.class,annotated/%.class, \
-	  $(patsubst igj/build/%.class,annotated/%.class, \
-	    $(patsubst javari/build/%.class,annotated/%.class, \
-			$(patsubst reimN/build/%.class,annotated/%.class, \
-		  $(ANNOTATED_CLASSES_BY_DIR)))))
+	$(patsubst reim/build/%.class,annotated/%.class, \
+		  $(ANNOTATED_CLASSES_BY_DIR))
 
 # Javarifier seems to only check the first .jar it gets on the
 # -soot-classpath (which will be this one), so if these are missing from
