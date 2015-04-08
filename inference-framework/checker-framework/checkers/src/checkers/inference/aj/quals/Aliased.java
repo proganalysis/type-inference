@@ -1,0 +1,26 @@
+/**
+ * 
+ */
+package checkers.inference.aj.quals;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Target;
+
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+
+@Documented
+@TypeQualifier
+@Inherited
+@SubtypeOf({NonAliased.class})
+//@SubtypeOf({DefaultAnnotation.class})
+//@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+//@ImplicitFor(
+//    treeClasses={LiteralTree.class},
+//    typeClasses={AnnotatedPrimitiveType.class})
+public @interface Aliased {
+    
+}

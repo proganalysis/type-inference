@@ -2,8 +2,8 @@ import checkers.inference2.jcrypt.quals.*;
 
 class Example{
         
-    public int min_list(int[] list) { // OPE
-        int min = list[0]; 
+    public int min_list(int[] list) {
+        int min = list[0];
         for(int i = 1; i<list.length; i++) {
             if (list[i] <= min){
                 min = list[i];
@@ -22,8 +22,6 @@ class Example{
     }
 
     public void foo() {
-    	/*@Sensitive*/ int y = 0;
-        y += 8;
     	/*-@Sensitive*/ int /*@Sensitive*/[] list1 = new int[2];
     	int[] list2 = new int[2];
         /*@Sensitive*/ int x = 9;
@@ -34,9 +32,8 @@ class Example{
     	int min1 = min_list(list1);
     	int min2 = min_list(list2);
     	int ele = id(list1[0]);
-    	int ele2 = id(list2[0]);
         int ans = min1 + min2 + x;
-        //ans = 2 * ans;
+        ans = 2 * ans;
         System.out.println(check_ans(ans));
     }
 } 
