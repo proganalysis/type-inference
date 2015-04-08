@@ -17,7 +17,7 @@ import checkers.quals.TypeQualifier;
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Top.class, Sensitive.class, Poly.class})
+@SubtypeOf({Sensitive.class, Poly.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Clear {
     

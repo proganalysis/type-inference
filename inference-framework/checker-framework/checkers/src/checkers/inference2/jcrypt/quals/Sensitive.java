@@ -12,12 +12,13 @@ import java.lang.annotation.RetentionPolicy;
 
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
+import checkers.quals.Unqualified;
 
 @Retention(RetentionPolicy.RUNTIME) 
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Top.class})
+@SubtypeOf({Unqualified.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Sensitive {
     

@@ -50,6 +50,8 @@ public class Reference {
 	/** The annotations for the Reference */
     private Set<AnnotationMirror> annotations;
     
+    private Set<AnnotationMirror> removedAnnos = new LinkedHashSet<>();
+    
     /** Not all Reference types have the element */
     private Element element;
     
@@ -110,6 +112,10 @@ public class Reference {
 		set.retainAll(checker.getSourceLevelQualifiers());
 		return set;
 	}
+	
+	public Set<AnnotationMirror> getRemovedAnnos() {
+		return this.removedAnnos;
+	}
 
 	public Set<AnnotationMirror> getRawAnnotations() {
 		Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
@@ -129,6 +135,15 @@ public class Reference {
 	
     public void addAnnotation(AnnotationMirror anno) {
         this.annotations.add(anno);
+    }
+    
+    public void setRemovedAnnotations(Set<AnnotationMirror> annotations) {
+    	this.removedAnnos.clear();
+    	this.removedAnnos.addAll(annotations);
+    }
+    
+    public void addRemovedAnno(AnnotationMirror anno) {
+    	this.removedAnnos.add(anno);
     }
 
     public int getRestoreNum() {

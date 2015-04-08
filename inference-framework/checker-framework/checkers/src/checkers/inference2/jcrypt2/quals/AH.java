@@ -1,7 +1,7 @@
 /**
  * 
  */
-package checkers.inference2.jcrypt.quals;
+package checkers.inference2.jcrypt2.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -17,11 +17,8 @@ import checkers.quals.TypeQualifier;
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Top.class, Poly.class, Sensitive.class, Clear.class})
-//@ImplicitFor(
-//	types={TypeKind.NULL}
-//    )
+@SubtypeOf({RND.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Bottom {
+public @interface AH {
     
 }

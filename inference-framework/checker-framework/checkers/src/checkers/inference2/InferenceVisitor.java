@@ -72,7 +72,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 	protected final AnnotatedTypeFactory factory;
 	
 	/** For recording visited method invocation trees or allocation sites */
-	private Set<Tree> visited = new HashSet<Tree>();
+	protected Set<Tree> visited = new HashSet<Tree>();
 
 	public InferenceVisitor(InferenceChecker checker, CompilationUnitTree root) {
 		super(checker, root);
@@ -667,7 +667,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         checker.addSubtypeConstraint(cFalseRef, lhsRef);
     }
     
-    private void processBinaryTree(Reference lhsRef, BinaryTree bTree) {
+    public void processBinaryTree(Reference lhsRef, BinaryTree bTree) {
 		ExpressionTree left = bTree.getLeftOperand();
 		ExpressionTree right = bTree.getRightOperand();
 		Reference leftRef = checker.getAnnotatedReference(left);
