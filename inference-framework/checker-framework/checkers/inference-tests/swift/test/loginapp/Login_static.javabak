@@ -1,0 +1,128 @@
+package loginapp;
+
+import webil.ui.*;
+
+public class Login_static {
+	public static int a = 10;
+
+	public static void main() {
+		new Login_static().run();
+	}
+
+	public TextBox username, password;
+	public ButtonListenerApp goodie;
+
+	public void run() {
+		Panel root = RootPanel.getRootPanel();
+		VerticalPanel v = new VerticalPanel();
+		v.addChild(new Text("Please enter your username and password."));
+		v.addChild(new Text(" "));
+		HorizontalPanel user = new HorizontalPanel();
+		user.addChild(new Text("Username: "));
+		user.addChild(new Text(" "));
+		username = new TextBox("");
+		user.addChild(username);
+		v.addChild(user);
+		HorizontalPanel pass = new HorizontalPanel();
+		pass.addChild(new Text("Password: "));
+		pass.addChild(new Text(" "));
+		password = new TextBox("");
+		pass.addChild(password);
+		v.addChild(pass);
+		v.addChild(new Text(" "));
+		Button b = new Button("Submit");
+		b.addListener(new LoginSubmit_static(this));
+		v.addChild(b);
+		root.addChild(v);
+		goodie = new ButtonListenerApp();
+	}
+
+}
+
+class LoginSubmit_static implements ClickListener {
+
+	private Login_static app;
+
+	public LoginSubmit_static(Login_static app) {
+		this.app = app;
+	}
+
+	public void onClick(Widget w) {
+		String u = app.username.getText();
+		String p = app.password.getText();
+
+		if (u.equals("foo") && p.equals("bar")) {
+			Panel root = RootPanel.getRootPanel();
+			root.removeAllChildren();
+			app.goodie.run();
+		} else {
+			((Button) w).setText("Try again");
+		}
+	}
+
+}
+
+class ButtonListenerApp_static {
+
+	private String serverMsg;
+	private Text text;
+	public TextBox textbox;
+
+	public int clickCount;
+
+	public void run() {
+		RootPanel p = RootPanel.getRootPanel();
+		HorizontalPanel h = new HorizontalPanel();
+
+		h.addChild(new Text("Hi there!"));
+		h.addChild(new Text(" "));
+		textbox = new TextBox("");
+		h.addChild(textbox);
+		Button b = new Button("Click me");
+		b.addListener(new SubmitListener_static(this));
+		h.addChild(b);
+		h.addChild(new Text(" "));
+		text = new Text("");
+		h.addChild(text);
+		p.addChild(h);
+		serverMsg = "I'm on the server!";
+		text.setText(serverMsg);
+		showMsg();
+	}
+
+	private void showMsg() {
+		textbox.setText("I'm in a method call!");
+	}
+
+}
+
+class SubmitListener_static implements ClickListener {
+
+	public ButtonListenerApp_static app;
+
+	public SubmitListener_static(ButtonListenerApp_static app) {
+		this.app = app;
+	}
+
+	public void onClick(Widget w) {
+		app.clickCount = app.clickCount + 1;
+		String s;
+
+		if (Login_static.a > 0) {
+			Login_static.a = Login_static.a - 1;
+
+			if (app.clickCount == 1) {
+				s = "You clicked me!";
+			} else if (app.clickCount == 2) {
+				s = "You clicked me again!";
+			} else {
+				s = ((Button) w).getText();
+			}
+		} else {
+			s = "Used up all the clicks!";
+		}
+
+		app.textbox.setText(s);
+	}
+
+}
