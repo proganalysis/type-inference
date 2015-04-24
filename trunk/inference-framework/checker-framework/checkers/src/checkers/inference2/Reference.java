@@ -50,7 +50,7 @@ public class Reference {
 	/** The annotations for the Reference */
     private Set<AnnotationMirror> annotations;
     
-    private Set<AnnotationMirror> removedAnnos = new LinkedHashSet<>();
+    private AnnotationMirror cryptType;
     
     /** Not all Reference types have the element */
     private Element element;
@@ -94,6 +94,7 @@ public class Reference {
         this.enclosingType = enclosingType;
 		this.type = (type == null ? null : type.getCopy(false));
 		this.kind = kind;
+		this.cryptType = null;
 		String[] split = identifier.split(":");
 		if (split.length == 3) {
 			fileName = split[0];
@@ -113,8 +114,8 @@ public class Reference {
 		return set;
 	}
 	
-	public Set<AnnotationMirror> getRemovedAnnos() {
-		return this.removedAnnos;
+	public AnnotationMirror getCryptType() {
+		return this.cryptType;
 	}
 
 	public Set<AnnotationMirror> getRawAnnotations() {
@@ -137,13 +138,8 @@ public class Reference {
         this.annotations.add(anno);
     }
     
-    public void setRemovedAnnotations(Set<AnnotationMirror> annotations) {
-    	this.removedAnnos.clear();
-    	this.removedAnnos.addAll(annotations);
-    }
-    
-    public void addRemovedAnno(AnnotationMirror anno) {
-    	this.removedAnnos.add(anno);
+    public void setCryptType(AnnotationMirror type) {
+    	this.cryptType = type;
     }
 
     public int getRestoreNum() {
@@ -248,54 +244,6 @@ public class Reference {
 	public boolean isSimilar(Reference ref) {
 		return false;
 	}
-	
-
-//	public static class DeclaredReference extends Reference {
-//		
-//		List<? extends Reference> typeArgs = new ArrayList<Reference>(0);
-//		
-//	    boolean isGeneric = false;
-//	
-//		public DeclaredReference(String identifier, Tree tree, Element element,
-//				TypeElement enclosingType, AnnotatedTypeMirror type,
-//				Set<AnnotationMirror> annotations) {
-//			super(identifier, null, tree, element, enclosingType, type, annotations);
-//		} 
-//		
-//	    public void setTypeArguments(List<? extends Reference> ts) {
-//	        typeArgs = Collections.unmodifiableList(new ArrayList<Reference>(ts));
-//	    }
-//	    
-//	    public List<? extends Reference> getTypeArguments() {
-//	        return typeArgs;
-//	    }
-//	
-//		public boolean isGeneric() {
-//			return isGeneric;
-//		}
-//	
-//		public void setGeneric(boolean isGeneric) {
-//			this.isGeneric = isGeneric;
-//		}
-//	    
-//		@Override
-//		public String toString() {
-//			StringBuilder sb = new StringBuilder();
-//			if (typeArgs != null && !typeArgs.isEmpty()) {
-//				sb.append(":[");
-//				boolean first = true;
-//				for (Reference ts : typeArgs) {
-//					if (first)
-//						first = false;
-//					else
-//						sb.append(",");
-//					sb.append(ts.toString());
-//				}
-//				sb.append("]");
-//			}
-//			return super.toString() + sb.toString();
-//		}
-//	}
 	
 	public static class ArrayReference extends Reference {
 		

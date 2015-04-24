@@ -23,7 +23,6 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -31,8 +30,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.tree.JCTree.JCTypeAnnotation;
-
-import static com.esotericsoftware.minlog.Log.*;
 
 /**
  * @author huangw5

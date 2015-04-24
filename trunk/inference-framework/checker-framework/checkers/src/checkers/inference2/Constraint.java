@@ -20,6 +20,8 @@ public abstract class Constraint {
 	
 	protected int id; 
 	
+	protected long lineNum;
+	
     /**
      * kind = 0: subkind 
      * kind = 1: equality
@@ -28,6 +30,16 @@ public abstract class Constraint {
     protected int kind;
 	
 	private static int counter = 0;
+	
+	public long getLineNum() {
+		return lineNum;
+	}
+	
+	public Constraint(long lineNum) {
+		id = counter++;
+		causes = new ArrayList<Constraint>();
+		this.lineNum = lineNum;
+	}
 	
 	public Constraint() {
 		id = counter++;
@@ -74,7 +86,7 @@ public abstract class Constraint {
     }
     
     public String toString(String type, String sep) {
-        return type + "-" + id + ": " + left.toString() + "  " 
+        return type + "-" + id + "[" + lineNum + "]: " + left.toString() + "  " 
             + sep + "  " + right.toString() 
             + (causes.size() == 0 ? "" : " caused by " + causeIds());
     }   
@@ -99,6 +111,13 @@ public abstract class Constraint {
 	public static class SubtypeConstraint extends Constraint {
 		public SubtypeConstraint(Reference sub, Reference sup) {
             super();
+            this.left = sub;
+            this.right = sup;
+            this.kind = 0;
+		}
+		
+		public SubtypeConstraint(Reference sub, Reference sup, long lineNum) {
+            super(lineNum);
             this.left = sub;
             this.right = sup;
             this.kind = 0;
@@ -133,6 +152,13 @@ public abstract class Constraint {
             this.kind = 1;
 		}
 		
+		public EqualityConstraint(Reference left, Reference right, long lineNum) {
+			super(lineNum);
+			this.left = left;
+			this.right = right;
+            this.kind = 1;
+		}
+		
 		@Override
 		public String toString() {
             return super.toString("EQU", "==");
@@ -157,6 +183,13 @@ public abstract class Constraint {
 	public static class UnequalityConstraint extends Constraint {
 		public UnequalityConstraint(Reference left, Reference right) {
 			super();
+			this.left = left;
+			this.right = right;
+            this.kind = 2;
+		}
+		
+		public UnequalityConstraint(Reference left, Reference right, long lineNum) {
+			super(lineNum);
 			this.left = left;
 			this.right = right;
             this.kind = 2;

@@ -152,15 +152,6 @@ public class InferenceMain {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		//		try {
-		//	PrintWriter pw = new PrintWriter(InferenceMain.outputDir
-		//			+ File.separator + checker.getName() + "-mutation.csv");
-		//	checker.printMutation(pw);
-		//	pw.close();
-		//	
-		//} catch (Exception e) {
-		//	e.printStackTrace();
-		//}
 		if (!typeErrors.isEmpty()) {
 			for (Constraint c : typeErrors)  {
 				System.out.println(c);
@@ -262,15 +253,12 @@ public class InferenceMain {
         String thisJar = findPathJar(InferenceMain.class);
         File potential = new File(new File(thisJar).getParentFile(), "jdk.jar");
         if (potential.exists()) {
-            //System.out.println("from adjacent jdk.jar");
             return potential.getPath();
         }
 
         // case 2: there was a temporary copy
         File jdkFile = tempJDKPath();
-        //System.out.println(jdkFile);
         if (jdkFile.exists()) {
-            //System.out.println("From temporary");
             return jdkFile.getPath();
         }
 
@@ -282,7 +270,6 @@ public class InferenceMain {
         }
 
         if (jdkFile.exists()) {
-            //System.out.println("Extracted jar");
             return jdkFile.getPath();
         }
 
@@ -314,6 +301,7 @@ public class InferenceMain {
         dest.flush();
         dest.close();
         is.close();
+        zip.close();
     }
 
     /**

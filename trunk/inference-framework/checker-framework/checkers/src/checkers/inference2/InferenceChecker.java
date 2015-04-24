@@ -132,10 +132,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		this.positions = Trees.instance(getProcessingEnvironment())
 				.getSourcePositions();
 		InferenceMain.getInstance().setInferenceChcker(this);
-		// if (getProcessingEnvironment().getOptions().containsKey(
-		// "debug")) {
 		Log.set(LEVEL_DEBUG);
-		// }
 		types = processingEnv.getTypeUtils();
 	}
 
@@ -382,7 +379,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		} else {
 			return getLineNumber(currentNewRoot, tree);
 		}
-		// return getLineNumber(currentRoot, tree);
 	}
 
 	public long getLineNumber(CompilationUnitTree root, Tree tree) {
@@ -467,7 +463,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		} else {
 			return getFileName(currentNewRoot, tree);
 		}
-		// return getFileName(currentRoot, tree);
 	}
 
 	public String getFileName(CompilationUnitTree root, Tree tree) {
@@ -500,10 +495,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			currentNewRoot = getRootByElement(idElt);
 		}
 
-		// idElt = InternalUtils.symbol(tree);
-		// if (idElt != null) {
-		// currentNewRoot = getRootByElement(idElt);
-		// }
 		String id = getFileName(tree) + ":" + getLineNumber(tree) + ":";
 		currentNewRoot = null;
 		switch (tree.getKind()) {
@@ -519,9 +510,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 					.toString();
 			break;
 		case NEW_CLASS:
-			// id += "new " + ((NewClassTree) tree).getIdentifier().toString()
-			// + ((NewClassTree) tree).getArguments().toString();
-			// break;
 		case NEW_ARRAY:
 		default:
 			id += tree.toString();
@@ -750,45 +738,29 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	protected Reference getFieldAdaptReference(Reference context,
 			Reference decl, Reference assignTo) {
 		return createFieldAdaptReference(context, decl, assignTo);
-		// Reference av = createFieldAdaptReference(context, decl, assignTo);
-		// String identifier = av.getIdentifier();
-		// Reference ret = annotatedReferences.get(identifier);
-		// if (ret == null) {
-		// ret = av;
-		// annotatedReferences.put(identifier, ret);
-		// }
-		// return ret;
 	}
 
 	protected Reference getMethodAdaptReference(Reference context,
 			Reference decl, Reference assignTo) {
 		return createMethodAdaptReference(context, decl, assignTo);
-		// Reference av = createMethodAdaptReference(context, decl, assignTo);
-		// String identifier = av.getIdentifier();
-		// Reference ret = annotatedReferences.get(identifier);
-		// if (ret == null) {
-		// ret = av;
-		// annotatedReferences.put(identifier, ret);
-		// }
-		// return ret;
 	}
 
-	public void addSubtypeConstraint(Reference sub, Reference sup) {
+	public void addSubtypeConstraint(Reference sub, Reference sup, long lineNum) {
 		if (sub.equals(sup))
 			return;
-		Constraint c = new SubtypeConstraint(sub, sup);
+		Constraint c = new SubtypeConstraint(sub, sup, lineNum);
 		if (!constraints.add(c))
 			return;
-		addComponentConstraints(sub, sup, false);
+		addComponentConstraints(sub, sup, false, lineNum);
 	}
 
-	protected void addEqualityConstraint(Reference left, Reference right) {
+	protected void addEqualityConstraint(Reference left, Reference right, long lineNum) {
 		if (left.equals(right))
 			return;
 		Constraint c = new EqualityConstraint(left, right);
 		if (!constraints.add(c))
 			return;
-		addComponentConstraints(left, right, true);
+		addComponentConstraints(left, right, true, lineNum);
 	}
 
 	protected void addUnequalityConstraint(Reference left, Reference right) {
@@ -810,7 +782,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	 * @param equality
 	 */
 	private void addComponentConstraints(Reference sub, Reference sup,
-			boolean equality) {
+			boolean equality, long lineNum) {
 		if (sub.getType() instanceof AnnotatedArrayType
 				&& sup instanceof AdaptReference) {
 			sup = ((AdaptReference) sup).getDeclRef();
@@ -826,9 +798,9 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference subComponent = ((ArrayReference) sub).getComponentRef();
 			Reference supComponent = ((ArrayReference) sup).getComponentRef();
 			if (equality) {
-				addEqualityConstraint(subComponent, supComponent);
+				addEqualityConstraint(subComponent, supComponent, lineNum);
 			} else {
-				addSubtypeConstraint(subComponent, supComponent);
+				addSubtypeConstraint(subComponent, supComponent, lineNum);
 			}
 		}
 	}
@@ -848,14 +820,14 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		if (!ElementUtils.isStatic(overrider)) {
 			Reference overriderThisRef = overriderRef.getThisRef();
 			Reference overriddenThisRef = overriddenRef.getThisRef();
-			addSubtypeConstraint(overriddenThisRef, overriderThisRef);
+			addSubtypeConstraint(overriddenThisRef, overriderThisRef, getLineNumber(overrider));
 		}
 
 		// RETURN: overrider <: overridden
 		if (overrider.getReturnType().getKind() != TypeKind.VOID) {
 			Reference overriderReturnRef = overriderRef.getReturnRef();
 			Reference overriddenReturnRef = overriddenRef.getReturnRef();
-			addSubtypeConstraint(overriderReturnRef, overriddenReturnRef);
+			addSubtypeConstraint(overriderReturnRef, overriddenReturnRef, getLineNumber(overrider));
 		}
 
 		// PARAMETERS:
@@ -864,30 +836,30 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		Iterator<Reference> overriddenIt = overriddenRef.getParamRefs()
 				.iterator();
 		for (; overriderIt.hasNext() && overriddenIt.hasNext();) {
-			addSubtypeConstraint(overriddenIt.next(), overriderIt.next());
+			addSubtypeConstraint(overriddenIt.next(), overriderIt.next(), getLineNumber(overrider));
 		}
 	}
 
 	protected void handleInstanceFieldRead(Reference aBase, Reference aField,
-			Reference aLhs) {
+			Reference aLhs, long lineNum) {
 		Reference afv = getFieldAdaptReference(aBase, aField, aLhs);
-		addSubtypeConstraint(afv, aLhs);
+		addSubtypeConstraint(afv, aLhs, lineNum);
 	}
 
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs) {
+			Reference aRhs, long lineNum) {
 		if (aBase != null) {
 			Reference afv = getFieldAdaptReference(aBase, aField, aRhs);
-			addSubtypeConstraint(aRhs, afv);
+			addSubtypeConstraint(aRhs, afv, lineNum);
 		}
 	}
 
-	protected void handleStaticFieldRead(Reference aField, Reference aLhs) {
-		addSubtypeConstraint(aField, aLhs);
+	protected void handleStaticFieldRead(Reference aField, Reference aLhs, long lineNum) {
+		addSubtypeConstraint(aField, aLhs, lineNum);
 	}
 
-	protected void handleStaticFieldWrite(Reference aField, Reference aRhs) {
-		addSubtypeConstraint(aRhs, aField);
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, long lineNum) {
+		addSubtypeConstraint(aRhs, aField, lineNum);
 	}
 
 	protected void handleMethodCall(ExecutableElement invokeMethod,
@@ -900,7 +872,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			addSubtypeConstraint(
 					receiverRef,
 					getMethodAdaptReference(receiverRef,
-							methodRef.getThisRef(), assignToRef));
+							methodRef.getThisRef(), assignToRef), getLineNumber(invokeMethod));
 		}
 		// return: Here we used methodRef.getReturnRef().getType() to check VOID
 		// type
@@ -915,7 +887,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference returnRef = methodRef.getReturnRef();
 			addSubtypeConstraint(
 					getMethodAdaptReference(receiverRef, returnRef, assignToRef),
-					assignToRef);
+					assignToRef, getLineNumber(invokeMethod));
 		}
 		// parameters: z <: C |> p
 		Iterator<Reference> argIt = argumentRefs.iterator();
@@ -924,7 +896,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference argRef = argIt.next();
 			Reference paramRef = paramIt.next();
 			addSubtypeConstraint(argRef,
-					getMethodAdaptReference(receiverRef, paramRef, assignToRef));
+					getMethodAdaptReference(receiverRef, paramRef, assignToRef), getLineNumber(invokeMethod));
 		}
 	}
 

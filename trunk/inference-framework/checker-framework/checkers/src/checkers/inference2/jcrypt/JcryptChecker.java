@@ -23,8 +23,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
 import checkers.inference.reim.quals.Mutable;
 import checkers.inference.reim.quals.Polyread;
 import checkers.inference.reim.quals.Readonly;
@@ -34,10 +32,8 @@ import checkers.inference2.jcrypt.quals.Sensitive;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
-import checkers.inference2.InferenceVisitor;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.AdaptReference;
-import checkers.inference2.Reference.ExecutableReference;
 import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.Reference.RefKind;
@@ -50,7 +46,6 @@ import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
@@ -227,46 +222,6 @@ public class JcryptChecker extends InferenceChecker {
 		return false;
 	}
 
-//	@Override
-//	protected void handleMethodOverride(ExecutableElement overrider,
-//			ExecutableElement overridden) {
-//		ExecutableReference overriderRef = (ExecutableReference) getAnnotatedReference(overrider);
-//		ExecutableReference overriddenRef = (ExecutableReference) getAnnotatedReference(overridden);
-//
-//		// THIS: overridden <: overrider
-//		if (!ElementUtils.isStatic(overrider)) {
-//			Reference overriderThisRef = overriderRef.getThisRef();
-//			Reference overriddenThisRef = overriddenRef.getThisRef();
-//			if (!isFromLibrary(overridden) || isAnnotated(overriddenThisRef)) {
-//			//if (!isFromLibrary(overridden)) {
-//				addSubtypeConstraint(overriddenThisRef, overriderThisRef);
-//			}
-//		}
-//
-//		// RETURN: overrider <: overridden
-//		if (overrider.getReturnType().getKind() != TypeKind.VOID) {
-//			Reference overriderReturnRef = overriderRef.getReturnRef();
-//			Reference overriddenReturnRef = overriddenRef.getReturnRef();
-//			if (!isFromLibrary(overridden) || isAnnotated(overriddenReturnRef)) {
-//			//if (!isFromLibrary(overridden)) {
-//				addSubtypeConstraint(overriderReturnRef, overriddenReturnRef);
-//			}
-//		}
-//
-//		// PARAMETERS:
-//		Iterator<Reference> overriderIt = overriderRef.getParamRefs()
-//				.iterator();
-//		Iterator<Reference> overriddenIt = overriddenRef.getParamRefs()
-//				.iterator();
-//		for (; overriderIt.hasNext() && overriddenIt.hasNext();) {
-//			Reference oerriddenParam = overriddenIt.next();
-//			//if (!isFromLibrary(overridden) || isAnnotated(oerriddenParam)) {
-//			if (!isFromLibrary(overridden)) {
-//				addSubtypeConstraint(oerriddenParam, overriderIt.next());
-//			}
-//		}
-//	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -323,10 +278,8 @@ public class JcryptChecker extends InferenceChecker {
 	protected void annotateDefault(Reference r, RefKind kind, Element elt,
 			Tree t) {
 		if (!isAnnotated(r)) {
-			//if (kind == RefKind.LITERAL) {
 			if (kind == RefKind.LITERAL && t.getKind() != Kind.NULL_LITERAL) {
 				r.addAnnotation(CLEAR);
-				//r.addAnnotation(BOTTOM);
 			} else {
 				r.setAnnotations(sourceAnnos, this);
 			}
@@ -516,11 +469,11 @@ public class JcryptChecker extends InferenceChecker {
 	}
 
 	@Override
-	public void addSubtypeConstraint(Reference sub, Reference sup) {
-		super.addSubtypeConstraint(sub, sup);
+	public void addSubtypeConstraint(Reference sub, Reference sup, long lineNum) {
+		super.addSubtypeConstraint(sub, sup, lineNum);
 		if (!containsReadonly(sub) && !containsReadonly(sup)) {
 			// add a subtying constraint with opposite direction
-			super.addSubtypeConstraint(sup, sub);
+			super.addSubtypeConstraint(sup, sub, lineNum);
 		}
 	}
 
@@ -551,44 +504,6 @@ public class JcryptChecker extends InferenceChecker {
 	protected SourceVisitor<?, ?> getInferenceVisitor(
 			InferenceChecker inferenceChecker, CompilationUnitTree root) {
 		return new JcryptInferenceVisitor(this, root);
-	}
-
-	private class JcryptInferenceVisitor extends InferenceVisitor {
-
-		public JcryptInferenceVisitor(InferenceChecker checker,
-				CompilationUnitTree root) {
-			super(checker, root);
-		}
-
-		@Override
-		public Void visitMethod(MethodTree node, Void p) {
-			// Connect THIS for special Android methods.
-			ExecutableElement methodElt = TreeUtils
-					.elementFromDeclaration(node);
-			if (isInferAndroidApp()) {
-				TypeElement enclosingClass = ElementUtils
-						.enclosingClass(methodElt);
-				TypeMirror superclass = enclosingClass.getSuperclass();
-				boolean needConnect = false;
-				if (androidClasses.contains(superclass.toString())) {
-					needConnect = true;
-				} else {
-					for (TypeMirror t : enclosingClass.getInterfaces()) {
-						if (androidClasses.contains(t.toString())) {
-							needConnect = true;
-							break;
-						}
-					}
-				}
-				if (needConnect) {
-					ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(methodElt);
-					Reference classRef = getAnnotatedReference(enclosingClass);
-					addEqualityConstraint(methodRef.getThisRef(), classRef);
-				}
-			}
-			return super.visitMethod(node, p);
-		}
-
 	}
 
 	@Override

@@ -130,14 +130,14 @@ public class ReimChecker extends InferenceChecker {
 	
 	@Override
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs) {
+			Reference aRhs, long lineNum) {
 		if (aBase != null) {
 			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
 			set.add(MUTABLE);
 			Reference mutableRef = getAnnotatedReference(set.toString(),
 					RefKind.CONSTANT, null, null, null, null, set);
-			addEqualityConstraint(aBase, mutableRef);
-			super.handleInstanceFieldWrite(aBase, aField, aRhs);
+			addEqualityConstraint(aBase, mutableRef, lineNum);
+			super.handleInstanceFieldWrite(aBase, aField, aRhs, lineNum);
 		}
 	}
 
