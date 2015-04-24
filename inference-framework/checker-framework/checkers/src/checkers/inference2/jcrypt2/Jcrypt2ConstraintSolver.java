@@ -241,8 +241,6 @@ public class Jcrypt2ConstraintSolver extends AbstractConstraintSolver<Jcrypt2Che
 			}
 			if (!isFeasible) {
 				it.remove();
-				sub.addRemovedAnno(subAnno);
-//				System.out.println("***" + sub.getName() + " removed " + subAnno.toString());
 			}
 		}
 		
@@ -262,8 +260,6 @@ public class Jcrypt2ConstraintSolver extends AbstractConstraintSolver<Jcrypt2Che
 				}
 				if (!isFeasible) {
 					it.remove();
-					sub.addRemovedAnno(supAnno);
-					//System.out.println("***" + sup.getName() + " removed " + supAnno.toString());
 				}
 			}
 		}

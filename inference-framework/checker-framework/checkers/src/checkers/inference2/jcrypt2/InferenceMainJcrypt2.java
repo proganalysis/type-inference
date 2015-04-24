@@ -196,9 +196,6 @@ public class InferenceMainJcrypt2 extends InferenceMain {
 		argList.add("-proc:only");
 		argList.add("-Ainfer");
 		argList.add("-Awarns");
-
-//        for (String arg : args) 
-//        	argList.add(arg);
         
         info("Reim", "Generating constraints...");
         if (!inferImpl(argList, out, InferType.REIM)) {
@@ -304,15 +301,12 @@ public class InferenceMainJcrypt2 extends InferenceMain {
         String thisJar = findPathJar(InferenceMainJcrypt2.class);
         File potential = new File(new File(thisJar).getParentFile(), "jdk.jar");
         if (potential.exists()) {
-            //System.out.println("from adjacent jdk.jar");
             return potential.getPath();
         }
 
         // case 2: there was a temporary copy
         File jdkFile = tempJDKPath();
-        //System.out.println(jdkFile);
         if (jdkFile.exists()) {
-            //System.out.println("From temporary");
             return jdkFile.getPath();
         }
 
@@ -324,7 +318,6 @@ public class InferenceMainJcrypt2 extends InferenceMain {
         }
 
         if (jdkFile.exists()) {
-            //System.out.println("Extracted jar");
             return jdkFile.getPath();
         }
 

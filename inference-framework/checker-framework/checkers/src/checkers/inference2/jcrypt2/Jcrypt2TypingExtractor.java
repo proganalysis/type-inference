@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -19,6 +21,8 @@ import checkers.inference2.InferenceChecker;
 import checkers.inference2.MaximalTypingExtractor;
 import checkers.inference2.Reference;
 import checkers.inference2.ConstraintSolver.FailureStatus;
+import checkers.inference2.Reference.AdaptReference;
+import checkers.inference2.Reference.RefKind;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -58,16 +62,6 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 				maxAnnos.add(annos[0]);
 				r.setAnnotations(maxAnnos, checker);
 			}
-			AnnotationMirror[] removedAnnos = r.getRemovedAnnos().toArray(
-					new AnnotationMirror[0]);
-			if (removedAnnos.length != 0) {
-				// sort
-				Arrays.sort(removedAnnos, comparator);
-				// get the maximal annotation
-				Set<AnnotationMirror> maxAnnos = AnnotationUtils.createAnnotationSet();
-				maxAnnos.add(removedAnnos[0]);
-				r.setRemovedAnnotations(maxAnnos);
-			}
 		}
 		return typeCheck();
 	}
@@ -77,7 +71,8 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 		info(this.getClass().getSimpleName(),
 				"Verifying the concrete typing...");
 		Set<Constraint> constraints = checker.getConstraints();
-		List<Constraint> errors = new ArrayList<Constraint>();
+		List<Constraint> errors = new ArrayList<>();
+		Map<String, Constraint> conversions = new HashMap<>();
 		for (Constraint c : constraints) {
 			Reference left = c.getLeft();
 			Reference right = c.getRight();
@@ -91,16 +86,39 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 						&& checker.getFailureStatus(c) == FailureStatus.ERROR) {
 					errors.add(c);
 				}
-				if (!leftAnno.toString().equals(rightAnno.toString())) {
-					System.out.println(c.toString());
+				String leftCryptType = left.getCryptType() == null ?
+						leftAnno.toString() : left.getCryptType().toString();
+				String rightCryptType = right.getCryptType() == null ?
+						rightAnno.toString() : right.getCryptType().toString();
+				if (!leftCryptType.equals(rightCryptType)) {
+					if (conversions.put(c.getLineNum() + ":" + left.getIdentifier(), c) == null) {
+						System.out.println("Line " + c.getLineNum() + ": " + left.getName()
+								+ " @" + leftCryptType.substring(leftCryptType.lastIndexOf('.'))
+								+ " => @" + rightCryptType.substring(rightCryptType.lastIndexOf('.')));
+					}
+				}
+			}
+			if (!(left instanceof AdaptReference)
+					&& !(right instanceof AdaptReference)) {
+				Jcrypt2Checker jcrypt2checker = (Jcrypt2Checker) checker;
+				if (jcrypt2checker.containsAnno(left, jcrypt2checker.CLEAR)
+						&& !rightAnnos.isEmpty()
+						&& right.getKind() != RefKind.COMPONENT) {
+					String rightCryptType = right.getCryptType() == null ?
+							rightAnnos.iterator().next().toString() : right.getCryptType().toString();
+					if (conversions.put(c.getLineNum() + ":" + left.getIdentifier(), c) == null) {
+						System.out.println("Line " + c.getLineNum() + ": " + left.getName()
+								+ " @.CLEAR => @"
+								+ rightCryptType.substring(rightCryptType.lastIndexOf('.')));
+					}
 				}
 			}
 		}
 		info(this.getClass().getSimpleName(),
 				"Finished verifying the concrete typing. " + errors.size()
 						+ " error(s)");
+		System.out.println("Need " + conversions.size() + " type conversions.");
 		return errors;
-
 	}
-
+	
 }

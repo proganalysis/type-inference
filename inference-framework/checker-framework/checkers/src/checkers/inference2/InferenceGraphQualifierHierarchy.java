@@ -79,8 +79,6 @@ public class InferenceGraphQualifierHierarchy extends GraphQualifierHierarchy {
 	@Override
     public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
         if (lhs.isEmpty() || rhs.isEmpty()) {
-//            throw new RuntimeException("QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
-//            System.err.println("WARN: QualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs + " -- ignored");
             return false;
         }
         for (AnnotationMirror lhsAnno : lhs) {
