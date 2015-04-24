@@ -25,6 +25,10 @@ class Example{
     	/*-@Sensitive*/ int /*@Sensitive*/[] list1 = new int[2];
     	int[] list2 = new int[2];
         /*@Sensitive*/ int x = 9;
+        /*@Sensitive*/ int y = 0;
+        y++;
+        /*@Sensitive*/ int z = 0;
+        z += 1;
         list1[0] = x;
         list1[1] = 3;
         list2[0] = 1;
@@ -33,7 +37,6 @@ class Example{
     	int min2 = min_list(list2);
     	int ele = id(list1[0]);
         int ans = min1 + min2 + x;
-        ans = 2 * ans;
         System.out.println(check_ans(ans));
     }
 } 
