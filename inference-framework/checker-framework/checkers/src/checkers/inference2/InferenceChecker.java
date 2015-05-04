@@ -583,9 +583,13 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		case DOUBLE_LITERAL:
 		case BOOLEAN_LITERAL:
 		case CHAR_LITERAL:
-		case STRING_LITERAL:
-		case NULL_LITERAL:
 			rk = RefKind.LITERAL;
+			break;
+		case NULL_LITERAL:
+			rk = RefKind.NULL;
+			break;
+		case STRING_LITERAL:
+			rk = RefKind.STRING;
 			break;
 		case NEW_ARRAY:
 		case NEW_CLASS:
@@ -872,7 +876,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			addSubtypeConstraint(
 					receiverRef,
 					getMethodAdaptReference(receiverRef,
-							methodRef.getThisRef(), assignToRef), getLineNumber(invokeMethod));
+							methodRef.getThisRef(), assignToRef), assignToRef.getLineNum());
 		}
 		// return: Here we used methodRef.getReturnRef().getType() to check VOID
 		// type
@@ -887,7 +891,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference returnRef = methodRef.getReturnRef();
 			addSubtypeConstraint(
 					getMethodAdaptReference(receiverRef, returnRef, assignToRef),
-					assignToRef, getLineNumber(invokeMethod));
+					assignToRef, assignToRef.getLineNum());
 		}
 		// parameters: z <: C |> p
 		Iterator<Reference> argIt = argumentRefs.iterator();
@@ -896,7 +900,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference argRef = argIt.next();
 			Reference paramRef = paramIt.next();
 			addSubtypeConstraint(argRef,
-					getMethodAdaptReference(receiverRef, paramRef, assignToRef), getLineNumber(invokeMethod));
+					getMethodAdaptReference(receiverRef, paramRef, assignToRef), assignToRef.getLineNum());
 		}
 	}
 
