@@ -29,7 +29,10 @@ public class Reference {
     public enum RefKind {
         LOCAL, 
         COMPONENT, 
-        LITERAL, 
+        LITERAL,
+        STRING,
+        NULL,
+        EQUAL_NULL,
         FIELD, 
         PARAMETER,
         THIS, 
@@ -44,9 +47,7 @@ public class Reference {
     } 	
     
     private static int counter = 0;
-    
-    private int restoreNum = 0;
-    
+        
 	/** The annotations for the Reference */
     private Set<AnnotationMirror> annotations;
     
@@ -141,17 +142,13 @@ public class Reference {
     public void setCryptType(AnnotationMirror type) {
     	this.cryptType = type;
     }
-
-    public int getRestoreNum() {
-        return restoreNum;
-    }
-
-    public void setRestored() {
-        restoreNum++;
-    }
     
 	public static int maxId() {
 		return counter;
+	}
+	
+	public void setRefKind(RefKind k) {
+		kind = k;
 	}
 	
 	public String getFileName() {
