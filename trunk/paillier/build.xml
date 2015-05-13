@@ -1,0 +1,77 @@
+<project name="thep" default="compile">
+<!-- Directories -->
+    <property name="src"   location="src"/>
+    <property name="bin"   location="bin"/>
+
+<!-- Classpaths -->
+    <path id="classpath.base">
+        <pathelement location="${bin}"/>
+    </path>
+
+    <path id="classpath.test">
+        <pathelement location="/usr/share/java/junit.jar"/>
+        <pathelement location="${bin}"/>
+        <path refid="classpath.base"/>
+    </path>
+
+<!-- Create bin directory -->
+    <target name="init">
+        <mkdir dir="${bin}"/>
+    </target>
+
+<!-- Compilation Targets -->
+    <target name="compile" depends="compile-thep,compile-tests"/>
+
+    <target name="compile-thep" depends="init">
+        <javac srcdir="${src}" destdir="${bin}"/>
+    </target>
+
+    <target name="compile-tests" depends="init,compile-thep">
+        <javac srcdir="${src}" destdir="${bin}"/>
+    </target>
+
+<!-- Tests -->
+    <target name="test" depends="test-EncryptedInteger,test-EncryptedPolynomial,test-GTSCOT,test-ZKSM"/>
+
+    <target name="test-EncryptedInteger" depends="compile-tests">
+        <junit>
+            <classpath refid="classpath.test"/>
+            <formatter type="brief" usefile="false"/>
+            <test name="test.thep.paillier.EncryptedIntegerTest"/>
+        </junit>
+    </target>
+
+    <target name="test-EncryptedPolynomial" depends="compile-tests">
+        <junit>
+            <classpath refid="classpath.test"/>
+            <formatter type="brief" usefile="false"/>
+            <test name="test.thep.paillier.EncryptedPolynomialTest"/>
+        </junit>
+    </target>
+
+    <target name="test-GTSCOT" depends="compile-tests">
+        <junit>
+            <classpath refid="classpath.test"/>
+            <formatter type="brief" usefile="false"/>
+            <test name="test.thep.paillier.protocols.GTSCOTTest"/>
+        </junit>
+    </target>
+
+    <target name="test-ZKSM" depends="compile-tests">
+        <junit>
+            <classpath refid="classpath.test"/>
+            <formatter type="brief" usefile="false"/>
+            <test name="test.thep.paillier.protocols.ZKSetMembershipTest"/>
+        </junit>
+    </target>
+
+<!-- JAR Target -->
+    <target name="jar" depends="compile">
+        <mkdir dir="../releases/"/>
+        <jar destfile="../releases/thep.jar" basedir="bin/" excludes="**/test/**"/>
+    </target>
+<!-- Clean Target -->
+    <target name="clean">
+        <delete dir="${bin}"/>
+    </target>
+</project> 
