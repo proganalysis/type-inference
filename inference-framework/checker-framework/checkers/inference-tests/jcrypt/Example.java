@@ -1,3 +1,5 @@
+package example;
+
 import checkers.inference2.jcrypt.quals.*;
 
 class Example{
@@ -27,8 +29,12 @@ class Example{
         /*@Sensitive*/ int x = 9;
         /*@Sensitive*/ int y = 0;
         y++;
+        System.out.print("y: ");
+        System.out.println(y);
         /*@Sensitive*/ int z = 0;
         z += 1;
+        System.out.print("z: ");
+        System.out.println(z);
         list1[0] = x;
         list1[1] = 3;
         list2[0] = 1;
@@ -36,7 +42,15 @@ class Example{
     	int min1 = min_list(list1);
     	int min2 = min_list(list2);
     	int ele = id(list1[0]);
+    	System.out.print("ele: ");
+        System.out.println(ele);
         int ans = min1 + min2 + x;
+        System.out.print("ans: ");
+        System.out.println(ans);
         System.out.println(check_ans(ans));
+    }
+    
+    public static void main(String[] args) {
+    	new Example().foo();
     }
 } 
