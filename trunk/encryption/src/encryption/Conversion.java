@@ -3,13 +3,19 @@ package encryption;
 import encryption.encryptedValue.EncryptedValue;
 
 public class Conversion {
+	
+	public static Encryption rnd = new Random();
+	public static Encryption ope = new OrderPreserving();
+	public static Encryption ah = new Homomorphic();
+	public static Encryption det = new Deterministic();
+	
 
 	public static EncryptedValue encrypt(Object ptext, String to) {
 		Encryption toType = createEncryption(to);
 		return toType.encrypt(ptext);
 	}
 
-	private static Object decrypt(EncryptedValue ctext, String from) {
+	public static Object decrypt(EncryptedValue ctext, String from) {
 		Encryption fromType = createEncryption(from);
 		return fromType.decrypt(ctext);
 	}
@@ -22,14 +28,14 @@ public class Conversion {
 	private static Encryption createEncryption(String type) {
 		switch (type) {
 		case "RND":
-			return new Random();
+			return rnd;
 		case "OPE":
-			return new OrderPreserving();
+			return ope;
 		case "AH":
-			return new Homomorphic();
+			return ah;
 		default:
 			assert (type.equals("DET"));
-			return new Deterministic();
+			return det;
 		}
 	}
 

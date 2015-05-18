@@ -47,4 +47,10 @@ public class RNDValue implements EncryptedValue {
 		return false;
 	}
 
+	@Override
+	public EncryptedValue add(int x) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

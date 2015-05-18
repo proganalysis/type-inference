@@ -2,9 +2,9 @@ package encryption.encryptedValue;
 
 public interface EncryptedValue {
 	
-	//public EncryptedValue subtract(EncryptedValue ei);
-
 	public EncryptedValue add(EncryptedValue ei);
+	
+	public EncryptedValue add(int x);
 	
 	public boolean equals(EncryptedValue ei);
 	
