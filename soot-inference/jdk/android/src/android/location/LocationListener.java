@@ -17,6 +17,9 @@
 package android.location;
 
 import android.os.Bundle;
+import checkers.inference.reim.quals.*;
+import checkers.inference.sflow.quals.*;
+
 /*>>> 
 import checkers.inference.reim.quals.*; 
 import checkers.inference.sflow.quals.*; 
@@ -45,7 +48,7 @@ public interface LocationListener {
      *
      * @param location The new location, as a Location object.
      */
-    void onLocationChanged(/*-@Tainted*/ Location location);
+    void onLocationChanged(@Tainted Location location);
 
     /**
      * Called when the provider status changes. This method is called when

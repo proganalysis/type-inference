@@ -163,7 +163,7 @@ public class Activity extends android.view.ContextThemeWrapper implements androi
     public void setProgressBarVisibility(boolean arg0) { throw new RuntimeException("skeleton method"); }
     public void setRequestedOrientation(int arg0) { throw new RuntimeException("skeleton method"); }
     public void setResult(int arg0) { throw new RuntimeException("skeleton method"); }
-    public void setResult(int arg0, @Safe android.content.Intent arg1) { throw new RuntimeException("skeleton method"); }
+    public void setResult(int arg0, /*@Safe*/ android.content.Intent arg1) { throw new RuntimeException("skeleton method"); }
     public void setSecondaryProgress(int arg0) { throw new RuntimeException("skeleton method"); }
     public void setTitle(int arg0) { throw new RuntimeException("skeleton method"); }
     public void setTitle(java.lang.CharSequence arg0) { throw new RuntimeException("skeleton method"); }
@@ -174,29 +174,29 @@ public class Activity extends android.view.ContextThemeWrapper implements androi
     public void showDialog(int arg0) { throw new RuntimeException("skeleton method"); }
     public boolean showDialog(int arg0, android.os.Bundle arg1) { throw new RuntimeException("skeleton method"); }
     public android.view.ActionMode startActionMode(android.view.ActionMode.Callback arg0) { throw new RuntimeException("skeleton method"); }
-    public void startActivities(@Safe android.content.Intent[] arg0) { throw new RuntimeException("skeleton method"); }
-    public void startActivities(@Safe android.content.Intent[] arg0, android.os.Bundle arg1) { throw new RuntimeException("skeleton method"); }
-    public void startActivity(@Safe android.content.Intent arg0) { throw new RuntimeException("skeleton method"); }
-    public void startActivity(@Safe android.content.Intent arg0, android.os.Bundle arg1) { throw new RuntimeException("skeleton method"); }
-    public void startActivityAsUser(@Safe android.content.Intent arg0, android.os.Bundle arg1, android.os.UserHandle arg2) { throw new RuntimeException("skeleton method"); }
-    public void startActivityAsUser(@Safe android.content.Intent arg0, android.os.UserHandle arg1) { throw new RuntimeException("skeleton method"); }
-    public void startActivityForResult(@Safe android.content.Intent arg0, int arg1) { throw new RuntimeException("skeleton method"); }
-    public void startActivityForResult(@Safe android.content.Intent arg0, int arg1, android.os.Bundle arg2) { throw new RuntimeException("skeleton method"); }
-    public void startActivityFromChild(android.app.Activity arg0, @Safe android.content.Intent arg1, int arg2) { throw new RuntimeException("skeleton method"); }
-    public void startActivityFromChild(android.app.Activity arg0, @Safe android.content.Intent arg1, int arg2, android.os.Bundle arg3) { throw new RuntimeException("skeleton method"); }
-    public void startActivityFromFragment(android.app.Fragment arg0, @Safe android.content.Intent arg1, int arg2) { throw new RuntimeException("skeleton method"); }
-    public void startActivityFromFragment(android.app.Fragment arg0, @Safe android.content.Intent arg1, int arg2, android.os.Bundle arg3) { throw new RuntimeException("skeleton method"); }
-    public boolean startActivityIfNeeded(@Safe android.content.Intent arg0, int arg1) { throw new RuntimeException("skeleton method"); }
-    public boolean startActivityIfNeeded(@Safe android.content.Intent arg0, int arg1, android.os.Bundle arg2) { throw new RuntimeException("skeleton method"); }
-    public void startIntentSender(android.content.IntentSender arg0, @Safe android.content.Intent arg1, int arg2, int arg3, int arg4) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
-    public void startIntentSender(android.content.IntentSender arg0, @Safe android.content.Intent arg1, int arg2, int arg3, int arg4, android.os.Bundle arg5) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
-    public void startIntentSenderForResult(android.content.IntentSender arg0, int arg1, @Safe android.content.Intent arg2, int arg3, int arg4, int arg5) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
-    public void startIntentSenderForResult(android.content.IntentSender arg0, int arg1, @Safe android.content.Intent arg2, int arg3, int arg4, int arg5, android.os.Bundle arg6) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
-    public void startIntentSenderFromChild(android.app.Activity arg0, android.content.IntentSender arg1, int arg2, @Safe android.content.Intent arg3, int arg4, int arg5, int arg6) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
-    public void startIntentSenderFromChild(android.app.Activity arg0, android.content.IntentSender arg1, int arg2, @Safe android.content.Intent arg3, int arg4, int arg5, int arg6, android.os.Bundle arg7) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
+    public void startActivities(/*@Safe*/ android.content.Intent[] arg0) { throw new RuntimeException("skeleton method"); }
+    public void startActivities(/*@Safe*/ android.content.Intent[] arg0, android.os.Bundle arg1) { throw new RuntimeException("skeleton method"); }
+    public void startActivity(/*@Safe*/ android.content.Intent arg0) { throw new RuntimeException("skeleton method"); }
+    public void startActivity(/*@Safe*/ android.content.Intent arg0, android.os.Bundle arg1) { throw new RuntimeException("skeleton method"); }
+    public void startActivityAsUser(/*@Safe*/ android.content.Intent arg0, android.os.Bundle arg1, android.os.UserHandle arg2) { throw new RuntimeException("skeleton method"); }
+    public void startActivityAsUser(/*@Safe*/ android.content.Intent arg0, android.os.UserHandle arg1) { throw new RuntimeException("skeleton method"); }
+    public void startActivityForResult(/*@Safe*/ android.content.Intent arg0, int arg1) { throw new RuntimeException("skeleton method"); }
+    public void startActivityForResult(/*@Safe*/ android.content.Intent arg0, int arg1, android.os.Bundle arg2) { throw new RuntimeException("skeleton method"); }
+    public void startActivityFromChild(android.app.Activity arg0, /*@Safe*/ android.content.Intent arg1, int arg2) { throw new RuntimeException("skeleton method"); }
+    public void startActivityFromChild(android.app.Activity arg0, /*@Safe*/ android.content.Intent arg1, int arg2, android.os.Bundle arg3) { throw new RuntimeException("skeleton method"); }
+    public void startActivityFromFragment(android.app.Fragment arg0, /*@Safe*/ android.content.Intent arg1, int arg2) { throw new RuntimeException("skeleton method"); }
+    public void startActivityFromFragment(android.app.Fragment arg0, /*@Safe*/ android.content.Intent arg1, int arg2, android.os.Bundle arg3) { throw new RuntimeException("skeleton method"); }
+    public boolean startActivityIfNeeded(/*@Safe*/ android.content.Intent arg0, int arg1) { throw new RuntimeException("skeleton method"); }
+    public boolean startActivityIfNeeded(/*@Safe*/ android.content.Intent arg0, int arg1, android.os.Bundle arg2) { throw new RuntimeException("skeleton method"); }
+    public void startIntentSender(android.content.IntentSender arg0, /*@Safe*/ android.content.Intent arg1, int arg2, int arg3, int arg4) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
+    public void startIntentSender(android.content.IntentSender arg0, /*@Safe*/ android.content.Intent arg1, int arg2, int arg3, int arg4, android.os.Bundle arg5) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
+    public void startIntentSenderForResult(android.content.IntentSender arg0, int arg1, /*@Safe*/ android.content.Intent arg2, int arg3, int arg4, int arg5) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
+    public void startIntentSenderForResult(android.content.IntentSender arg0, int arg1, /*@Safe*/ android.content.Intent arg2, int arg3, int arg4, int arg5, android.os.Bundle arg6) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
+    public void startIntentSenderFromChild(android.app.Activity arg0, android.content.IntentSender arg1, int arg2, /*@Safe*/ android.content.Intent arg3, int arg4, int arg5, int arg6) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
+    public void startIntentSenderFromChild(android.app.Activity arg0, android.content.IntentSender arg1, int arg2, /*@Safe*/ android.content.Intent arg3, int arg4, int arg5, int arg6, android.os.Bundle arg7) throws android.content.IntentSender.SendIntentException { throw new RuntimeException("skeleton method"); }
     public void startManagingCursor(android.database.Cursor arg0) { throw new RuntimeException("skeleton method"); }
-    public boolean startNextMatchingActivity(@Safe android.content.Intent arg0) { throw new RuntimeException("skeleton method"); }
-    public boolean startNextMatchingActivity(@Safe android.content.Intent arg0, android.os.Bundle arg1) { throw new RuntimeException("skeleton method"); }
+    public boolean startNextMatchingActivity(/*@Safe*/ android.content.Intent arg0) { throw new RuntimeException("skeleton method"); }
+    public boolean startNextMatchingActivity(/*@Safe*/ android.content.Intent arg0, android.os.Bundle arg1) { throw new RuntimeException("skeleton method"); }
     public void startSearch(java.lang.String arg0, boolean arg1, android.os.Bundle arg2, boolean arg3) { throw new RuntimeException("skeleton method"); }
     public void stopManagingCursor(android.database.Cursor arg0) { throw new RuntimeException("skeleton method"); }
     public void takeKeyEvents(boolean arg0) { throw new RuntimeException("skeleton method"); }

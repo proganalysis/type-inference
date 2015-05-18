@@ -33,6 +33,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.android.internal.location.ProviderProperties;
+import checkers.inference.reim.quals.*;
+import checkers.inference.sflow.quals.*;
+
+
 /*>>> 
 import checkers.inference.reim.quals.*; 
 import checkers.inference.sflow.quals.*; 
@@ -215,7 +219,7 @@ public class LocationManager {
         }
 
         @Override
-        public void onLocationChanged(/*-@Tainted*/ Location location) {
+        public void onLocationChanged(@Tainted Location location) {
             Message msg = Message.obtain();
             msg.what = TYPE_LOCATION_CHANGED;
             msg.obj = location;
@@ -1110,7 +1114,7 @@ public class LocationManager {
      *
      * @hide
      */
-    public Location getLastLocation() {
+    public @Tainted Location getLastLocation() {
         String packageName = mContext.getPackageName();
 
         try {
@@ -1138,7 +1142,7 @@ public class LocationManager {
      * @throws SecurityException if no suitable permission is present
      * @throws IllegalArgumentException if provider is null or doesn't exist
      */
-    public Location getLastKnownLocation(String provider) {
+    public @Tainted Location getLastKnownLocation(String provider) {
         checkProvider(provider);
         String packageName = mContext.getPackageName();
         LocationRequest request = LocationRequest.createFromDeprecatedProvider(

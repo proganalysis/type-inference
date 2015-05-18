@@ -46,16 +46,16 @@ public class Location implements android.os.Parcelable {
     public void setTime(long arg0) { throw new RuntimeException("skeleton method"); }
     public long getElapsedRealtimeNanos() { throw new RuntimeException("skeleton method"); }
     public void setElapsedRealtimeNanos(long arg0) { throw new RuntimeException("skeleton method"); }
-    public @Tainted double getLatitude() { throw new RuntimeException("skeleton method"); }
+    public double getLatitude() { throw new RuntimeException("skeleton method"); }
     public void setLatitude(double arg0) { throw new RuntimeException("skeleton method"); }
-    public @Tainted double getLongitude() { throw new RuntimeException("skeleton method"); }
+    public double getLongitude() { throw new RuntimeException("skeleton method"); }
     public void setLongitude(double arg0) { throw new RuntimeException("skeleton method"); }
     public boolean hasAltitude() { throw new RuntimeException("skeleton method"); }
-    public @Tainted double getAltitude() { throw new RuntimeException("skeleton method"); }
+    public double getAltitude() { throw new RuntimeException("skeleton method"); }
     public void setAltitude(double arg0) { throw new RuntimeException("skeleton method"); }
     public void removeAltitude() { throw new RuntimeException("skeleton method"); }
     public boolean hasSpeed() { throw new RuntimeException("skeleton method"); }
-    public @Tainted float getSpeed() { throw new RuntimeException("skeleton method"); }
+    public float getSpeed() { throw new RuntimeException("skeleton method"); }
     public void setSpeed(float arg0) { throw new RuntimeException("skeleton method"); }
     public void removeSpeed() { throw new RuntimeException("skeleton method"); }
     public boolean hasBearing() { throw new RuntimeException("skeleton method"); }

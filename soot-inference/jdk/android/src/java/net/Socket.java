@@ -1,9 +1,10 @@
 package java.net;
 
-import checkers.inference.reim.quals.*; 
-import checkers.inference.sflow.quals.*; 
+import checkers.inference.reim.quals.*;
+import checkers.inference.sflow.quals.*;
 
-public class Socket {
+
+public class Socket implements java.io.Closeable {
     private boolean created;
     private boolean bound;
     private boolean connected;
@@ -36,43 +37,43 @@ public class Socket {
     void setCreated() { throw new RuntimeException("skeleton method"); }
     void setBound() { throw new RuntimeException("skeleton method"); }
     void setConnected() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis java.net.InetAddress getInetAddress() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis java.net.InetAddress getLocalAddress() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis int getPort() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis int getLocalPort() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis java.net.SocketAddress getRemoteSocketAddress() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis java.net.SocketAddress getLocalSocketAddress() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis java.nio.channels.SocketChannel getChannel() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis java.io.InputStream getInputStream() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-    public @Safe @SafeThis @ReadonlyThis java.io.OutputStream getOutputStream() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+    public java.net.InetAddress getInetAddress() { throw new RuntimeException("skeleton method"); }
+    public java.net.InetAddress getLocalAddress() { throw new RuntimeException("skeleton method"); }
+    public int getPort() { throw new RuntimeException("skeleton method"); }
+    public int getLocalPort() { throw new RuntimeException("skeleton method"); }
+    public java.net.SocketAddress getRemoteSocketAddress() { throw new RuntimeException("skeleton method"); }
+    public java.net.SocketAddress getLocalSocketAddress() { throw new RuntimeException("skeleton method"); }
+    public java.nio.channels.SocketChannel getChannel() { throw new RuntimeException("skeleton method"); }
+    public java.io.InputStream getInputStream() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+    public @Safe java.io.OutputStream getOutputStream() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
     public void setTcpNoDelay(boolean arg0) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean getTcpNoDelay() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public boolean getTcpNoDelay() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public void setSoLinger(boolean arg0, int arg1) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis int getSoLinger() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public int getSoLinger() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public void sendUrgentData(int arg0) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
     public void setOOBInline(boolean arg0) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean getOOBInline() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public boolean getOOBInline() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public synchronized void setSoTimeout(int arg0) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis synchronized int getSoTimeout() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public synchronized int getSoTimeout() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public synchronized void setSendBufferSize(int arg0) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis synchronized int getSendBufferSize() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public synchronized int getSendBufferSize() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public synchronized void setReceiveBufferSize(int arg0) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis synchronized int getReceiveBufferSize() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public synchronized int getReceiveBufferSize() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public void setKeepAlive(boolean arg0) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean getKeepAlive() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public boolean getKeepAlive() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public void setTrafficClass(int arg0) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis int getTrafficClass() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public int getTrafficClass() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public void setReuseAddress(boolean arg0) throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean getReuseAddress() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
+    public boolean getReuseAddress() throws java.net.SocketException { throw new RuntimeException("skeleton method"); }
     public synchronized void close() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
     public void shutdownInput() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
     public void shutdownOutput() throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis java.lang.String toString() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean isConnected() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean isBound() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean isClosed() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean isInputShutdown() { throw new RuntimeException("skeleton method"); }
-    public @ReadonlyThis boolean isOutputShutdown() { throw new RuntimeException("skeleton method"); }
+    public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
+    public boolean isConnected() { throw new RuntimeException("skeleton method"); }
+    public boolean isBound() { throw new RuntimeException("skeleton method"); }
+    public boolean isClosed() { throw new RuntimeException("skeleton method"); }
+    public boolean isInputShutdown() { throw new RuntimeException("skeleton method"); }
+    public boolean isOutputShutdown() { throw new RuntimeException("skeleton method"); }
     public static synchronized void setSocketImplFactory(java.net.SocketImplFactory arg0) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
     public void setPerformancePreferences(int arg0, int arg1, int arg2) { throw new RuntimeException("skeleton method"); }
 }
