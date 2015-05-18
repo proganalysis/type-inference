@@ -55,4 +55,10 @@ public class OPEValue implements EncryptedValue {
 		}
 	}
 
+	@Override
+	public EncryptedValue add(int x) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
