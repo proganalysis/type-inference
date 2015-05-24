@@ -9,10 +9,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import encryption.encryptedValue.EncryptedValue;
-import encryption.encryptedValue.RNDValue;
-
-public class Random implements Encryption {
+public class Random extends Encryption {
 
 	private static final byte[] ivBytes = "1234567812345678".getBytes();
 	private static final Key encryptionKey, decryptionKey;
@@ -39,7 +36,8 @@ public class Random implements Encryption {
 		}
 	}
 
-	private int decryptInt(byte[] ctext) {
+	@Override
+	public int decrypt(byte[] ctext) {
 		byte[] plainText = null;
 		try {
 			cipher.init(Cipher.DECRYPT_MODE, decryptionKey,
@@ -52,49 +50,36 @@ public class Random implements Encryption {
 		return wrapped.getInt();
 	}
 
-	@Override
-	public Object decrypt(EncryptedValue ctext) {
-		RNDValue ct = (RNDValue) ctext;
-		byte[] ctInt = ct.getEnInt();
-		if (ctInt != null) { // int
-			return decryptInt(ctInt);
-		} else { // String
-			byte[][] ctString = ct.getEnString();
-			char[] ptext = new char[ctString.length];
-			int i = 0;
-			for (byte[] b : ctString) {
-				ptext[i] = (char) decryptInt(b);
-				i++;
-			}
-			return new String(ptext);
-		}
-	}
+	// @Override
+	// public Object decrypt(EncryptedValue ctext) {
+	// RNDValue ct = (RNDValue) ctext;
+	// byte[] ctInt = ct.getEnInt();
+	// if (ctInt != null) { // int
+	// return decryptInt(ctInt);
+	// } else { // String
+	// byte[][] ctString = ct.getEnString();
+	// char[] ptext = new char[ctString.length];
+	// int i = 0;
+	// for (byte[] b : ctString) {
+	// ptext[i] = (char) decryptInt(b);
+	// i++;
+	// }
+	// return new String(ptext);
+	// }
+	// }
 
 	@Override
-	public EncryptedValue encrypt(Object ptext) {
-		if (ptext instanceof Integer) {
-			int ptInt = (int) ptext;
-			byte[] input = ByteBuffer.allocate(4).putInt(ptInt).array();
-			byte[] ctext = null;
-			try {
-				cipher.init(Cipher.ENCRYPT_MODE, encryptionKey,
-						new IvParameterSpec(ivBytes));
-				ctext = cipher.doFinal(input);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return new RNDValue(ctext);
-		} else {
-			assert(ptext instanceof String);
-			String ptString = ptext.toString();
-			byte[][] ctext = new byte[ptString.length()][];
-			int i = 0;
-			for (char c : ptString.toCharArray()) {
-				ctext[i] = ((RNDValue) encrypt((int) c)).getEnInt();
-				i++;
-			}
-			return new RNDValue(ctext);
+	public byte[] encrypt(int ptext) {
+		byte[] input = ByteBuffer.allocate(4).putInt(ptext).array();
+		byte[] ctext = null;
+		try {
+			cipher.init(Cipher.ENCRYPT_MODE, encryptionKey,
+					new IvParameterSpec(ivBytes));
+			ctext = cipher.doFinal(input);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return ctext;
 	}
 
 }

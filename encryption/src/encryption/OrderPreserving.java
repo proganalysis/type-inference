@@ -1,71 +1,81 @@
 package encryption;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
+import java.util.Arrays;
 
-import encryption.encryptedValue.EncryptedValue;
-import encryption.encryptedValue.OPEValue;
+public class OrderPreserving extends Encryption {
 
-public class OrderPreserving implements Encryption {
+	private static File dir = new File("lib");
+	private static String[] envp = new String[] { "LD_LIBRARY_PATH=." };
 
-	Process p;
-	String line;
-	BufferedReader in;
-
-	private int decryptInt(String ctext) {
+	@Override
+	public int decrypt(byte[] ctext) {
+		String s = null;
 		try {
-			p = Runtime.getRuntime().exec("lib/ope_decrypt " + ctext);
-			in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			line = in.readLine();
+			long start = System.currentTimeMillis();
+			Process p = Runtime.getRuntime().exec(
+					"./ope_decrypt " + new String(ctext), envp, dir);
+			long end = System.currentTimeMillis();
+			System.out.println("exe " + (end - start));
+			start = System.currentTimeMillis();
+			p.waitFor();
+			end = System.currentTimeMillis();
+			System.out.println("wait " + (end - start));
+			start = System.currentTimeMillis();
+			InputStream input = p.getInputStream();
+			byte[] targetArray = new byte[input.available()];
+			input.read(targetArray);
+			s = new String(Arrays.copyOf(targetArray, targetArray.length - 1));
+			end = System.currentTimeMillis();
+			System.out.println("other " + (end - start));
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		return Integer.parseInt(line);
+		return Integer.parseInt(s);
 	}
 
-	@Override
-	public Object decrypt(EncryptedValue ctext) {
-		OPEValue ct = (OPEValue) ctext;
-		String ctInt = ct.getEnInt();
-		if (ctInt != null) { // int
-			return decryptInt(ctInt);
-		} else { // String
-			String[] ctString = ct.getEnString();
-			char[] ptext = new char[ctString.length];
-			int i = 0;
-			for (String s : ctString) {
-				ptext[i] = (char) decryptInt(s);
-				i++;
-			}
-			return new String(ptext);
-		}
-	}
+//	public Object decrypt(EncryptedValue ctext) {
+//		OPEValue ct = (OPEValue) ctext;
+//		byte[] ctInt = ct.getEnInt();
+//		if (ctInt != null) { // int
+//			return decryptInt(ctInt);
+//		} else { // String
+//			byte[][] ctString = ct.getEnString();
+//			char[] ptext = new char[ctString.length];
+//			int i = 0;
+//			for (byte[] s : ctString) {
+//				ptext[i] = (char) decryptInt(s);
+//				i++;
+//			}
+//			return new String(ptext);
+//		}
+//	}
 
 	@Override
-	public EncryptedValue encrypt(Object ptext) {
-		if (ptext instanceof Integer) {
-			int ptInt = (int) ptext;
-			try {
-				p = Runtime.getRuntime().exec("lib/ope_encrypt " + ptInt);
-				in = new BufferedReader(new InputStreamReader(
-						p.getInputStream()));
-				line = in.readLine();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return new OPEValue(line);
-		} else {
-			assert(ptext instanceof String);
-			String ptString = ptext.toString();
-			String[] ctext = new String[ptString.length()];
-			int i = 0;
-			for (char c : ptString.toCharArray()) {
-				ctext[i] = ((OPEValue) encrypt((int) c)).getEnInt();
-				i++;
-			}
-			return new OPEValue(ctext);
+	public byte[] encrypt(int ptext) {
+		byte[] targetArray = new byte[43];
+		try {
+			long start = System.currentTimeMillis();
+			Process p = Runtime.getRuntime().exec("./ope_encrypt " + ptext,
+					envp, dir);
+			p.waitFor();
+			long end = System.currentTimeMillis();
+			System.out.println("ENCRYPT exe " + (end - start));
+			start = System.currentTimeMillis();
+			p.getInputStream().read(targetArray);
+			end = System.currentTimeMillis();
+			System.out.println("ENCRYPT read " + (end - start));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		return targetArray;
 	}
 
 }

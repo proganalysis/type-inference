@@ -9,10 +9,7 @@ import java.util.Arrays;
 
 import javax.crypto.Cipher;
 
-import encryption.encryptedValue.DETValue;
-import encryption.encryptedValue.EncryptedValue;
-
-public class Deterministic implements Encryption {
+public class Deterministic extends Encryption {
 
 	private static final Key publicKey, privateKey;
 	private Cipher cipher;
@@ -39,32 +36,45 @@ public class Deterministic implements Encryption {
 	}
 
 	@Override
-	public EncryptedValue encrypt(Object ptext) {
-		if (ptext instanceof Integer) {
-			int ptInt = (int) ptext;
-			byte[] input = ByteBuffer.allocate(4).putInt(ptInt).array();
-			byte[] ctext = null;
-			try {
-				cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-				ctext = cipher.doFinal(input);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return new DETValue(ctext);
-		} else {
-			assert(ptext instanceof String);
-			String ptString = ptext.toString();
-			byte[][] ctext = new byte[ptString.length()][];
-			int i = 0;
-			for (char c : ptString.toCharArray()) {
-				ctext[i] = ((DETValue) encrypt((int) c)).getEnInt();
-				i++;
-			}
-			return new DETValue(ctext);
+	public byte[] encrypt(int ptext) {
+		byte[] input = ByteBuffer.allocate(4).putInt(ptext).array();
+		byte[] ctext = null;
+		try {
+			cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+			ctext = cipher.doFinal(input);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return ctext;
 	}
+	
+//	public EncryptedValue encrypt(Object ptext) {
+//		if (ptext instanceof Integer) {
+//			int ptInt = (int) ptext;
+//			byte[] input = ByteBuffer.allocate(4).putInt(ptInt).array();
+//			byte[] ctext = null;
+//			try {
+//				cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+//				ctext = cipher.doFinal(input);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//			return new DETValue(ctext);
+//		} else {
+//			assert(ptext instanceof String);
+//			String ptString = ptext.toString();
+//			byte[][] ctext = new byte[ptString.length()][];
+//			int i = 0;
+//			for (char c : ptString.toCharArray()) {
+//				ctext[i] = ((DETValue) encrypt((int) c)).getEnInt();
+//				i++;
+//			}
+//			return new DETValue(ctext);
+//		}
+//	}
 
-	private int decryptInt(byte[] ctext) {
+	@Override
+	public int decrypt(byte[] ctext) {
 		byte[] plainText = null;
 		try {
 			cipher.init(Cipher.DECRYPT_MODE, privateKey);
@@ -77,22 +87,21 @@ public class Deterministic implements Encryption {
 		return wrapped.getInt();
 	}
 
-	@Override
-	public Object decrypt(EncryptedValue ctext) {
-		DETValue ct = (DETValue) ctext;
-		byte[] ctInt = ct.getEnInt();
-		if (ctInt != null) { // int
-			return decryptInt(ctInt);
-		} else { // String
-			byte[][] ctString = ct.getEnString();
-			char[] ptext = new char[ctString.length];
-			int i = 0;
-			for (byte[] b : ctString) {
-				ptext[i] = (char) decryptInt(b);
-				i++;
-			}
-			return new String(ptext);
-		}
-	}
+//	public Object decrypt(EncryptedValue ctext) {
+//		DETValue ct = (DETValue) ctext;
+//		byte[] ctInt = ct.getEnInt();
+//		if (ctInt != null) { // int
+//			return decryptInt(ctInt);
+//		} else { // String
+//			byte[][] ctString = ct.getEnString();
+//			char[] ptext = new char[ctString.length];
+//			int i = 0;
+//			for (byte[] b : ctString) {
+//				ptext[i] = (char) decryptInt(b);
+//				i++;
+//			}
+//			return new String(ptext);
+//		}
+//	}
 
 }

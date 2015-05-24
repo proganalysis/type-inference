@@ -1,27 +1,47 @@
 package encryption;
 
-import encryption.encryptedValue.EncryptedValue;
-
 public class Conversion {
 	
 	public static Encryption rnd = new Random();
 	public static Encryption ope = new OrderPreserving();
 	public static Encryption ah = new Homomorphic();
 	public static Encryption det = new Deterministic();
-	
 
-	public static EncryptedValue encrypt(Object ptext, String to) {
+	public static byte[] encrypt(int ptext, String to) {
+		Encryption toType = createEncryption(to);
+		long startTime = System.currentTimeMillis();
+		byte[] e = toType.encrypt(ptext);
+		long endTime = System.currentTimeMillis();
+		System.out.println(to + " En " + (endTime - startTime));
+		return e;
+	}
+	
+	public static byte[][] encrypt(String ptext, String to) {
 		Encryption toType = createEncryption(to);
 		return toType.encrypt(ptext);
 	}
 
-	public static Object decrypt(EncryptedValue ctext, String from) {
+	public static int decrypt(byte[] ctext, String from) {
+		Encryption fromType = createEncryption(from);
+		long startTime = System.currentTimeMillis();
+		int e = fromType.decrypt(ctext);
+		long endTime = System.currentTimeMillis();
+		System.out.println(from + " DE " + (endTime - startTime));
+		return e;
+	}
+	
+	public static String decrypt(byte[][] ctext, String from) {
 		Encryption fromType = createEncryption(from);
 		return fromType.decrypt(ctext);
 	}
 
-	public static EncryptedValue convert(EncryptedValue ctext, String from, String to) {
-		Object ptext = decrypt(ctext, from);
+	public static byte[] convert(byte[] ctext, String from, String to) {
+		int ptext = decrypt(ctext, from);
+		return encrypt(ptext, to);
+	}
+
+	public static byte[][] convert(byte[][] ctext, String from, String to) {
+		String ptext = decrypt(ctext, from);
 		return encrypt(ptext, to);
 	}
 
