@@ -152,7 +152,7 @@ public abstract class AbstractConstraintSolver<Checker extends InferenceChecker>
         } finally {
             currentConstraint = null;
         }
-        if (hasUpdate && checker instanceof checkers.inference2.jcrypt2.Jcrypt2Checker) {
+        if (hasUpdate && checker instanceof checkers.inference2.jcrypt.JcryptChecker) {
 //		if (hasUpdate) {
 			System.out.println(c.toString());
 		}

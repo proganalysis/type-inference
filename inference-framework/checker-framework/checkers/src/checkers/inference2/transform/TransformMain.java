@@ -1,7 +1,7 @@
 /**
  * 
  */
-package checkers.inference2;
+package checkers.inference2.transform;
 
 import static com.esotericsoftware.minlog.Log.DEBUG;
 import static com.esotericsoftware.minlog.Log.info;
@@ -21,6 +21,19 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import checkers.inference2.Constraint;
+import checkers.inference2.ConstraintSolver;
+import checkers.inference2.InferenceChecker;
+import checkers.inference2.InferenceMain;
+import checkers.inference2.MaximalTypingExtractor;
+import checkers.inference2.SetbasedSolver;
+import checkers.inference2.TypingExtractor;
+import checkers.inference2.jcrypt.JcryptConstraintSolver;
+import checkers.inference2.jcrypt.JcryptChecker;
+import checkers.inference2.jcrypt.JcryptTypingExtractor;
+import checkers.inference2.jcrypt2.Jcrypt2Checker;
+import checkers.inference2.jcrypt2.Jcrypt2ConstraintSolver;
+import checkers.inference2.jcrypt2.Jcrypt2TypingExtractor;
 import checkers.util.CheckerMain;
 
 import com.sun.tools.javac.main.Main;
@@ -30,36 +43,36 @@ import com.sun.tools.javac.main.Main;
  * @author huangw5
  *
  */
-public class InferenceMain {
+public class TransformMain extends InferenceMain {
 
     private static final String VERSION = "1";
     
     public static final String outputDir = "infer-output";
     
-    private static InferenceMain inferenceMain = null;
+    private static TransformMain inferenceMain = null;
 
-    protected boolean needCheck = true;
+    public boolean needCheck = true;
     
-    protected InferenceChecker checker; 
+    public InferenceChecker checker; 
     
-    protected InferenceMain() {
+    public TransformMain() {
     	checker = null;
     }
     
-    public static InferenceMain getInstance() {
-        synchronized (InferenceMain.class) {
+    public static TransformMain getInstance() {
+        synchronized (TransformMain.class) {
             if (inferenceMain == null) {
                 String mainClass = System.getProperty("mainClass");
                 if (mainClass != null) {
                     try {
-                        inferenceMain = (InferenceMain) Class.forName(mainClass).newInstance();
+                        inferenceMain = (TransformMain) Class.forName(mainClass).newInstance();
                     } catch (Exception e) {
                         e.printStackTrace();
                         System.exit(1);
                     }
                 }
                 else {
-                    inferenceMain = new InferenceMain();
+                    inferenceMain = new TransformMain();
                 }
                 inferenceMain.needCheck = (System.getProperty("noCheck") == null);
             }
@@ -78,27 +91,14 @@ public class InferenceMain {
 	public void setInferenceChcker(InferenceChecker inferenceChcker) {
 		this.checker = inferenceChcker;
 	}
-
-	public boolean infer(String[] args, String jdkBootPaths, PrintWriter out) {
-		for (String path : jdkBootPaths.split(File.pathSeparator)) {
-			if (!path.equals("") && !new File(path).exists()) 
-				throw new RuntimeException("Cannot find the boot jar: " + path);
-		}
-		
-		System.setProperty("sun.boot.class.path",
-				jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
-		
-		List<String> argList = new ArrayList<String>(args.length + 10);
-        // Add arguments
-        argList.add("-Xbootclasspath/p:" + jdkBootPaths);
-        argList.add("-proc:only");
-	      argList.add("-Ainfer");
-        argList.add("-Awarns");
-        
-        for (String arg : args) 
-        	argList.add(arg);
-        
-        info("main", "Generating constraints...");
+	
+	private enum InferType {
+		REIM,
+		JCRYPT,
+		JCRYPT2
+	}
+	
+	private boolean inferImpl(List<String> argList, PrintWriter out, InferType itype) {
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(argList.toArray(new String[0])) != Main.Result.OK)
         	return false;
@@ -107,11 +107,10 @@ public class InferenceMain {
 			warn(checker.getName(), "No constraints generated.");
 			return false;
 		}
-		
-		// FIXME: output constraints
+		// output constraints
 		if (DEBUG) {
 			try {
-				PrintWriter pw = new PrintWriter(InferenceMain.outputDir
+				PrintWriter pw = new PrintWriter(TransformMain.outputDir
 						+ File.separator + checker.getName() + "-constraints.log");
                 for (Constraint c : checker.getConstraints()) {
                     pw.println(c.toString());
@@ -122,31 +121,37 @@ public class InferenceMain {
 				e.printStackTrace();
 			}
 		}
-		ConstraintSolver solver = new SetbasedSolver(checker);
+		ConstraintSolver solver;
+		if (itype == InferType.JCRYPT2) {
+			solver = new Jcrypt2ConstraintSolver((Jcrypt2Checker) checker);
+		} else if (itype == InferType.JCRYPT) {
+			solver = new JcryptConstraintSolver((JcryptChecker) checker);
+		} else {
+			solver = new SetbasedSolver(checker);
+		}
         Set<Constraint> setErrors = solver.solve();
 		if (!setErrors.isEmpty()) {
-			for (Constraint c : setErrors) 
+			for (Constraint c : setErrors) {
 				System.out.println(c);
+			}
 			info(checker.getName(), setErrors.size() + " error(s) in the set-based solution.");
-			//return false;
+			return false;
 		}
 		info(checker.getName(), "Extracting a concete typing...");
-		TypingExtractor extractor = new MaximalTypingExtractor(checker);
+		TypingExtractor extractor;
+		if (itype == InferType.JCRYPT2) {
+			extractor = new Jcrypt2TypingExtractor(checker);
+		} else if (itype == InferType.JCRYPT) {
+			extractor = new JcryptTypingExtractor(checker);
+		} else {
+			extractor = new MaximalTypingExtractor(checker);
+		}
 		List<Constraint> typeErrors = extractor.extract();
 		info(checker.getName(), "Finish extracting typing.");
 		try {
-			PrintWriter pw = new PrintWriter(InferenceMain.outputDir
+			PrintWriter pw = new PrintWriter(TransformMain.outputDir
 					+ File.separator + checker.getName() + "-result.csv");
 			checker.printResult(pw);
-			pw.close();
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			PrintWriter pw = new PrintWriter(InferenceMain.outputDir
-					+ File.separator + checker.getName() + "-result.jaif");
-			checker.printJaif(pw);
 			pw.close();
 			
 		} catch (Exception e) {
@@ -159,34 +164,101 @@ public class InferenceMain {
 			info(checker.getName(), typeErrors.size() + " error(s) in the concrete typing.");
 			return false;
 		}
-	
 		return true;
 	}
-	
-  public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
-      System.setProperty("sun.boot.class.path",
-          jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
-      List<String> argList = new ArrayList<String>(args.length + 10);
-      argList = new ArrayList<String>(args.length + 10);
-      for (String arg : args) 
-        argList.add(arg);
 
-      argList.add("-Xbootclasspath/p:" + jdkBootPaths);
-      argList.add("-Awarns");
-      argList.add("-proc:only");
-      com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
-      if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
-        return false;
-      }
-      return true;
-  }
+	public boolean infer(String[] args, String jdkBootPaths, PrintWriter out) {
+		for (String path : jdkBootPaths.split(File.pathSeparator)) {
+			if (!path.equals("") && !new File(path).exists()) 
+				throw new RuntimeException("Cannot find the boot jar: " + path);
+		}
+		
+		System.setProperty("sun.boot.class.path",
+				jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
+		
+		List<String> argList = new ArrayList<String>(args.length + 10);
+        String reimCheckerPath = "checkers.inference2.reim.ReimChecker";
+        String jcryptCheckerPath = "checkers.inference2.jcrypt.JcryptChecker";
+        String jcrypt2CheckerPath = "checkers.inference2.jcrypt2.Jcrypt2Checker";
+        String transformCheckerPath = "";
+        int processorIndex = -1;
+        for (int i = 0; i < args.length; i++) {
+        	String arg = args[i];
+        	// Intercept the processor and replace it with ReimChecker
+        	if (arg.equals("-processor")) {
+        		argList.add(arg);
+        		argList.add(reimCheckerPath);	
+				processorIndex = ++i;
+				transformCheckerPath = args[processorIndex];
+        	}
+        	else
+	        	argList.add(arg);
+        }
+
+		// Add arguments
+		argList.add("-Xbootclasspath/p:" + jdkBootPaths);
+		argList.add("-proc:only");
+		argList.add("-Ainfer");
+		argList.add("-Awarns");
+        
+        info("Reim", "Generating constraints...");
+        if (!inferImpl(argList, out, InferType.REIM)) {
+        	return false;
+        }
+        info("Jcrypt", "Generating constraints...");
+		// JcryptChecker
+		argList.set(processorIndex, jcryptCheckerPath);
+		inferImpl(argList, out, InferType.JCRYPT);
+		// Jcrypt2Checker
+		info("Jcrypt2", "Generating constraints...");
+		argList.set(processorIndex, jcrypt2CheckerPath);
+		inferImpl(argList, out, InferType.JCRYPT2);
+		// transform
+		info("Transforming...");
+		argList.set(processorIndex, transformCheckerPath);
+		return transform(argList, out);
+	}
+	
+	private boolean transform(List<String> args, PrintWriter out) {
+		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
+        if (main.compile(args.toArray(new String[0])) != Main.Result.OK)
+        	return false;
+        try {
+			PrintWriter pw = new PrintWriter(TransformMain.outputDir
+					+ File.separator + checker.getName() + "-result.java");
+			checker.printResult(pw);
+			pw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        return true;
+	}
+	
+	public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
+		System.setProperty("sun.boot.class.path",
+				jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
+		List<String> argList = new ArrayList<String>(args.length + 10);
+		argList = new ArrayList<String>(args.length + 10);
+		for (String arg : args)
+			argList.add(arg);
+
+		argList.add("-Xbootclasspath/p:" + jdkBootPaths);
+		argList.add("-Awarns");
+		argList.add("-proc:only");
+		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main(
+				"javac", out);
+		if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
+			return false;
+		}
+		return true;
+	}
 	
     
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String jdkBootPaths = findPathJar(InferenceMain.class);
+		String jdkBootPaths = findPathJar(TransformMain.class);
 		if (jdkBootPaths == "" || !jdkBootPaths.contains("jdk.jar")) {
 			String customJDK = System.getProperty("jdk");
 			if (customJDK != null)
@@ -210,7 +282,7 @@ public class InferenceMain {
 			}
 		}
 
-		InferenceMain inferenceMain = InferenceMain.getInstance();
+		TransformMain inferenceMain = TransformMain.getInstance();
 		long startTime = System.currentTimeMillis();
 		if (!inferenceMain.infer(args, jdkBootPaths, new PrintWriter(
 				System.err, true))) {
@@ -250,7 +322,7 @@ public class InferenceMain {
 	/** returns the path to annotated JDK */
     protected static String jdkJar() {
         // case 1: running from binary
-        String thisJar = findPathJar(InferenceMain.class);
+        String thisJar = findPathJar(TransformMain.class);
         File potential = new File(new File(thisJar).getParentFile(), "jdk.jar");
         if (potential.exists()) {
             return potential.getPath();

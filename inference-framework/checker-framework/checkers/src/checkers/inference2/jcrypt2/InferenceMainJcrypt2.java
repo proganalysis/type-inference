@@ -211,23 +211,24 @@ public class InferenceMainJcrypt2 extends InferenceMain {
 		return inferImpl(argList, out, InferType.JCRYPT2);
 	}
 	
-  public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
-      System.setProperty("sun.boot.class.path",
-          jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
-      List<String> argList = new ArrayList<String>(args.length + 10);
-      argList = new ArrayList<String>(args.length + 10);
-      for (String arg : args) 
-        argList.add(arg);
+	public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
+		System.setProperty("sun.boot.class.path",
+				jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
+		List<String> argList = new ArrayList<String>(args.length + 10);
+		argList = new ArrayList<String>(args.length + 10);
+		for (String arg : args)
+			argList.add(arg);
 
-      argList.add("-Xbootclasspath/p:" + jdkBootPaths);
-      argList.add("-Awarns");
-      argList.add("-proc:only");
-      com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
-      if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
-        return false;
-      }
-      return true;
-  }
+		argList.add("-Xbootclasspath/p:" + jdkBootPaths);
+		argList.add("-Awarns");
+		argList.add("-proc:only");
+		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main(
+				"javac", out);
+		if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
+			return false;
+		}
+		return true;
+	}
 	
     
 	/**

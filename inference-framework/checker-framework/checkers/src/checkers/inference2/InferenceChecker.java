@@ -115,6 +115,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected static Map<String, Reference> annotatedReferences = new HashMap<String, Reference>();
 
+	protected static Map<String, ExecutableReference> allocationReferences = new HashMap<>();
+	
 	private Set<Constraint> constraints = new LinkedHashSet<Constraint>();
 
 	protected AnnotatedTypeFactory currentFactory;
