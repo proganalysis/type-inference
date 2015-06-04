@@ -3,8 +3,8 @@
  */
 package checkers.inference2.transform;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -21,6 +21,7 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -56,8 +57,10 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 
 	protected final AnnotatedTypeFactory factory;
 	
+	private static TreeMaker maker;
+	
 	/** For recording visited method invocation trees or allocation sites */
-	protected Set<Tree> visited = new HashSet<Tree>();
+	protected static Map<String, Tree> encryptionMethods = new HashMap<>();
 
 	public TransformVisitor(InferenceChecker checker, CompilationUnitTree root) {
 		super(checker, root);
@@ -66,6 +69,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		this.factory = atypeFactory;
         this.annoTypes =
             new AnnotatedTypes(checker.getProcessingEnvironment(), atypeFactory);
+        Context context = new Context();
+		JavacFileManager.preRegister(context);
+		maker = TreeMaker.instance(context);
 	}
 	
     /**
@@ -97,18 +103,10 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     
     private JCArrayTypeTree getByteArrayTree(JCTree typeTree) {
     	((JCPrimitiveTypeTree) typeTree).typetag = TypeTags.BYTE;
-		TreeMaker make = getTreeMaker();
-		JCArrayTypeTree jcptt = make.TypeArray((JCExpression) typeTree);
+		JCArrayTypeTree jcptt = maker.TypeArray((JCExpression) typeTree);
 		return jcptt;
     }
 
-	private TreeMaker getTreeMaker() {
-		Context context = new Context();
-		JavacFileManager.preRegister(context);
-		TreeMaker make = TreeMaker.instance(context);
-		return make;
-	}
-    
     private void processVariableTree(JCTree jctree) {
     	JCTree eleTypeTree;
     	Tag tag = jctree.getTag();
@@ -162,13 +160,11 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	}
     
 	private JCMethodInvocation getEncryptMethod(JCLiteral jcl, String encryptType) {
-		TreeMaker make = getTreeMaker();
-		List<JCExpression> typeargs = null;
-		JCExpression fn = make.Select(selected, selector);
-		JCExpression encryptTypeTree = make.Literal(encryptType);
+		JCMethodInvocation fn = (JCMethodInvocation) encryptionMethods.get("enc");
+		JCExpression encryptTypeTree = maker.Literal(encryptType);
 		List<JCExpression> args = List.of(jcl, encryptTypeTree);
-		JCMethodInvocation jcmi = make.Apply(typeargs, fn, args);
-		return jcmi;
+		fn.args = args;
+		return fn;
 	}
 	
 	private String getSimpleEncryptName(Reference r) {
@@ -188,8 +184,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				processVariableTree(init);
 				// int x = 9 -> int x = Conversion.encrypt(x, "AH")
 				if (init.getTag() == Tag.LITERAL) {
-					
-					// JCMethodInvocation jcmi = getEncryptMethod();
+					 JCMethodInvocation jcmi
+					 = getEncryptMethod((JCLiteral) init, getSimpleEncryptName(varRef));
+					 jcvd.init = jcmi;
 				}
 			}
 			
@@ -316,26 +313,38 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 //		return super.visitMethod(node, p);
 //	}
 //    
-//    @Override
-//	public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-//    	// If this statement is enclosed in another expression, then it should
-//    	// have been visited and we skip it. 
-//    	// E.g. X x = y.m(z); this method invocation is visited in the assignment
-//    	// E.g. y.m(x.n(z));  the x.n(z) is visited as an argument   
-//    	// it could have been visited in generateConstraints
-//    	if (node.toString().equals("super()") 
-//    			|| node.toString().equals("Object()")) {
-//			return super.visitMethodInvocation(node, p);
-//    	}
-//		if (!visited.contains(node)) {
-//			Reference assignTo = null;
-//			// Assume the LHS is the node
-//			assignTo = checker.getAnnotatedReference(node);
-//			processMethodCall(node, assignTo); 
-//    	}
-//		return super.visitMethodInvocation(node, p);
-//	}
-//
+    @Override
+	public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+    	String methName = node.getMethodSelect().toString();
+    	switch (methName) {
+    	case "Computation.add":
+    		encryptionMethods.put("add", node);
+    		break;
+    	case "Computation.compareTo":
+    		encryptionMethods.put("com", node);
+    		break;
+    	case "Computation.equals":
+    		encryptionMethods.put("equ", node);
+    		break;
+    	case "Conversion.encrypt":
+    		encryptionMethods.put("enc", node);
+    		break;
+    	case "Conversion.decrypt":
+    		encryptionMethods.put("dec", node);
+    		break;
+    	case "Conversion.convert":
+    		encryptionMethods.put("con", node);
+    		break;
+    	default:
+    		processMethodInvocation(node);
+    	}
+    	return super.visitMethodInvocation(node, p);
+	}
+    
+    private void processMethodInvocation(MethodInvocationTree node) {
+    	//String 
+    }
+
 //    
 //	@Override
 //	public Void visitNewArray(NewArrayTree node, Void p) {
