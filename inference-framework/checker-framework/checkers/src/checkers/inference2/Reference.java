@@ -72,7 +72,9 @@ public class Reference {
 
     private TypeElement enclosingType;
     
-    private String fileName; 
+    private String fileName;
+    
+    private String lineId;
     
     private int lineNum;
     
@@ -107,6 +109,7 @@ public class Reference {
 			name = (element != null ? element.toString() : (tree != null ? tree
 					.toString() : identifier));
 		}
+		setLineId(fileName + lineNum);
 	}
 	
 	public Set<AnnotationMirror> getAnnotations(InferenceChecker checker) {
@@ -242,6 +245,14 @@ public class Reference {
 		return false;
 	}
 	
+	public String getLineId() {
+		return lineId;
+	}
+
+	public void setLineId(String lineId) {
+		this.lineId = lineId;
+	}
+
 	public static class ArrayReference extends Reference {
 		
 		Reference componentRef;

@@ -232,7 +232,7 @@ public class SFlowChecker extends InferenceChecker {
     @Override
 	protected void handleMethodOverride(ExecutableElement overrider, 
 			ExecutableElement overridden) {
-    	long lineNum = getLineNumber(overrider);
+    	String lineId = getFileName(overrider) + getLineNumber(overrider);
 		ExecutableReference overriderRef = (ExecutableReference) getAnnotatedReference(overrider);
 		ExecutableReference overriddenRef = (ExecutableReference) getAnnotatedReference(overridden);
 		
@@ -241,7 +241,7 @@ public class SFlowChecker extends InferenceChecker {
 			Reference overriderThisRef = overriderRef.getThisRef();
 			Reference overriddenThisRef = overriddenRef.getThisRef();
 			if (!isFromLibrary(overridden) || isAnnotated(overriddenThisRef)) {
-				addSubtypeConstraint(overriddenThisRef, overriderThisRef, lineNum);
+				addSubtypeConstraint(overriddenThisRef, overriderThisRef, lineId);
 			}
 		}
 		
@@ -250,7 +250,7 @@ public class SFlowChecker extends InferenceChecker {
 	    	Reference overriderReturnRef = overriderRef.getReturnRef();
 	    	Reference overriddenReturnRef = overriddenRef.getReturnRef();
 			if (!isFromLibrary(overridden) || isAnnotated(overriddenReturnRef)) {
-				addSubtypeConstraint(overriderReturnRef, overriddenReturnRef, lineNum);
+				addSubtypeConstraint(overriderReturnRef, overriddenReturnRef, lineId);
 			}
 		}
 		
@@ -260,7 +260,7 @@ public class SFlowChecker extends InferenceChecker {
 		for (; overriderIt.hasNext() && overriddenIt.hasNext(); ) {
                 Reference oerriddenParam = overriddenIt.next();
 			if (!isFromLibrary(overridden) || isAnnotated(oerriddenParam)) {
-				addSubtypeConstraint(oerriddenParam, overriderIt.next(), lineNum);
+				addSubtypeConstraint(oerriddenParam, overriderIt.next(), lineId);
 			}
 		}
 	}
@@ -455,11 +455,11 @@ public class SFlowChecker extends InferenceChecker {
 	}
 	
 	@Override
-	public void addSubtypeConstraint(Reference sub, Reference sup, long lineNum) {
-		super.addSubtypeConstraint(sub, sup, lineNum);
+	public void addSubtypeConstraint(Reference sub, Reference sup, String lineId) {
+		super.addSubtypeConstraint(sub, sup, lineId);
 		if (!containsReadonly(sub) && !containsReadonly(sup)) {
 			// add a subtying constraint with opposite direction
-			super.addSubtypeConstraint(sup, sub, lineNum);
+			super.addSubtypeConstraint(sup, sub, lineId);
 		}
 	}
 
@@ -522,7 +522,8 @@ public class SFlowChecker extends InferenceChecker {
 				if (needConnect) {
 					ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(methodElt);
 					Reference classRef = getAnnotatedReference(enclosingClass);
-					addEqualityConstraint(methodRef.getThisRef(), classRef, checker.getLineNumber(node));
+					addEqualityConstraint(methodRef.getThisRef(), classRef,
+							checker.getFileName(node) + checker.getLineNumber(node));
 				}
 			}
 			return super.visitMethod(node, p);

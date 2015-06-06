@@ -471,30 +471,30 @@ public class TransformChecker extends InferenceChecker {
 		out.print(this.root.toString());
 	}
 
-	@Override
-	public Reference getAnnotatedReference(String identifier, RefKind kind,
-			Tree tree, Element element, TypeElement enclosingType,
-			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
-		Reference ret = super.getAnnotatedReference(identifier, kind, tree,
-				element, enclosingType, type, annos);
-		if (!isAnnotated(ret)) {
-			// we have reim and jcrypt annotation, now we want to add encryption annotation
-			Set<AnnotationMirror> oldAnnos = ret.getRawAnnotations();
-			annotatedReferences.remove(identifier);
-			if (containsAnno(ret, CLEAR)) {
-				annos = AnnotationUtils.createAnnotationSet();
-				annos.add(CLEAR);
-			}
-			Reference newRef = super.getAnnotatedReference(identifier, kind,
-					tree, element, enclosingType, type, annos);
-			for (AnnotationMirror anno : oldAnnos) {
-				newRef.addAnnotation(anno);
-			}
-			annotatedReferences.put(identifier, newRef);
-			return newRef;
-		}
-		return ret;
-	}
+//	@Override
+//	public Reference getAnnotatedReference(String identifier, RefKind kind,
+//			Tree tree, Element element, TypeElement enclosingType,
+//			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
+//		Reference ret = super.getAnnotatedReference(identifier, kind, tree,
+//				element, enclosingType, type, annos);
+//		if (!isAnnotated(ret)) {
+//			// we have reim and jcrypt annotation, now we want to add encryption annotation
+//			Set<AnnotationMirror> oldAnnos = ret.getRawAnnotations();
+//			annotatedReferences.remove(identifier);
+//			if (containsAnno(ret, CLEAR)) {
+//				annos = AnnotationUtils.createAnnotationSet();
+//				annos.add(CLEAR);
+//			}
+//			Reference newRef = super.getAnnotatedReference(identifier, kind,
+//					tree, element, enclosingType, type, annos);
+//			for (AnnotationMirror anno : oldAnnos) {
+//				newRef.addAnnotation(anno);
+//			}
+//			annotatedReferences.put(identifier, newRef);
+//			return newRef;
+//		}
+//		return ret;
+//	}
 
 	@Override
 	public Set<AnnotationMirror> adaptFieldSet(

@@ -132,14 +132,14 @@ public class ReimChecker extends InferenceChecker {
 	
 	@Override
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs, long lineNum) {
+			Reference aRhs, String lineId) {
 		if (aBase != null) {
 			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
 			set.add(MUTABLE);
 			Reference mutableRef = getAnnotatedReference(set.toString(),
 					RefKind.CONSTANT, null, null, null, null, set);
-			addEqualityConstraint(aBase, mutableRef, lineNum);
-			super.handleInstanceFieldWrite(aBase, aField, aRhs, lineNum);
+			addEqualityConstraint(aBase, mutableRef, lineId);
+			super.handleInstanceFieldWrite(aBase, aField, aRhs, lineId);
 		}
 	}
 
@@ -350,8 +350,8 @@ public class ReimChecker extends InferenceChecker {
 	}
 	
 	@Override
-	protected void handleStaticFieldWrite(Reference aField, Reference aRhs,	long lineNum) {
-		super.handleStaticFieldWrite(aField, aRhs, lineNum);
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs,	String lineId) {
+		super.handleStaticFieldWrite(aField, aRhs, lineId);
 		ExecutableElement e = getCurrentMethodElt();
 		if (e != null) {
 			Reference methodRef = getAnnotatedReference(e);
@@ -359,7 +359,7 @@ public class ReimChecker extends InferenceChecker {
 			set.add(MUTABLE);
 			Reference mutableRef = getAnnotatedReference(set.toString(),
 					RefKind.CONSTANT, null, null, null, null, set);
-			addEqualityConstraint(methodRef, mutableRef, lineNum);
+			addEqualityConstraint(methodRef, mutableRef, lineId);
 		}
 	}
 	

@@ -20,7 +20,7 @@ public abstract class Constraint {
 	
 	protected int id; 
 	
-	protected long lineNum;
+	protected String lineId;
 	
     /**
      * kind = 0: subkind 
@@ -31,14 +31,14 @@ public abstract class Constraint {
 	
 	private static int counter = 0;
 	
-	public long getLineNum() {
-		return lineNum;
+	public String getLineId() {
+		return lineId;
 	}
 	
-	public Constraint(long lineNum) {
+	public Constraint(String lineId) {
 		id = counter++;
 		causes = new ArrayList<Constraint>();
-		this.lineNum = lineNum;
+		this.lineId = lineId;
 	}
 	
 	public Constraint() {
@@ -86,7 +86,7 @@ public abstract class Constraint {
     }
     
     public String toString(String type, String sep) {
-        return type + "-" + id + "[" + lineNum + "]: " + left.toString() + "  " 
+        return type + "-" + id + "[" + lineId + "]: " + left.toString() + "  " 
             + sep + "  " + right.toString() 
             + (causes.size() == 0 ? "" : " caused by " + causeIds());
     }   
@@ -116,8 +116,8 @@ public abstract class Constraint {
             this.kind = 0;
 		}
 		
-		public SubtypeConstraint(Reference sub, Reference sup, long lineNum) {
-            super(lineNum);
+		public SubtypeConstraint(Reference sub, Reference sup, String lineId) {
+            super(lineId);
             this.left = sub;
             this.right = sup;
             this.kind = 0;
@@ -152,8 +152,8 @@ public abstract class Constraint {
             this.kind = 1;
 		}
 		
-		public EqualityConstraint(Reference left, Reference right, long lineNum) {
-			super(lineNum);
+		public EqualityConstraint(Reference left, Reference right, String lineId) {
+			super(lineId);
 			this.left = left;
 			this.right = right;
             this.kind = 1;
@@ -188,8 +188,8 @@ public abstract class Constraint {
             this.kind = 2;
 		}
 		
-		public UnequalityConstraint(Reference left, Reference right, long lineNum) {
-			super(lineNum);
+		public UnequalityConstraint(Reference left, Reference right, String lineId) {
+			super(lineId);
 			this.left = left;
 			this.right = right;
             this.kind = 2;

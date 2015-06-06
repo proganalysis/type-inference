@@ -25,8 +25,8 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 	        Reference ref = checker.getAnnotatedReference(node);
 	        Reference varRef = checker.getAnnotatedReference(var);
 	        Reference exprRef = checker.getAnnotatedReference(expr);
-	        checker.addSubtypeConstraint(varRef, ref, ref.getLineNum());
-	        checker.addSubtypeConstraint(exprRef, ref, ref.getLineNum());
+	        checker.addSubtypeConstraint(varRef, ref, ref.getLineId());
+	        checker.addSubtypeConstraint(exprRef, ref, ref.getLineId());
 		}
 		return super.visitCompoundAssignment(node, p);
 	}
@@ -46,10 +46,10 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		ExpressionTree right = bTree.getRightOperand();
 		Reference leftRef = checker.getAnnotatedReference(left);
 		Reference rightRef = checker.getAnnotatedReference(right);
-		checker.addSubtypeConstraint(leftRef, ref, ref.getLineNum());
-		checker.addSubtypeConstraint(rightRef, ref, ref.getLineNum());
+		checker.addSubtypeConstraint(leftRef, ref, ref.getLineId());
+		checker.addSubtypeConstraint(rightRef, ref, ref.getLineId());
 		if (lhsRef != null) {
-			checker.addSubtypeConstraint(ref, lhsRef, ref.getLineNum());
+			checker.addSubtypeConstraint(ref, lhsRef, ref.getLineId());
 		}
 		generateConstraint(leftRef, left);
 		generateConstraint(rightRef, right);
@@ -68,9 +68,10 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		Reference treeRef = checker.getAnnotatedReference(uTree);
 		ExpressionTree exprTree = uTree.getExpression();
 		Reference ref = checker.getAnnotatedReference(exprTree);
-		checker.addSubtypeConstraint(ref, treeRef, checker.getLineNumber(uTree));
+		checker.addSubtypeConstraint(ref, treeRef,
+				checker.getFileName(uTree) + checker.getLineNumber(uTree));
 		if (lhsRef != null) {
-			checker.addSubtypeConstraint(treeRef, lhsRef, treeRef.getLineNum());
+			checker.addSubtypeConstraint(treeRef, lhsRef, treeRef.getLineId());
 		}
 		generateConstraint(ref, exprTree);
     }

@@ -469,11 +469,11 @@ public class JcryptChecker extends InferenceChecker {
 	}
 
 	@Override
-	public void addSubtypeConstraint(Reference sub, Reference sup, long lineNum) {
-		super.addSubtypeConstraint(sub, sup, lineNum);
+	public void addSubtypeConstraint(Reference sub, Reference sup, String lineId) {
+		super.addSubtypeConstraint(sub, sup, lineId);
 		if (!containsReadonly(sub) && !containsReadonly(sup)) {
 			// add a subtying constraint with opposite direction
-			super.addSubtypeConstraint(sup, sub, lineNum);
+			super.addSubtypeConstraint(sup, sub, lineId);
 		}
 	}
 
