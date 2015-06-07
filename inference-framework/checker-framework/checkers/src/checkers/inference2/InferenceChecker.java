@@ -107,7 +107,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected Enter enter;
 
-	private SourcePositions positions;
+	protected SourcePositions positions;
 
 	private Comparator<AnnotationMirror> comparator;
 
@@ -118,6 +118,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	protected static Map<String, List<Conversion>> convertedReferences = new HashMap<>();
 	
 	protected static Map<String, ExecutableReference> allocationReferences = new HashMap<>();
+	
+	protected static Set<String> needCopyMethods = new HashSet<>();
 	
 	private Set<Constraint> constraints = new LinkedHashSet<Constraint>();
 
@@ -142,6 +144,14 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	public Map<String, List<Conversion>> getConvertedReferences() {
 		return convertedReferences;
+	}
+
+	public Set<String> getNeedCopyMethods() {
+		return needCopyMethods;
+	}
+
+	public SourcePositions getPositions() {
+		return positions;
 	}
 
 	@Override

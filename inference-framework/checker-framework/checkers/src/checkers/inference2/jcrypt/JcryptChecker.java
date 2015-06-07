@@ -23,6 +23,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+
 import checkers.inference.reim.quals.Mutable;
 import checkers.inference.reim.quals.Polyread;
 import checkers.inference.reim.quals.Readonly;
@@ -526,6 +527,13 @@ public class JcryptChecker extends InferenceChecker {
 
 		for (Reference r : references) {
 			Element elt = r.getElement();
+			if (!r.getFileName().startsWith("LIB-")
+					&& (r.getKind() == RefKind.THIS || r.getKind() == RefKind.PARAMETER)) {
+				if (r.getAnnotations(this).contains(POLY)
+						|| r.getAnnotations(this).contains(SENSITIVE)) {
+					needCopyMethods.add(r.getLineId());
+				}
+			}
 			if ((elt == null && r.getKind() != RefKind.ALLOCATION)
 					|| r.getIdentifier().startsWith(LIB_PREFIX)
 					|| (elt instanceof ExecutableElement)

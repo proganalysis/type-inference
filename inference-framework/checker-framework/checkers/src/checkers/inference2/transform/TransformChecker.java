@@ -5,8 +5,6 @@ package checkers.inference2.transform;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -17,13 +15,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-
 import checkers.inference2.jcrypt2.quals.RND;
 import checkers.inference2.jcrypt2.quals.OPE;
 import checkers.inference2.jcrypt2.quals.AH;
 import checkers.inference2.jcrypt2.quals.DET;
-import checkers.inference2.jcrypt.JcryptInferenceVisitor;
 import checkers.inference2.jcrypt.quals.Clear;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
@@ -35,7 +30,6 @@ import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.Reference.RefKind;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceVisitor;
-import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
@@ -468,7 +462,7 @@ public class TransformChecker extends InferenceChecker {
 
 	@Override
 	public void printResult(PrintWriter out) {
-		out.print(this.root.toString());
+		out.print(this.root.toString().replace("@Sensitive()", ""));
 	}
 
 //	@Override
