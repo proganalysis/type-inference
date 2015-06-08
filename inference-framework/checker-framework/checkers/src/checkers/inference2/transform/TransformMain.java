@@ -51,7 +51,7 @@ public class TransformMain extends InferenceMain {
     
     private static TransformMain inferenceMain = null;
 
-    public boolean needCheck = true;
+    public boolean needCheck = false;
     
     public InferenceChecker checker; 
     

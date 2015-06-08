@@ -40,7 +40,9 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
@@ -119,8 +121,14 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     
     private JCArrayTypeTree getByteArrayTree(JCTree typeTree) {
     	((JCPrimitiveTypeTree) typeTree).typetag = TypeTags.BYTE;
-		JCArrayTypeTree jcptt = maker.TypeArray((JCExpression) typeTree);
-		return jcptt;
+		JCArrayTypeTree jcatt = maker.TypeArray((JCExpression) typeTree);
+		return jcatt;
+    }
+    
+    private JCArrayTypeTree get2DByteArrayTree() {
+    	JCPrimitiveTypeTree jcptt = maker.TypeIdent(TypeTags.BYTE);
+		JCArrayTypeTree jcatt = maker.TypeArray(maker.TypeArray(jcptt));
+		return jcatt;
     }
 
     private void processVariableTree(JCTree jctree) {
@@ -174,6 +182,11 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				default:
 					break;
 				}
+			}
+		} else if (eleTypeTree.getTag() == Tag.IDENT) {
+			JCIdent jci = (JCIdent) eleTypeTree;
+			if (jci.getName().toString().equals("String")) {
+				((JCVariableDecl) jctree).vartype = get2DByteArrayTree();
 			}
 		} else {
 			processVariableTree(eleTypeTree);
@@ -300,7 +313,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	if (checker.getNeedCopyMethods().contains(id)) {
 			TreeCopier<Void> treeCopier = new TreeCopier<Void>(maker);
 			JCTree method = treeCopier.copy(jcmd);
-			Tree parent = checker.currentPath.getParentPath().getLeaf();
+			Tree parent = getCurrentPath().getParentPath().getLeaf();
 			JCClassDecl jccd = (JCClassDecl) parent;
 			jccd.defs = jccd.defs.append(method);
 		}
@@ -384,6 +397,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	private void processBinaryTree(BinaryTree node) {
 		ExpressionTree rightOperand = node.getRightOperand();
 		ExpressionTree leftOperand = node.getLeftOperand();
+		// skip a == null
+		if (shouldSkip(leftOperand, rightOperand)) return;
 		Reference leftRef = checker.getAnnotatedReference(leftOperand);
 		Reference rightRef = checker.getAnnotatedReference(rightOperand);
 		String nodeId = checker.getFileName(node) + checker.getLineNumber(node);
@@ -415,7 +430,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			// leftOperand + rightOperand -> Computation.add(leftOperand, rightOperand)
 			if (!leftRef.getRawAnnotations().contains(checker.CLEAR)) {
 				JCBinary jcb = (JCBinary) node;
-				Tree parent = checker.currentPath.getParentPath().getLeaf();
+				Tree parent = getCurrentPath().getParentPath().getLeaf();
 				if (parent instanceof JCParens) {
 					JCParens jcp = (JCParens) parent;
 					jcp.expr = getComputeMethod(node.getLeftOperand(), node.getRightOperand(),
@@ -441,6 +456,21 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		}
 	}
 	
+	// skip (a == null)
+	private boolean shouldSkip(ExpressionTree leftOperand, ExpressionTree rightOperand) {
+		if (leftOperand instanceof JCLiteral) {
+			if (((JCLiteral) leftOperand).getValue() == null) {
+				return true;
+			}
+		}
+		if (rightOperand instanceof JCLiteral) {
+			if (((JCLiteral) rightOperand).getValue() == null) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public Void visitReturn(ReturnTree node, Void p) {
 		ExpressionTree expr = node.getExpression();
@@ -461,7 +491,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	
 	@Override
 	public Void visitClass(ClassTree node, Void p) {
-		Tree parent = checker.currentPath.getParentPath().getLeaf();
+		Tree parent = getCurrentPath().getParentPath().getLeaf();
 		JCCompilationUnit jccd = (JCCompilationUnit) parent;
 		if (node.getSimpleName().toString().equals("EncryptionSample")) {
 			for (JCImport imp : jccd.getImports()) {

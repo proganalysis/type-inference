@@ -38,7 +38,7 @@ public class InferenceMain {
     
     private static InferenceMain inferenceMain = null;
 
-    protected boolean needCheck = true;
+    protected boolean needCheck = false;
     
     protected InferenceChecker checker; 
     
