@@ -24,18 +24,26 @@ class Node {
 	return (int) id;
     }
     void printNode() {
+	/*
 	System.out.println("[Node Id: "+id+"], [Java Type & Name: "+javaType+" "+name+"], [EnclClass: "+enclClass+"], [EnclMethod: "+enclMethod+
                             "], [SflowType: "+sflowType+"], [Kind: "+kind+"]");
+	*/
+	if(enclMethod.indexOf(' ')>=0 && enclMethod.indexOf('(')>0){
+		System.out.print(enclMethod.substring(enclMethod.lastIndexOf(' ')+1, enclMethod.indexOf('(')) +"	");
+	}
+	else{
+		System.out.print(enclMethod);
+	}
     }
 
     boolean isType(String type) {
 	if (sflowType.indexOf(type) > -1) return true;
 	return false;
     }
-
+    // TODO: An ugly hack. Needs a fix.
     boolean isSink() {
 	if (!kind.equals("lib")) return false;
-	if (isType("@Poly") || isType("@Tainted")) return false;
+	if (isType("@Poly,") || sflowType.endsWith("@Poly") || isType("@Tainted")) return false;
 	return true;
     }
     boolean isParameter() {
@@ -109,13 +117,18 @@ class Side {
 
 public class Graph {
 
-    Hashtable<Long,Node> nodes = new Hashtable<Long,Node>(); // Node id -> Node
-    Hashtable<Long,Edge> edges = new Hashtable<Long,Edge>(); // Edge id -> Edge
-    Hashtable<Long,HashSet<Edge>> adjLists = new Hashtable<Long,HashSet<Edge>>(); 
+    private Hashtable<Long,Node> nodes = new Hashtable<Long,Node>(); // Node id -> Node
+    private Hashtable<Long,Edge> edges = new Hashtable<Long,Edge>(); // Edge id -> Edge
+    private Hashtable<Long,HashSet<Edge>> adjLists = new Hashtable<Long,HashSet<Edge>>(); 
     // Source node id -> HashSet of Edges with source node id
 
 
-    HashSet<String> reachableMethods = new HashSet<String>(); // the reachable methods
+    private HashSet<String> reachableMethods = new HashSet<String>(); // the reachable methods
+    private boolean callGraph = true; // call graph found?
+
+    void setCallGraph(boolean callGraph) {
+	this.callGraph = callGraph;
+    }
 
     void registerReachableMethod(String method) {
 	reachableMethods.add(method);
@@ -321,15 +334,16 @@ public class Graph {
 	LinkedList<ExtendedVertex> queue = new LinkedList<ExtendedVertex>();
 	ExtendedVertex s = new ExtendedVertex(source.id,new ArrayList<Long>(),false,new ArrayList<Long>(),false);
 	s.depth = 0;
-	s.printVertex(0);
+	//s.printVertex(0);
 	s.parent = null;
 	set.add(s); queue.add(s);
 	HashSet<Node> alreadyIn = new HashSet<Node>();
+	Integer pathcount=0;
 
 	while (queue.size() > 0) {
 	    ExtendedVertex v = queue.remove();
 	    // System.out.print("\nProcessing dequed node at detph: "+v.depth+" "); nodes.get(new Long(v.id)).printNode();
-	    // v.printVertex(0);
+	    //v.printVertex(0);
 	    HashSet<Edge> edges = adjLists.get(new Long(v.id));
 	    if (edges == null) continue;
 
@@ -337,41 +351,51 @@ public class Graph {
 
 	    //Checks if v is in a reachable method
 	    Node tmp = nodes.get(new Long(v.id));	    
-	    if (tmp.kind.equals("local") && !reachableMethods.contains(tmp.enclClass+":"+tmp.enclMethod)) {
+	    if (callGraph && tmp.kind.equals("local") && !reachableMethods.contains(tmp.enclClass+":"+tmp.enclMethod)) {
+		/*
 		System.out.println(tmp.enclClass+":"+tmp.enclMethod+" is not reachable!");
 		tmp.printNode();
+		*/
 		continue;
 	    }
 
 
 	    for (Iterator<Edge> it = edges.iterator(); it.hasNext();) {
 		Edge edge = it.next(); // current edge to examine.
-		// System.out.print("Target of edge: "); nodes.get(new Long(edge.target)).printNode();
-		
+		// System.out.print("\n Target of edge: "); nodes.get(new Long(edge.target)).printNode();
+
+		// ANA: A local edge that returns an android.* result leads almost always to an FP:
+		if (edge.info.contains("local android.") && !edge.info.contains("local android.net.Uri")) continue;
+
 		if (getNode(edge.target).isSink()) {
 		    if (!alreadyIn.contains(getNode(edge.target))) {
 			alreadyIn.add(getNode(edge.target));
-			System.out.print("\n\nFound a good path to sink at depth "+(v.depth+1)+" ");
-			pathid++;
+			pathcount++;
+			System.out.print("\n\nFound a good path to sink at depth "+(v.depth+1)+" \n");
 			getNode(edge.target).printNode();
 			retrievePath(v);
 			
-			try {
+			/*try {
 			    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			    String command;
 			    System.out.println("\nPress Enter to search for more paths, or type \"no\" to exit"); command = in.readLine();
 			    if (command.equals("no")) {
-				queue = new LinkedList<ExtendedVertex>(); // empties the queue so outer loop exits			       
+				queue = new LinkedList<ExtendedVertex>(); // empties the queue so outer loop exits
+				break;
 			    }
 			}
 			catch (IOException e) { }
+			*/
 
 
 		    }
                     continue;
 		}
-		else if (getNode(edge.target).kind.equals("lib")) continue;
-
+		else if (getNode(edge.target).kind.equals("lib") ||
+                         getNode(edge.target).javaType.equals("android.content.Context") ||
+			 getNode(edge.target).javaType.equals("android.app.Activity") ||
+			 getNode(edge.target).javaType.equals("android.app.Application")) continue;
+			  
 		ExtendedVertex t = v.newExtendedVertex(edge);
 		if (t == null) { /* System.out.print("t is null for edge "); edge.printEdge(); */  continue; }
 
@@ -387,7 +411,7 @@ public class Graph {
 
 	    }
 	}
-	System.out.println("\n BFS is DONE!");
+	System.out.println("\n number of paths found:"+ pathcount+"\n" );
     }
 
     void retrievePath(ExtendedVertex v) {
@@ -399,7 +423,7 @@ public class Graph {
 	    getNode(current.id).printNode();
 	    for(int i=0; i<currentDepth; i++) System.out.print(" ");
 	    //list.add(current);
-	    current.printVertex(currentDepth);
+	    //current.printVertex(currentDepth);
 	    current = current.parent;
 	    //currentDepth += 2;
         }
@@ -421,10 +445,10 @@ public class Graph {
 	String s;
 
     s = arg[1];
-    try {
+	try {		
 		g.bfs(g.nodes.get(new Long(Long.parseLong(s))));
 	}
-	catch (NumberFormatException e) { }
+	    catch (NumberFormatException e) { }
 	
 
 	// System.out.println("# edges: "+g.edges.size());
