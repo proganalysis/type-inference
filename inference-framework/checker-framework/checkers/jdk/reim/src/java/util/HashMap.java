@@ -14,7 +14,7 @@ public class HashMap<K,V>
     public HashMap(int initialCapacity) { throw new RuntimeException("skeleton method"); }
     public HashMap() { throw new RuntimeException("skeleton method"); }
     public HashMap(@Polyread HashMap<K,V> this, @Polyread Map<? extends K, ? extends V> m)  { throw new RuntimeException("skeleton method"); }
-    public int size() { throw new RuntimeException("skeleton method"); }
+    public int size(@Polyread HashMap<K,V> this) { throw new RuntimeException("skeleton method"); }
     public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
     public V get(@Polyread HashMap<K,V> this, @Readonly Object key)  { throw new RuntimeException("skeleton method"); } //WEI
     public boolean containsKey(@Readonly HashMap<K,V> this, @Readonly Object key)  { throw new RuntimeException("skeleton method"); }

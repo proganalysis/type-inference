@@ -35,7 +35,7 @@ public class Collections {
     public static <T> @Polyread Set<T> synchronizedSet(@Polyread Set<T> s) { throw new RuntimeException("skeleton method"); }
     public static <T> @Polyread SortedSet<T> synchronizedSortedSet(@Polyread SortedSet<T> s) { throw new RuntimeException("skeleton method"); }
     public static <T> @Polyread List<T> synchronizedList(@Polyread List<T> list) { throw new RuntimeException("skeleton method"); }
-    public static <K,V> @Polyread Map<K,V> synchronizedMap(@Polyread Map<K,V> m) { throw new RuntimeException("skeleton method"); }
+    public static <K,V> Map<K,V> synchronizedMap(@Polyread Map<K,V> m) { throw new RuntimeException("skeleton method"); }
     public static <K,V> @Polyread SortedMap<K,V> synchronizedSortedMap(@Polyread SortedMap<K,V> m) { throw new RuntimeException("skeleton method"); }
     public static <E> @Polyread Collection<E> checkedCollection(@Polyread Collection<E> c, Class<E> type) { throw new RuntimeException("skeleton method"); }
     public static <E> @Polyread Set<E> checkedSet(@Polyread Set<E> s, Class<E> type) { throw new RuntimeException("skeleton method"); }
