@@ -20,7 +20,11 @@ public class Parser {
 
     void loadGraph(String file) {
 
-	String fileName = "/projects/proganalysis/TaintAnalysis/soot-inference/android-tests/GooglePlay/checked/"+file+"/sflow-constraints.log";
+	String fileName = file+"/sflow-constraints.log";
+
+	//String fileName = "logs-preferSource/DroidBench-preferSource/"+file+"/sflow-constraints.log";
+
+	//String fileName = "logs-preferSource/"+file+"/sflow-constraints.log";
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -112,7 +116,9 @@ public class Parser {
 
     void loadReachableMethods(String file) {
 
-	String fileName = "/projects/proganalysis/TaintAnalysis/soot-inference/android-tests/GooglePlay/checked/"+file+"/"+file+".apk.cg.txt";
+	String fileName = file+"/call_graphs.txt";
+
+	// String fileName = "logs-preferSource/"+file+"/"+file+".apk.cg.txt";
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -124,8 +130,8 @@ public class Parser {
                                                                                                                              
                 // System.out.println(); 
                                                                                                                                 
- 		String enclClass = line.substring(1,line.indexOf(';')).replace('/','.');
-		int pos = line.indexOf(';')+2;
+ 		String enclClass = line.substring(1,line.indexOf(' ')).replace('/','.');
+		int pos = line.indexOf(' ')+1;
 		// System.out.println("Enclosing class: "+enclClass);
 		// System.out.println("pos is: "+pos+" and end is "+line.indexOf('('));
 		// System.out.println();
@@ -146,7 +152,10 @@ public class Parser {
                 g.registerReachableMethod(enclClass+": "+ret+" "+methodName+"("+parameters+")");   
             }
 
-        } catch (IOException e) { System.out.println("Can't read file "+fileName); }
+        } catch (IOException e) { 
+	    System.out.println("Can't read file "+fileName);
+	    g.setCallGraph(false);
+	}
 
 
     }
