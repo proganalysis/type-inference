@@ -1,15 +1,71 @@
-#!/bin/bash
+#!/bin/bash 
 
 mydir="`dirname $0`"
-mylib=`find $mydir/../lib/ -name *.jar | xargs |sed 's/ /:/g'`
-#rtjar=/projects/proganalysis/Software/jdk1.6.0_27/jre/lib/rt.jar
-jdk=$mydir/../jdk/android/jdk-android.jar
+mylib=`find $mydir/../lib -name '*.jar' | xargs |sed 's/ /:/g'`
+jdk=$mydir/jdk-android.jar
+#rt="/projects/proganalysis/Software/jdk1.6.0_27/jre/lib/rt.jar"  
+apktool=/projects/proganalysis/Software/apktool1.5.2//apktool
+aapttool=/projects/proganalysis/Software/android-sdk-linux/build-tools/19.0.0//aapt
 
 mainClass="edu.rpi.SootInference"
-opts="-DpolyLibrary "
+javaOpts=" -DpolyLibrary -DinferAndroidApp "
+android_jar=$jdk
+#androidOpts=" -force-android-jar $android_jar -ire -src-prec apk "
+cpOpts="$mylib:$jdk:$rt:"
+toolOpts=""
+excludeOpts=""
+includeOpts=""
+sourcepath=""
+apkfile=""
+outFormat="n"
+while [[ $# > 0 ]]
+do
+  key=$1
+  shift
+  case $key in
+    -D* ) javaOpts=$javaOpts"`echo $key`"" "
+    ;;
+    -sourcepath ) sourcepath=$sourcepath"`echo $1`"
+    shift
+    ;;
+    -cp ) cpOpts=$cpOpts:"`echo $1`"" "
+    shift
+    ;;
+    -f ) outFormat="`echo $1`"
+    shift
+    ;;
+    -exclude) excludeOpts=$excludeOpts"`echo $key $1`"" "
+    shift
+    ;;
+    -include) includeOpts=$includeOpts"`echo $key $1`"" "
+    shift
+    ;;
+    * ) toolOpts=$toolOpts"`echo $key`"" "
+    len=${#key}
+    index=`expr $len - 4`
+    if [ ${key:$index:4} = ".apk" ]; then
+      apkfile=`echo $key`
+    fi
+  esac
+done
 
-echo "java -Xss50m -Xmx1500m $opts -classpath $mylib $mainClass \
-  -process-dir$1  --soot-classpath $jdk:$mylib"
-java -Xss50m -Xmx1500m $opts -classpath $mylib $mainClass  \
-  -process-dir $1 --soot-classpath $jdk:$mylib
+toolOpts=$toolOpts" -f "$outFormat" "
+javaOpts=$javaOpts" -DappPackage=$appPackage "
 
+# -Xmx2200m                                                            
+echo "java -Xss50m -Xmx2200m $javaOpts -classpath $cpOpts $mainClass $androidOpts $excludeOpts $includeOpts -process-dir $toolOpts --soot-classpath $cpOpts "
+
+echo
+echo "-------Main packages are $appPackage-------"
+echo
+echo "-------Permissions--------"
+echo "apk: $apkfile"
+$aapttool dump permissions $apkfile
+echo
+
+
+if [ "$sourcepath" = "" ]; then
+  time java -Xss50m -Xmx2200m $javaOpts -classpath $cpOpts $mainClass $androidOpts $excludeOpts $includeOpts -process-dir $toolOpts --soot-classpath $cpOpts
+else
+  jdb -sourcepath $sourcepath -Xss50m -Xmx2200m $javaOpts -classpath $cpOpts $mainClass $androidOpts $excludeOpts $includeOpts -process-dir $toolOpts --soot-classpath $cpOpts
+fi
