@@ -45,9 +45,11 @@ public class SecretKeeper {
 	public void getInfo() throws IOException {
 		System.out.println("Please enter your username and password.");
 		System.out.print("Username-> ");
-		username = br.readLine();
+		String s = br.readLine();
+		username = s;
 		System.out.print("Password-> ");
-		password = br.readLine();
+		s = br.readLine();
+		password = s;
 	}
 
 	public void signin() throws IOException {
@@ -95,7 +97,8 @@ public class SecretKeeper {
 				userNum = userNum + 1;
 				System.out.println("Welcome, " + username + "!");
 				System.out.print("Tell us a secret-> ");
-				/*@Sensitive*/ String secret = br.readLine();
+				String s = br.readLine();
+				/*@Sensitive*/ String secret = s;
 				user.setSecret(secret);
 				showPage(user);
 			} else {
@@ -106,14 +109,15 @@ public class SecretKeeper {
 	}
 
 	public void showPage(SKUser user) throws IOException {
-		System.out.println("Hello, " + user.getName() + "! "
-				+ "Here is your secret-> " + user.getSecret());
+		System.out.println("Hello, " + user.getName() + "! Here is your secret-> " + user.getSecret());
 		while (true) {
 			System.out.print("Enter (y) to update secret or (n) to sign out: ");
 			String s = br.readLine();
 			if (s.equals("y")) {
 				System.out.print("Update secret-> ");
-				user.setSecret(br.readLine());
+				String ss = br.readLine();
+				/*@Sensitive*/ String secret = ss;
+				user.setSecret(secret);
 				showPage(user);
 				break;
 			} else if (s.equals("n")) {

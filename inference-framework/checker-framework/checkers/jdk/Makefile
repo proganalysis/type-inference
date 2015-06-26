@@ -7,8 +7,8 @@ RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
 # CHECKER_DIRS = sflow igj javari
 # CHECKER_DIRS = javari
-# CHECKER_DIRS = reim 
-CHECKER_DIRS = reimN
+CHECKER_DIRS = reim 
+# CHECKER_DIRS = reimN
 
 JAVAEE_JAR ?= $(CHECKER_DIRS)/javaee-api-6.0.jar
 STRUTS_JAR ?= $(CHECKER_DIRS)/struts-1.1.jar
@@ -39,7 +39,7 @@ ANNOTATED_CLASSES = \
 	$(patsubst sflow/build/%.class,annotated/%.class, \
 	  $(patsubst igj/build/%.class,annotated/%.class, \
 	    $(patsubst javari/build/%.class,annotated/%.class, \
-			$(patsubst reimN/build/%.class,annotated/%.class, \
+			$(patsubst reim/build/%.class,annotated/%.class, \
 		  $(ANNOTATED_CLASSES_BY_DIR)))))
 
 # Javarifier seems to only check the first .jar it gets on the

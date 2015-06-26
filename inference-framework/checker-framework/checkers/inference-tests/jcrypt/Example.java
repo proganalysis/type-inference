@@ -26,10 +26,11 @@ class Example {
 	}
 
 	public void foo() {
-		/*@Poly*/ int /*@Sensitive*/ [] list1 = new int[2];
+		int /*@Sensitive*/ [] list1 = new int[2];
 		int[] list2 = new int[2];
-		list1[0] = 9;
-		list1[1] = 3;
+		/*@Sensitive*/ int x = 9;
+		list1[0] = x;
+		list1[1] = x;
 		list2[0] = 1;
 		list2[1] = 7;
 		int min1 = min_list(list1);

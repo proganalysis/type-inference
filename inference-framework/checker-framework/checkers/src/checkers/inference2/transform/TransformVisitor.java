@@ -20,6 +20,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypes;
 import checkers.util.TreeUtils;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -35,6 +36,7 @@ import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -75,6 +77,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	private static Map<String, JCMethodInvocation> encryptionMethods = new HashMap<>();
 	
 	private Map<String, List<Conversion>> convertedReferences;
+	
+	private static boolean hasImported = false;
 	
 	private static com.sun.tools.javac.util.List<JCTree> imports
 		= com.sun.tools.javac.util.List.nil();
@@ -164,37 +168,46 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			JCPrimitiveTypeTree jcptt = (JCPrimitiveTypeTree) eleTypeTree;
 			if (jcptt.getPrimitiveTypeKind() == TypeKind.INT) {
 				JCArrayTypeTree jcatt = getByteArrayTree(eleTypeTree);
-				switch (tag) {
-				case VARDEF:
-					((JCVariableDecl) jctree).vartype = jcatt;
-					break;
-				case TYPEARRAY:
-					((JCArrayTypeTree) jctree).elemtype = jcatt;
-					break;
-				case NEWARRAY:
-					((JCNewArray) jctree).elemtype = jcatt;
-					break;
-				case ANNOTATED_TYPE:
-					((JCAnnotatedType) jctree).underlyingType = jcatt;
-					break;
-				case METHODDEF:
-					((JCMethodDecl) jctree).restype = jcatt;
-				default:
-					break;
-				}
+				modifyType(jctree, tag, jcatt);
 			}
 		} else if (eleTypeTree.getTag() == Tag.IDENT) {
 			JCIdent jci = (JCIdent) eleTypeTree;
 			if (jci.getName().toString().equals("String")) {
-				((JCVariableDecl) jctree).vartype = get2DByteArrayTree();
+				JCArrayTypeTree jcatt = get2DByteArrayTree();
+				modifyType(jctree, tag, jcatt);
 			}
 		} else {
 			processVariableTree(eleTypeTree);
 		}
 	}
+
+	private void modifyType(JCTree jctree, Tag tag, JCArrayTypeTree jcatt) {
+		switch (tag) {
+		case VARDEF:
+			((JCVariableDecl) jctree).vartype = jcatt;
+			break;
+		case TYPEARRAY:
+			((JCArrayTypeTree) jctree).elemtype = jcatt;
+			break;
+		case NEWARRAY:
+			((JCNewArray) jctree).elemtype = jcatt;
+			break;
+		case ANNOTATED_TYPE:
+			((JCAnnotatedType) jctree).underlyingType = jcatt;
+			break;
+		case METHODDEF:
+			((JCMethodDecl) jctree).restype = jcatt;
+		default:
+			break;
+		}
+	}
     
-	private JCMethodInvocation getConvertMethod(ExpressionTree arg, String encryptType) {
-		Conversion con = new Conversion(null, "CLEAR", encryptType);
+	private JCMethodInvocation getConvertMethod(ExpressionTree arg, String encryptType, boolean encrypt) {
+		Conversion con;
+		// encrypt: clear -> RND...
+		if (encrypt) con = new Conversion(null, "CLEAR", encryptType);
+		// decrypt: RND... -> clear
+		else con = new Conversion(null, encryptType, "CLEAR");
 		return getConvertMethod(arg, con);
 	}
 	
@@ -208,6 +221,10 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			// Encryption.encrypt(arg, to)
 			fn = encryptionMethods.get("encrypt");
 			args = com.sun.tools.javac.util.List.of((JCExpression) arg, toTree);
+		} else if (con.getTo().equals("CLEAR")) {
+			// Encryption.decrypt(arg, from)
+			fn = encryptionMethods.get("decrypt");
+			args = com.sun.tools.javac.util.List.of((JCExpression) arg, fromTree);
 		} else {
 			// Encryption.convert(arg, from, to)
 			fn = encryptionMethods.get("convert");
@@ -266,6 +283,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	
 	private String getSimpleEncryptName(Reference r) {
 		Set<AnnotationMirror> annos = r.getAnnotations(checker);
+		if (annos.isEmpty()) return null;
 		String fullname = annos.iterator().next().toString();
 		return fullname.substring(fullname.lastIndexOf('.') + 1);
 	}
@@ -283,8 +301,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				processVariableTree(init);
 				// int x = 9 -> int x = Conversion.encrypt(x, "AH")
 				if (init.getTag() == Tag.LITERAL) {
-					 JCMethodInvocation jcmi
-					 = getConvertMethod(init, getSimpleEncryptName(varRef));
+					 JCMethodInvocation jcmi = getConvertMethod(init, getSimpleEncryptName(varRef), true);
 					 jcvd.init = jcmi;
 				} else {
 					// process conversion
@@ -370,6 +387,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	}
     
     private void processMethodInvocation(MethodInvocationTree node) {
+    	String methName = node.getMethodSelect().toString();
     	JCExpression[] args = node.getArguments().toArray(new JCExpression[0]);
     	int i = 0;
     	for (ExpressionTree arg : node.getArguments()) {
@@ -382,6 +400,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     				}
     			}
     		}
+    		if (methName.startsWith("System.out.print")) {
+    			String encryptType = getSimpleEncryptName(argRef);
+    			if (encryptType != null) {
+    				args[i] = getConvertMethod(arg, encryptType, false);
+    			}
+    		}
     		i++;
     	}
     	JCMethodInvocation jcmi = (JCMethodInvocation) node;
@@ -390,70 +414,124 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     
 	@Override
     public Void visitBinary(BinaryTree node, Void p) {
-		processBinaryTree(node);
+//		Tree parent = getCurrentPath().getParentPath().getLeaf();
+//		if (parent instanceof MethodInvocationTree) {
+//			MethodInvocationTree mit = (MethodInvocationTree) parent;
+//			if (mit.getMethodSelect().toString().startsWith("System.out.print")) {
+//				processBinaryTreeForPrint(node);
+//			}
+//		} else {
+			processBinaryTreeForConversion(node);
+			processBinaryTreeForComputation(node, null);
+		//}
 		return super.visitBinary(node, p);
 	}
 	
-	private void processBinaryTree(BinaryTree node) {
+//	private void processBinaryTreeForPrint(BinaryTree node) {
+//				
+//	}
+
+	private void processBinaryTreeForComputation(BinaryTree node, BinaryTree outerTree) {
+		// leftOperand + rightOperand -> Computation.add(leftOperand, rightOperand)
+		ExpressionTree rightOperand = node.getRightOperand();
+		ExpressionTree leftOperand = node.getLeftOperand();
+		if (leftOperand instanceof JCBinary) {
+			processBinaryTreeForComputation((BinaryTree) leftOperand, node);
+		}
+		// skip a == null
+		if (shouldSkip(leftOperand, rightOperand)) return;
+		Reference leftRef = null;
+		if (!leftOperand.toString().startsWith("Conversion")
+				&& !leftOperand.toString().startsWith("Computation")) {
+			leftRef = checker.getAnnotatedReference(leftOperand);
+		}
+		if (leftRef == null || !leftRef.getRawAnnotations().contains(checker.CLEAR)) {
+			JCBinary jcb = (JCBinary) node;
+			if (outerTree != null) {
+				JCBinary jcbOuter = (JCBinary) outerTree;
+				processJCBinaryForCompuatation(node, jcb, jcbOuter);
+			} else {
+				Tree parent = getCurrentPath().getParentPath().getLeaf();
+				if (parent instanceof JCParens) {
+					JCParens jcp = (JCParens) parent;
+					processJCParensForComputation(node, jcb, jcp);
+				}
+				if (parent instanceof JCMethodInvocation) {
+					JCMethodInvocation jcmi = (JCMethodInvocation) parent;
+					processJCMethodInvocationForComputation(node, jcb, jcmi);
+				}
+			}
+		}
+	}
+
+	private void processJCBinaryForCompuatation(BinaryTree node, JCBinary jcb,
+			JCBinary jcbParent) {
+		JCMethodInvocation jcmi = getComputeMethod(node.getLeftOperand(), node.getRightOperand(),
+				jcb.getTag());
+		if (jcmi != null) jcbParent.lhs = jcmi;
+	}
+
+	private void processBinaryTreeForConversion(BinaryTree node) {
 		ExpressionTree rightOperand = node.getRightOperand();
 		ExpressionTree leftOperand = node.getLeftOperand();
 		// skip a == null
 		if (shouldSkip(leftOperand, rightOperand)) return;
-		Reference leftRef = checker.getAnnotatedReference(leftOperand);
-		Reference rightRef = checker.getAnnotatedReference(rightOperand);
+		Reference leftRef = null, rightRef = null;
+		if (!leftOperand.toString().startsWith("Conversion")) {
+			leftRef = checker.getAnnotatedReference(leftOperand);
+		}
+		if (!rightOperand.toString().startsWith("Conversion")) {
+			rightRef = checker.getAnnotatedReference(rightOperand);
+		}
 		String nodeId = checker.getFileName(node) + checker.getLineNumber(node);
-		// leftOperand -> Encryption.convert(left, from, to)
-		if (convertedReferences.containsKey(leftRef.getIdentifier())) {
-			for (Conversion con : convertedReferences.get(leftRef.getIdentifier())) {
+		// rightOperand -> Encryption.convert(right, from, to)
+		modifyForConversion(node, rightRef, nodeId, node.getRightOperand(), false);
+		// recursively process leftOperand
+		if (leftOperand instanceof JCBinary) {
+			processBinaryTreeForConversion((BinaryTree) leftOperand);
+		} else {
+			// leftOperand -> Encryption.convert(left, from, to)
+			modifyForConversion(node, leftRef, nodeId, node.getLeftOperand(), true);
+		}
+	}
+
+	private void modifyForConversion(BinaryTree node, Reference ref,
+			String nodeId, ExpressionTree operand, boolean isLeft) {
+		if (ref != null && convertedReferences.containsKey(ref.getIdentifier())) {
+			for (Conversion con : convertedReferences.get(ref.getIdentifier())) {
 				if (con.getId().equals(nodeId)) {
 					JCBinary jcbt = (JCBinary) node;
-					jcbt.lhs = getConvertMethod(node.getLeftOperand(), con);
+					if (isLeft) jcbt.lhs = getConvertMethod(operand, con);
+					else jcbt.rhs = getConvertMethod(operand, con);
+					// After encryption, the encrypt type should change to sensitive from clear
+					//ref.setRawAnnotations(new HashSet<AnnotationMirror>());
 					break;
 				}
 			}
 		}
-		// recursively process rightOperand
-		if (rightOperand instanceof JCBinary) {
-			processBinaryTree((BinaryTree) rightOperand);
-		} else {
-			// rightOperand -> Encryption.convert(right, from, to)
-			if (convertedReferences.containsKey(rightRef.getIdentifier())) {
-				for (Conversion con : convertedReferences.get(rightRef
-						.getIdentifier())) {
-					if (con.getId().equals(nodeId)) {
-						JCBinary jcbt = (JCBinary) node;
-						jcbt.rhs = getConvertMethod(rightOperand, con);
-						break;
-					}
-				}
-			}
-			// leftOperand + rightOperand -> Computation.add(leftOperand, rightOperand)
-			if (!leftRef.getRawAnnotations().contains(checker.CLEAR)) {
-				JCBinary jcb = (JCBinary) node;
-				Tree parent = getCurrentPath().getParentPath().getLeaf();
-				if (parent instanceof JCParens) {
-					JCParens jcp = (JCParens) parent;
-					jcp.expr = getComputeMethod(node.getLeftOperand(), node.getRightOperand(),
-							jcb.getTag());
-				}
-				if (parent instanceof JCMethodInvocation) {
-					JCMethodInvocation jcmi = (JCMethodInvocation) parent;
-					com.sun.tools.javac.util.List<JCExpression> newArgs = com.sun.tools.javac.util.List
-							.nil();
-					com.sun.tools.javac.util.List<JCExpression> args = jcmi
-							.getArguments();
-					for (JCExpression arg : args) {
-						if (arg.equals(node)) {
-							newArgs = newArgs.append(getComputeMethod(node.getLeftOperand(),
-									node.getRightOperand(), jcb.getTag()));
-						} else {
-							newArgs = newArgs.append(arg);
-						}
-					}
-					jcmi.args = newArgs;
-				}
+	}
+
+	private void processJCMethodInvocationForComputation(BinaryTree node, JCBinary jcb,
+			JCMethodInvocation jcmi) {
+		com.sun.tools.javac.util.List<JCExpression> newArgs = com.sun.tools.javac.util.List.nil();
+		com.sun.tools.javac.util.List<JCExpression> args = jcmi.getArguments();
+		for (JCExpression arg : args) {
+			if (arg.equals(node)) {
+				JCMethodInvocation newCompMethod = getComputeMethod(node.getLeftOperand(), node.getRightOperand(),
+						jcb.getTag());
+				if (newCompMethod != null) newArgs = newArgs.append(newCompMethod);
+				else newArgs = newArgs.append(arg);
+			} else {
+				newArgs = newArgs.append(arg);
 			}
 		}
+		jcmi.args = newArgs;
+	}
+
+	private void processJCParensForComputation(BinaryTree node, JCBinary jcb, JCParens jcp) {
+		JCMethodInvocation newCompMethod = getComputeMethod(node.getLeftOperand(), node.getRightOperand(),
+				jcb.getTag());
+		if (newCompMethod != null) jcp.expr = newCompMethod;
 	}
 	
 	// skip (a == null)
@@ -498,9 +576,28 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				imports = imports.append(imp);
 			}
 		} else {
-			jccd.defs = jccd.defs.prependList(imports);
+			if (!hasImported) {
+				jccd.defs = jccd.defs.prependList(imports);
+				hasImported = true;
+			}
 		}
 		return super.visitClass(node, p);
+	}
+	
+	@Override
+	public Void visitAssignment(AssignmentTree node, Void p) {
+		ExpressionTree expression = node.getExpression();
+		Reference expRef = checker.getAnnotatedReference(expression);
+		if (convertedReferences.containsKey(expRef.getIdentifier())) {
+			for (Conversion con : convertedReferences.get(expRef.getIdentifier())) {
+				if (con.getId().equals(checker.getFileName(node) + checker.getLineNumber(node))) {
+					JCAssign jcr = (JCAssign) node;
+					jcr.rhs = getConvertMethod(expression, con);
+					break;
+				}
+			}
+		}
+		return super.visitAssignment(node, p);
 	}
 	
 }

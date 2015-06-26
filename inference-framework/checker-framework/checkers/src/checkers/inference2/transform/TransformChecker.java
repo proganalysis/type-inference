@@ -35,10 +35,8 @@ import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.tree.JCTree.JCAssignOp;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.Tag;
 
 /**
@@ -208,71 +206,7 @@ public class TransformChecker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateDefault(Reference r, RefKind kind, Element elt, Tree t) {
-		if (!isAnnotated(r) && !containsAnno(r, CLEAR)) {
-			if (t instanceof JCBinary) {
-				JCBinary jct = (JCBinary) t;
-				setRefKind(r, jct);
-				if (!shouldIgnore(jct)) {
-					Tag tag = jct.getTag();
-					switch (tag) {
-					case PLUS:
-					case MINUS:
-						r.addAnnotation(AH);
-						r.addAnnotation(DET);
-						r.addAnnotation(OPE);
-						r.setCryptType(AH);
-						break;
-					case LT:
-					case GT:
-					case LE:
-					case GE:
-						r.addAnnotation(OPE);
-						r.setCryptType(OPE);
-						break;
-					case EQ:
-					case NE:
-						r.addAnnotation(OPE);
-						r.addAnnotation(DET);
-						r.setCryptType(DET);
-						break;
-					default:
-						r.setAnnotations(sourceAnnos, this);
-					}
-				} else {
-					r.setAnnotations(sourceAnnos, this);
-				}
-			} else if (t instanceof JCUnary) {
-				Tag tag = ((JCUnary) t).getTag();
-	            switch (tag) {
-	            case PREINC:
-	            case PREDEC:
-	            case POSTINC:
-	            case POSTDEC:
-	            	r.addAnnotation(AH);
-					r.addAnnotation(DET);
-					r.addAnnotation(OPE);
-					r.setCryptType(AH);
-					break;
-				default:						
-					r.setAnnotations(sourceAnnos, this);
-	            }
-			} else if (t instanceof JCAssignOp) {
-				Tag tag = ((JCAssignOp) t).getTag();
-	            switch (tag) {
-	            case PLUS_ASG:
-	            case MINUS_ASG:
-	            	r.addAnnotation(AH);
-					r.addAnnotation(DET);
-					r.addAnnotation(OPE);
-					r.setCryptType(AH);
-					break;
-				default:						
-					r.setAnnotations(sourceAnnos, this);
-	            }
-			} else {				
-				r.setAnnotations(sourceAnnos, this);
-			}
-		}
+		
 	}
 
 	/*
@@ -462,7 +396,7 @@ public class TransformChecker extends InferenceChecker {
 
 	@Override
 	public void printResult(PrintWriter out) {
-		out.print(this.root.toString().replace("@Sensitive()", ""));
+		out.print(this.root.toString().replace("@Sensitive()", "").replace("@Poly()", ""));
 	}
 
 //	@Override

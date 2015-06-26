@@ -2,6 +2,9 @@ public class CellClient {
 
     public static class Cell<T> {
 	public T val;
+	private static int sf = 0;
+	public Cell() { sf = 1; }
+	//public Cell() {}
 	public T getVal() { return val; }
 	public void setVal(T val) { this.val = val;}
     }
