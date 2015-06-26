@@ -296,6 +296,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			processVariableTree(jcvd);
 			JCExpression init = jcvd.getInitializer();
 			if (init != null) {
+				if (init instanceof JCLiteral && ((JCLiteral) init).getValue() == null)
+					return super.visitVariable(node, p);
 				Reference initRef = checker.getAnnotatedReference(init);
 				// change type: int -> byte[]
 				processVariableTree(init);
@@ -387,7 +389,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	}
     
     private void processMethodInvocation(MethodInvocationTree node) {
-    	String methName = node.getMethodSelect().toString();
+    	ExpressionTree method = node.getMethodSelect();
+    	String methName = method.toString();
     	JCExpression[] args = node.getArguments().toArray(new JCExpression[0]);
     	int i = 0;
     	for (ExpressionTree arg : node.getArguments()) {
@@ -410,27 +413,38 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	}
     	JCMethodInvocation jcmi = (JCMethodInvocation) node;
     	jcmi.args = com.sun.tools.javac.util.List.from(args);
+    	// string.equals(string1) -> Computation.equals(string, string1)
+    	if (args.length == 1) processEqualsForString(method, args[0]);
     }
     
+	private void processEqualsForString(ExpressionTree method, ExpressionTree arg) {
+		// string.equals()
+		if (method instanceof JCFieldAccess && method.toString().endsWith(".equals")) {
+			// string
+			ExpressionTree receiver = ((JCFieldAccess) method).getExpression();
+			Reference receiverRef = checker.getAnnotatedReference(receiver);
+			if (!receiverRef.getRawAnnotations().contains(checker.CLEAR)
+					&& receiverRef.getType().toString().contains("String")) {
+				Tree parent = getCurrentPath().getParentPath().getLeaf();
+				JCMethodInvocation newCompMethod = getComputeMethod(receiver, arg, Tag.EQ);
+				if (parent instanceof JCParens) {
+					JCParens jcp = (JCParens) parent;
+					if (newCompMethod != null) jcp.expr = newCompMethod;
+				}
+				if (parent instanceof JCBinary) {
+					((JCBinary) parent).rhs = newCompMethod;
+				}
+			}
+		}
+	}
+
 	@Override
     public Void visitBinary(BinaryTree node, Void p) {
-//		Tree parent = getCurrentPath().getParentPath().getLeaf();
-//		if (parent instanceof MethodInvocationTree) {
-//			MethodInvocationTree mit = (MethodInvocationTree) parent;
-//			if (mit.getMethodSelect().toString().startsWith("System.out.print")) {
-//				processBinaryTreeForPrint(node);
-//			}
-//		} else {
 			processBinaryTreeForConversion(node);
 			processBinaryTreeForComputation(node, null);
-		//}
 		return super.visitBinary(node, p);
 	}
 	
-//	private void processBinaryTreeForPrint(BinaryTree node) {
-//				
-//	}
-
 	private void processBinaryTreeForComputation(BinaryTree node, BinaryTree outerTree) {
 		// leftOperand + rightOperand -> Computation.add(leftOperand, rightOperand)
 		ExpressionTree rightOperand = node.getRightOperand();

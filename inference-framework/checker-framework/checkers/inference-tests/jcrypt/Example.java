@@ -2,7 +2,7 @@ package example;
 
 import checkers.inference2.jcrypt.quals.*;
 
-class Example {
+public class Example {
 
 	public int min_list(int[] list) {
 		int min = list[0];
