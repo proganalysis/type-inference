@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
@@ -80,6 +81,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	
 	private static boolean hasImported = false;
 	
+	private static JCExpression objectType;
+	
 	private static com.sun.tools.javac.util.List<JCTree> imports
 		= com.sun.tools.javac.util.List.nil();
 
@@ -134,8 +137,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		JCArrayTypeTree jcatt = maker.TypeArray(maker.TypeArray(jcptt));
 		return jcatt;
     }
-
-    private void processVariableTree(JCTree jctree) {
+    
+    private void processVariableTree(JCTree jctree, boolean isLocal) {
     	JCTree eleTypeTree;
     	Tag tag = jctree.getTag();
     	switch (tag) {
@@ -159,29 +162,48 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			break;
     	}
 		if (eleTypeTree != null) {
-			modifyTree(jctree, eleTypeTree, tag);
+			modifyTree(jctree, eleTypeTree, tag, isLocal);
 		}
     }
 
-	private void modifyTree(JCTree jctree, JCTree eleTypeTree, Tag tag) {
+	/**
+	 * Modify the type of a sensitive variable.
+	 * For a local variable: int -> byte[], String -> byte[][];
+	 * For others: int/String -> Object
+	 * @param jctree
+	 * @param eleTypeTree
+	 * @param tag
+	 * @param isLocal
+	 */
+	private void modifyTree(JCTree jctree, JCTree eleTypeTree, Tag tag, boolean isLocal) {
 		if (eleTypeTree.getTag() == Tag.TYPEIDENT) {
 			JCPrimitiveTypeTree jcptt = (JCPrimitiveTypeTree) eleTypeTree;
 			if (jcptt.getPrimitiveTypeKind() == TypeKind.INT) {
-				JCArrayTypeTree jcatt = getByteArrayTree(eleTypeTree);
-				modifyType(jctree, tag, jcatt);
+				JCExpression jce;
+				if (isLocal) {
+					jce = getByteArrayTree(eleTypeTree);
+				} else {
+					jce = objectType;
+				}
+				modifyType(jctree, tag, jce);
 			}
 		} else if (eleTypeTree.getTag() == Tag.IDENT) {
 			JCIdent jci = (JCIdent) eleTypeTree;
 			if (jci.getName().toString().equals("String")) {
-				JCArrayTypeTree jcatt = get2DByteArrayTree();
-				modifyType(jctree, tag, jcatt);
+				JCExpression jce;
+				if (isLocal) {
+					jce = get2DByteArrayTree();
+				} else {
+					jce = objectType;
+				}
+				modifyType(jctree, tag, jce);
 			}
 		} else {
-			processVariableTree(eleTypeTree);
+			processVariableTree(eleTypeTree, isLocal);
 		}
 	}
 
-	private void modifyType(JCTree jctree, Tag tag, JCArrayTypeTree jcatt) {
+	private void modifyType(JCTree jctree, Tag tag, JCExpression jcatt) {
 		switch (tag) {
 		case VARDEF:
 			((JCVariableDecl) jctree).vartype = jcatt;
@@ -290,17 +312,20 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	
     public Void visitVariable(VariableTree node, Void p) {
     	VariableElement varElt = TreeUtils.elementFromDeclaration(node);
+    	JCVariableDecl jcvd = (JCVariableDecl) node;
+    	// get Object type from EncryptionSample
+    	getObjectType(jcvd);
 		Reference varRef = checker.getAnnotatedReference(varElt);
 		if (!varRef.getRawAnnotations().contains(checker.CLEAR)) {
-			JCVariableDecl jcvd = (JCVariableDecl) node;
-			processVariableTree(jcvd);
+			boolean isLocal = varElt.getKind() == ElementKind.LOCAL_VARIABLE;
+			processVariableTree(jcvd, isLocal);
 			JCExpression init = jcvd.getInitializer();
 			if (init != null) {
 				if (init instanceof JCLiteral && ((JCLiteral) init).getValue() == null)
 					return super.visitVariable(node, p);
 				Reference initRef = checker.getAnnotatedReference(init);
 				// change type: int -> byte[]
-				processVariableTree(init);
+				processVariableTree(init, isLocal);
 				// int x = 9 -> int x = Conversion.encrypt(x, "AH")
 				if (init.getTag() == Tag.LITERAL) {
 					 JCMethodInvocation jcmi = getConvertMethod(init, getSimpleEncryptName(varRef), true);
@@ -313,6 +338,16 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		}
     	return super.visitVariable(node, p);
     }
+
+	private void getObjectType(JCVariableDecl jcvd) {
+		JCTree eleTypeTree = jcvd.getType();
+    	if (objectType == null && eleTypeTree.getTag() == Tag.IDENT) {
+    		JCIdent jci = (JCIdent) eleTypeTree;
+    		if (jci.getName().toString().equals("Object")) {
+    			objectType = jci;
+    		}
+    	}
+	}
     
     private void processInit(JCExpression init, JCVariableDecl jcvd, Reference initRef) {
 		if (convertedReferences.containsKey(initRef.getIdentifier())) {
@@ -341,7 +376,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			Reference retRef = checker.getAnnotatedReference(jcmd.getReturnType());
 			if (!retRef.getRawAnnotations().contains(checker.CLEAR)) {
 				//jcmd.restype = getByteArrayTree(jcmd.getReturnType());
-				processVariableTree(jcmd);
+				processVariableTree(jcmd, false);
 			}
 		}
 		return super.visitMethod(node, p);

@@ -3,6 +3,7 @@ import encryption.Conversion;
 
 class EncryptionSample {
 	public static void main(String[] args) {
+		Object o;
 		byte[] b1 = new byte[4];
 		byte[] b2 = b1;
 		String s = "";
