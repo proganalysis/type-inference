@@ -3,9 +3,9 @@
 	<classpathentry excluding="checkers/nullness/NullnessUtils.java" kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/encryption"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/jsr308-langtools"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/jna.jar"/>
 	<classpathentry kind="lib" path="lib/javaparser.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0_51"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
