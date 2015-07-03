@@ -3,6 +3,10 @@ package example;
 import checkers.inference2.jcrypt.quals.*;
 
 public class Example {
+	
+	public static void main(String[] args) {
+		new Example().foo();
+	}
 
 	public int min_list(int[] list) {
 		int min = list[0];
@@ -41,6 +45,8 @@ public class Example {
 		int ans2 = min2 + ele2;
 		check_ans(ans1);
 		check_ans(ans2);
+		System.out.println(ans1);
+		System.out.println(ans2);
 	}
 
 }
