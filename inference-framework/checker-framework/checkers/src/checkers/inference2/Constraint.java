@@ -20,7 +20,7 @@ public abstract class Constraint {
 	
 	protected int id; 
 	
-	protected String lineId;
+	protected long pos;
 	
     /**
      * kind = 0: subkind 
@@ -31,14 +31,14 @@ public abstract class Constraint {
 	
 	private static int counter = 0;
 	
-	public String getLineId() {
-		return lineId;
+	public long getPos() {
+		return pos;
 	}
 	
-	public Constraint(String lineId) {
+	public Constraint(long pos) {
 		id = counter++;
 		causes = new ArrayList<Constraint>();
-		this.lineId = lineId;
+		this.pos = pos;
 	}
 	
 	public Constraint() {
@@ -86,7 +86,7 @@ public abstract class Constraint {
     }
     
     public String toString(String type, String sep) {
-        return type + "-" + id + "[" + lineId + "]: " + left.toString() + "  " 
+        return type + "-" + id + "[" + pos + "]: " + left.toString() + "  " 
             + sep + "  " + right.toString() 
             + (causes.size() == 0 ? "" : " caused by " + causeIds());
     }   
@@ -116,8 +116,8 @@ public abstract class Constraint {
             this.kind = 0;
 		}
 		
-		public SubtypeConstraint(Reference sub, Reference sup, String lineId) {
-            super(lineId);
+		public SubtypeConstraint(Reference sub, Reference sup, long pos) {
+            super(pos);
             this.left = sub;
             this.right = sup;
             this.kind = 0;
@@ -152,8 +152,8 @@ public abstract class Constraint {
             this.kind = 1;
 		}
 		
-		public EqualityConstraint(Reference left, Reference right, String lineId) {
-			super(lineId);
+		public EqualityConstraint(Reference left, Reference right, int pos) {
+			super(pos);
 			this.left = left;
 			this.right = right;
             this.kind = 1;
@@ -188,8 +188,8 @@ public abstract class Constraint {
             this.kind = 2;
 		}
 		
-		public UnequalityConstraint(Reference left, Reference right, String lineId) {
-			super(lineId);
+		public UnequalityConstraint(Reference left, Reference right, int pos) {
+			super(pos);
 			this.left = left;
 			this.right = right;
             this.kind = 2;

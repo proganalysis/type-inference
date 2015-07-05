@@ -107,11 +107,8 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 
 	public void conversionCheck(Constraint c, Reference left, Reference right,
 			Set<AnnotationMirror> leftAnnos, Set<AnnotationMirror> rightAnnos) {
-		//RefKind rightKind = right.getKind();
 		if (right.getKind() == RefKind.EQUAL_NULL || left.getKind() == RefKind.EQUAL_NULL
-				|| c.getLineId() == null) return;
-		//if (leftKind != RefKind.LITERAL || leftKind != RefKind.STRING) return;
-		//if (left instanceof AdaptReference || right instanceof AdaptReference) return;
+				|| c.getPos() == 0) return;
 		Jcrypt2Checker jcrypt2checker = (Jcrypt2Checker) checker;
 		// ignore clear <: parameter, clear <: clear, clear <: component(parameter)
 		if (jcrypt2checker.containsAnno(left, jcrypt2checker.CLEAR)
@@ -122,7 +119,7 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 			String rightCryptType = right.getCryptType() == null ?
 					rightAnnos.iterator().next().toString()
 					: right.getCryptType().toString();
-			Conversion con = new Conversion(c.getLineId(), "CLEAR",
+			Conversion con = new Conversion(c.getPos(), "CLEAR",
 					rightCryptType.substring(rightCryptType.lastIndexOf('.') + 1));
 			List<Conversion> cons = convertedReferences.get(left.getIdentifier());
 			if (cons == null) {
@@ -130,9 +127,9 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 			}
 			cons.add(con);
 			convertedReferences.put(left.getIdentifier(), cons);
-			if (conversions.put(c.getLineId() + ":" + left.getIdentifier(), c) == null) {
+			if (conversions.put(c.getPos() + ":" + left.getIdentifier(), c) == null) {
 				System.out.println(c.toString());
-				System.out.println("Line " + c.getLineId() + ": " + left.getName()
+				System.out.println("Line " + c.getPos() + ": " + left.getName()
 						+ " CLEAR => "
 						+ rightCryptType.substring(rightCryptType.lastIndexOf('.')+1));
 			}
@@ -146,11 +143,9 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 			String rightCryptType = right.getCryptType() == null ? rightAnno
 					.toString() : right.getCryptType().toString();
 			if (!leftCryptType.equals(rightCryptType)) {
-				Conversion con = new Conversion(c.getLineId(),
+				Conversion con = new Conversion(c.getPos(),
 						leftCryptType.substring(leftCryptType.lastIndexOf('.') + 1),
 						rightCryptType.substring(rightCryptType.lastIndexOf('.') + 1));
-//				left = left instanceof AdaptReference ?
-//						((AdaptReference) left).getDeclRef() : left;
 				String id = left instanceof AdaptReference ? right.getIdentifier() : left.getIdentifier();
 				List<Conversion> cons = convertedReferences.get(id);
 				if (cons == null) {
@@ -158,11 +153,11 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 				}
 				cons.add(con);
 				convertedReferences.put(id, cons);
-				if (conversions.put(c.getLineId() + ":" + left.getIdentifier(), c) == null) {
+				if (conversions.put(c.getPos() + ":" + left.getIdentifier(), c) == null) {
 					String leftName = left instanceof AdaptReference ?
 							((AdaptReference) left).getDeclRef().getName() : left.getName();
 					System.out.println(c.toString());
-					System.out.println("Line " + c.getLineId() + ": " + leftName
+					System.out.println("Line " + c.getPos() + ": " + leftName
 							+ " " + leftCryptType.substring(leftCryptType.lastIndexOf('.')+1)
 							+ " => " + rightCryptType.substring(rightCryptType.lastIndexOf('.')+1));
 				}

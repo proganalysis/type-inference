@@ -438,6 +438,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 	}
 
 	public boolean containsAnno(Reference ref, AnnotationMirror anno) {
+		if (InferenceMainJcrypt2.fullEncrypt) return false;
 		if (ref instanceof AdaptReference) {
 			Reference contextRef = ((AdaptReference) ref).getContextRef();
 			Reference declRef = ((AdaptReference) ref).getDeclRef();

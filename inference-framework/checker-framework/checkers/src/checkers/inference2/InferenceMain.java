@@ -40,6 +40,8 @@ public class InferenceMain {
 
     protected boolean needCheck = false;
     
+    public static boolean fullEncrypt = false;
+    
     protected InferenceChecker checker; 
     
     protected InferenceMain() {
@@ -62,6 +64,7 @@ public class InferenceMain {
                     inferenceMain = new InferenceMain();
                 }
                 inferenceMain.needCheck = (System.getProperty("noCheck") == null);
+                InferenceMain.fullEncrypt = (System.getProperty("full") != null);
             }
         }
     	return inferenceMain;

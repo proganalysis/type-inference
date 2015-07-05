@@ -48,8 +48,6 @@ public class InferenceMainJcrypt2 extends InferenceMain {
     
     private static InferenceMainJcrypt2 inferenceMain = null;
 
-    public boolean needCheck = true;
-    
     public InferenceChecker checker; 
     
     public InferenceMainJcrypt2() {

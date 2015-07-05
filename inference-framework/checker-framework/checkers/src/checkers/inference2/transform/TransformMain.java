@@ -51,8 +51,6 @@ public class TransformMain extends InferenceMain {
     
     private static TransformMain inferenceMain = null;
 
-    public boolean needCheck = false;
-    
     public InferenceChecker checker; 
     
     public TransformMain() {
@@ -200,15 +198,16 @@ public class TransformMain extends InferenceMain {
 		argList.add("-proc:only");
 		argList.add("-Ainfer");
 		argList.add("-Awarns");
-        
-        info("Reim", "Generating constraints...");
-        if (!inferImpl(argList, out, InferType.REIM)) {
-        	return false;
-        }
-        info("Jcrypt", "Generating constraints...");
-		// JcryptChecker
-		argList.set(processorIndex, jcryptCheckerPath);
-		inferImpl(argList, out, InferType.JCRYPT);
+		if (!fullEncrypt) {
+			info("Reim", "Generating constraints...");
+			if (!inferImpl(argList, out, InferType.REIM)) {
+				return false;
+			}
+			info("Jcrypt", "Generating constraints...");
+			// JcryptChecker
+			argList.set(processorIndex, jcryptCheckerPath);
+			inferImpl(argList, out, InferType.JCRYPT);
+		}
 		// Jcrypt2Checker
 		info("Jcrypt2", "Generating constraints...");
 		argList.set(processorIndex, jcrypt2CheckerPath);

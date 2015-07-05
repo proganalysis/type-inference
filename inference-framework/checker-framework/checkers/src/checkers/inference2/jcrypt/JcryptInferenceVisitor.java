@@ -25,8 +25,9 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 	        Reference ref = checker.getAnnotatedReference(node);
 	        Reference varRef = checker.getAnnotatedReference(var);
 	        Reference exprRef = checker.getAnnotatedReference(expr);
-	        checker.addSubtypeConstraint(varRef, ref, ref.getLineId());
-	        checker.addSubtypeConstraint(exprRef, ref, ref.getLineId());
+	        long pos = checker.getPosition(node);
+	        checker.addSubtypeConstraint(varRef, ref, pos);
+	        checker.addSubtypeConstraint(exprRef, ref, pos);
 		}
 		return super.visitCompoundAssignment(node, p);
 	}
@@ -46,10 +47,10 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		ExpressionTree right = bTree.getRightOperand();
 		Reference leftRef = checker.getAnnotatedReference(left);
 		Reference rightRef = checker.getAnnotatedReference(right);
-		checker.addSubtypeConstraint(leftRef, ref, ref.getLineId());
-		checker.addSubtypeConstraint(rightRef, ref, ref.getLineId());
+		checker.addSubtypeConstraint(leftRef, ref, checker.getPosition(left));
+		checker.addSubtypeConstraint(rightRef, ref, checker.getPosition(right));
 		if (lhsRef != null) {
-			checker.addSubtypeConstraint(ref, lhsRef, ref.getLineId());
+			checker.addSubtypeConstraint(ref, lhsRef, checker.getPosition(left));
 		}
 		generateConstraint(leftRef, left);
 		generateConstraint(rightRef, right);
@@ -68,10 +69,10 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		Reference treeRef = checker.getAnnotatedReference(uTree);
 		ExpressionTree exprTree = uTree.getExpression();
 		Reference ref = checker.getAnnotatedReference(exprTree);
-		checker.addSubtypeConstraint(ref, treeRef,
-				checker.getFileName(uTree) + checker.getLineNumber(uTree));
+		long pos = checker.getPosition(uTree);
+		checker.addSubtypeConstraint(ref, treeRef, pos);
 		if (lhsRef != null) {
-			checker.addSubtypeConstraint(treeRef, lhsRef, treeRef.getLineId());
+			checker.addSubtypeConstraint(treeRef, lhsRef, pos);
 		}
 		generateConstraint(ref, exprTree);
     }

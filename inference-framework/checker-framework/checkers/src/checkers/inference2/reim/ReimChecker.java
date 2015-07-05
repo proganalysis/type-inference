@@ -132,14 +132,14 @@ public class ReimChecker extends InferenceChecker {
 	
 	@Override
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs, String lineId) {
+			Reference aRhs, long pos) {
 		if (aBase != null) {
 			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
 			set.add(MUTABLE);
 			Reference mutableRef = getAnnotatedReference(set.toString(),
 					RefKind.CONSTANT, null, null, null, null, set);
-			addEqualityConstraint(aBase, mutableRef, lineId);
-			super.handleInstanceFieldWrite(aBase, aField, aRhs, lineId);
+			addEqualityConstraint(aBase, mutableRef, pos);
+			super.handleInstanceFieldWrite(aBase, aField, aRhs, pos);
 		}
 	}
 
@@ -348,8 +348,8 @@ public class ReimChecker extends InferenceChecker {
 	}
 	
 	@Override
-	protected void handleStaticFieldWrite(Reference aField, Reference aRhs,	String lineId) {
-		super.handleStaticFieldWrite(aField, aRhs, lineId);
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs,	long pos) {
+		super.handleStaticFieldWrite(aField, aRhs, pos);
 		ExecutableElement e = getCurrentMethodElt();
 		if (e != null) {
 			Reference methodRef = getAnnotatedReference(e);
@@ -357,14 +357,14 @@ public class ReimChecker extends InferenceChecker {
 			set.add(MUTABLE);
 			Reference mutableRef = getAnnotatedReference(set.toString(),
 					RefKind.CONSTANT, null, null, null, null, set);
-			addEqualityConstraint(methodRef, mutableRef, lineId);
+			addEqualityConstraint(methodRef, mutableRef, pos);
 		}
 	}
 	
 	@Override
 	protected void handleMethodCall(ExecutableElement invokeMethod,
-			Reference receiverRef, Reference assignToRef, List<Reference> argumentRefs) {
-		super.handleMethodCall(invokeMethod, receiverRef, assignToRef, argumentRefs);
+			Reference receiverRef, Reference assignToRef, List<Reference> argumentRefs, long pos) {
+		super.handleMethodCall(invokeMethod, receiverRef, assignToRef, argumentRefs, pos);
 		if (receiverRef != null && receiverRef.getKind() == RefKind.ALLOCATION) {
 			ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
 			allocationReferences.put(receiverRef.getIdentifier(), methodRef);

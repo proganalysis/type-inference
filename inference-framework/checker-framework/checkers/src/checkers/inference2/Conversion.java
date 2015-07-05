@@ -2,20 +2,20 @@ package checkers.inference2;
 
 public class Conversion {
 	
-	private String id;
+	private long id;
 	private String from;
 	private String to;
 	
-	public Conversion(String id, String from, String to) {
+	public Conversion(long id, String from, String to) {
 		this.id = id;
 		this.from = from;
 		this.to = to;
 	}
 	
-	public String getId() {
+	public long getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	public String getFrom() {

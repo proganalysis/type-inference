@@ -404,7 +404,23 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		lineNum = root.getLineMap().getLineNumber(lineNum);
 		return lineNum;
 	}
+	
+	public long getPosition(Element elt) {
+		CompilationUnitTree newRoot = getRootByElement(elt);
+		if (newRoot == null) {
+			return 0;
+		}
+		return positions.getStartPosition(newRoot, getDeclaration(elt));
+	}
 
+	public long getPosition(Tree tree) {
+		if (currentNewRoot == null) {
+			return positions.getStartPosition(currentRoot, tree);
+		} else {
+			return positions.getStartPosition(currentNewRoot, tree);
+		}
+	}
+	
 	public ExecutableElement getCurrentMethodElt() {
 		MethodTree enclosingMethod = TreeUtils.enclosingMethod(currentPath);
 		if (enclosingMethod == null)
@@ -767,22 +783,22 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		return createMethodAdaptReference(context, decl, assignTo);
 	}
 
-	public void addSubtypeConstraint(Reference sub, Reference sup, String lineId) {
+	public void addSubtypeConstraint(Reference sub, Reference sup, long pos) {
 		if (sub.equals(sup))
 			return;
-		Constraint c = new SubtypeConstraint(sub, sup, lineId);
+		Constraint c = new SubtypeConstraint(sub, sup, pos);
 		if (!constraints.add(c))
 			return;
-		addComponentConstraints(sub, sup, false, lineId);
+		addComponentConstraints(sub, sup, false, pos);
 	}
 
-	protected void addEqualityConstraint(Reference left, Reference right, String lineId) {
+	protected void addEqualityConstraint(Reference left, Reference right, long pos) {
 		if (left.equals(right))
 			return;
 		Constraint c = new EqualityConstraint(left, right);
 		if (!constraints.add(c))
 			return;
-		addComponentConstraints(left, right, true, lineId);
+		addComponentConstraints(left, right, true, pos);
 	}
 
 	protected void addUnequalityConstraint(Reference left, Reference right) {
@@ -804,7 +820,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	 * @param equality
 	 */
 	private void addComponentConstraints(Reference sub, Reference sup,
-			boolean equality, String lineId) {
+			boolean equality, long pos) {
 		if (sub.getType() instanceof AnnotatedArrayType
 				&& sup instanceof AdaptReference) {
 			sup = ((AdaptReference) sup).getDeclRef();
@@ -820,9 +836,9 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference subComponent = ((ArrayReference) sub).getComponentRef();
 			Reference supComponent = ((ArrayReference) sup).getComponentRef();
 			if (equality) {
-				addEqualityConstraint(subComponent, supComponent, lineId);
+				addEqualityConstraint(subComponent, supComponent, pos);
 			} else {
-				addSubtypeConstraint(subComponent, supComponent, lineId);
+				addSubtypeConstraint(subComponent, supComponent, pos);
 			}
 		}
 	}
@@ -832,25 +848,26 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	 * 
 	 * @param overrider
 	 * @param overridden
+	 * @param l 
 	 */
 	protected void handleMethodOverride(ExecutableElement overrider,
 			ExecutableElement overridden) {
 		ExecutableReference overriderRef = (ExecutableReference) getAnnotatedReference(overrider);
 		ExecutableReference overriddenRef = (ExecutableReference) getAnnotatedReference(overridden);
 
-		String lineId = getFileName(overrider) + getLineNumber(overrider);
+		long pos = getPosition(overrider);
 		// THIS: overridden <: overrider
 		if (!ElementUtils.isStatic(overrider)) {
 			Reference overriderThisRef = overriderRef.getThisRef();
 			Reference overriddenThisRef = overriddenRef.getThisRef();
-			addSubtypeConstraint(overriddenThisRef, overriderThisRef, lineId);
+			addSubtypeConstraint(overriddenThisRef, overriderThisRef, pos);
 		}
 
 		// RETURN: overrider <: overridden
 		if (overrider.getReturnType().getKind() != TypeKind.VOID) {
 			Reference overriderReturnRef = overriderRef.getReturnRef();
 			Reference overriddenReturnRef = overriddenRef.getReturnRef();
-			addSubtypeConstraint(overriderReturnRef, overriddenReturnRef, lineId);
+			addSubtypeConstraint(overriderReturnRef, overriddenReturnRef, pos);
 		}
 
 		// PARAMETERS:
@@ -859,45 +876,41 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		Iterator<Reference> overriddenIt = overriddenRef.getParamRefs()
 				.iterator();
 		for (; overriderIt.hasNext() && overriddenIt.hasNext();) {
-			addSubtypeConstraint(overriddenIt.next(), overriderIt.next(), lineId);
+			addSubtypeConstraint(overriddenIt.next(), overriderIt.next(), pos);
 		}
 	}
 
 	protected void handleInstanceFieldRead(Reference aBase, Reference aField,
-			Reference aLhs, String lineId) {
+			Reference aLhs, long pos) {
 		Reference afv = getFieldAdaptReference(aBase, aField, aLhs);
-		addSubtypeConstraint(afv, aLhs, lineId);
+		addSubtypeConstraint(afv, aLhs, pos);
 	}
 
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs, String lineId) {
+			Reference aRhs, long pos) {
 		if (aBase != null) {
 			Reference afv = getFieldAdaptReference(aBase, aField, aRhs);
-			addSubtypeConstraint(aRhs, afv, lineId);
+			addSubtypeConstraint(aRhs, afv, pos);
 		}
 	}
 
-	protected void handleStaticFieldRead(Reference aField, Reference aLhs, String lineId) {
-		addSubtypeConstraint(aField, aLhs, lineId);
+	protected void handleStaticFieldRead(Reference aField, Reference aLhs, long pos) {
+		addSubtypeConstraint(aField, aLhs, pos);
 	}
 
-	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, String lineId) {
-		addSubtypeConstraint(aRhs, aField, lineId);
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, long pos) {
+		addSubtypeConstraint(aRhs, aField, pos);
 	}
 
 	protected void handleMethodCall(ExecutableElement invokeMethod,
 			Reference receiverRef, Reference assignToRef,
-			List<Reference> argumentRefs) {
-		String lineId = "";
-		if (assignToRef != null ) {
-			lineId = assignToRef.getLineId();
-		}
+			List<Reference> argumentRefs, long pos) {
 		ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
 		if (!ElementUtils.isStatic(invokeMethod)
 				&& !receiverRef.getName().equals("super")) {
 			// receiver: y <: C |> this
 			addSubtypeConstraint(receiverRef, getMethodAdaptReference(receiverRef,
-					methodRef.getThisRef(), assignToRef), lineId);
+					methodRef.getThisRef(), assignToRef), pos);
 		}
 		// return: Here we used methodRef.getReturnRef().getType() to check VOID
 		// type
@@ -912,7 +925,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference returnRef = methodRef.getReturnRef();
 			addSubtypeConstraint(
 					getMethodAdaptReference(receiverRef, returnRef, assignToRef),
-					assignToRef, lineId);
+					assignToRef, pos);
 		}
 		// parameters: z <: C |> p
 		Iterator<Reference> argIt = argumentRefs.iterator();
@@ -921,7 +934,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference argRef = argIt.next();
 			Reference paramRef = paramIt.next();
 			addSubtypeConstraint(argRef, getMethodAdaptReference(receiverRef,
-					paramRef, assignToRef), lineId);
+					paramRef, assignToRef), pos);
 		}
 	}
 
