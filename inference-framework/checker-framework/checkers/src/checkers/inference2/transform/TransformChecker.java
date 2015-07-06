@@ -5,11 +5,13 @@ package checkers.inference2.transform;
 
 import java.io.PrintWriter;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+
 import checkers.inference2.jcrypt2.quals.RND;
 import checkers.inference2.jcrypt2.quals.OPE;
 import checkers.inference2.jcrypt2.quals.AH;
@@ -18,11 +20,13 @@ import checkers.inference2.jcrypt.quals.Clear;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
+import checkers.inference2.InferenceMain;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.RefKind;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceVisitor;
 import checkers.util.AnnotationUtils;
+
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
@@ -96,7 +100,13 @@ public class TransformChecker extends InferenceChecker {
 	 * javax.lang.model.element.Element, com.sun.source.tree.Tree)
 	 */
 	@Override
-	protected void annotateDefault(Reference r, RefKind kind, Element elt, Tree t) {}
+	protected void annotateDefault(Reference r, RefKind kind, Element elt, Tree t) {
+		if (InferenceMain.fullEncrypt) {
+			r.addAnnotation(RND);
+		} else {
+			r.addAnnotation(CLEAR);
+		}
+	}
 
 	/*
 	 * (non-Javadoc)
