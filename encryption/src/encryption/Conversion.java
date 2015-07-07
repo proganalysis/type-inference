@@ -9,10 +9,10 @@ public class Conversion {
 
 	public static byte[] encrypt(int ptext, String to) {
 		Encryption toType = createEncryption(to);
-		long startTime = System.currentTimeMillis();
+		//long startTime = System.currentTimeMillis();
 		byte[] e = toType.encrypt(ptext);
-		long endTime = System.currentTimeMillis();
-		System.out.println(to + " En " + (endTime - startTime));
+		//long endTime = System.currentTimeMillis();
+		//System.out.println(to + " En " + (endTime - startTime));
 		return e;
 	}
 	
@@ -23,10 +23,10 @@ public class Conversion {
 
 	public static int decrypt(byte[] ctext, String from) {
 		Encryption fromType = createEncryption(from);
-		long startTime = System.currentTimeMillis();
+		//long startTime = System.currentTimeMillis();
 		int e = fromType.decrypt(ctext);
-		long endTime = System.currentTimeMillis();
-		System.out.println(from + " DE " + (endTime - startTime));
+		//long endTime = System.currentTimeMillis();
+		//System.out.println(from + " DE " + (endTime - startTime));
 		return e;
 	}
 	

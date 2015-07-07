@@ -50,24 +50,6 @@ public class Random extends Encryption {
 		return wrapped.getInt();
 	}
 
-	// @Override
-	// public Object decrypt(EncryptedValue ctext) {
-	// RNDValue ct = (RNDValue) ctext;
-	// byte[] ctInt = ct.getEnInt();
-	// if (ctInt != null) { // int
-	// return decryptInt(ctInt);
-	// } else { // String
-	// byte[][] ctString = ct.getEnString();
-	// char[] ptext = new char[ctString.length];
-	// int i = 0;
-	// for (byte[] b : ctString) {
-	// ptext[i] = (char) decryptInt(b);
-	// i++;
-	// }
-	// return new String(ptext);
-	// }
-	// }
-
 	@Override
 	public byte[] encrypt(int ptext) {
 		byte[] input = ByteBuffer.allocate(4).putInt(ptext).array();

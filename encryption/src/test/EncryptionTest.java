@@ -5,9 +5,9 @@ import junit.framework.TestCase;
 
 public class EncryptionTest extends TestCase {
 
-	private static final int pti1 = 11234;
-	private static final int pti2 = 11234;
-	private static final int pti3 = 11235;
+	private static final int pti1 = 0;
+	private static final int pti2 = 0;
+	private static final int pti3 = 1000;
 	private byte[] cti1, cti2, cti3;
 	private byte[][] cts1, cts2, cts3;
 	private static final String pts1 = "Hello";
@@ -50,12 +50,15 @@ public class EncryptionTest extends TestCase {
 		cti1 = e.encrypt(pti1);
 		cts1 = e.encrypt(pts1);
 		e = new OrderPreserving();
+		cti2 = e.encrypt(pti2);
+		assertFalse(Computation.lessThan(cti1, cti2));
 		assertTrue(pti1 == (int) e.decrypt(cti1));
 		assertTrue(pts1.equals(e.decrypt(cts1)));
 		cts3 = e.encrypt(pts3);
 		cti3 = e.encrypt(pti3);
-		assertEquals(1, Computation.compareTo(cti3, cti1));
-		assertEquals(1, Computation.compareTo(cts3, cts1));
+		assertTrue(Computation.greaterThan(cti3, cti1));
+		assertTrue(Computation.lessThan(cti1, cti3));
+		assertTrue(Computation.lessThan(cts1, cts3));
 	}
 	
 	public void testRND() {
@@ -63,9 +66,11 @@ public class EncryptionTest extends TestCase {
 		e = new Random();
 		cti1 = e.encrypt(pti1);
 		cts1 = e.encrypt(pts1);
+		cts2 = e.encrypt(pts2);
 		e = new Random();
 		assertTrue(pti1 == (int) e.decrypt(cti1));
 		assertTrue(pts1.equals(e.decrypt(cts1)));
+		assertEquals(pts1 + pts2, e.decrypt(Computation.add(cts1, cts2)));
 	}
 
 }
