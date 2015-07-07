@@ -249,7 +249,11 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		} else {
 			// Encryption.convert(arg, from, to)
 			fn = encryptionMethods.get("convert");
-			args = com.sun.tools.javac.util.List.of(argJ, fromTree, toTree);
+			if (argJ instanceof JCLiteral) {
+				return getConvertMethod(argJ, con.getTo(), true);
+			} else {
+				args = com.sun.tools.javac.util.List.of(argJ, fromTree, toTree);
+			}
 		}
 		// Encryption -- JCIdent
 		JCExpression selected = ((JCFieldAccess) fn.getMethodSelect()).getExpression();
@@ -262,6 +266,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 
 	private JCExpression getTypeCast(ExpressionTree arg) {
 		JCExpression argJ = (JCExpression) arg;
+		if (arg instanceof JCLiteral) return argJ;
 		if (argJ.type != null && argJ.type.toString().equals("java.lang.String")) {
 			argJ = maker.TypeCast(byteArray2, argJ);
 		}
@@ -379,7 +384,14 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				}
 			}
 		} else if (!varRef.getRawAnnotations().contains(checker.CLEAR)
-				&& ((init instanceof JCLiteral && !shouldSkip(init, null))
+				&& init.type.getKind() != TypeKind.BOOLEAN) { // boolean x = true;
+			if (init instanceof JCLiteral) {
+				if (!shouldSkip(init, null)) return;
+			}
+			if (init instanceof JCMethodInvocation) {
+				
+			}
+			&& ((init instanceof JCLiteral && !shouldSkip(init, null)) // int x = null;
 				|| (init instanceof JCMethodInvocation
 						&& checker.isFromLibrary(TreeUtils.elementFromUse(init))))) {
 			// int x = 9 -> int x = Conversion.encrypt(9, "AH")
@@ -466,12 +478,15 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     					break;
     				}
     			}
-    		}
+    		} 
     		if (methName.startsWith("System.out.print")) {
     			String encryptType = getSimpleEncryptName(argRef);
     			if (encryptType != null && !(arg instanceof JCLiteral)) {
     				args[i] = getConvertMethod(arg, encryptType, false);
     			}
+    		} else if (arg instanceof JCLiteral 
+    				&& !argRef.getRawAnnotations().contains(checker.CLEAR)) {
+    			args[i] = getConvertMethod(arg, getSimpleEncryptName(argRef), true);
     		}
     		i++;
     	}
@@ -631,7 +646,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		jcmi.args = newArgs;
 	}
 
-	// skip (a == null)
+	// skip (a == null) and (a = true)
 	private boolean shouldSkip(ExpressionTree leftOperand, ExpressionTree rightOperand) {
 		if (leftOperand instanceof JCLiteral) {
 			if (((JCLiteral) leftOperand).getValue() == null) {
@@ -694,8 +709,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				}
 			}
 		} else if (!expRef.getRawAnnotations().contains(checker.CLEAR)
-				&& ((expression instanceof JCLiteral && !shouldSkip(expression, null))
-				|| (expression instanceof JCMethodInvocation
+				&& ((JCTree) expression).type.getKind() != TypeKind.BOOLEAN // boolean x = true;
+				&& ((expression instanceof JCLiteral && !shouldSkip(expression, null)) // int x = null;
+				|| (expression instanceof JCMethodInvocation // x = br.readLine();
 						&& checker.isFromLibrary(TreeUtils.elementFromUse(expression))))) {
 			JCAssign jcr = (JCAssign) node;
 			jcr.rhs = getConvertMethod(expression, getSimpleEncryptName(expRef), true);
@@ -740,11 +756,20 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		JCMethodInvocation convertOne = getConvertMethod(expOne, "AH", true);
 		// Computation.add(i, Encryption.encrypt(1, "AH"))
 		JCMethodInvocation computeMethod = getComputeMethod(arg, convertOne, Tag.PLUS);
+		// covert back to AH from OPE if the enrypt type of exp is not AH
+		String encryptType = getSimpleEncryptName(expRef);
+		JCMethodInvocation method;
+		if (encryptType.equals("AH")) {
+			method = computeMethod;
+		} else {
+			Conversion conversion = new Conversion(0, "AH", encryptType);
+			method = getConvertMethod(computeMethod, conversion);
+		}
 		// i++ -> i = i + 1;
 		Tree parent = getCurrentPath().getParentPath().getLeaf();
 		// For now, consider parent is JCExpressionStatement
 		JCExpressionStatement jces = (JCExpressionStatement) parent;
-		jces.expr = maker.Assign(exp, computeMethod);
+		jces.expr = maker.Assign(exp, method);
 	}
 	
 	@Override

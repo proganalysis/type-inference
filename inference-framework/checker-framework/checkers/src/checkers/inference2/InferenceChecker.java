@@ -354,7 +354,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	public boolean isCompilerAddedConstructor(ExecutableElement methodElt) {
 		MethodTree node = (MethodTree) getDeclaration(methodElt);
 		Element enclosingElement = methodElt.getEnclosingElement();
-		if (enclosingElement instanceof TypeElement
+		if (node != null && enclosingElement instanceof TypeElement
 				&& TreeUtils.isConstructor(node)) {
 			// Check if it is a default constructor
 			if (node.getParameters().isEmpty()) {

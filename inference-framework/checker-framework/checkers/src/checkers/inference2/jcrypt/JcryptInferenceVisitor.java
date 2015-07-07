@@ -1,11 +1,12 @@
 package checkers.inference2.jcrypt;
 
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.UnaryTree;
-
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.InferenceVisitor;
 import checkers.inference2.Reference;
@@ -76,5 +77,21 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		}
 		generateConstraint(ref, exprTree);
     }
-
+	
+	@Override
+	public Void visitNewArray(NewArrayTree node, Void p) {
+		for (ExpressionTree dim : node.getDimensions()) {
+			Reference dimRef = checker.getAnnotatedReference(dim);
+			generateConstraint(dim, dimRef);
+		}
+		return super.visitNewArray(node, p);
+	}
+	
+	@Override
+	public Void visitArrayAccess(ArrayAccessTree node, Void p) {
+		ExpressionTree index = node.getIndex();
+		Reference indexRef = checker.getAnnotatedReference(index);
+		generateConstraint(index, indexRef);
+		return super.visitArrayAccess(node, p);
+	}
 }

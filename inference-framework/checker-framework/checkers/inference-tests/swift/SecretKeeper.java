@@ -1,25 +1,22 @@
-package secretKeeper;
+package secret;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-
 import checkers.inference2.jcrypt.quals.*;
 
 public class SecretKeeper {
 
 	public static SKUser[] userDB;
-	public static int userNum;
+	public static int userNum, count = 0;
 	public static final int MAX_USERS = 100;
 	/*@Poly*/ private String username, password;
+	private static String[] args;
 
 	public static void main(String[] args) throws NullPointerException,
 			IOException {
 		/*@Sensitive*/ SecretKeeper mapp = new SecretKeeper();
+		SecretKeeper.args = args;
 		mapp.init();
 	}
-
-	private BufferedReader br;
 
 	public SecretKeeper() {
 		/* initialize userDB */
@@ -30,13 +27,15 @@ public class SecretKeeper {
 	}
 
 	public void init() throws IOException {
-		System.out.print("Enter (i) to Sign in, or (u) to Sign up: ");
-		br = new BufferedReader(new InputStreamReader(System.in));
-		String type = br.readLine();
+		System.out.print("Enter (i) to Sign in, or (u) to Sign up, or (e) to Exit: ");
+		String type = args[count];
+		count++;
 		if (type.equals("i")) {
 			signin();
 		} else if (type.equals("u")) {
 			signup();
+		} else if (type.equals("e")) {
+			return;
 		} else {
 			System.out.println("Invalid Input!");
 			init();
@@ -46,9 +45,11 @@ public class SecretKeeper {
 	public void getInfo() throws IOException {
 		System.out.println("Please enter your username and password.");
 		System.out.print("Username-> ");
-		username = br.readLine();
+		username = args[count];
+		count++;
 		System.out.print("Password-> ");
-		password = br.readLine();
+		password = args[count];
+		count++;
 	}
 
 	public void signin() throws IOException {
@@ -64,7 +65,8 @@ public class SecretKeeper {
 	public void printIncorrect() throws IOException {
 		System.out.print("Sorry, incorrect username/password.\n"
 				+ "Please try again (t) or sign up (u): ");
-		String s = br.readLine();
+		String s = args[count];
+		count++;
 		if (s.equals("t"))
 			signin();
 		else if (s.equals("u"))
@@ -96,7 +98,8 @@ public class SecretKeeper {
 				userNum = userNum + 1;
 				System.out.println("Welcome, " + username + "!");
 				System.out.print("Tell us a secret-> ");
-				/*@Sensitive*/ String secret = br.readLine();
+				/*@Sensitive*/ String secret = args[count];
+				count++;
 				user.setSecret(secret);
 				showPage(user);
 			} else {
@@ -110,10 +113,12 @@ public class SecretKeeper {
 		System.out.println("Hello, " + user.getName() + "! Here is your secret-> " + user.getSecret());
 		while (true) {
 			System.out.print("Enter (y) to update secret or (n) to sign out: ");
-			String s = br.readLine();
+			String s = args[count];
+			count++;
 			if (s.equals("y")) {
 				System.out.print("Update secret-> ");
-				/*@Sensitive*/ String secret = br.readLine();
+				/*@Sensitive*/ String secret = args[count];
+				count++;
 				user.setSecret(secret);
 				showPage(user);
 				break;
