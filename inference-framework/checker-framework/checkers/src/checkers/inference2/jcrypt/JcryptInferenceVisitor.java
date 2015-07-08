@@ -1,15 +1,20 @@
 package checkers.inference2.jcrypt;
 
+import javax.lang.model.element.VariableElement;
+
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.InferenceVisitor;
 import checkers.inference2.Reference;
+import checkers.util.TreeUtils;
 
 public class JcryptInferenceVisitor extends InferenceVisitor {
 	
@@ -94,4 +99,25 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		generateConstraint(index, indexRef);
 		return super.visitArrayAccess(node, p);
 	}
+	
+//	@Override
+//	public Void visitVariable(VariableTree node, Void p) {
+//		VariableElement varElt = TreeUtils.elementFromDeclaration(node);
+//		Reference varRef = checker.getAnnotatedReference(varElt);
+//		ExpressionTree initializer = node.getInitializer();
+//		if (initializer != null) {
+//			Reference initRef = checker.getAnnotatedReference(initializer);
+//			if (varElt.getKind().isField()) {
+//				generateConstraint(initRef, initializer);
+//				processVariableTree(node, initRef);
+//			} else if (initializer instanceof MethodInvocationTree
+//					&& !checker.isFromLibrary(TreeUtils.elementFromUse(initializer))) {
+//				generateConstraint(varRef, initializer);
+//			} else {
+//				generateConstraint(varRef, initializer);
+//				processVariableTree(node, initRef);
+//			}
+//		}
+//		return super.visitVariable(node, p);
+//	}
 }

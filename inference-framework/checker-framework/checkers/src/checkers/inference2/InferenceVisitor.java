@@ -294,13 +294,13 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		if (initializer != null) {
 			Reference initRef = checker.getAnnotatedReference(initializer);
 			if (varElt.getKind().isField()) {
-				//Reference initRef = checker.getAnnotatedReference(initializer);
 				generateConstraint(initRef, initializer);
-				//processVariableTree(node, initRef);
+				processVariableTree(node, initRef);
 			} else {
 				generateConstraint(varRef, initializer);
+				generateConstraint(initRef, initializer);
+				checker.addSubtypeConstraint(initRef, varRef, checker.getPosition(initializer));
 			}
-			processVariableTree(node, initRef);
 		}
 		return super.visitVariable(node, p);
 	}
@@ -625,7 +625,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         checker.addSubtypeConstraint(cFalseRef, lhsRef, pos);
     }
     
-    public void processBinaryTree(Reference lhsRef, BinaryTree bTree) {
+    protected void processBinaryTree(Reference lhsRef, BinaryTree bTree) {
     	ExpressionTree left = bTree.getLeftOperand();
 		ExpressionTree right = bTree.getRightOperand();
 		Reference leftRef = checker.getAnnotatedReference(left);
@@ -638,7 +638,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		generateConstraint(rightRef, right);
     }
     
-    public void processUnaryTree(Reference lhsRef, UnaryTree uTree) {
+    protected void processUnaryTree(Reference lhsRef, UnaryTree uTree) {
 		ExpressionTree exprTree = uTree.getExpression();
 		Reference ref = checker.getAnnotatedReference(exprTree);
 		if (lhsRef != null) {
@@ -647,7 +647,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		generateConstraint(ref, exprTree);
     }
     
-    private void processVariableTree(VariableTree tree, Reference initRef) {
+    protected void processVariableTree(VariableTree tree, Reference initRef) {
     	long pos = checker.getPosition(initRef);
     	VariableElement varElt = TreeUtils.elementFromDeclaration(tree);
 		Reference varRef = checker.getAnnotatedReference(varElt);
