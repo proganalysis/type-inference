@@ -18,6 +18,7 @@ import checkers.inference2.Conversion;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.ExecutableReference;
+import checkers.inference2.Reference.RefKind;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypes;
@@ -91,8 +92,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	
 	/** For recording visited method invocation trees or allocation sites */
 	protected Set<Tree> visited = new HashSet<Tree>();
-	
-	private static boolean hasImported = false;
+
+	private static boolean hasImported = false, inMainMethod;
 	
 	private static JCExpression objectType;
 	private static JCArrayTypeTree byteArray1, byteArray2;
@@ -238,7 +239,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		// add type cast: from Object to byte[]
 		JCExpression argJ = getTypeCast(arg);
 		com.sun.tools.javac.util.List<JCExpression> args;
-		if (con.getFrom().equals("CLEAR")) {
+		if (con.getFrom().equals("CLEAR") || con.getFrom().equals("BOT")) {
 			// Encryption.encrypt(arg, to)
 			fn = encryptionMethods.get("encrypt");
 			args = com.sun.tools.javac.util.List.of((JCExpression) arg, toTree);
@@ -338,7 +339,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		if (TreeUtils.enclosingClass(getCurrentPath()).getSimpleName().contentEquals("EncryptionSample"))
 			return super.visitVariable(node, p);
 		if (!varRef.getRawAnnotations().contains(checker.CLEAR)
-				&& !jcvd.sym.getEnclosingElement().getSimpleName().contentEquals("main")) {
+				&& !varRef.getRawAnnotations().contains(checker.BOT)) {
+				//&& !(inMainMethod && varRef.getKind() == RefKind.PARAMETER)) {
 			processVariableTree(jcvd);
 			JCExpression init = jcvd.getInitializer();
 			if (init != null) {
@@ -384,14 +386,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				}
 			}
 		} else if (!varRef.getRawAnnotations().contains(checker.CLEAR)
-				&& init.type.getKind() != TypeKind.BOOLEAN) { // boolean x = true;
-			if (init instanceof JCLiteral) {
-				if (!shouldSkip(init, null)) return;
-			}
-			if (init instanceof JCMethodInvocation) {
-				
-			}
-			&& ((init instanceof JCLiteral && !shouldSkip(init, null)) // int x = null;
+				&& init.type.getKind() != TypeKind.BOOLEAN // boolean x = true;
+				&& ((init instanceof JCLiteral && !shouldSkip(init, null)) // int x = null;
 				|| (init instanceof JCMethodInvocation
 						&& checker.isFromLibrary(TreeUtils.elementFromUse(init))))) {
 			// int x = 9 -> int x = Conversion.encrypt(9, "AH")
@@ -403,6 +399,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     
     @Override
 	public Void visitMethod(MethodTree node, Void p) {
+    	if (node.getName().contentEquals("main")) inMainMethod = true;
+		else inMainMethod = false;
     	String id = checker.getFileName(node) + checker.getLineNumber(node);
     	JCMethodDecl jcmd = (JCMethodDecl) node;
     	// create two versions of a sensitive method

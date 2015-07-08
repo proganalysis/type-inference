@@ -215,16 +215,16 @@ public class TransformMain extends InferenceMain {
 		// transform
 		info("Transforming...");
 		argList.set(processorIndex, transformCheckerPath);
-		return transform(argList, out);
+		return transform(argList, out, args[3]);
 	}
 	
-	private boolean transform(List<String> args, PrintWriter out) {
+	private boolean transform(List<String> args, PrintWriter out, String fullname) {
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(args.toArray(new String[0])) != Main.Result.OK)
         	return false;
         try {
-			PrintWriter pw = new PrintWriter(TransformMain.outputDir
-					+ File.separator + checker.getName() + "-result.java");
+			PrintWriter pw = new PrintWriter("/home/yao/Projects/swift/src/"
+					+ fullname.substring(fullname.lastIndexOf('/')-4));
 			checker.printResult(pw);
 			pw.close();
 		} catch (Exception e) {

@@ -292,13 +292,15 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		Reference varRef = checker.getAnnotatedReference(varElt);
 		ExpressionTree initializer = node.getInitializer();
 		if (initializer != null) {
+			Reference initRef = checker.getAnnotatedReference(initializer);
 			if (varElt.getKind().isField()) {
-				Reference initRef = checker.getAnnotatedReference(initializer);
+				//Reference initRef = checker.getAnnotatedReference(initializer);
 				generateConstraint(initRef, initializer);
-				processVariableTree(node, initRef);
+				//processVariableTree(node, initRef);
 			} else {
 				generateConstraint(varRef, initializer);
 			}
+			processVariableTree(node, initRef);
 		}
 		return super.visitVariable(node, p);
 	}
@@ -646,7 +648,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     }
     
     private void processVariableTree(VariableTree tree, Reference initRef) {
-    	long pos = checker.getPosition(tree);
+    	long pos = checker.getPosition(initRef);
     	VariableElement varElt = TreeUtils.elementFromDeclaration(tree);
 		Reference varRef = checker.getAnnotatedReference(varElt);
 		if (initRef != null) {

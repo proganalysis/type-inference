@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
@@ -19,6 +20,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
+import checkers.inference2.jcrypt2.quals.BOT;
 import checkers.inference2.jcrypt2.quals.RND;
 import checkers.inference2.jcrypt2.quals.OPE;
 import checkers.inference2.jcrypt2.quals.AH;
@@ -53,10 +55,10 @@ import com.sun.tools.javac.tree.JCTree.Tag;
  */
 @SupportedOptions({ "warn", "infer", "debug", "noReim", "inferLibrary",
 		"polyLibrary", "inferAndroidApp" })
-@TypeQualifiers({ RND.class, OPE.class, DET.class, AH.class })
+@TypeQualifiers({ RND.class, OPE.class, DET.class, AH.class ,BOT.class })
 public class Jcrypt2Checker extends InferenceChecker {
 
-	public AnnotationMirror RND, OPE, DET, AH, CLEAR;
+	public AnnotationMirror RND, OPE, DET, AH, CLEAR, BOT;
 
 	private Set<AnnotationMirror> sourceAnnos;
 
@@ -72,12 +74,14 @@ public class Jcrypt2Checker extends InferenceChecker {
 		AH = annoFactory.fromClass(AH.class);
 		DET = annoFactory.fromClass(DET.class);
 		CLEAR = annoFactory.fromClass(Clear.class);
+		BOT = annoFactory.fromClass(BOT.class);
 
 		sourceAnnos = AnnotationUtils.createAnnotationSet();
 		sourceAnnos.add(RND);
 		sourceAnnos.add(OPE);
 		sourceAnnos.add(AH);
 		sourceAnnos.add(DET);
+		sourceAnnos.add(BOT);
 
 		specialRefKinds = new ArrayList<RefKind>(3);
 		specialRefKinds.add(RefKind.STRING);
@@ -212,6 +216,16 @@ public class Jcrypt2Checker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateDefault(Reference r, RefKind kind, Element elt, Tree t) {
+//		if (isAnnotated(r)) {
+//			Set<AnnotationMirror> annotations = r.getRawAnnotations();
+//			AnnotationMirror anno = annotations.iterator().next();
+//			if (anno.toString().equals(BOT.toString())) {
+//				Set<AnnotationMirror> annos = AnnotationUtils
+//						.createAnnotationSet();
+//				annos.add(CLEAR);
+//				r.setRawAnnotations(annos);
+//			}
+//		}
 		if (!isAnnotated(r) && !containsAnno(r, CLEAR)) {
 			if (t instanceof JCBinary) {
 				JCBinary jct = (JCBinary) t;
@@ -273,7 +287,13 @@ public class Jcrypt2Checker extends InferenceChecker {
 				default:						
 					r.setAnnotations(sourceAnnos, this);
 	            }
-			} else {				
+			} else if (getEnclosingMethod(elt) != null
+					&& getEnclosingMethod(elt).getSimpleName().contentEquals("main")
+					&& kind == RefKind.PARAMETER) {
+				Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+				annos.add(CLEAR);
+				r.setRawAnnotations(annos);
+			} else {
 				r.setAnnotations(sourceAnnos, this);
 			}
 		}
@@ -423,6 +443,8 @@ public class Jcrypt2Checker extends InferenceChecker {
 			return 2;
 		else if (anno.toString().equals(RND.toString()))
 			return 1;
+		else if (anno.toString().equals(BOT.toString()))
+			return 5;
 		else
 			return Integer.MAX_VALUE;
 	}

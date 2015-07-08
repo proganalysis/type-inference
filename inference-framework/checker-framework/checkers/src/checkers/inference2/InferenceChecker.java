@@ -1280,4 +1280,9 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				types.erasure(a2.asType())));
 	}
 
+	public long getPosition(Reference ref) {
+		if (ref.getTree() == null) return 0;
+		return getPosition(ref.getTree());
+	}
+
 }

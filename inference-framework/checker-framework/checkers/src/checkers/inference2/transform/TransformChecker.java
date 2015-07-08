@@ -16,6 +16,7 @@ import checkers.inference2.jcrypt2.quals.RND;
 import checkers.inference2.jcrypt2.quals.OPE;
 import checkers.inference2.jcrypt2.quals.AH;
 import checkers.inference2.jcrypt2.quals.DET;
+import checkers.inference2.jcrypt2.quals.BOT;
 import checkers.inference2.jcrypt.quals.Clear;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
@@ -36,10 +37,10 @@ import com.sun.source.tree.Tree;
  */
 @SupportedOptions({ "warn", "infer", "debug", "noReim", "inferLibrary",
 		"polyLibrary", "inferAndroidApp" })
-@TypeQualifiers({ RND.class, OPE.class, DET.class, AH.class })
+@TypeQualifiers({ RND.class, OPE.class, DET.class, AH.class ,BOT.class })
 public class TransformChecker extends InferenceChecker {
 
-	public AnnotationMirror RND, OPE, DET, AH, CLEAR;
+	public AnnotationMirror RND, OPE, DET, AH, CLEAR, BOT;
 
 	private Set<AnnotationMirror> sourceAnnos;
 
@@ -55,6 +56,7 @@ public class TransformChecker extends InferenceChecker {
 		AH = annoFactory.fromClass(AH.class);
 		DET = annoFactory.fromClass(DET.class);
 		CLEAR = annoFactory.fromClass(Clear.class);
+		BOT = annoFactory.fromClass(BOT.class);
 
 		sourceAnnos = AnnotationUtils.createAnnotationSet();
 		sourceAnnos.add(RND);
@@ -247,7 +249,8 @@ public class TransformChecker extends InferenceChecker {
 
 	@Override
 	public void printResult(PrintWriter out) {
-		out.print(this.root.toString().replace("@Sensitive()", "").replace("@Poly()", ""));
+		out.print(this.root.toString().replace("@Sensitive()", "").
+				replace("@Poly()", "").replace("@Clear()", "").replace("@BOT()", ""));
 	}
 
 }
