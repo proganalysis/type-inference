@@ -18,7 +18,6 @@ import checkers.inference2.Conversion;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.ExecutableReference;
-import checkers.inference2.Reference.RefKind;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypes;

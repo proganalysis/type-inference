@@ -3,18 +3,13 @@
  */
 package checkers.inference2.jcrypt;
 
-import static com.esotericsoftware.minlog.Log.info;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
@@ -41,7 +36,6 @@ import checkers.inference2.Reference.RefKind;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
@@ -61,25 +55,11 @@ import com.sun.source.tree.Tree.Kind;
 public class JcryptChecker extends InferenceChecker {
 
 	public AnnotationMirror READONLY, POLYREAD, MUTABLE, POLY,
-	    SENSITIVE, CLEAR, BOTTOM;
+	    SENSITIVE, CLEAR;
 
 	private Set<AnnotationMirror> sourceAnnos;
 
-	private List<Pattern> specialMethodPatterns = null;
-
-	private boolean useReim = true;
-
-	private boolean polyLibrary = true;
-
-	private boolean inferLibrary = false;
-
-	private boolean inferAndroidApp = false;
-
 	private AnnotationUtils annoFactory;
-
-	private Set<String> defaultReadonlyRefTypes;
-
-	private Set<String> androidClasses;
 
 	public void initChecker(ProcessingEnvironment processingEnv) {
 		super.initChecker(processingEnv);
@@ -96,87 +76,6 @@ public class JcryptChecker extends InferenceChecker {
 		sourceAnnos.add(SENSITIVE);
 		sourceAnnos.add(POLY);
 		sourceAnnos.add(CLEAR);
-		
-		defaultReadonlyRefTypes = new HashSet<String>();
-		defaultReadonlyRefTypes.add("java.lang.String");
-		defaultReadonlyRefTypes.add("java.lang.Boolean");
-		defaultReadonlyRefTypes.add("java.lang.Byte");
-		defaultReadonlyRefTypes.add("java.lang.Character");
-		defaultReadonlyRefTypes.add("java.lang.Double");
-		defaultReadonlyRefTypes.add("java.lang.Float");
-		defaultReadonlyRefTypes.add("java.lang.Integer");
-		defaultReadonlyRefTypes.add("java.lang.Long");
-		defaultReadonlyRefTypes.add("java.lang.Number");
-		defaultReadonlyRefTypes.add("java.lang.Short");
-		defaultReadonlyRefTypes
-				.add("java.util.concurrent.atomic.AtomicInteger");
-		defaultReadonlyRefTypes.add("java.util.concurrent.atomic.AtomicLong");
-		defaultReadonlyRefTypes.add("java.math.BigDecimal");
-		defaultReadonlyRefTypes.add("java.math.BigInteger");
-
-		specialMethodPatterns = new ArrayList<Pattern>(5);
-		specialMethodPatterns.add(Pattern
-				.compile(".*\\.equals\\(java\\.lang\\.Object\\)$"));
-		specialMethodPatterns.add(Pattern.compile(".*\\.hashCode\\(\\)$"));
-		specialMethodPatterns.add(Pattern.compile(".*\\.toString\\(\\)$"));
-		specialMethodPatterns.add(Pattern.compile(".*\\.compareTo\\(.*\\)$"));
-
-		androidClasses = new HashSet<String>();
-		androidClasses.add("android.app.Activity");
-		androidClasses.add("android.app.Service");
-		androidClasses.add("android.location.LocationListener");
-
-		if (getProcessingEnvironment().getOptions().containsKey("inferLibrary")) {
-			inferLibrary = true;
-		}
-		if (getProcessingEnvironment().getOptions().containsKey("polyLibrary")) {
-			polyLibrary = true;
-		}
-		if (getProcessingEnvironment().getOptions().containsKey("noReim")) {
-			useReim = false;
-		}
-		if (getProcessingEnvironment().getOptions().containsKey(
-				"inferAndroidApp")) {
-			inferAndroidApp = true;
-		}
-
-		if (DEBUG) {
-			info("useReim = " + useReim);
-			info("polyLibrary = " + polyLibrary);
-			info("inferLibrary = " + inferLibrary);
-			info("inferAndroidApp = " + inferAndroidApp);
-		}
-	}
-
-	public boolean isUseReim() {
-		return useReim;
-	}
-
-	public boolean isInferLibrary() {
-		return inferLibrary;
-	}
-
-	public boolean isPolyLibrary() {
-		return polyLibrary;
-	}
-
-	public boolean isInferAndroidApp() {
-		return inferAndroidApp;
-	}
-
-	public boolean isDefaultReadonlyType(AnnotatedTypeMirror t) {
-		if (t.getKind().isPrimitive())
-			return true;
-		TypeElement elt = null;
-		if (t.getKind() == TypeKind.DECLARED) {
-			AnnotatedDeclaredType dt = (AnnotatedDeclaredType) t;
-			elt = (TypeElement) dt.getUnderlyingType().asElement();
-		}
-		if (elt != null
-				&& defaultReadonlyRefTypes.contains(elt.getQualifiedName()
-						.toString()))
-			return true;
-		return false;
 	}
 
 	public Element getEnclosingMethod(Element elt) {
@@ -278,12 +177,10 @@ public class JcryptChecker extends InferenceChecker {
 	@Override
 	protected void annotateDefault(Reference r, RefKind kind, Element elt,
 			Tree t) {
-		if (!isAnnotated(r)) {
-			if (kind == RefKind.LITERAL && t.getKind() != Kind.NULL_LITERAL) {
-				r.addAnnotation(CLEAR);
-			} else {
-				r.setAnnotations(sourceAnnos, this);
-			}
+		if (kind == RefKind.LITERAL && t.getKind() != Kind.NULL_LITERAL) {
+			r.addAnnotation(CLEAR);
+		} else {
+			r.setAnnotations(sourceAnnos, this);
 		}
 	}
 
@@ -296,10 +193,8 @@ public class JcryptChecker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateArrayComponent(Reference r, Element elt) {
-		if (!isAnnotated(r)) {
-			r.addAnnotation(CLEAR);
-			r.addAnnotation(POLY);
-		}
+		r.addAnnotation(CLEAR);
+		r.addAnnotation(POLY);
 	}
 
 	/*
@@ -311,13 +206,11 @@ public class JcryptChecker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateField(Reference r, Element fieldElt) {
-		if (!isAnnotated(r)) {
-			if (!ElementUtils.isStatic(fieldElt)) {
-				r.addAnnotation(CLEAR);
-				r.addAnnotation(POLY);
-			} else {
-				r.setAnnotations(getSourceLevelQualifiers(), this);
-			}
+		if (!ElementUtils.isStatic(fieldElt)) {
+			r.addAnnotation(CLEAR);
+			r.addAnnotation(POLY);
+		} else {
+			r.setAnnotations(getSourceLevelQualifiers(), this);
 		}
 	}
 
@@ -330,8 +223,8 @@ public class JcryptChecker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateThis(Reference r, ExecutableElement methodElt) {
-		if (!isAnnotated(r) && !ElementUtils.isStatic(methodElt)) {
-			if (isPolyLibrary() && isFromLibrary(methodElt)) {
+		if (!ElementUtils.isStatic(methodElt)) {
+			if (isFromLibrary(methodElt)) {
 				r.addAnnotation(POLY);
 			} else {
 				r.setAnnotations(sourceAnnos, this);
@@ -348,12 +241,10 @@ public class JcryptChecker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateParameter(Reference r, Element elt) {
-		if (!isAnnotated(r)) {
-			if (isPolyLibrary() && isFromLibrary(elt)) {
-				r.addAnnotation(POLY);
-			} else {
-				r.setAnnotations(sourceAnnos, this);
-			}
+		if (isFromLibrary(elt)) {
+			r.addAnnotation(POLY);
+		} else {
+			r.setAnnotations(sourceAnnos, this);
 		}
 	}
 
@@ -366,8 +257,8 @@ public class JcryptChecker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateReturn(Reference r, ExecutableElement methodElt) {
-		if (!isAnnotated(r) && r.getType().getKind() != TypeKind.VOID) {
-			if (isPolyLibrary() && isFromLibrary(methodElt)) {
+		if (r.getType().getKind() != TypeKind.VOID) {
+			if (isFromLibrary(methodElt)) {
 				r.addAnnotation(POLY);
 			} else {
 				r.setAnnotations(sourceAnnos, this);
@@ -472,33 +363,11 @@ public class JcryptChecker extends InferenceChecker {
 	@Override
 	public void addSubtypeConstraint(Reference sub, Reference sup, long pos) {
 		super.addSubtypeConstraint(sub, sup, pos);
-		if (!containsReadonly(sub) && !containsReadonly(sup)) {
+		if ((containsAnno(sub, MUTABLE) || containsAnno(sub, POLYREAD))
+				&& (containsAnno(sup, MUTABLE) || containsAnno(sub, POLYREAD))) {
 			// add a subtying constraint with opposite direction
 			super.addSubtypeConstraint(sup, sub, pos);
 		}
-	}
-
-	public boolean containsReadonly(Reference ref) {
-		AnnotatedTypeMirror type = ref.getType();
-		if (type != null && isDefaultReadonlyType(type))
-			return true;
-		if (ref instanceof AdaptReference) {
-			Reference contextRef = ((AdaptReference) ref).getContextRef();
-			Reference declRef = ((AdaptReference) ref).getDeclRef();
-			if (ref instanceof FieldAdaptReference) {
-				if (containsReadonly(contextRef) || containsReadonly(declRef)) {
-					return true;
-				}
-			} else if (containsReadonly(declRef)) {
-				return true;
-			}
-		}
-		for (AnnotationMirror a : ref.getRawAnnotations()) {
-			if (a.toString().equals(READONLY.toString())) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -567,27 +436,6 @@ public class JcryptChecker extends InferenceChecker {
 			sb.append(r.getKind());
 			out.println(sb.toString());
 		}
-	}
-
-	@Override
-	public Reference getAnnotatedReference(String identifier, RefKind kind,
-			Tree tree, Element element, TypeElement enclosingType,
-			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
-		Reference ret = super.getAnnotatedReference(identifier, kind, tree,
-				element, enclosingType, type, annos);
-		// we have reim annotation, now we want to add sflow annotation
-		Set<AnnotationMirror> reimAnnos = ret.getRawAnnotations();
-		if (!isAnnotated(ret)) {
-			annotatedReferences.remove(identifier);
-			Reference newRef = super.getAnnotatedReference(identifier, kind,
-					tree, element, enclosingType, type, annos);
-			for (AnnotationMirror anno : reimAnnos) {
-				newRef.addAnnotation(anno);
-			}
-			annotatedReferences.put(identifier, newRef);
-			return newRef;
-		}
-		return ret;
 	}
 
 }

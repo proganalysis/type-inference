@@ -15,8 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-
 import checkers.inference2.Constraint;
 import checkers.inference2.Conversion;
 import checkers.inference2.InferenceChecker;
@@ -24,7 +22,6 @@ import checkers.inference2.MaximalTypingExtractor;
 import checkers.inference2.Reference;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.Reference.AdaptReference;
-import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.Reference.RefKind;
 import checkers.util.AnnotationUtils;
 
@@ -94,7 +91,9 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 					errors.add(c);
 				}
 			}
-			conversionCheck(c, left, right, leftAnnos, rightAnnos);
+			if (!c.toString().contains("inference-tests/jcrypt/EncryptionSample.java")) {
+				conversionCheck(c, left, right, leftAnnos, rightAnnos);
+			}
 		}
 		info(this.getClass().getSimpleName(),
 				"Finished verifying the concrete typing. " + errors.size()
@@ -107,62 +106,62 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 
 	public void conversionCheck(Constraint c, Reference left, Reference right,
 			Set<AnnotationMirror> leftAnnos, Set<AnnotationMirror> rightAnnos) {
-		if (right.getKind() == RefKind.EQUAL_NULL || left.getKind() == RefKind.EQUAL_NULL
-				|| c.getPos() == 0) return;
-		Jcrypt2Checker jcrypt2checker = (Jcrypt2Checker) checker;
+//		if (right.getKind() == RefKind.EQUAL_NULL || left.getKind() == RefKind.EQUAL_NULL
+//				|| c.getPos() == 0) return;
 		// ignore clear <: parameter, clear <: clear, clear <: component(parameter)
-		if (jcrypt2checker.containsAnno(left, jcrypt2checker.CLEAR)
-				&& !(right instanceof MethodAdaptReference) && !rightAnnos.isEmpty()) {
-			Element rightEle = right.getElement();
-			if (rightEle != null && checker.getAnnotatedReference(rightEle).getKind()
-					== RefKind.PARAMETER) return;
+		if (leftAnnos.isEmpty()) { // clear <: RND
+			// ignore method invocation because we have two versions of such methods
+			if (right.getKind() == RefKind.METH_ADAPT || rightAnnos.isEmpty()) return;
+//			Element rightEle = right.getElement();
+//			if (rightEle != null && checker.getAnnotatedReference(rightEle).getKind()
+//					== RefKind.PARAMETER) return;
 			String rightCryptType = right.getCryptType() == null ?
 					rightAnnos.iterator().next().toString()
 					: right.getCryptType().toString();
-			Conversion con = new Conversion(c.getPos(), "CLEAR",
-					rightCryptType.substring(rightCryptType.lastIndexOf('.') + 1));
-			List<Conversion> cons = convertedReferences.get(left.getIdentifier());
-			if (cons == null) {
-				cons = new ArrayList<>();
-			}
-			cons.add(con);
-			convertedReferences.put(left.getIdentifier(), cons);
-			if (conversions.put(c.getPos() + ":" + left.getIdentifier(), c) == null) {
-				System.out.println(c.toString());
-				System.out.println("Line " + c.getPos() + ": " + left.getName()
-						+ " CLEAR => "
-						+ rightCryptType.substring(rightCryptType.lastIndexOf('.')+1));
-			}
-			return;
-		}
-		if (!leftAnnos.isEmpty() && !rightAnnos.isEmpty()) {
+			Conversion con = new Conversion(c.getPos(), "CLEAR", getSimpleName(rightCryptType));
+			addConversion(c, left.getIdentifier(), con);
+		} else {
 			AnnotationMirror leftAnno = leftAnnos.iterator().next();
-			AnnotationMirror rightAnno = rightAnnos.iterator().next();
 			String leftCryptType = left.getCryptType() == null ? leftAnno
 					.toString() : left.getCryptType().toString();
-			String rightCryptType = right.getCryptType() == null ? rightAnno
-					.toString() : right.getCryptType().toString();
-			if (!leftCryptType.equals(rightCryptType)) {
-				Conversion con = new Conversion(c.getPos(),
-						leftCryptType.substring(leftCryptType.lastIndexOf('.') + 1),
-						rightCryptType.substring(rightCryptType.lastIndexOf('.') + 1));
-				String id = left instanceof AdaptReference ? right.getIdentifier() : left.getIdentifier();
-				List<Conversion> cons = convertedReferences.get(id);
-				if (cons == null) {
-					cons = new ArrayList<>();
+			if (rightAnnos.isEmpty()) {
+				// RND <: clear, the parameters of library method should be decrypted
+				// back to clear
+				if (right.getKind() == RefKind.METH_ADAPT) {
+					Conversion con = new Conversion(c.getPos(),
+							getSimpleName(leftCryptType), "CLEAR");
+					addConversion(c, left.getIdentifier(), con);
 				}
-				cons.add(con);
-				convertedReferences.put(id, cons);
-				if (conversions.put(c.getPos() + ":" + left.getIdentifier(), c) == null) {
-					String leftName = left instanceof AdaptReference ?
-							((AdaptReference) left).getDeclRef().getName() : left.getName();
-					System.out.println(c.toString());
-					System.out.println("Line " + c.getPos() + ": " + leftName
-							+ " " + leftCryptType.substring(leftCryptType.lastIndexOf('.')+1)
-							+ " => " + rightCryptType.substring(rightCryptType.lastIndexOf('.')+1));
+			} else { // OPE <: RND
+				AnnotationMirror rightAnno = rightAnnos.iterator().next();
+				String rightCryptType = right.getCryptType() == null ? rightAnno
+						.toString() : right.getCryptType().toString();
+				if (!leftCryptType.equals(rightCryptType)) {
+					Conversion con = new Conversion(c.getPos(), getSimpleName(leftCryptType),
+							getSimpleName(rightCryptType));
+					String id = left instanceof AdaptReference ? right
+							.getIdentifier() : left.getIdentifier();
+					addConversion(c, id, con);
 				}
 			}
 		}
+	}
+
+	private void addConversion(Constraint c, String id, Conversion con) {
+		List<Conversion> cons = convertedReferences.get(id);
+		if (cons == null) {
+			cons = new ArrayList<>();
+		}
+		cons.add(con);
+		convertedReferences.put(id, cons);
+		if (conversions.put(c.getPos() + ":" + id, c) == null) {
+			System.out.println(c.toString());
+			System.out.println(id + ": " + con.getFrom() + " => " + con.getTo());
+		}
+	}
+	
+	private String getSimpleName(String type) {
+		return type.substring(type.lastIndexOf('.') + 1);
 	}
 
 }

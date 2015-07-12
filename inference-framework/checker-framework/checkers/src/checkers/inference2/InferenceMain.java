@@ -340,4 +340,9 @@ public class InferenceMain {
             throw new InternalError("default charset doesn't exist. Your VM is borked.");
         }
     }
+
+	public void setTransformDir() {
+		// TODO Auto-generated method stub
+		
+	}
 }

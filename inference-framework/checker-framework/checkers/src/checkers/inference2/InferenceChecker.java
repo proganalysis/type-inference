@@ -680,81 +680,87 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Tree tree, Element element, TypeElement enclosingType,
 			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
 		Reference ret = annotatedReferences.get(identifier);
-		if (ret == null) {
-			if (type != null) {
-				switch (type.getKind()) {
-				case ARRAY:
+		if (type != null) {
+			switch (type.getKind()) {
+			case ARRAY:
+				if (ret == null) {
 					ret = new ArrayReference(identifier, kind, tree, element,
 							enclosingType, type, annos);
-					AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type)
-							.getComponentType();
-					String componentIdentifier = identifier + ARRAY_SUFFIX;
-					Reference componentRef = getAnnotatedReference(
-							componentIdentifier, RefKind.COMPONENT, null,
-							element, enclosingType, componentType);
-					((ArrayReference) ret).setComponentRef(componentRef);
-					break;
-				case EXECUTABLE:
+				}
+				AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
+				String componentIdentifier = identifier + ARRAY_SUFFIX;
+				Reference componentRef = getAnnotatedReference(componentIdentifier,
+						RefKind.COMPONENT, null, element, enclosingType, componentType);
+				((ArrayReference) ret).setComponentRef(componentRef);
+				break;
+			case EXECUTABLE:
+				if (ret == null) {
 					ret = new ExecutableReference(identifier, tree, element,
 							enclosingType, type, type.getAnnotations());
-					ExecutableElement methodElt = (ExecutableElement) element;
-					AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
-					// THIS
-					Reference thisRef = getAnnotatedReference(identifier
-							+ THIS_SUFFIX, RefKind.THIS, tree, element,
-							enclosingType, methodType.getReceiverType());
-					((ExecutableReference) ret).setThisRef(thisRef);
-					// RETURN
-					AnnotatedTypeMirror returnType = (element.getKind() == ElementKind.CONSTRUCTOR ? currentFactory
-							.getAnnotatedType(enclosingType) : methodType
-							.getReturnType());
-					Reference returnRef = getAnnotatedReference(identifier
-							+ RETURN_SUFFIX, RefKind.RETURN, tree, element,
-							enclosingType, returnType);
-					((ExecutableReference) ret).setReturnRef(returnRef);
-					// PARAMETERS
-					List<? extends VariableElement> parameters = methodElt
-							.getParameters();
-					List<Reference> paramRefs = new ArrayList<Reference>();
-					for (VariableElement paramElt : parameters) {
-						Reference paramRef = getAnnotatedReference(paramElt);
-						paramRefs.add(paramRef);
-					}
-					((ExecutableReference) ret).setParamRefs(paramRefs);
-					break;
-				default:
+				}
+				ExecutableElement methodElt = (ExecutableElement) element;
+				AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
+				// THIS
+				Reference thisRef = getAnnotatedReference(identifier + THIS_SUFFIX,
+						RefKind.THIS, tree, element, enclosingType, methodType.getReceiverType());
+				((ExecutableReference) ret).setThisRef(thisRef);
+				// RETURN
+				AnnotatedTypeMirror returnType = (element.getKind() == ElementKind.CONSTRUCTOR ? currentFactory
+						.getAnnotatedType(enclosingType) : methodType.getReturnType());
+				Reference returnRef = getAnnotatedReference(identifier + RETURN_SUFFIX,
+						RefKind.RETURN, tree, element, enclosingType, returnType);
+				((ExecutableReference) ret).setReturnRef(returnRef);
+				// PARAMETERS
+				List<? extends VariableElement> parameters = methodElt.getParameters();
+				List<Reference> paramRefs = new ArrayList<Reference>();
+				for (VariableElement paramElt : parameters) {
+					Reference paramRef = getAnnotatedReference(paramElt);
+					paramRefs.add(paramRef);
+				}
+				((ExecutableReference) ret).setParamRefs(paramRefs);
+				break;
+			default:
+				if (ret == null) {
 					ret = new Reference(identifier, kind, tree, element,
 							enclosingType, type, annos);
 				}
-			} else {
+			}
+		} else {
+			if (ret == null) {
 				ret = new Reference(identifier, kind, tree, element,
 						enclosingType, type, annos);
 			}
-			// add default annotations
-			switch (kind) {
-			case FIELD:
-				annotateField(ret, element);
-				break;
-			case COMPONENT:
-				annotateArrayComponent(ret, element);
-				break;
-			case THIS:
-				annotateThis(ret, (ExecutableElement) element);
-				break;
-			case RETURN:
-				annotateReturn(ret, (ExecutableElement) element);
-				break;
-			case PARAMETER:
-				annotateParameter(ret, element);
-				break;
-			case FIELD_ADAPT:
-			case METH_ADAPT:
-			case CONSTANT:
-				// We don't want annotations
-				break;
-			default:
-				// Do default annotations
-				annotateDefault(ret, kind, element, tree);
+		}
+		if (!isAnnotated(ret)) {
+			if (!annos.isEmpty()) {
+				ret.setAnnotations(annos, this);
+			} else {
+				// add default annotations
+				switch (kind) {
+				case FIELD:
+					annotateField(ret, element);
+					break;
+				case COMPONENT:
+					annotateArrayComponent(ret, element);
+					break;
+				case THIS:
+					annotateThis(ret, (ExecutableElement) element);
+					break;
+				case RETURN:
+					annotateReturn(ret, (ExecutableElement) element);
+					break;
+				case PARAMETER:
+					annotateParameter(ret, element);
+					break;
+				case FIELD_ADAPT:
+				case METH_ADAPT:
+				case CONSTANT:
+					// We don't want annotations
+					break;
+				default:
+					// Do default annotations
+					annotateDefault(ret, kind, element, tree);
+				}
 			}
 			annotatedReferences.put(identifier, ret);
 		}
@@ -1285,4 +1291,17 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		return getPosition(ref.getTree());
 	}
 
+	public boolean containsAnno(Reference ref, AnnotationMirror anno) {
+		if (ref instanceof AdaptReference) {
+			Reference contextRef = ((AdaptReference) ref).getContextRef();
+			Reference declRef = ((AdaptReference) ref).getDeclRef();
+			if (ref.getKind() == RefKind.FIELD_ADAPT) {
+				return containsAnno(contextRef, anno)
+						|| containsAnno(declRef, anno);
+			} else {
+				return containsAnno(declRef, anno);
+			}
+		}
+		return ref.getRawAnnotations().contains(anno);
+	}
 }

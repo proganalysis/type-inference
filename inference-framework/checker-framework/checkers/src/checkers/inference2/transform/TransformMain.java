@@ -49,6 +49,8 @@ public class TransformMain extends InferenceMain {
     
     public static final String outputDir = "infer-output";
     
+    public static final String outputDirTrans = "/home/yao/Projects/swift/src/";
+    
     private static TransformMain inferenceMain = null;
 
     public InferenceChecker checker; 
@@ -223,7 +225,7 @@ public class TransformMain extends InferenceMain {
         if (main.compile(args.toArray(new String[0])) != Main.Result.OK)
         	return false;
         try {
-			PrintWriter pw = new PrintWriter("/home/yao/Projects/swift/src/"
+			PrintWriter pw = new PrintWriter(outputDirTrans
 					+ fullname.substring(fullname.lastIndexOf('/')-4));
 			checker.printResult(pw);
 			pw.close();

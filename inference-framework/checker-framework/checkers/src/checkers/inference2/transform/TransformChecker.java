@@ -243,8 +243,24 @@ public class TransformChecker extends InferenceChecker {
 	@Override
 	protected SourceVisitor<?, ?> getInferenceVisitor(
 			InferenceChecker inferenceChecker, CompilationUnitTree root) {
+		if (this.root != null && this.root != root) printResult();
 		this.root = root;
 		return new TransformVisitor(this, root);
+	}
+	
+	public void printResult() {
+		String fullname = root.getSourceFile().toString();
+		int start = fullname.lastIndexOf('/') + 1;
+		int end = fullname.indexOf(']');
+		String filename = fullname.substring(start, end);
+		if (filename.equals("EncryptionSample.java")) return;
+		try {
+			PrintWriter pw = new PrintWriter(TransformMain.outputDirTrans + filename);
+			printResult(pw);
+			pw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

@@ -216,17 +216,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateDefault(Reference r, RefKind kind, Element elt, Tree t) {
-//		if (isAnnotated(r)) {
-//			Set<AnnotationMirror> annotations = r.getRawAnnotations();
-//			AnnotationMirror anno = annotations.iterator().next();
-//			if (anno.toString().equals(BOT.toString())) {
-//				Set<AnnotationMirror> annos = AnnotationUtils
-//						.createAnnotationSet();
-//				annos.add(CLEAR);
-//				r.setRawAnnotations(annos);
-//			}
-//		}
-		if (!isAnnotated(r) && !containsAnno(r, CLEAR)) {
+		if (!containsAnno(r, CLEAR)) {
 			if (t instanceof JCBinary) {
 				JCBinary jct = (JCBinary) t;
 				setRefKind(r, jct);
@@ -332,7 +322,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateThis(Reference r, ExecutableElement methodElt) {
-		annotateParameter(r, methodElt);
+		annotateDefault(r, r.getKind(), methodElt, null);
 	}
 
 	/*
@@ -344,12 +334,19 @@ public class Jcrypt2Checker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateParameter(Reference r, Element elt) {
-		if (!isAnnotated(r) && !containsAnno(r, CLEAR)) {
-			if (r.toString().contains("java.lang.String.equals")) {
-				r.addAnnotation(OPE);
-				r.addAnnotation(DET);
-			} else if (r.toString().equals("java.lang.String.compareTo")) {
-				r.addAnnotation(OPE);
+		if (!containsAnno(r, CLEAR)) {
+			String identifier = r.getIdentifier();
+			if (identifier.startsWith("LIB-")) {
+				if (identifier.startsWith("LIB-java.lang.String.compareTo")) {
+					r.addAnnotation(OPE);
+				} else if (identifier.startsWith("LIB-java.lang.String.equals")) {
+					r.addAnnotation(OPE);
+					r.addAnnotation(DET);
+				} else {
+					Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+					annos.add(CLEAR);
+					r.setRawAnnotations(annos);
+				}
 			} else {
 				annotateDefault(r, r.getKind(), elt, null);
 			}
@@ -459,25 +456,10 @@ public class Jcrypt2Checker extends InferenceChecker {
 		return false;
 	}
 
+	@Override
 	public boolean containsAnno(Reference ref, AnnotationMirror anno) {
 		if (InferenceMainJcrypt2.fullEncrypt) return false;
-		if (ref instanceof AdaptReference) {
-			Reference contextRef = ((AdaptReference) ref).getContextRef();
-			Reference declRef = ((AdaptReference) ref).getDeclRef();
-			if (ref instanceof FieldAdaptReference) {
-				if (containsAnno(contextRef, anno) || containsAnno(declRef, anno)) {
-					return true;
-				}
-			} else if (containsAnno(declRef, anno)) {
-				return true;
-			}
-		}
-		for (AnnotationMirror a : ref.getRawAnnotations()) {
-			if (a.toString().equals(anno.toString())) {
-				return true;
-			}
-		}
-		return false;
+		else return super.containsAnno(ref, anno);
 	}
 
 	@Override
@@ -536,31 +518,6 @@ public class Jcrypt2Checker extends InferenceChecker {
 			sb.append(r.getKind());
 			out.println(sb.toString());
 		}
-	}
-
-	@Override
-	public Reference getAnnotatedReference(String identifier, RefKind kind,
-			Tree tree, Element element, TypeElement enclosingType,
-			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
-		Reference ret = super.getAnnotatedReference(identifier, kind, tree,
-				element, enclosingType, type, annos);
-		if (!isAnnotated(ret)) {
-			// we have reim and jcrypt annotation, now we want to add encryption annotation
-			Set<AnnotationMirror> oldAnnos = ret.getRawAnnotations();
-			annotatedReferences.remove(identifier);
-			if (containsAnno(ret, CLEAR)) {
-				annos = AnnotationUtils.createAnnotationSet();
-				annos.add(CLEAR);
-			}
-			Reference newRef = super.getAnnotatedReference(identifier, kind,
-					tree, element, enclosingType, type, annos);
-			for (AnnotationMirror anno : oldAnnos) {
-				newRef.addAnnotation(anno);
-			}
-			annotatedReferences.put(identifier, newRef);
-			return newRef;
-		}
-		return ret;
 	}
 
 	@Override
