@@ -111,7 +111,10 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 		// ignore clear <: parameter, clear <: clear, clear <: component(parameter)
 		if (leftAnnos.isEmpty()) { // clear <: RND
 			// ignore method invocation because we have two versions of such methods
-			if (right.getKind() == RefKind.METH_ADAPT || rightAnnos.isEmpty()) return;
+			if (right.getKind() == RefKind.METH_ADAPT
+					// ignore clear <: clear and null (clear) <: x == null (DET)
+					|| rightAnnos.isEmpty() || left.getKind() == RefKind.NULL)
+				return;
 //			Element rightEle = right.getElement();
 //			if (rightEle != null && checker.getAnnotatedReference(rightEle).getKind()
 //					== RefKind.PARAMETER) return;
@@ -133,6 +136,8 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 					addConversion(c, left.getIdentifier(), con);
 				}
 			} else { // OPE <: RND
+				// ignore method invocation
+				if (right.getKind() == RefKind.METH_ADAPT) return;
 				AnnotationMirror rightAnno = rightAnnos.iterator().next();
 				String rightCryptType = right.getCryptType() == null ? rightAnno
 						.toString() : right.getCryptType().toString();

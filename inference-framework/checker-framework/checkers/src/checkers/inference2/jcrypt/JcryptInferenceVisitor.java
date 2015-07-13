@@ -7,6 +7,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.UnaryTree;
+
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.InferenceVisitor;
 import checkers.inference2.Reference;
@@ -95,24 +96,4 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		return super.visitArrayAccess(node, p);
 	}
 	
-//	@Override
-//	public Void visitVariable(VariableTree node, Void p) {
-//		VariableElement varElt = TreeUtils.elementFromDeclaration(node);
-//		Reference varRef = checker.getAnnotatedReference(varElt);
-//		ExpressionTree initializer = node.getInitializer();
-//		if (initializer != null) {
-//			Reference initRef = checker.getAnnotatedReference(initializer);
-//			if (varElt.getKind().isField()) {
-//				generateConstraint(initRef, initializer);
-//				processVariableTree(node, initRef);
-//			} else if (initializer instanceof MethodInvocationTree
-//					&& !checker.isFromLibrary(TreeUtils.elementFromUse(initializer))) {
-//				generateConstraint(varRef, initializer);
-//			} else {
-//				generateConstraint(varRef, initializer);
-//				processVariableTree(node, initRef);
-//			}
-//		}
-//		return super.visitVariable(node, p);
-//	}
 }

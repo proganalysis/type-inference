@@ -616,15 +616,16 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		case FLOAT_LITERAL:
 		case DOUBLE_LITERAL:
 		case BOOLEAN_LITERAL:
+		case STRING_LITERAL:
 		case CHAR_LITERAL:
 			rk = RefKind.LITERAL;
 			break;
 		case NULL_LITERAL:
 			rk = RefKind.NULL;
 			break;
-		case STRING_LITERAL:
-			rk = RefKind.STRING;
-			break;
+//		case STRING_LITERAL:
+//			rk = RefKind.STRING;
+//			break;
 		case NEW_ARRAY:
 		case NEW_CLASS:
 			rk = RefKind.ALLOCATION;
@@ -680,13 +681,12 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Tree tree, Element element, TypeElement enclosingType,
 			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
 		Reference ret = annotatedReferences.get(identifier);
+		if (ret != null) return ret;
 		if (type != null) {
 			switch (type.getKind()) {
 			case ARRAY:
-				if (ret == null) {
-					ret = new ArrayReference(identifier, kind, tree, element,
+				ret = new ArrayReference(identifier, kind, tree, element,
 							enclosingType, type, annos);
-				}
 				AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
 				String componentIdentifier = identifier + ARRAY_SUFFIX;
 				Reference componentRef = getAnnotatedReference(componentIdentifier,
@@ -694,10 +694,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				((ArrayReference) ret).setComponentRef(componentRef);
 				break;
 			case EXECUTABLE:
-				if (ret == null) {
-					ret = new ExecutableReference(identifier, tree, element,
+				ret = new ExecutableReference(identifier, tree, element,
 							enclosingType, type, type.getAnnotations());
-				}
 				ExecutableElement methodElt = (ExecutableElement) element;
 				AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
 				// THIS
@@ -720,51 +718,48 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				((ExecutableReference) ret).setParamRefs(paramRefs);
 				break;
 			default:
-				if (ret == null) {
-					ret = new Reference(identifier, kind, tree, element,
+				ret = new Reference(identifier, kind, tree, element,
 							enclosingType, type, annos);
-				}
 			}
 		} else {
-			if (ret == null) {
-				ret = new Reference(identifier, kind, tree, element,
+			ret = new Reference(identifier, kind, tree, element,
 						enclosingType, type, annos);
-			}
 		}
+		setAnnotation(identifier, kind, tree, element, annos, ret);
+		return ret;
+	}
+
+	protected void setAnnotation(String identifier, RefKind kind, Tree tree,
+			Element element, Set<AnnotationMirror> annos, Reference ret) {
 		if (!isAnnotated(ret)) {
-			if (!annos.isEmpty()) {
-				ret.setAnnotations(annos, this);
-			} else {
-				// add default annotations
-				switch (kind) {
-				case FIELD:
-					annotateField(ret, element);
-					break;
-				case COMPONENT:
-					annotateArrayComponent(ret, element);
-					break;
-				case THIS:
-					annotateThis(ret, (ExecutableElement) element);
-					break;
-				case RETURN:
-					annotateReturn(ret, (ExecutableElement) element);
-					break;
-				case PARAMETER:
-					annotateParameter(ret, element);
-					break;
-				case FIELD_ADAPT:
-				case METH_ADAPT:
-				case CONSTANT:
-					// We don't want annotations
-					break;
-				default:
-					// Do default annotations
-					annotateDefault(ret, kind, element, tree);
-				}
+			// add default annotations
+			switch (kind) {
+			case FIELD:
+				annotateField(ret, element);
+				break;
+			case COMPONENT:
+				annotateArrayComponent(ret, element);
+				break;
+			case THIS:
+				annotateThis(ret, (ExecutableElement) element);
+				break;
+			case RETURN:
+				annotateReturn(ret, (ExecutableElement) element);
+				break;
+			case PARAMETER:
+				annotateParameter(ret, element);
+				break;
+			case FIELD_ADAPT:
+			case METH_ADAPT:
+			case CONSTANT:
+				// We don't want annotations
+				break;
+			default:
+				// Do default annotations
+				annotateDefault(ret, kind, element, tree);
 			}
 			annotatedReferences.put(identifier, ret);
 		}
-		return ret;
 	}
 
 	public Set<Constraint> getConstraints() {
@@ -825,7 +820,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	 * @param sup
 	 * @param equality
 	 */
-	private void addComponentConstraints(Reference sub, Reference sup,
+	protected void addComponentConstraints(Reference sub, Reference sup,
 			boolean equality, long pos) {
 		if (sub.getType() instanceof AnnotatedArrayType
 				&& sup instanceof AdaptReference) {
@@ -836,7 +831,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			sub = ((AdaptReference) sub).getDeclRef();
 			equality = equality || (sup instanceof FieldAdaptReference);
 		}
-
+		
 		if (sub.getType() instanceof AnnotatedArrayType
 				&& sup.getType() instanceof AnnotatedArrayType) {
 			Reference subComponent = ((ArrayReference) sub).getComponentRef();

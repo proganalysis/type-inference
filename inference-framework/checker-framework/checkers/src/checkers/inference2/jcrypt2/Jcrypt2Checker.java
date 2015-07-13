@@ -20,34 +20,37 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
+import checkers.inference.reim.quals.Polyread;
+import checkers.inference.reim.quals.Mutable;
 import checkers.inference2.jcrypt2.quals.BOT;
 import checkers.inference2.jcrypt2.quals.RND;
 import checkers.inference2.jcrypt2.quals.OPE;
 import checkers.inference2.jcrypt2.quals.AH;
 import checkers.inference2.jcrypt2.quals.DET;
-import checkers.inference2.jcrypt.JcryptInferenceVisitor;
 import checkers.inference2.jcrypt.quals.Clear;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.AdaptReference;
+import checkers.inference2.Reference.ArrayReference;
+import checkers.inference2.Reference.ExecutableReference;
 import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.Reference.RefKind;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.tree.JCTree.JCAssignOp;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCUnary;
-import com.sun.tools.javac.tree.JCTree.Tag;
 
 /**
  * @author huangw5
@@ -58,11 +61,11 @@ import com.sun.tools.javac.tree.JCTree.Tag;
 @TypeQualifiers({ RND.class, OPE.class, DET.class, AH.class ,BOT.class })
 public class Jcrypt2Checker extends InferenceChecker {
 
-	public AnnotationMirror RND, OPE, DET, AH, CLEAR, BOT;
+	public AnnotationMirror RND, OPE, DET, AH, CLEAR, BOT, MUTABLE, POLYREAD;
 
 	private Set<AnnotationMirror> sourceAnnos;
 
-	private List<RefKind> specialRefKinds = null;
+	//private List<RefKind> specialRefKinds = null;
 
 	private AnnotationUtils annoFactory;
 
@@ -75,6 +78,8 @@ public class Jcrypt2Checker extends InferenceChecker {
 		DET = annoFactory.fromClass(DET.class);
 		CLEAR = annoFactory.fromClass(Clear.class);
 		BOT = annoFactory.fromClass(BOT.class);
+		MUTABLE = annoFactory.fromClass(Mutable.class);
+		POLYREAD = annoFactory.fromClass(Polyread.class);
 
 		sourceAnnos = AnnotationUtils.createAnnotationSet();
 		sourceAnnos.add(RND);
@@ -83,10 +88,10 @@ public class Jcrypt2Checker extends InferenceChecker {
 		sourceAnnos.add(DET);
 		sourceAnnos.add(BOT);
 
-		specialRefKinds = new ArrayList<RefKind>(3);
-		specialRefKinds.add(RefKind.STRING);
-		specialRefKinds.add(RefKind.NULL);
-		specialRefKinds.add(RefKind.EQUAL_NULL);
+//		specialRefKinds = new ArrayList<RefKind>(3);
+//		specialRefKinds.add(RefKind.STRING);
+//		specialRefKinds.add(RefKind.NULL);
+//		specialRefKinds.add(RefKind.EQUAL_NULL);
 	}
 
 	public Element getEnclosingMethod(Element elt) {
@@ -177,34 +182,34 @@ public class Jcrypt2Checker extends InferenceChecker {
 		}
 	}
 	
-	// ignore String + String
-	protected boolean shouldIgnore(JCBinary t) {
-		JCExpression left = t.getLeftOperand();
-		JCExpression right = t.getRightOperand();
-		boolean ignoreLeft = false, ignoreRight = false;
-		if (left instanceof JCBinary) {
-			ignoreLeft = shouldIgnore(((JCBinary) left));
-		}
-		if (right instanceof JCBinary) {
-			ignoreRight = shouldIgnore(((JCBinary) right));
-		}
-		RefKind leftKind = getAnnotatedReference(left).getKind();
-		RefKind rightKind = getAnnotatedReference(right).getKind();
-		return ignoreLeft || ignoreRight || specialRefKinds.contains(leftKind)
-				|| specialRefKinds.contains(rightKind);
-	}
-	
-	// for x ==/!= null, set its RefKind as EQUAL_NULL
-	protected void setRefKind(Reference r, JCBinary t) {
-		Reference leftRef = getAnnotatedReference(t.getLeftOperand());
-		Reference rightRef = getAnnotatedReference(t.getRightOperand());
-		if (t.getTag() == Tag.EQ || t.getTag() == Tag.NE) {
-			if (leftRef.getKind() == RefKind.NULL
-					|| rightRef.getKind() == RefKind.NULL) {
-				r.setRefKind(RefKind.EQUAL_NULL);
-			}
-		}		
-	}
+//	// ignore String + String
+//	protected boolean shouldIgnore(JCBinary t) {
+//		JCExpression left = t.getLeftOperand();
+//		JCExpression right = t.getRightOperand();
+//		boolean ignoreLeft = false, ignoreRight = false;
+//		if (left instanceof JCBinary) {
+//			ignoreLeft = shouldIgnore(((JCBinary) left));
+//		}
+//		if (right instanceof JCBinary) {
+//			ignoreRight = shouldIgnore(((JCBinary) right));
+//		}
+//		RefKind leftKind = getAnnotatedReference(left).getKind();
+//		RefKind rightKind = getAnnotatedReference(right).getKind();
+//		return ignoreLeft || ignoreRight || specialRefKinds.contains(leftKind)
+//				|| specialRefKinds.contains(rightKind);
+//	}
+//	
+//	// for x ==/!= null, set its RefKind as EQUAL_NULL
+//	protected void setRefKind(Reference r, JCBinary t) {
+//		Reference leftRef = getAnnotatedReference(t.getLeftOperand());
+//		Reference rightRef = getAnnotatedReference(t.getRightOperand());
+//		if (t.getTag() == Tag.EQ || t.getTag() == Tag.NE) {
+//			if (leftRef.getKind() == RefKind.NULL
+//					|| rightRef.getKind() == RefKind.NULL) {
+//				r.setRefKind(RefKind.EQUAL_NULL);
+//			}
+//		}		
+//	}
 	
 	/*
 	 * (non-Javadoc)
@@ -216,77 +221,61 @@ public class Jcrypt2Checker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateDefault(Reference r, RefKind kind, Element elt, Tree t) {
-		if (!containsAnno(r, CLEAR)) {
-			if (t instanceof JCBinary) {
-				JCBinary jct = (JCBinary) t;
-				setRefKind(r, jct);
-				if (!shouldIgnore(jct)) {
-					Tag tag = jct.getTag();
-					switch (tag) {
-					case PLUS:
-					case MINUS:
-						r.addAnnotation(AH);
-						r.addAnnotation(DET);
-						r.addAnnotation(OPE);
-						r.setCryptType(AH);
-						break;
-					case LT:
-					case GT:
-					case LE:
-					case GE:
-						r.addAnnotation(OPE);
-						r.setCryptType(OPE);
-						break;
-					case EQ:
-					case NE:
-						r.addAnnotation(OPE);
-						r.addAnnotation(DET);
-						r.setCryptType(DET);
-						break;
-					default:
-						r.setAnnotations(sourceAnnos, this);
-					}
-				} else {
-					r.setAnnotations(sourceAnnos, this);
-				}
-			} else if (t instanceof JCUnary) {
-				Tag tag = ((JCUnary) t).getTag();
-	            switch (tag) {
-	            case PREINC:
-	            case PREDEC:
-	            case POSTINC:
-	            case POSTDEC:
-	            	r.addAnnotation(AH);
-					r.addAnnotation(DET);
-					r.addAnnotation(OPE);
-					r.setCryptType(AH);
-					break;
-				default:						
-					r.setAnnotations(sourceAnnos, this);
-	            }
-			} else if (t instanceof JCAssignOp) {
-				Tag tag = ((JCAssignOp) t).getTag();
-	            switch (tag) {
-	            case PLUS_ASG:
-	            case MINUS_ASG:
-	            	r.addAnnotation(AH);
-					r.addAnnotation(DET);
-					r.addAnnotation(OPE);
-					r.setCryptType(AH);
-					break;
-				default:						
-					r.setAnnotations(sourceAnnos, this);
-	            }
-			} else if (getEnclosingMethod(elt) != null
-					&& getEnclosingMethod(elt).getSimpleName().contentEquals("main")
-					&& kind == RefKind.PARAMETER) {
-				Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
-				annos.add(CLEAR);
-				r.setRawAnnotations(annos);
-			} else {
-				r.setAnnotations(sourceAnnos, this);
-			}
+		if (containsAnno(r, CLEAR)) return;
+		if (t == null) {
+			r.setAnnotations(sourceAnnos, this);
+			return;
 		}
+		Kind treeKind = t.getKind();
+		switch (treeKind) {
+		case PLUS:	// String + String should not be annotated as AH
+			if (((JCBinary) t).getOperator().toString().equals("+(java.lang.String,java.lang.String)")) {
+				r.setAnnotations(sourceAnnos, this);
+				break;
+			}
+		case PREFIX_INCREMENT:
+		case POSTFIX_INCREMENT:
+		case PLUS_ASSIGNMENT:
+			r.addAnnotation(AH);
+			r.addAnnotation(DET);
+			r.addAnnotation(OPE);
+			r.setCryptType(AH);
+			break;
+		case LESS_THAN:
+		case LESS_THAN_EQUAL:
+		case GREATER_THAN:
+		case GREATER_THAN_EQUAL:
+			r.addAnnotation(OPE);
+			r.setCryptType(OPE);
+			break;
+		case EQUAL_TO:
+		case NOT_EQUAL_TO:
+//			if (((JCBinary) t).getRightOperand().getKind() == Kind.NULL_LITERAL) {
+//				r.setAnnotations(sourceAnnos, this);
+//				break;
+//			}
+			r.addAnnotation(OPE);
+			r.addAnnotation(DET);
+			r.setCryptType(DET);
+			break;
+		case STRING_LITERAL:
+		case INT_LITERAL:
+			setClear(r);
+			break;
+		case MEMBER_SELECT: // list.length should be clear
+			if (isFromLibrary(TreeUtils.elementFromUse((ExpressionTree) t))) {
+				setClear(r);
+				break;
+			}
+		default:
+			r.setAnnotations(sourceAnnos, this);
+		}
+	}
+
+	private void setClear(Reference r) {
+		Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+		annos.add(CLEAR);
+		r.setRawAnnotations(annos);
 	}
 
 	/*
@@ -310,7 +299,11 @@ public class Jcrypt2Checker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateField(Reference r, Element fieldElt) {
-		annotateDefault(r, r.getKind(), fieldElt, null);
+		if (r.getIdentifier().startsWith("LIB-")) {
+			setClear(r);
+		} else {
+			annotateDefault(r, r.getKind(), fieldElt, null);
+		}
 	}
 
 	/*
@@ -322,7 +315,18 @@ public class Jcrypt2Checker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateThis(Reference r, ExecutableElement methodElt) {
-		annotateDefault(r, r.getKind(), methodElt, null);
+		if (!containsAnno(r, CLEAR)) {
+			String identifier = r.getIdentifier();
+			if (identifier.startsWith("LIB-java.lang.String.compareTo")) {
+				r.addAnnotation(OPE);
+			} else if (identifier.startsWith("LIB-java.lang.String.equals")) {
+				r.addAnnotation(OPE);
+				r.addAnnotation(DET);
+			} else {
+				annotateDefault(r, r.getKind(), methodElt, null);
+			}
+		}
+
 	}
 
 	/*
@@ -343,12 +347,15 @@ public class Jcrypt2Checker extends InferenceChecker {
 					r.addAnnotation(OPE);
 					r.addAnnotation(DET);
 				} else {
-					Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
-					annos.add(CLEAR);
-					r.setRawAnnotations(annos);
+					setClear(r);
 				}
 			} else {
-				annotateDefault(r, r.getKind(), elt, null);
+				if (getEnclosingMethod(elt) != null
+						&& getEnclosingMethod(elt).getSimpleName().contentEquals("main")) {
+					setClear(r);
+				} else {
+					annotateDefault(r, r.getKind(), elt, null);
+				}
 			}
 		}
 	}
@@ -465,7 +472,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 	@Override
 	protected SourceVisitor<?, ?> getInferenceVisitor(
 			InferenceChecker inferenceChecker, CompilationUnitTree root) {
-		return new JcryptInferenceVisitor(this, root);
+		return new Jcrypt2InferenceVisitor(this, root);
 	}
 
 	@Override
@@ -530,6 +537,81 @@ public class Jcrypt2Checker extends InferenceChecker {
 	public Set<AnnotationMirror> adaptMethodSet(
 			Set<AnnotationMirror> contextSet, Set<AnnotationMirror> declSet) {
 		return declSet;
+	}
+	
+	@Override
+	protected void setAnnotation(String identifier, RefKind kind, Tree tree,
+			Element element, Set<AnnotationMirror> annos, Reference ret) {
+		if (annos.contains(BOT)) {
+			setClear(ret);
+		} else {
+			super.setAnnotation(identifier, kind, tree, element, annos, ret);
+		}
+	}
+
+	@Override
+	protected void addComponentConstraints(Reference sub, Reference sup,
+			boolean equality, long pos) {
+		if (sub.getType() instanceof AnnotatedArrayType
+				&& sup instanceof AdaptReference) {
+			sup = ((AdaptReference) sup).getDeclRef();
+			equality = equality || (sup instanceof FieldAdaptReference);
+		} else if (sub instanceof AdaptReference
+				&& sup.getType() instanceof AnnotatedArrayType) {
+			sub = ((AdaptReference) sub).getDeclRef();
+			equality = equality || (sup instanceof FieldAdaptReference);
+		}
+		
+		if (sub.getType() instanceof AnnotatedArrayType
+				&& sup.getType() instanceof AnnotatedArrayType) {
+			Reference subComponent = ((ArrayReference) sub).getComponentRef();
+			Reference supComponent = ((ArrayReference) sup).getComponentRef();
+			if (equality) {
+				addEqualityConstraint(subComponent, supComponent, pos);
+			} else {
+				addSubtypeConstraint(subComponent, supComponent, pos);
+				addSubtypeConstraint(supComponent, subComponent, pos);
+			}
+		}
+	}
+	
+	@Override
+	public Reference getAnnotatedReference(String identifier, RefKind kind,
+			Tree tree, Element element, TypeElement enclosingType,
+			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
+		Reference ret = super.getAnnotatedReference(identifier, kind, tree,
+				element, enclosingType, type, annos);
+		if (!isAnnotated(ret)) {
+			// we have reim and jcrypt annotation, now we want to add encryption annotation
+			Set<AnnotationMirror> oldAnnos = ret.getRawAnnotations();
+			annotatedReferences.remove(identifier);
+			if (containsAnno(ret, CLEAR)) {
+				annos = AnnotationUtils.createAnnotationSet();
+				annos.add(CLEAR);
+			}
+			Reference newRef = super.getAnnotatedReference(identifier, kind,
+					tree, element, enclosingType, type, annos);
+			for (AnnotationMirror anno : oldAnnos) {
+				newRef.addAnnotation(anno);
+			}
+			annotatedReferences.put(identifier, newRef);
+			return newRef;
+		}
+		return ret;
+	}
+	
+	@Override
+	protected void handleMethodCall(ExecutableElement invokeMethod,
+			Reference receiverRef, Reference assignToRef,
+			List<Reference> argumentRefs, long pos) {
+		super.handleMethodCall(invokeMethod, receiverRef, assignToRef, argumentRefs, pos);
+		ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
+		if (!ElementUtils.isStatic(invokeMethod)
+				&& !receiverRef.getName().equals("super")) {
+			// receiver: C |> this <: y
+			addSubtypeConstraint(getMethodAdaptReference(receiverRef,
+					methodRef.getThisRef(), assignToRef), receiverRef, pos);
+		}
 	}
 
 }

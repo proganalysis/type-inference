@@ -297,7 +297,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 				generateConstraint(initRef, initializer);
 				processVariableTree(node, initRef);
 			} else {
-				generateConstraint(varRef, initializer);
+				//generateConstraint(varRef, initializer);
 				generateConstraint(initRef, initializer);
 				checker.addSubtypeConstraint(initRef, varRef, checker.getPosition(initializer));
 			}
@@ -546,7 +546,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		}
     }
     
-    private void processArrayAccess(Reference lhsRef, ArrayAccessTree aaTree, Reference rhsRef) {
+    protected void processArrayAccess(Reference lhsRef, ArrayAccessTree aaTree, Reference rhsRef) {
 		ExpressionTree aaExpr = aaTree.getExpression();
 		Reference exprRef = checker.getAnnotatedReference(aaExpr);
 

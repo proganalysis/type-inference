@@ -614,17 +614,17 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				}
 			}
 		}
-		if (!handled && !ref.getRawAnnotations().contains(checker.CLEAR)) {
-			JCBinary jcbt = (JCBinary) node;
-			String encryptType = getSimpleEncryptName(ref);
-			if (operand instanceof JCLiteral ||
-					(operand.getKind() == Kind.MEMBER_SELECT
-					&& checker.isFromLibrary(TreeUtils.elementFromUse(operand)))) {
-				JCMethodInvocation newMethod = getConvertMethod(operand, encryptType, true);
-				if (isLeft) jcbt.lhs = newMethod;
-				else jcbt.rhs = newMethod;
-			}
-		}
+//		if (!handled && !ref.getRawAnnotations().contains(checker.CLEAR)) {
+//			JCBinary jcbt = (JCBinary) node;
+//			String encryptType = getSimpleEncryptName(ref);
+//			if (operand instanceof JCLiteral ||
+//					(operand.getKind() == Kind.MEMBER_SELECT
+//					&& checker.isFromLibrary(TreeUtils.elementFromUse(operand)))) {
+//				JCMethodInvocation newMethod = getConvertMethod(operand, encryptType, true);
+//				if (isLeft) jcbt.lhs = newMethod;
+//				else jcbt.rhs = newMethod;
+//			}
+//		}
 	}
 
 	private void processJCMethodInvocationForComputation(BinaryTree node, JCBinary jcb,

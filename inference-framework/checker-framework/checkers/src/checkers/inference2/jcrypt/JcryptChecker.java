@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
@@ -42,10 +43,9 @@ import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
- * @author huangw5
+ * @author dongy6
  * 
  */
 @SupportedOptions({ "warn", "infer", "debug", "noReim", "inferLibrary",
@@ -177,7 +177,7 @@ public class JcryptChecker extends InferenceChecker {
 	@Override
 	protected void annotateDefault(Reference r, RefKind kind, Element elt,
 			Tree t) {
-		if (kind == RefKind.LITERAL && t.getKind() != Kind.NULL_LITERAL) {
+		if (r.getKind() == RefKind.LITERAL) {
 			r.addAnnotation(CLEAR);
 		} else {
 			r.setAnnotations(sourceAnnos, this);
@@ -364,7 +364,7 @@ public class JcryptChecker extends InferenceChecker {
 	public void addSubtypeConstraint(Reference sub, Reference sup, long pos) {
 		super.addSubtypeConstraint(sub, sup, pos);
 		if ((containsAnno(sub, MUTABLE) || containsAnno(sub, POLYREAD))
-				&& (containsAnno(sup, MUTABLE) || containsAnno(sub, POLYREAD))) {
+				&& (containsAnno(sup, MUTABLE) || containsAnno(sup, POLYREAD))) {
 			// add a subtying constraint with opposite direction
 			super.addSubtypeConstraint(sup, sub, pos);
 		}
@@ -437,5 +437,27 @@ public class JcryptChecker extends InferenceChecker {
 			out.println(sb.toString());
 		}
 	}
+	
+	@Override
+	public Reference getAnnotatedReference(String identifier, RefKind kind,
+			Tree tree, Element element, TypeElement enclosingType,
+			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
+		Reference ret = super.getAnnotatedReference(identifier, kind, tree,
+				element, enclosingType, type, annos);
+		// we have reim annotation, now we want to add jcrypt annotation
+		Set<AnnotationMirror> reimAnnos = ret.getRawAnnotations();
+		if (!isAnnotated(ret)) {
+			annotatedReferences.remove(identifier);
+			Reference newRef = super.getAnnotatedReference(identifier, kind,
+					tree, element, enclosingType, type, annos);
+			for (AnnotationMirror anno : reimAnnos) {
+				newRef.addAnnotation(anno);
+			}
+			annotatedReferences.put(identifier, newRef);
+			return newRef;
+		}
+		return ret;
+	}
+
 
 }

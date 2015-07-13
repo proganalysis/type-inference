@@ -6,7 +6,7 @@ import checkers.inference2.jcrypt2.quals.*;
 
 public class SecretKeeper {
 
-	public static SKUser[] userDB;
+	/*@Poly*/ public SKUser[] userDB;
 	public static int userNum, count = 0;
 	public static final int MAX_USERS = 100;
 	/*@Poly*/ private String username, password;
@@ -92,17 +92,17 @@ public class SecretKeeper {
 			System.out.println("User name exists! Please sign in.");
 			signin();
 		} else {
-			final SKUser user = new SKUser(username, password);
+			SKUser user = new SKUser(username, password);
 			if (userNum < MAX_USERS) {
 				try {
-					SecretKeeper.userDB[userNum] = user;
+					userDB[userNum] = user;
 				} catch (ArrayIndexOutOfBoundsException imposs) {
 				} catch (NullPointerException imposs) {
 				}
 				userNum = userNum + 1;
 				System.out.println("Welcome, " + username + "!");
 				System.out.print("Tell us a secret-> ");
-				/*@Sensitive*/ String secret = args[count];
+				/*@Poly*/ String secret = args[count];
 				count++;
 				user.setSecret(secret);
 				showPage(user);
@@ -121,7 +121,7 @@ public class SecretKeeper {
 			count++;
 			if (s.equals("y")) {
 				System.out.print("Update secret-> ");
-				/*@Sensitive*/ String secret = args[count];
+				/*@Poly*/  String secret = args[count];
 				count++;
 				user.setSecret(secret);
 				showPage(user);
@@ -138,7 +138,7 @@ public class SecretKeeper {
 
 	public boolean exist(String username) {
 		for (int i = 0; i < SecretKeeper.userNum; i++) {
-			if (SecretKeeper.userDB[i].getName().equals(username)) {
+			if (userDB[i].getName().equals(username)) {
 				return true;
 			}
 		}
@@ -152,7 +152,7 @@ public class SecretKeeper {
 		SKUser user = null;
 		while (i < SecretKeeper.userNum && !found) {
 			try {
-				user = SecretKeeper.userDB[i];
+				user = userDB[i];
 			} catch (ArrayIndexOutOfBoundsException imposs) {
 			} catch (NullPointerException imposs) {
 			}
@@ -172,21 +172,19 @@ public class SecretKeeper {
 /* Represents a user of the Secret Keeper application */
 class SKUser {
 
-	private String name, password;
+	/*@Poly*/ private String name, password, secret;
 
 	public SKUser(String name, String password) {
 		this.name = name;
 		this.password = password;
 	}
 
-	private String secret; // a secret for this user
-
 	public void setSecret(String sec) {
-		this.secret = sec;
+		secret = sec;
 	}
 
 	public String getSecret() {
-		return this.secret;
+		return secret;
 	}
 
 	public String getName() {
