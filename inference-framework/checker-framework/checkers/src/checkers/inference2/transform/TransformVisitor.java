@@ -35,7 +35,6 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.file.JavacFileManager;
@@ -92,7 +91,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	/** For recording visited method invocation trees or allocation sites */
 	protected Set<Tree> visited = new HashSet<Tree>();
 
-	private static boolean hasImported = false, inMainMethod;
+	private static boolean hasImported = false, inSample;
 	
 	private static JCExpression objectType;
 	private static JCArrayTypeTree byteArray1, byteArray2;
@@ -110,7 +109,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
         Context context = new Context();
 		JavacFileManager.preRegister(context);
 		maker = TreeMaker.instance(context);
-		convertedReferences = checker.getConvertedReferences();
+		//convertedReferences = checker.getConvertedReferences();
+		convertedReferences = new HashMap<>();
 	}
 	
     /**
@@ -335,16 +335,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	// get byte array type from EncryptionSample;
     	if (byteArray1 == null || byteArray2 == null) setByteArrayType(jcvd);
 		Reference varRef = checker.getAnnotatedReference(varElt);
-		if (TreeUtils.enclosingClass(getCurrentPath()).getSimpleName().contentEquals("EncryptionSample"))
-			return super.visitVariable(node, p);
+		if (inSample) return super.visitVariable(node, p);
 		if (!varRef.getRawAnnotations().contains(checker.CLEAR)
 				&& !varRef.getRawAnnotations().contains(checker.BOT)) {
-				//&& !(inMainMethod && varRef.getKind() == RefKind.PARAMETER)) {
 			processVariableTree(jcvd);
 			JCExpression init = jcvd.getInitializer();
 			if (init != null) {
-				if (init instanceof JCLiteral && ((JCLiteral) init).getValue() == null)
-					return super.visitVariable(node, p);
 				Reference initRef = checker.getAnnotatedReference(init);
 				// change type: int -> byte[]
 				processVariableTree(init);
@@ -384,33 +380,25 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 					break;
 				}
 			}
-		} else if (!varRef.getRawAnnotations().contains(checker.CLEAR)
-				&& init.type.getKind() != TypeKind.BOOLEAN // boolean x = true;
-				&& ((init instanceof JCLiteral && !shouldSkip(init, null)) // int x = null;
-				|| (init instanceof JCMethodInvocation
-						&& checker.isFromLibrary(TreeUtils.elementFromUse(init))))) {
-			// int x = 9 -> int x = Conversion.encrypt(9, "AH")
-			// int x = o.readLine() -> int x = Conversion.encrypt(o.readLine(), "AH")
-			JCMethodInvocation jcmi = getConvertMethod(init, getSimpleEncryptName(varRef), true);
-			jcvd.init = jcmi;
 		}
 	}
     
     @Override
 	public Void visitMethod(MethodTree node, Void p) {
-    	if (node.getName().contentEquals("main")) inMainMethod = true;
-		else inMainMethod = false;
-    	String id = checker.getFileName(node) + checker.getLineNumber(node);
     	JCMethodDecl jcmd = (JCMethodDecl) node;
     	// create two versions of a sensitive method
-    	if (checker.getNeedCopyMethods().contains(id)) {
-			TreeCopier<Void> treeCopier = new TreeCopier<Void>(maker);
-			JCTree method = treeCopier.copy(jcmd);
-			Tree parent = getCurrentPath().getParentPath().getLeaf();
-			JCClassDecl jccd = (JCClassDecl) parent;
-			jccd.defs = jccd.defs.append(method);
+		for (VariableTree parameter : node.getParameters()) {
+			Reference parRef = checker.getAnnotatedReference(parameter);
+			if (checker.getNeedCopyMethods().contains(parRef.getIdentifier())) {
+				TreeCopier<Void> treeCopier = new TreeCopier<Void>(maker);
+				JCTree method = treeCopier.copy(jcmd);
+				Tree parent = getCurrentPath().getParentPath().getLeaf();
+				JCClassDecl jccd = (JCClassDecl) parent;
+				jccd.defs = jccd.defs.append(method);
+				break;
+			}
 		}
-    	// change the return type: int -> byte[]
+		// change the return type: int -> byte[]
     	ExecutableElement methodElt = (ExecutableElement) TreeUtils.elementFromDeclaration(node);
     	Reference methodRef = checker.getAnnotatedReference(methodElt);
 		Reference returnRef = ((ExecutableReference) methodRef).getReturnRef();
@@ -463,29 +451,17 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     
     private void processMethodInvocation(MethodInvocationTree node) {
     	ExpressionTree method = node.getMethodSelect();
-    	String methName = method.toString();
     	JCExpression[] args = node.getArguments().toArray(new JCExpression[0]);
-    	int i = 0;
-    	for (ExpressionTree arg : node.getArguments()) {
-    		Reference argRef = checker.getAnnotatedReference(arg);
+    	for (int i = 0; i < args.length; i++) {
+    		Reference argRef = checker.getAnnotatedReference(args[i]);
     		if (convertedReferences.containsKey(argRef.getIdentifier())) {
     			for (Conversion con : convertedReferences.get(argRef.getIdentifier())) {
-    				if (con.getId() == checker.getPosition(arg)) {
-    					args[i] = getConvertMethod(arg, con);
+    				if (con.getId() == checker.getPosition(args[i])) {
+    					args[i] = getConvertMethod(args[i], con);
     					break;
     				}
     			}
-    		} 
-    		if (methName.startsWith("System.out.print")) {
-    			String encryptType = getSimpleEncryptName(argRef);
-    			if (encryptType != null && !(arg instanceof JCLiteral)) {
-    				args[i] = getConvertMethod(arg, encryptType, false);
-    			}
-    		} else if (arg instanceof JCLiteral 
-    				&& !argRef.getRawAnnotations().contains(checker.CLEAR)) {
-    			args[i] = getConvertMethod(arg, getSimpleEncryptName(argRef), true);
     		}
-    		i++;
     	}
     	JCMethodInvocation jcmi = (JCMethodInvocation) node;
     	jcmi.args = com.sun.tools.javac.util.List.from(args);
@@ -679,14 +655,16 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	@Override
 	public Void visitClass(ClassTree node, Void p) {
 		Tree parent = getCurrentPath().getParentPath().getLeaf();
-		JCCompilationUnit jccd = (JCCompilationUnit) parent;
+		JCCompilationUnit root = (JCCompilationUnit) parent;
 		if (node.getSimpleName().toString().equals("EncryptionSample")) {
-			for (JCImport imp : jccd.getImports()) {
+			inSample = true;
+			for (JCImport imp : root.getImports()) {
 				imports = imports.append(imp);
 			}
 		} else {
+			inSample = false;
 			if (!hasImported) {
-				jccd.defs = jccd.defs.prependList(imports);
+				root.defs = root.defs.prependList(imports);
 				hasImported = true;
 			}
 		}
@@ -705,13 +683,6 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 					break;
 				}
 			}
-		} else if (!expRef.getRawAnnotations().contains(checker.CLEAR)
-				&& ((JCTree) expression).type.getKind() != TypeKind.BOOLEAN // boolean x = true;
-				&& ((expression instanceof JCLiteral && !shouldSkip(expression, null)) // int x = null;
-				|| (expression instanceof JCMethodInvocation // x = br.readLine();
-						&& checker.isFromLibrary(TreeUtils.elementFromUse(expression))))) {
-			JCAssign jcr = (JCAssign) node;
-			jcr.rhs = getConvertMethod(expression, getSimpleEncryptName(expRef), true);
 		}
 		return super.visitAssignment(node, p);
 	}

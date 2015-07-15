@@ -15,10 +15,7 @@ public class SecretKeeper {
 	public static void main(/*@BOT*/ String/*@BOT*/[] args) throws NullPointerException,
 			IOException {
 		/*@Sensitive*/ SecretKeeper mapp = new SecretKeeper();
-		SecretKeeper.args = new String[args.length];
-		for (int i = 0; i < args.length; i++) {
-			SecretKeeper.args[i] = args[i];
-		}
+		SecretKeeper.args = args;
 		mapp.init();
 	}
 

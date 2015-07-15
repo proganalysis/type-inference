@@ -401,7 +401,7 @@ public class JcryptChecker extends InferenceChecker {
 						|| r.getAnnotations(this).contains(SENSITIVE)) {
 					if (r.getType().toString().contains("String")
 							|| r.getType().toString().contains("int")) {
-						needCopyMethods.add(r.getLineId());
+						needCopyMethods.add(r.getIdentifier());
 					}
 				}
 			}

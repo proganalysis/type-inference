@@ -522,7 +522,7 @@ public class SFlowChecker extends InferenceChecker {
 				if (needConnect) {
 					ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(methodElt);
 					Reference classRef = getAnnotatedReference(enclosingClass);
-					addEqualityConstraint(methodRef.getThisRef(), classRef, checker.getPosition(node));
+					addEqualityConstraint(methodRef.getThisRef(), classRef);
 				}
 			}
 			return super.visitMethod(node, p);

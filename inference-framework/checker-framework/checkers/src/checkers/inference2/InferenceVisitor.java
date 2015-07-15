@@ -195,7 +195,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         AnnotatedTypeMirror exprType = exprRef.getType();
     	// Recursively
     	generateConstraint(exprRef, expr);
-        long pos = checker.getPosition(varTree);
+        long pos = checker.getPosition(expr);
         if (exprType.getKind() == TypeKind.ARRAY) {
 	        // In the case of arrays
         	ArrayReference arrayRef = (ArrayReference) exprRef;
@@ -295,9 +295,8 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 			Reference initRef = checker.getAnnotatedReference(initializer);
 			if (varElt.getKind().isField()) {
 				generateConstraint(initRef, initializer);
-				processVariableTree(node, initRef);
+				processVariableTree(node, initRef, checker.getPosition(initializer));
 			} else {
-				//generateConstraint(varRef, initializer);
 				generateConstraint(initRef, initializer);
 				checker.addSubtypeConstraint(initRef, varRef, checker.getPosition(initializer));
 			}
@@ -379,13 +378,16 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		// Process arguments
 		List<? extends ExpressionTree> arguments = node.getArguments();
 		List<Reference> argumentRefs = new ArrayList<Reference>(arguments.size());
+		List<Long> argPos = new ArrayList<>(arguments.size());
 		for (ExpressionTree arg : arguments) {
 			Reference argRef = checker.getAnnotatedReference(arg);
 			// recursively 
 			generateConstraint(argRef, arg);
 			argumentRefs.add(argRef);
+			argPos.add(checker.getPosition(arg));
 		}
-		checker.handleMethodCall(invokeMethodElt, rcvRef, assignToRef, argumentRefs, checker.getPosition(node));
+		checker.handleMethodCall(invokeMethodElt, rcvRef, assignToRef, argumentRefs,
+				checker.getPosition(node), argPos);
     }
     
     private void processNewClass(NewClassTree node, Reference assignToRef) {
@@ -397,14 +399,16 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		// Arguments
 		List<? extends ExpressionTree> arguments = node.getArguments();
 		List<Reference> argumentRefs = new ArrayList<Reference>(arguments.size());
+		List<Long> argPos = new ArrayList<>(arguments.size());
 		for (ExpressionTree arg : arguments) {
 			Reference argRef = checker.getAnnotatedReference(arg);
 			// recursively 
 			generateConstraint(argRef, arg);
 			argumentRefs.add(argRef);
+			argPos.add(checker.getPosition(arg));
 		}
 		checker.handleMethodCall(TreeUtils.elementFromUse(node), rcvRef,
-				assignToRef, argumentRefs, pos);
+				assignToRef, argumentRefs, 0, argPos);
     }
     
     private void processMemberSelect(Reference lhsRef, MemberSelectTree mTree, Reference rhsRef) {
@@ -647,8 +651,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		generateConstraint(ref, exprTree);
     }
     
-    protected void processVariableTree(VariableTree tree, Reference initRef) {
-    	long pos = checker.getPosition(initRef);
+    protected void processVariableTree(VariableTree tree, Reference initRef, long pos) {
     	VariableElement varElt = TreeUtils.elementFromDeclaration(tree);
 		Reference varRef = checker.getAnnotatedReference(varElt);
 		if (initRef != null) {
@@ -656,9 +659,11 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 			// The field should be accessed by adapting it from PoV
 			// the default constructor. The implementation below can be 
 			// merged with the field access in static initializer.
+			
 			if (varElt.getKind().isField()) {
 				Reference defaultConstructorThisRef = getDefaultConstructorThisRefWithField(varElt);
-				checker.handleInstanceFieldWrite(defaultConstructorThisRef, varRef, initRef, pos);
+				checker.handleInstanceFieldWrite(defaultConstructorThisRef, varRef, initRef,
+						pos);
 			} else {
                 checker.addSubtypeConstraint(initRef, varRef, pos);
 			}
@@ -756,7 +761,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
             switch (lhsTree.getKind()) {
             case VARIABLE:
                 // generate Reference of element
-                processVariableTree((VariableTree) lhsTree, rhsRef);
+                processVariableTree((VariableTree) lhsTree, rhsRef, checker.getPosition(lhsTree));
                 break;
             case IDENTIFIER:
             	processIdentifier(null, (IdentifierTree) lhsTree, rhsRef);

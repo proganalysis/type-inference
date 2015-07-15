@@ -157,7 +157,7 @@ public class ReimNChecker extends InferenceChecker {
 			Reference mutableRef = getAnnotatedReference(
 					set.toString() + count, RefKind.CONSTANT, null, null, null,
 					null, set);
-			addEqualityConstraint(aBase, mutableRef, pos);
+			addEqualityConstraint(aBase, mutableRef);
 			super.handleInstanceFieldWrite(aBase, aField, aRhs, pos);
 		}
 	}

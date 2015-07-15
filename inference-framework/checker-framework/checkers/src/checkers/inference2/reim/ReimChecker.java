@@ -138,7 +138,7 @@ public class ReimChecker extends InferenceChecker {
 			set.add(MUTABLE);
 			Reference mutableRef = getAnnotatedReference(set.toString(),
 					RefKind.CONSTANT, null, null, null, null, set);
-			addEqualityConstraint(aBase, mutableRef, pos);
+			addEqualityConstraint(aBase, mutableRef);
 			super.handleInstanceFieldWrite(aBase, aField, aRhs, pos);
 		}
 	}
@@ -357,14 +357,16 @@ public class ReimChecker extends InferenceChecker {
 			set.add(MUTABLE);
 			Reference mutableRef = getAnnotatedReference(set.toString(),
 					RefKind.CONSTANT, null, null, null, null, set);
-			addEqualityConstraint(methodRef, mutableRef, pos);
+			addEqualityConstraint(methodRef, mutableRef);
 		}
 	}
 	
 	@Override
 	protected void handleMethodCall(ExecutableElement invokeMethod,
-			Reference receiverRef, Reference assignToRef, List<Reference> argumentRefs, long pos) {
-		super.handleMethodCall(invokeMethod, receiverRef, assignToRef, argumentRefs, pos);
+			Reference receiverRef, Reference assignToRef,
+			List<Reference> argumentRefs, long pos, List<Long> argPos) {
+		super.handleMethodCall(invokeMethod, receiverRef, assignToRef,
+				argumentRefs, pos, argPos);
 		if (receiverRef != null && receiverRef.getKind() == RefKind.ALLOCATION) {
 			ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
 			allocationReferences.put(receiverRef.getIdentifier(), methodRef);

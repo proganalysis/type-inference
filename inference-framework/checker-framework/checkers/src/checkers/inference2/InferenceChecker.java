@@ -115,7 +115,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected static Map<String, Reference> annotatedReferences = new HashMap<String, Reference>();
 
-	protected static Map<String, List<Conversion>> convertedReferences = new HashMap<>();
+	protected static Map<String, Map<Long, String[]>> convertedReferences = new HashMap<>();
 	
 	protected static Map<String, ExecutableReference> allocationReferences = new HashMap<>();
 	
@@ -142,7 +142,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		types = processingEnv.getTypeUtils();
 	}
 
-	public Map<String, List<Conversion>> getConvertedReferences() {
+	public Map<String, Map<Long, String[]>> getConvertedReferences() {
 		return convertedReferences;
 	}
 
@@ -623,9 +623,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		case NULL_LITERAL:
 			rk = RefKind.NULL;
 			break;
-//		case STRING_LITERAL:
-//			rk = RefKind.STRING;
-//			break;
 		case NEW_ARRAY:
 		case NEW_CLASS:
 			rk = RefKind.ALLOCATION;
@@ -682,11 +679,14 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
 		Reference ret = annotatedReferences.get(identifier);
 		if (ret != null) return ret;
+		long pos = 0;
+		if (tree != null) pos = getPosition(tree);
+		else if (element != null) pos = getPosition(element);
 		if (type != null) {
 			switch (type.getKind()) {
 			case ARRAY:
 				ret = new ArrayReference(identifier, kind, tree, element,
-							enclosingType, type, annos);
+							enclosingType, type, annos, pos);
 				AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
 				String componentIdentifier = identifier + ARRAY_SUFFIX;
 				Reference componentRef = getAnnotatedReference(componentIdentifier,
@@ -695,7 +695,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				break;
 			case EXECUTABLE:
 				ret = new ExecutableReference(identifier, tree, element,
-							enclosingType, type, type.getAnnotations());
+							enclosingType, type, type.getAnnotations(), pos);
 				ExecutableElement methodElt = (ExecutableElement) element;
 				AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
 				// THIS
@@ -719,11 +719,11 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				break;
 			default:
 				ret = new Reference(identifier, kind, tree, element,
-							enclosingType, type, annos);
+							enclosingType, type, annos, pos);
 			}
 		} else {
 			ret = new Reference(identifier, kind, tree, element,
-						enclosingType, type, annos);
+						enclosingType, type, annos, pos);
 		}
 		setAnnotation(identifier, kind, tree, element, annos, ret);
 		return ret;
@@ -790,16 +790,16 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		Constraint c = new SubtypeConstraint(sub, sup, pos);
 		if (!constraints.add(c))
 			return;
-		addComponentConstraints(sub, sup, false, pos);
+		addComponentConstraints(sub, sup, false);
 	}
 
-	protected void addEqualityConstraint(Reference left, Reference right, long pos) {
+	protected void addEqualityConstraint(Reference left, Reference right) {
 		if (left.equals(right))
 			return;
 		Constraint c = new EqualityConstraint(left, right);
 		if (!constraints.add(c))
 			return;
-		addComponentConstraints(left, right, true, pos);
+		addComponentConstraints(left, right, true);
 	}
 
 	protected void addUnequalityConstraint(Reference left, Reference right) {
@@ -821,7 +821,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	 * @param equality
 	 */
 	protected void addComponentConstraints(Reference sub, Reference sup,
-			boolean equality, long pos) {
+			boolean equality) {
 		if (sub.getType() instanceof AnnotatedArrayType
 				&& sup instanceof AdaptReference) {
 			sup = ((AdaptReference) sup).getDeclRef();
@@ -837,9 +837,9 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			Reference subComponent = ((ArrayReference) sub).getComponentRef();
 			Reference supComponent = ((ArrayReference) sup).getComponentRef();
 			if (equality) {
-				addEqualityConstraint(subComponent, supComponent, pos);
+				addEqualityConstraint(subComponent, supComponent);
 			} else {
-				addSubtypeConstraint(subComponent, supComponent, pos);
+				addSubtypeConstraint(subComponent, supComponent, 0);
 			}
 		}
 	}
@@ -905,7 +905,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected void handleMethodCall(ExecutableElement invokeMethod,
 			Reference receiverRef, Reference assignToRef,
-			List<Reference> argumentRefs, long pos) {
+			List<Reference> argumentRefs, long pos, List<Long> argPos) {
 		ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
 		if (!ElementUtils.isStatic(invokeMethod)
 				&& !receiverRef.getName().equals("super")) {
@@ -931,11 +931,12 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		// parameters: z <: C |> p
 		Iterator<Reference> argIt = argumentRefs.iterator();
 		Iterator<Reference> paramIt = methodRef.getParamRefs().iterator();
+		Iterator<Long> argPosIt = argPos.iterator();
 		for (; argIt.hasNext() && paramIt.hasNext();) {
 			Reference argRef = argIt.next();
 			Reference paramRef = paramIt.next();
 			addSubtypeConstraint(argRef, getMethodAdaptReference(receiverRef,
-					paramRef, assignToRef), pos);
+					paramRef, assignToRef), argPosIt.next());
 		}
 	}
 
@@ -1279,11 +1280,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		// TODO
 		return (a1.equals(a2) || types.isSubtype(types.erasure(a1.asType()),
 				types.erasure(a2.asType())));
-	}
-
-	public long getPosition(Reference ref) {
-		if (ref.getTree() == null) return 0;
-		return getPosition(ref.getTree());
 	}
 
 	public boolean containsAnno(Reference ref, AnnotationMirror anno) {
