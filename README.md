@@ -3,7 +3,7 @@
 
   * Currently supports inference of Universe Types, Ownership Types, Reference Immutability(reim), EnerJ, SFlow, DFlow and AJ.
 
-  * Download: [issta-artifact-2015.zip](http://www.cs.rpi.edu/~dongy6/issta-artifact-2015/issta-artifact-2015.zip) contains executable binary. NOTE: This is the implementation in the ISSTA'15 paper. Unzip it and follow the instructions in README.
+  * Download: [issta-artifact-2015.zip](http://www.cs.rpi.edu/~dongy6/issta-artifact-2015/issta-artifact-2015.zip) (144M) contains executable binary, or [issta2015.zip](http://www.cs.rpi.edu/~dongy6/issta-artifact-2015/issta2015.zip) (1.8G) contains executable binary and all benchmarks. NOTE: This is the implementation in the ISSTA'15 paper. Unzip it and follow the instructions in README.
 
   * Download: [type-inference-0.1.2.zip](http://type-inference.googlecode.com/files/type-inference-0.1.2.zip) contains executable binary and source code. NOTE: It contains  Reference Immutability(reim), Ownership Types, and Universe Types in this zip file. Others will be added soon.
 
