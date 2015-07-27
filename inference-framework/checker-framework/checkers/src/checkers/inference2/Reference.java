@@ -81,7 +81,7 @@ public class Reference {
     
 	public Reference(String identifier, RefKind kind, Tree tree,
 			Element element, TypeElement enclosingType,
-			AnnotatedTypeMirror type, Set<AnnotationMirror> annotations, long pos) {
+			AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
 		super();
 		this.id = counter++;
 		this.identifier = identifier;
@@ -250,8 +250,8 @@ public class Reference {
 	
 		public ArrayReference(String identifier, RefKind kind, Tree tree,
 				Element element, TypeElement enclosingType,
-				AnnotatedTypeMirror type, Set<AnnotationMirror> annotations, long pos) {
-			super(identifier, kind, tree, element, enclosingType, type, annotations, pos);
+				AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
+			super(identifier, kind, tree, element, enclosingType, type, annotations);
 		}
 	
 		public Reference getComponentRef() {
@@ -281,8 +281,8 @@ public class Reference {
 		
 		public ExecutableReference(String identifier, Tree tree,
 				Element element, TypeElement enclosingType,
-				AnnotatedTypeMirror type, Set<AnnotationMirror> annotations, long pos) {
-			super(identifier, RefKind.METHOD, tree, element, enclosingType, type, annotations, pos);
+				AnnotatedTypeMirror type, Set<AnnotationMirror> annotations) {
+			super(identifier, RefKind.METHOD, tree, element, enclosingType, type, annotations);
 		}
 		
 		public Reference getThisRef() {
@@ -328,7 +328,7 @@ public class Reference {
 		Reference declRef; 
 		public AdaptReference(Reference contextRef, Reference declRef, RefKind kind) {
 			super(contextRef.getIdentifier() + "|" + declRef.getIdentifier(),
-					kind, null, null, null, null, AnnotationUtils.createAnnotationSet(), 0);
+					kind, null, null, null, null, AnnotationUtils.createAnnotationSet());
 			this.declRef = declRef;
 			this.contextRef = contextRef;
 		}

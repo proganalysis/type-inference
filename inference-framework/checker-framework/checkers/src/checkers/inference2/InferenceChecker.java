@@ -679,14 +679,11 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 			AnnotatedTypeMirror type, Set<AnnotationMirror> annos) {
 		Reference ret = annotatedReferences.get(identifier);
 		if (ret != null) return ret;
-		long pos = 0;
-		if (tree != null) pos = getPosition(tree);
-		else if (element != null) pos = getPosition(element);
 		if (type != null) {
 			switch (type.getKind()) {
 			case ARRAY:
 				ret = new ArrayReference(identifier, kind, tree, element,
-							enclosingType, type, annos, pos);
+							enclosingType, type, annos);
 				AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
 				String componentIdentifier = identifier + ARRAY_SUFFIX;
 				Reference componentRef = getAnnotatedReference(componentIdentifier,
@@ -695,7 +692,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				break;
 			case EXECUTABLE:
 				ret = new ExecutableReference(identifier, tree, element,
-							enclosingType, type, type.getAnnotations(), pos);
+							enclosingType, type, type.getAnnotations());
 				ExecutableElement methodElt = (ExecutableElement) element;
 				AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
 				// THIS
@@ -719,11 +716,11 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				break;
 			default:
 				ret = new Reference(identifier, kind, tree, element,
-							enclosingType, type, annos, pos);
+							enclosingType, type, annos);
 			}
 		} else {
 			ret = new Reference(identifier, kind, tree, element,
-						enclosingType, type, annos, pos);
+						enclosingType, type, annos);
 		}
 		setAnnotation(identifier, kind, tree, element, annos, ret);
 		return ret;

@@ -3,6 +3,8 @@
  */
 package checkers.inference2.jcrypt2;
 
+import static com.esotericsoftware.minlog.Log.error;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -317,15 +319,11 @@ public class Jcrypt2Checker extends InferenceChecker {
 	protected void annotateThis(Reference r, ExecutableElement methodElt) {
 		if (!containsAnno(r, CLEAR)) {
 			String identifier = r.getIdentifier();
-			if (identifier.startsWith("LIB-")) {
-				if (identifier.startsWith("LIB-java.lang.String.compareTo")) {
-					r.addAnnotation(OPE);
-				} else if (identifier.startsWith("LIB-java.lang.String.equals")) {
-					r.addAnnotation(OPE);
-					r.addAnnotation(DET);
-				} else {
-					setClear(r);
-				}
+			if (identifier.startsWith("LIB-java.lang.String.compareTo")) {
+				r.addAnnotation(OPE);
+			} else if (identifier.startsWith("LIB-java.lang.String.equals")) {
+				r.addAnnotation(OPE);
+				r.addAnnotation(DET);
 			} else {
 				annotateDefault(r, r.getKind(), methodElt, null);
 			}
@@ -343,18 +341,15 @@ public class Jcrypt2Checker extends InferenceChecker {
 	protected void annotateParameter(Reference r, Element elt) {
 		if (!containsAnno(r, CLEAR)) {
 			String identifier = r.getIdentifier();
-			if (identifier.startsWith("LIB-")) {
-				if (identifier.startsWith("LIB-java.lang.String.compareTo")) {
-					r.addAnnotation(OPE);
-				} else if (identifier.startsWith("LIB-java.lang.String.equals")) {
-					r.addAnnotation(OPE);
-					r.addAnnotation(DET);
-				} else {
-					setClear(r);
-				}
+			if (identifier.startsWith("LIB-java.lang.String.compareTo")) {
+				r.addAnnotation(OPE);
+			} else if (identifier.startsWith("LIB-java.lang.String.equals")) {
+				r.addAnnotation(OPE);
+				r.addAnnotation(DET);
 			} else {
 				if (getEnclosingMethod(elt) != null
-						&& getEnclosingMethod(elt).getSimpleName().contentEquals("main")) {
+						&& getEnclosingMethod(elt).getSimpleName()
+								.contentEquals("main")) {
 					setClear(r);
 				} else {
 					annotateDefault(r, r.getKind(), elt, null);
@@ -615,6 +610,16 @@ public class Jcrypt2Checker extends InferenceChecker {
 			// receiver: C |> this <: y
 			addSubtypeConstraint(getMethodAdaptReference(receiverRef,
 					methodRef.getThisRef(), assignToRef), receiverRef, 0);
+		}
+		
+		if (methodRef.getReturnRef().getType().getKind() != TypeKind.VOID) {
+			if (assignToRef == null) {
+				error("Null assignTo in handleMethodCall: \n"
+						+ Thread.currentThread().getStackTrace().toString());
+			}
+			Reference returnRef = methodRef.getReturnRef();
+			addSubtypeConstraint(assignToRef, 
+					getMethodAdaptReference(receiverRef, returnRef, assignToRef), pos);
 		}
 	}
 
