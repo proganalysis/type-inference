@@ -25,7 +25,7 @@ import checkers.inference2.Reference.RefKind;
 import checkers.util.AnnotationUtils;
 
 /**
- * @author huangw5
+ * @author dongy6
  * 
  */
 public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
@@ -107,7 +107,6 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 			Set<AnnotationMirror> leftAnnos, Set<AnnotationMirror> rightAnnos) {
 		if (c.getPos() == 0 || left.getKind() == RefKind.METH_ADAPT
 				|| (right.getKind() == RefKind.METH_ADAPT && leftAnnos.isEmpty())
-//				&& !right.toString().contains("LIB-java.lang.String.compareTo"))
 				|| left.getKind() == RefKind.NULL
 				|| right.getKind() == RefKind.NULL) return;
 		if (leftAnnos.isEmpty()) {

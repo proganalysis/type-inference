@@ -29,6 +29,7 @@ import checkers.inference2.jcrypt2.quals.RND;
 import checkers.inference2.jcrypt2.quals.OPE;
 import checkers.inference2.jcrypt2.quals.AH;
 import checkers.inference2.jcrypt2.quals.DET;
+import checkers.inference2.jcrypt.JcryptInferenceVisitor;
 import checkers.inference2.jcrypt.quals.Clear;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
@@ -66,8 +67,6 @@ public class Jcrypt2Checker extends InferenceChecker {
 
 	private Set<AnnotationMirror> sourceAnnos;
 
-	//private List<RefKind> specialRefKinds = null;
-
 	private AnnotationUtils annoFactory;
 
 	public void initChecker(ProcessingEnvironment processingEnv) {
@@ -88,11 +87,6 @@ public class Jcrypt2Checker extends InferenceChecker {
 		sourceAnnos.add(AH);
 		sourceAnnos.add(DET);
 		sourceAnnos.add(BOT);
-
-//		specialRefKinds = new ArrayList<RefKind>(3);
-//		specialRefKinds.add(RefKind.STRING);
-//		specialRefKinds.add(RefKind.NULL);
-//		specialRefKinds.add(RefKind.EQUAL_NULL);
 	}
 
 	public Element getEnclosingMethod(Element elt) {
@@ -182,35 +176,6 @@ public class Jcrypt2Checker extends InferenceChecker {
 			throw new RuntimeException("Invalid adaptation context!");
 		}
 	}
-	
-//	// ignore String + String
-//	protected boolean shouldIgnore(JCBinary t) {
-//		JCExpression left = t.getLeftOperand();
-//		JCExpression right = t.getRightOperand();
-//		boolean ignoreLeft = false, ignoreRight = false;
-//		if (left instanceof JCBinary) {
-//			ignoreLeft = shouldIgnore(((JCBinary) left));
-//		}
-//		if (right instanceof JCBinary) {
-//			ignoreRight = shouldIgnore(((JCBinary) right));
-//		}
-//		RefKind leftKind = getAnnotatedReference(left).getKind();
-//		RefKind rightKind = getAnnotatedReference(right).getKind();
-//		return ignoreLeft || ignoreRight || specialRefKinds.contains(leftKind)
-//				|| specialRefKinds.contains(rightKind);
-//	}
-//	
-//	// for x ==/!= null, set its RefKind as EQUAL_NULL
-//	protected void setRefKind(Reference r, JCBinary t) {
-//		Reference leftRef = getAnnotatedReference(t.getLeftOperand());
-//		Reference rightRef = getAnnotatedReference(t.getRightOperand());
-//		if (t.getTag() == Tag.EQ || t.getTag() == Tag.NE) {
-//			if (leftRef.getKind() == RefKind.NULL
-//					|| rightRef.getKind() == RefKind.NULL) {
-//				r.setRefKind(RefKind.EQUAL_NULL);
-//			}
-//		}		
-//	}
 	
 	/*
 	 * (non-Javadoc)
@@ -470,7 +435,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 	@Override
 	protected SourceVisitor<?, ?> getInferenceVisitor(
 			InferenceChecker inferenceChecker, CompilationUnitTree root) {
-		return new Jcrypt2InferenceVisitor(this, root);
+		return new JcryptInferenceVisitor(this, root);
 	}
 
 	@Override
@@ -547,32 +512,6 @@ public class Jcrypt2Checker extends InferenceChecker {
 		}
 	}
 
-//	@Override
-//	protected void addComponentConstraints(Reference sub, Reference sup,
-//			boolean equality, long pos) {
-//		if (sub.getType() instanceof AnnotatedArrayType
-//				&& sup instanceof AdaptReference) {
-//			sup = ((AdaptReference) sup).getDeclRef();
-//			equality = equality || (sup instanceof FieldAdaptReference);
-//		} else if (sub instanceof AdaptReference
-//				&& sup.getType() instanceof AnnotatedArrayType) {
-//			sub = ((AdaptReference) sub).getDeclRef();
-//			equality = equality || (sup instanceof FieldAdaptReference);
-//		}
-//		
-//		if (sub.getType() instanceof AnnotatedArrayType
-//				&& sup.getType() instanceof AnnotatedArrayType) {
-//			Reference subComponent = ((ArrayReference) sub).getComponentRef();
-//			Reference supComponent = ((ArrayReference) sup).getComponentRef();
-//			if (equality) {
-//				addEqualityConstraint(subComponent, supComponent, pos);
-//			} else {
-//				addSubtypeConstraint(subComponent, supComponent, pos);
-//				addSubtypeConstraint(supComponent, subComponent, pos);
-//			}
-//		}
-//	}
-	
 	@Override
 	public Reference getAnnotatedReference(String identifier, RefKind kind,
 			Tree tree, Element element, TypeElement enclosingType,

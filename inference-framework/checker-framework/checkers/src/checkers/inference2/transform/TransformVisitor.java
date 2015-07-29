@@ -485,8 +485,6 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				// process library method call:
 				// e.g. System.out.print(decrypt(a, "DET"))
 				for (int i = 0; i < args.length; i++) {
-//					String type = args[i].type.toString();
-//					if (!type.equals("int") && !type.equals("String")) continue;
 					Reference argRef = checker.getAnnotatedReference(args[i]);
 					if (!argRef.getRawAnnotations().contains(checker.CLEAR)) {
 						String encryptType = getSimpleEncryptName(argRef);
@@ -508,52 +506,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 			tree.args = List.from(args);
 		}
-//    	for (int i = 0; i < args.length; i++) {
-//			Reference argRef = checker.getAnnotatedReference(args[i]);
-//			JCExpression convertMethod = findConvertMethod((JCExpression) args[i], argRef);
-//			if (convertMethod != null) {
-//				args[i] = convertMethod;
-//			} else {
-//				if (checker.isFromLibrary(methElt)
-//						&& !argRef.getRawAnnotations().contains(checker.CLEAR)
-//						&& !methElt.toString().startsWith("compareTo")
-//						&& !methElt.toString().startsWith("equals")) {
-//					String encryptType = getSimpleEncryptName(argRef);
-//					if (encryptType != null) {
-//						args[i] = getConvertMethod(args[i], new String[] {
-//								encryptType, "CLEAR" });
-//					}
-//				}
-//			}
-//		}
-//    	JCMethodInvocation jcmi = (JCMethodInvocation) node;
-//    	jcmi.args = List.from(args);
-//    	// string.equals(string1) -> Computation.equals(string, string1)
-//    	if (args.length == 1) modifyMethod(method, args[0]);
     }
     
-//	private void modifyMethod(ExpressionTree method, ExpressionTree arg) {
-//		// string.equals()
-//		if (method instanceof JCFieldAccess && method.toString().endsWith(".equals")) {
-//			// string
-//			ExpressionTree receiver = ((JCFieldAccess) method).getExpression();
-//			Reference receiverRef = checker.getAnnotatedReference(receiver);
-//			if (!receiverRef.getRawAnnotations().contains(checker.CLEAR)
-//					&& receiverRef.getType().toString().contains("String")) {
-//				Tree parent = getCurrentPath().getParentPath().getLeaf();
-//				JCMethodInvocation newCompMethod = getComputeMethod(receiver, arg, Tag.EQ);
-//				if (parent instanceof JCParens) {
-//					JCParens jcp = (JCParens) parent;
-//					if (newCompMethod != null) jcp.expr = newCompMethod;
-//				}
-//				if (parent instanceof JCBinary) {
-//					((JCBinary) parent).rhs = newCompMethod;
-//				}
-//			}
-//		}
-//	}
-
-	@Override
     public Void visitBinary(BinaryTree node, Void p) {
 		processBinaryTreeForConversion(node);
 		processBinaryTreeForComputation(node, null);
@@ -596,9 +550,6 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		if (parent instanceof JCParens) {
 			JCParens parensTree = (JCParens) parent;
 			parensTree.expr = newCompMethod;
-//		} else if (parent instanceof JCMethodInvocation) {
-//			JCMethodInvocation jcmi = (JCMethodInvocation) parent;
-//			processJCMethodInvocationForComputation(node, jcb, jcmi);
 		} else if (parent instanceof JCTypeCast) {
 			JCTypeCast typeCastTree = (JCTypeCast) parent;
 			typeCastTree.expr = newCompMethod;
@@ -645,22 +596,6 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 		}
 	}
-
-//	private void processJCMethodInvocationForComputation(BinaryTree node, JCBinary jcb,
-//			JCMethodInvocation jcmi) {
-//		List<JCExpression> newArgs = List.nil();
-//		for (JCExpression arg : jcmi.getArguments()) {
-//			if (arg.equals(node)) {
-//				JCMethodInvocation newCompMethod = getComputeMethod(node.getLeftOperand(), node.getRightOperand(),
-//						jcb.getTag());
-//				if (newCompMethod != null) newArgs = newArgs.append(newCompMethod);
-//				else newArgs = newArgs.append(arg);
-//			} else {
-//				newArgs = newArgs.append(arg);
-//			}
-//		}
-//		jcmi.args = newArgs;
-//	}
 
 	// skip (a == null) and (a = true)
 	private boolean shouldSkip(ExpressionTree leftOperand, ExpressionTree rightOperand) {
