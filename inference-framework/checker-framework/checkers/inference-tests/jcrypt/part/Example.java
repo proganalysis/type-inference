@@ -35,7 +35,7 @@ public class Example {
 		/*@Sensitive*/ int x = 9;
 		list1[0] = x;
 		list1[1] = x;
-		list2[0] = 1;
+		list2[0] = 10;
 		list2[1] = 7;
 		int min1 = min_list(list1);
 		int min2 = min_list(list2);
@@ -45,6 +45,10 @@ public class Example {
 		int ans2 = min2 + ele2;
 		check_ans(ans1);
 		check_ans(ans2);
+		System.out.println(ans1);
+		System.out.println(ans2);
+		ans1 = min1 - ele1;
+		ans2 = min2 - ele2;
 		System.out.println(ans1);
 		System.out.println(ans2);
 	}

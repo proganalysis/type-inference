@@ -274,6 +274,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		case PLUS: // +
 			fn = encryptionMethods.get("add");
 			break;
+		case MINUS: // -
+			fn = encryptionMethods.get("minus");
+			break;
 		case EQ: // ==
 			fn = encryptionMethods.get("equals");
 			break;
@@ -407,6 +410,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	switch (methName) {
     	case "Computation.add":
     		encryptionMethods.put("add", jcmi);
+    		break;
+    	case "Computation.minus":
+    		encryptionMethods.put("minus", jcmi);
     		break;
     	case "Computation.lessThan":
     		encryptionMethods.put("lessThan", jcmi);

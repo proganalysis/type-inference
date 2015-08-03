@@ -199,9 +199,13 @@ public class Jcrypt2Checker extends InferenceChecker {
 				r.setAnnotations(sourceAnnos, this);
 				break;
 			}
+		case MINUS:
 		case PREFIX_INCREMENT:
 		case POSTFIX_INCREMENT:
+		case PREFIX_DECREMENT:
+		case POSTFIX_DECREMENT:
 		case PLUS_ASSIGNMENT:
+		case MINUS_ASSIGNMENT:
 			r.addAnnotation(AH);
 			r.addAnnotation(DET);
 			r.addAnnotation(OPE);

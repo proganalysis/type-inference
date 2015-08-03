@@ -8,6 +8,7 @@ class EncryptionSample {
 		byte[][] b2 = new byte[1][];
 		String s = "";
 		Computation.add(b1, b1);
+		Computation.minus(b1, b1);
 		Computation.lessThan(b1, b1);
 		Computation.greaterThan(b1, b1);
 		Computation.lessThanOrEqualTo(b1, b1);
