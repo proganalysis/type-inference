@@ -5,14 +5,10 @@ import junit.framework.TestCase;
 
 public class EncryptionTest extends TestCase {
 
-	private static final int pti1 = 0;
-	private static final int pti2 = 0;
-	private static final int pti3 = 1000;
-	private byte[] cti1, cti2, cti3;
+	private static final int pti1 = 1, pti2 = 1, pti3 = 1000, pti4 = -1;
+	private byte[] cti1, cti2, cti3, cti4;
 	private byte[][] cts1, cts2, cts3;
-	private static final String pts1 = "Hello";
-	private static final String pts2 = "Hello";
-	private static final String pts3 = "Jello";
+	private static final String pts1 = "Hello", pts2 = "Hello", pts3 = "Jello";
 	
 	public void testDET() {
 		Encryption e;
@@ -37,11 +33,30 @@ public class EncryptionTest extends TestCase {
 		Encryption e;
 		e = new Homomorphic();
 		cti1 = e.encrypt(pti1);
+		cti4 = e.encrypt(pti4);
 		e = new Homomorphic();
 		assertTrue(pti1 == (int) e.decrypt(cti1));
+		assertTrue(pti4 == (int) e.decrypt(cti4));
 		cti2 = e.encrypt(pti2);
 		cti3 = e.encrypt(pti3);
+		// 1 + 1000
 		assertEquals(pti1 + pti3, e.decrypt(Computation.add(cti1, cti3)));
+		// 1 + (-1)
+		assertEquals(pti1 + pti4, e.decrypt(Computation.add(cti1, cti4)));
+		// 1000 + (-1)
+		assertEquals(pti3 + pti4, e.decrypt(Computation.add(cti3, cti4)));
+		// 1 - (-1)
+		assertEquals(pti1 - pti4, e.decrypt(Computation.minus(cti1, cti4)));
+		// 1000 - 1
+		assertEquals(pti3 - pti1, e.decrypt(Computation.minus(cti3, cti1)));
+		// 1 - 1000
+		assertEquals(pti1 - pti3, e.decrypt(Computation.minus(cti1, cti3)));
+		// 1 * 1000
+		assertEquals(pti1 * pti3, e.decrypt(Computation.multiply(cti1, cti3)));
+		// 1 * (-1)
+		assertEquals(pti1 * pti4, e.decrypt(Computation.multiply(cti1, cti4)));
+		// 1 / 1
+		assertEquals(pti1 / pti2, e.decrypt(Computation.divide(cti1, cti2)));
 	}
 	
 	public void testOPE() {

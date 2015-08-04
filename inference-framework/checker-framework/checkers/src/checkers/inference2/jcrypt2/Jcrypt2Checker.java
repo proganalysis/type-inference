@@ -206,6 +206,8 @@ public class Jcrypt2Checker extends InferenceChecker {
 		case POSTFIX_DECREMENT:
 		case PLUS_ASSIGNMENT:
 		case MINUS_ASSIGNMENT:
+		case MULTIPLY:
+		case DIVIDE:
 			r.addAnnotation(AH);
 			r.addAnnotation(DET);
 			r.addAnnotation(OPE);

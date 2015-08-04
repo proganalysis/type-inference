@@ -277,6 +277,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		case MINUS: // -
 			fn = encryptionMethods.get("minus");
 			break;
+		case MUL: // -
+			fn = encryptionMethods.get("multiply");
+			break;
+		case DIV: // -
+			fn = encryptionMethods.get("divide");
+			break;
 		case EQ: // ==
 			fn = encryptionMethods.get("equals");
 			break;
@@ -413,6 +419,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     		break;
     	case "Computation.minus":
     		encryptionMethods.put("minus", jcmi);
+    		break;
+    	case "Computation.multiply":
+    		encryptionMethods.put("multiply", jcmi);
+    		break;
+    	case "Computation.divide":
+    		encryptionMethods.put("divide", jcmi);
     		break;
     	case "Computation.lessThan":
     		encryptionMethods.put("lessThan", jcmi);

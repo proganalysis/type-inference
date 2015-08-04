@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import thep.paillier.EncryptedInteger;
+import thep.paillier.exceptions.BigIntegerClassNotValid;
 import thep.paillier.exceptions.PublicKeysNotEqualException;
 
 public class Computation {
@@ -89,6 +90,36 @@ public class Computation {
 		return 0;
 	}
 	
+	public static byte[] divide(byte[] b1, byte[] b2) {
+		byte[] diffAH = Computation.minus(b1, b2);
+		byte[] diffOPE = Conversion.convert(diffAH, "AH", "OPE");
+		byte[] zeroOPE = Conversion.encrypt(0, "OPE");
+		int i = 0;
+		while (Computation.greaterThan(diffOPE, zeroOPE)) {
+			diffAH = Computation.minus(diffAH, b2);
+			diffOPE = Conversion.convert(diffAH, "AH", "OPE");
+			i++;
+		}
+		if (!Computation.lessThan(diffOPE, zeroOPE)) {
+			i++;
+		}
+		return Conversion.encrypt(i, "AH");
+	}
+	
+	public static byte[] multiply(byte[] b1, byte[] b2) {
+		BigInteger clearb2 = BigInteger.valueOf(Conversion.decrypt(b2, "AH"));
+		EncryptedInteger e1 = Homomorphic.ei;
+		Homomorphic.ei.setCipherVal(new BigInteger(b1));
+		EncryptedInteger e2 = new EncryptedInteger(e1);
+		e2.setCipherVal(new BigInteger(b2));
+		try {
+			e1 = e1.multiply(clearb2);
+		} catch (BigIntegerClassNotValid e) {
+			e.printStackTrace();
+		}
+		return e1.getCipherVal().toByteArray();
+	}
+	
 	public static byte[] add(byte[] b1, byte[] b2) {
 		EncryptedInteger e1 = Homomorphic.ei;
 		Homomorphic.ei.setCipherVal(new BigInteger(b1));
@@ -97,6 +128,22 @@ public class Computation {
 		try {
 			e1 = e1.add(e2);
 		} catch (PublicKeysNotEqualException e) {
+			e.printStackTrace();
+		}
+		return e1.getCipherVal().toByteArray();
+	}
+	
+	public static byte[] minus(byte[] b1, byte[] b2) {
+		EncryptedInteger e1 = Homomorphic.ei;
+		Homomorphic.ei.setCipherVal(new BigInteger(b1));
+		EncryptedInteger e2 = new EncryptedInteger(e1);
+		e2.setCipherVal(new BigInteger(b2));
+		try {
+			e2 = e2.multiply(new BigInteger("-1"));
+			e1 = e1.add(e2);
+		} catch (PublicKeysNotEqualException e) {
+			e.printStackTrace();
+		} catch (BigIntegerClassNotValid e) {
 			e.printStackTrace();
 		}
 		return e1.getCipherVal().toByteArray();
