@@ -59,6 +59,10 @@ public class Example {
 		ans2 = min2 / ele2;
 		System.out.println(ans1);
 		System.out.println(ans2);
+		ans1 = min1 % ele1;
+		ans2 = min2 % ele2;
+		System.out.println(ans1);
+		System.out.println(ans2);
 	}
 
 }

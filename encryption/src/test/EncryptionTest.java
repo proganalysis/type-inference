@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 
 public class EncryptionTest extends TestCase {
 
-	private static final int pti1 = 1, pti2 = 1, pti3 = 1000, pti4 = -1;
+	private static final int pti1 = 3, pti2 = 3, pti3 = 10, pti4 = -1;
 	private byte[] cti1, cti2, cti3, cti4;
 	private byte[][] cts1, cts2, cts3;
 	private static final String pts1 = "Hello", pts2 = "Hello", pts3 = "Jello";
@@ -56,7 +56,9 @@ public class EncryptionTest extends TestCase {
 		// 1 * (-1)
 		assertEquals(pti1 * pti4, e.decrypt(Computation.multiply(cti1, cti4)));
 		// 1 / 1
-		assertEquals(pti1 / pti2, e.decrypt(Computation.divide(cti1, cti2)));
+		assertEquals(pti3 / pti2, e.decrypt(Computation.divide(cti3, cti2)));
+		// 1 % 1
+		assertEquals(pti3 % pti2, e.decrypt(Computation.mod(cti3, cti2)));
 	}
 	
 	public void testOPE() {

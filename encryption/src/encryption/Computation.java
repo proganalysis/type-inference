@@ -91,19 +91,25 @@ public class Computation {
 	}
 	
 	public static byte[] divide(byte[] b1, byte[] b2) {
-		byte[] diffAH = Computation.minus(b1, b2);
-		byte[] diffOPE = Conversion.convert(diffAH, "AH", "OPE");
-		byte[] zeroOPE = Conversion.encrypt(0, "OPE");
+		return divide(b1, b2, false);
+	}
+	
+	private static byte[] divide(byte[] b1, byte[] b2, boolean mod) {
+		byte[] diffAH = b1;
+		byte[] diffOPE = Conversion.convert(b1, "AH", "OPE");
+		byte[] b2OPE = Conversion.convert(b2, "AH", "OPE");
 		int i = 0;
-		while (Computation.greaterThan(diffOPE, zeroOPE)) {
-			diffAH = Computation.minus(diffAH, b2);
+		while (greaterThanOrEqualTo(diffOPE, b2OPE)) {
+			diffAH = minus(diffAH, b2);
 			diffOPE = Conversion.convert(diffAH, "AH", "OPE");
 			i++;
 		}
-		if (!Computation.lessThan(diffOPE, zeroOPE)) {
-			i++;
-		}
+		if (mod) return diffAH;
 		return Conversion.encrypt(i, "AH");
+	}
+	
+	public static byte[] mod(byte[] b1, byte[] b2) {
+		return divide(b1, b2, true);
 	}
 	
 	public static byte[] multiply(byte[] b1, byte[] b2) {

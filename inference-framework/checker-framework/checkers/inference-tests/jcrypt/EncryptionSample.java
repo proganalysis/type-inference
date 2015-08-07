@@ -11,6 +11,7 @@ class EncryptionSample {
 		Computation.minus(b1, b1);
 		Computation.multiply(b1, b1);
 		Computation.divide(b1, b1);
+		Computation.mod(b1, b1);
 		Computation.lessThan(b1, b1);
 		Computation.greaterThan(b1, b1);
 		Computation.lessThanOrEqualTo(b1, b1);
