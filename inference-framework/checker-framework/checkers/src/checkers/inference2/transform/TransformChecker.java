@@ -255,7 +255,8 @@ public class TransformChecker extends InferenceChecker {
 		String filename = fullname.substring(start, end);
 		if (filename.equals("EncryptionSample.java")) return;
 		try {
-			PrintWriter pw = new PrintWriter(TransformMain.outputDirTrans + filename);
+			PrintWriter pw = new PrintWriter(TransformMain.outputDirTrans
+					+ (InferenceMain.fullEncrypt ? "full/" : "part/") + filename);
 			printResult(pw);
 			pw.close();
 		} catch (Exception e) {

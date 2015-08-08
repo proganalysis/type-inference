@@ -51,6 +51,8 @@ public class TransformMain extends InferenceMain {
     
     public static final String outputDirTrans = "/home/yao/Projects/swift/src/";
     
+    public static String lastFile;
+    
     private static TransformMain inferenceMain = null;
 
     public InferenceChecker checker; 
@@ -184,6 +186,9 @@ public class TransformMain extends InferenceMain {
         int processorIndex = -1;
         for (int i = 0; i < args.length; i++) {
         	String arg = args[i];
+        	if (arg.endsWith(".java")) {
+        		lastFile = arg;
+        	}
         	// Intercept the processor and replace it with ReimChecker
         	if (arg.equals("-processor")) {
         		argList.add(arg);
@@ -217,16 +222,17 @@ public class TransformMain extends InferenceMain {
 		// transform
 		info("Transforming...");
 		argList.set(processorIndex, transformCheckerPath);
-		return transform(argList, out, args[3]);
+		return transform(argList, out);
 	}
 	
-	private boolean transform(List<String> args, PrintWriter out, String fullname) {
+	private boolean transform(List<String> args, PrintWriter out) {
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(args.toArray(new String[0])) != Main.Result.OK)
         	return false;
+        String fileName = outputDirTrans + (InferenceMain.fullEncrypt ? "full/" : "part/")
+        		+ lastFile.substring(lastFile.lastIndexOf('/')+1);
         try {
-			PrintWriter pw = new PrintWriter(outputDirTrans
-					+ fullname.substring(fullname.lastIndexOf('/')-4));
+			PrintWriter pw = new PrintWriter(fileName);
 			checker.printResult(pw);
 			pw.close();
 		} catch (Exception e) {
