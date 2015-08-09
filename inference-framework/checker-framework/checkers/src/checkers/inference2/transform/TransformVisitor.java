@@ -700,14 +700,17 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		switch (tag) {
 		case PREINC:
 		case POSTINC:
-			processUnaryTree(jcu);
+			processUnaryTree(jcu, Tag.PLUS);
+		case PREDEC:
+		case POSTDEC:
+			processUnaryTree(jcu, Tag.MINUS);
 		default:
 			break;
 		}
 		return super.visitUnary(node, p);
 	}
 
-	private void processUnaryTree(JCUnary jcu) {
+	private void processUnaryTree(JCUnary jcu, Tag tag) {
 		JCExpression exp = jcu.getExpression();
 		Reference expRef = checker.getAnnotatedReference(exp);
 		if (expRef.getRawAnnotations().contains(checker.CLEAR)) return;
@@ -718,7 +721,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		JCExpression expOne = maker.Literal(1);
 		JCMethodInvocation convertOne = getConvertMethod(expOne, new String[]{"CLEAR", "AH"}, false);
 		// Computation.add(i, Encryption.encrypt(1, "AH"))
-		JCMethodInvocation computeMethod = getComputeMethod(arg, convertOne, Tag.PLUS);
+		JCMethodInvocation computeMethod = getComputeMethod(arg, convertOne, tag);
 		// covert back to AH from OPE if the enrypt type of exp is not AH
 		String encryptType = getSimpleEncryptName(expRef);
 		JCMethodInvocation method;
