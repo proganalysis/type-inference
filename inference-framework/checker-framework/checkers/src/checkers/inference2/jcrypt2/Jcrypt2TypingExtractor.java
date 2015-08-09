@@ -20,7 +20,6 @@ import checkers.inference2.InferenceChecker;
 import checkers.inference2.MaximalTypingExtractor;
 import checkers.inference2.Reference;
 import checkers.inference2.ConstraintSolver.FailureStatus;
-import checkers.inference2.Reference.AdaptReference;
 import checkers.inference2.Reference.RefKind;
 import checkers.util.AnnotationUtils;
 
@@ -132,8 +131,10 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 				if (!leftCryptType.equals(rightCryptType)) {
 					String[] con = new String[] {getSimpleName(leftCryptType),
 							getSimpleName(rightCryptType)};
-					String id = left instanceof AdaptReference ? right
-							.getIdentifier() : left.getIdentifier();
+					String id = left.getIdentifier();
+					if (left.getKind() == RefKind.FIELD_ADAPT || left.getKind() == RefKind.FIELD) {
+						id = right.getIdentifier();
+					}
 					addConversion(c, id, con);
 				}
 			}

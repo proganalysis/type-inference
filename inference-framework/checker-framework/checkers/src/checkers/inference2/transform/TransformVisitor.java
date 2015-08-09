@@ -91,7 +91,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	/** For recording visited method invocation trees or allocation sites */
 	protected Set<Tree> visited = new HashSet<Tree>();
 
-	private static boolean hasImported = false, inSample;
+	//private static boolean hasImported = false, inSample;
+	
+	private static boolean inSample;
 	
 	private static JCExpression objectType;
 	private static JCArrayTypeTree byteArray1, byteArray2;
@@ -219,7 +221,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		}
 	}
     
-	private JCMethodInvocation getConvertMethod(ExpressionTree arg, String[] con) {
+	private JCMethodInvocation getConvertMethod(ExpressionTree arg, String[] con, boolean special) {
 		JCMethodInvocation fn;
 		// from, to
 		JCExpression fromTree = maker.Literal(con[0]);
@@ -237,7 +239,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			args = List.of(argJ, fromTree);
 		} else {
 			// Encryption.convert(arg, from, to)
-			fn = encryptionMethods.get("convert");
+			fn = special ? encryptionMethods.get("convertSpe") : encryptionMethods.get("convert");
 			args = List.of(argJ, fromTree, toTree);
 		}
 		// Encryption -- JCIdent
@@ -367,21 +369,21 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	}
 	}
 	
-	private JCExpression findConvertMethod(JCExpression exp, Reference ref) {
+	private JCExpression findConvertMethod(JCExpression exp, Reference ref, boolean special) {
 		if (convertedReferences.containsKey(ref.getIdentifier())) {
     		Map<Long, String[]> conversions =
     				convertedReferences.get(ref.getIdentifier());
     		Long pos = checker.getPosition(exp);
     		if (conversions.containsKey(pos)) {
     			String[] con = conversions.get(pos);
-    			return getConvertMethod(exp, con);
+    			return getConvertMethod(exp, con, special);
     		}
 		}
 		return null;
 	}
     
     private void processInit(JCExpression init, JCVariableDecl jcvd, Reference initRef) {
-    	JCExpression convertMethod = findConvertMethod(init, initRef);
+    	JCExpression convertMethod = findConvertMethod(init, initRef, false);
     	if (convertMethod != null) {
 			jcvd.init = convertMethod;
 		}
@@ -459,6 +461,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	case "Conversion.convert":
     		encryptionMethods.put("convert", jcmi);
     		break;
+    	case "Conversion.convertSpe":
+    		encryptionMethods.put("convertSpe", jcmi);
+    		break;
     	default:
     		processMethodInvocation(jcmi);
     	}
@@ -486,7 +491,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				Tree parent = getCurrentPath().getParentPath().getLeaf();
 				if (!argRef.getRawAnnotations().contains(checker.CLEAR)) {
 					if (rcvRef.getRawAnnotations().contains(checker.CLEAR)) {
-						JCExpression convertMethod = findConvertMethod((JCExpression) rcvTree, rcvRef);
+						JCExpression convertMethod = findConvertMethod((JCExpression) rcvTree, rcvRef, false);
 						if (convertMethod != null) {
 							tree.meth = convertMethod;
 						}
@@ -494,12 +499,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 					modifyForComputation(rcvTree, args[0], Tag.EQ, parent, false);
 				} else {
 					if (!rcvRef.getRawAnnotations().contains(checker.CLEAR)) {
-						JCExpression newMeth = findConvertMethod((JCExpression) args[0], argRef);
+						JCExpression newMeth = findConvertMethod((JCExpression) args[0], argRef, false);
 						if (newMeth != null) {
 							args[0] = newMeth;
 						} else {
 							args[0] = getConvertMethod(args[0], new String[] { 
-									"CLEAR", "DET"});
+									"CLEAR", "DET"}, false);
 						}
 						tree.args = List.from(args);
 						modifyForComputation(rcvTree, args[0], Tag.EQ, parent, false);
@@ -514,7 +519,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 						String encryptType = getSimpleEncryptName(argRef);
 						if (encryptType != null) {
 							args[i] = getConvertMethod(args[0], new String[] {
-									encryptType, "CLEAR" });
+									encryptType, "CLEAR" }, false);
 						}
 					}
 				}
@@ -523,7 +528,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		} else { // regular method call
 			for (int i = 0; i < args.length; i++) {
 				Reference argRef = checker.getAnnotatedReference(args[i]);
-				JCExpression convertMethod = findConvertMethod((JCExpression) args[i], argRef);
+				JCExpression convertMethod = findConvertMethod((JCExpression) args[i], argRef, false);
 				if (convertMethod != null) {
 					args[i] = convertMethod;
 				}
@@ -598,10 +603,13 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			rightRef = checker.getAnnotatedReference(rightOperand);
 		}
 		// rightOperand -> Encryption.convert(right, from, to)
+		// String + int: should use convertSpe() method.
 		JCBinary binary = (JCBinary) node;
+		String operator = binary.getOperator().toString();
 		if (rightRef != null) {
-			JCExpression convertMethod = findConvertMethod((JCExpression) rightOperand,
-					rightRef);
+			JCExpression convertMethod = operator.equals("+(java.lang.String,int)") ?
+					findConvertMethod((JCExpression) rightOperand, rightRef, true) :
+					findConvertMethod((JCExpression) rightOperand, rightRef, false);
 			if (convertMethod != null) {
 				binary.rhs = convertMethod;
 			}
@@ -612,8 +620,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		} else {
 			// leftOperand -> Encryption.convert(left, from, to)
 			if (leftRef != null) {
-				JCExpression convertMethod = findConvertMethod((JCExpression) leftOperand,
-						leftRef);
+				JCExpression convertMethod = operator.equals("+(int,java.lang.String)") ?
+						findConvertMethod((JCExpression) leftOperand, leftRef, true) :
+						findConvertMethod((JCExpression) leftOperand, leftRef, false);
 				if (convertMethod != null) {
 					binary.lhs = convertMethod;
 				}
@@ -641,7 +650,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		ExpressionTree expr = node.getExpression();
 		if (expr != null) {
 			Reference returnRef = checker.getAnnotatedReference(expr);
-			JCExpression convertMethod = findConvertMethod((JCExpression) expr, returnRef);
+			JCExpression convertMethod = findConvertMethod((JCExpression) expr, returnRef, false);
 			if (convertMethod != null) {
 				JCReturn ret = (JCReturn) node;
 				ret.expr = convertMethod;
@@ -661,10 +670,11 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 		} else {
 			inSample = false;
-			if (!hasImported) {
-				root.defs = root.defs.prependList(imports);
-				hasImported = true;
-			}
+//			if (!hasImported) {
+//				root.defs = root.defs.prependList(imports);
+//				hasImported = true;
+//			}
+			root.defs = root.defs.prependList(imports);
 		}
 		return super.visitClass(node, p);
 	}
@@ -673,7 +683,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	public Void visitAssignment(AssignmentTree node, Void p) {
 		ExpressionTree expression = node.getExpression();
 		Reference expRef = checker.getAnnotatedReference(expression);
-		JCExpression convertMethod = findConvertMethod((JCExpression) expression, expRef);
+		JCExpression convertMethod = findConvertMethod((JCExpression) expression, expRef, false);
     	if (convertMethod != null) {
 			((JCAssign) node).rhs = convertMethod;
 		}
@@ -702,11 +712,11 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		Reference expRef = checker.getAnnotatedReference(exp);
 		if (expRef.getRawAnnotations().contains(checker.CLEAR)) return;
 		// conversion: i++ -> Encryption.conversion(i, e1, e2)
-		JCExpression convertMethod = findConvertMethod(exp, expRef);
+		JCExpression convertMethod = findConvertMethod(exp, expRef, false);
 		ExpressionTree arg = convertMethod == null ? exp : convertMethod;
 		// Encryption.encrypt(1, "AH")
 		JCExpression expOne = maker.Literal(1);
-		JCMethodInvocation convertOne = getConvertMethod(expOne, new String[]{"CLEAR", "AH"});
+		JCMethodInvocation convertOne = getConvertMethod(expOne, new String[]{"CLEAR", "AH"}, false);
 		// Computation.add(i, Encryption.encrypt(1, "AH"))
 		JCMethodInvocation computeMethod = getComputeMethod(arg, convertOne, Tag.PLUS);
 		// covert back to AH from OPE if the enrypt type of exp is not AH
@@ -715,7 +725,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		if (encryptType.equals("AH")) {
 			method = computeMethod;
 		} else {
-			method = getConvertMethod(computeMethod, new String[]{"AH", encryptType});
+			method = getConvertMethod(computeMethod, new String[]{"AH", encryptType}, false);
 		}
 		// i++ -> i = i + 1;
 		Tree parent = getCurrentPath().getParentPath().getLeaf();
@@ -732,7 +742,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				&& !indexRef.getRawAnnotations().contains(checker.CLEAR)) {
 			JCArrayAccess jcaa = (JCArrayAccess) node;
 			jcaa.index = getConvertMethod(index,
-					new String[]{getSimpleEncryptName(indexRef), "CLEAR"});
+					new String[]{getSimpleEncryptName(indexRef), "CLEAR"}, false);
 		}
 		return super.visitArrayAccess(node, p);
 	}
@@ -745,7 +755,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			Reference dimRef = checker.getAnnotatedReference(dim);
 			if (dim instanceof JCIdent && !dimRef.getRawAnnotations().contains(checker.CLEAR)) {
 				newDims = newDims.append(getConvertMethod(dim,
-						new String[]{getSimpleEncryptName(dimRef), "CLEAR"}));
+						new String[]{getSimpleEncryptName(dimRef), "CLEAR"}, false));
 			} else {
 				newDims = newDims.append(dim);
 			}

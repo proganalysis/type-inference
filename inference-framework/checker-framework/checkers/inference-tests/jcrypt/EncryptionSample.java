@@ -21,5 +21,6 @@ class EncryptionSample {
 		Conversion.encrypt(0, s);
 		Conversion.decrypt(b1, s);
 		Conversion.convert(b1, s, s);
+		Conversion.convertSpe(b1, s, s);
 	}
 }

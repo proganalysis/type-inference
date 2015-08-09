@@ -39,6 +39,12 @@ public class Conversion {
 		int ptext = decrypt(ctext, from);
 		return encrypt(ptext, to);
 	}
+	
+	public static byte[][] convertSpe(byte[] ctext, String from, String to) {
+		int ptext = decrypt(ctext, from);
+		String s = String.valueOf(ptext);
+		return encrypt(s, to);
+	}
 
 	public static byte[][] convert(byte[][] ctext, String from, String to) {
 		String ptext = decrypt(ctext, from);

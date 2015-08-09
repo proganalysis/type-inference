@@ -194,8 +194,8 @@ public class Jcrypt2Checker extends InferenceChecker {
 		}
 		Kind treeKind = t.getKind();
 		switch (treeKind) {
-		case PLUS:	// String + String should not be annotated as AH
-			if (((JCBinary) t).getOperator().toString().equals("+(java.lang.String,java.lang.String)")) {
+		case PLUS:	// String + String/int should not be annotated as AH
+			if (((JCBinary) t).getOperator().toString().contains("java.lang.String")) {
 				r.setAnnotations(sourceAnnos, this);
 				break;
 			}
