@@ -3,6 +3,7 @@
  */
 package checkers.inference2.transform;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -669,11 +670,14 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				imports = imports.append(imp);
 			}
 		} else {
+			TransformMain.packageName = root.getPackageName().toString().replace('.', '/') + "/";
+			File files = new File(TransformMain.outputDirTrans + TransformMain.packageName);
+			if (!files.exists()) {
+				if (!files.mkdirs()) {
+					System.out.println("Failed to create multiple directories!");
+				}
+			}
 			inSample = false;
-//			if (!hasImported) {
-//				root.defs = root.defs.prependList(imports);
-//				hasImported = true;
-//			}
 			root.defs = root.defs.prependList(imports);
 		}
 		return super.visitClass(node, p);
@@ -701,6 +705,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		case PREINC:
 		case POSTINC:
 			processUnaryTree(jcu, Tag.PLUS);
+			break;
 		case PREDEC:
 		case POSTDEC:
 			processUnaryTree(jcu, Tag.MINUS);
@@ -732,9 +737,14 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		}
 		// i++ -> i = i + 1;
 		Tree parent = getCurrentPath().getParentPath().getLeaf();
-		// For now, consider parent is JCExpressionStatement
-		JCExpressionStatement jces = (JCExpressionStatement) parent;
-		jces.expr = maker.Assign(exp, method);
+		// For now, consider parent is JCExpressionStatement or JCArrayAccess
+		if (parent instanceof JCExpressionStatement) {
+			JCExpressionStatement jces = (JCExpressionStatement) parent;
+			jces.expr = maker.Assign(exp, method);
+		} else if (parent instanceof JCArrayAccess) {
+			JCArrayAccess jcaa = (JCArrayAccess) parent;
+			jcaa.index = maker.Assign(exp, method);
+		}
 	}
 	
 	@Override

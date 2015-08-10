@@ -49,9 +49,9 @@ public class TransformMain extends InferenceMain {
     
     public static final String outputDir = "infer-output";
     
-    public static final String outputDirTrans = "/home/yao/Projects/swift/src/";
+    public static String outputDirTrans = "/home/yao/Projects/swift/src/";
     
-    public static String lastFile;
+    public static String lastFile, packageName;
     
     private static TransformMain inferenceMain = null;
 
@@ -229,7 +229,7 @@ public class TransformMain extends InferenceMain {
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(args.toArray(new String[0])) != Main.Result.OK)
         	return false;
-        String fileName = outputDirTrans + (InferenceMain.fullEncrypt ? "full/" : "part/")
+        String fileName = outputDirTrans + packageName
         		+ lastFile.substring(lastFile.lastIndexOf('/')+1);
         try {
 			PrintWriter pw = new PrintWriter(fileName);
