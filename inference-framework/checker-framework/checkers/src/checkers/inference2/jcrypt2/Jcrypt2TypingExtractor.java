@@ -15,11 +15,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+
 import checkers.inference2.Constraint;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.MaximalTypingExtractor;
 import checkers.inference2.Reference;
 import checkers.inference2.ConstraintSolver.FailureStatus;
+import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.Reference.RefKind;
 import checkers.util.AnnotationUtils;
 
@@ -105,7 +107,8 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 	public void conversionCheck(Constraint c, Reference left, Reference right,
 			Set<AnnotationMirror> leftAnnos, Set<AnnotationMirror> rightAnnos) {
 		if (c.getPos() == 0 || left.getKind() == RefKind.METH_ADAPT
-				|| (right.getKind() == RefKind.METH_ADAPT && leftAnnos.isEmpty())
+				|| (right.getKind() == RefKind.METH_ADAPT && leftAnnos.isEmpty()
+				&& ((MethodAdaptReference) right).getDeclRef().getIdentifier().startsWith("LIB"))
 				|| left.getKind() == RefKind.NULL
 				|| right.getKind() == RefKind.NULL) return;
 		if (leftAnnos.isEmpty()) {

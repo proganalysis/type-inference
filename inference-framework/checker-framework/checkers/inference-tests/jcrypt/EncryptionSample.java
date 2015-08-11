@@ -19,6 +19,7 @@ class EncryptionSample {
 		Computation.notEquals(b1, b1);
 		Computation.equals(b1, b1);
 		Conversion.encrypt(0, s);
+		Conversion.encryptSpe(0, s);
 		Conversion.decrypt(b1, s);
 		Conversion.convert(b1, s, s);
 		Conversion.convertSpe(b1, s, s);

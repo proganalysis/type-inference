@@ -232,7 +232,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		List<JCExpression> args;
 		if (con[0].equals("CLEAR") || con[0].equals("BOT")) {
 			// Encryption.encrypt(arg, to)
-			fn = encryptionMethods.get("encrypt");
+			fn = special ? encryptionMethods.get("encryptSpe") : encryptionMethods.get("encrypt");
 			args = List.of((JCExpression) arg, toTree);
 		} else if (con[1].equals("CLEAR")) {
 			// Encryption.decrypt(arg, from)
@@ -456,6 +456,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	case "Conversion.encrypt":
     		encryptionMethods.put("encrypt", jcmi);
     		break;
+    	case "Conversion.encryptSpe":
+    		encryptionMethods.put("encryptSpe", jcmi);
+    		break;
     	case "Conversion.decrypt":
     		encryptionMethods.put("decrypt", jcmi);
     		break;
@@ -540,16 +543,19 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     
     public Void visitBinary(BinaryTree node, Void p) {
 		processBinaryTreeForConversion(node);
-		processBinaryTreeForComputation(node, null);
+		processBinaryTreeForComputation(node, null, true);
 		return super.visitBinary(node, p);
 	}
 	
-	private void processBinaryTreeForComputation(BinaryTree node, BinaryTree outerTree) {
+	private void processBinaryTreeForComputation(BinaryTree node, BinaryTree outerTree, boolean isLeft) {
 		// leftOperand + rightOperand -> Computation.add(leftOperand, rightOperand)
 		ExpressionTree rightOperand = node.getRightOperand();
 		ExpressionTree leftOperand = node.getLeftOperand();
 		if (leftOperand instanceof JCBinary) {
-			processBinaryTreeForComputation((BinaryTree) leftOperand, node);
+			processBinaryTreeForComputation((BinaryTree) leftOperand, node, true);
+		}
+		if (rightOperand instanceof JCBinary) {
+			processBinaryTreeForComputation((BinaryTree) rightOperand, node, false);
 		}
 		// skip a == null
 		if (shouldSkip(leftOperand, rightOperand)) return;
@@ -569,7 +575,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				parent = getCurrentPath().getParentPath().getLeaf();
 			}
 			modifyForComputation(node.getLeftOperand(), node.getRightOperand(),
-					tag, parent, true);
+					tag, parent, isLeft);
 		}
 	}
 
@@ -607,12 +613,16 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		// String + int: should use convertSpe() method.
 		JCBinary binary = (JCBinary) node;
 		String operator = binary.getOperator().toString();
-		if (rightRef != null) {
-			JCExpression convertMethod = operator.equals("+(java.lang.String,int)") ?
-					findConvertMethod((JCExpression) rightOperand, rightRef, true) :
-					findConvertMethod((JCExpression) rightOperand, rightRef, false);
-			if (convertMethod != null) {
-				binary.rhs = convertMethod;
+		if (rightOperand instanceof JCBinary) {
+			processBinaryTreeForConversion((BinaryTree) rightOperand);
+		} else {
+			if (rightRef != null) {
+				JCExpression convertMethod = operator.equals("+(java.lang.String,int)") ?
+						findConvertMethod((JCExpression) rightOperand, rightRef, true)
+						: findConvertMethod((JCExpression) rightOperand, rightRef, false);
+				if (convertMethod != null) {
+					binary.rhs = convertMethod;
+				}
 			}
 		}
 		// recursively process leftOperand
@@ -620,7 +630,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			processBinaryTreeForConversion((BinaryTree) leftOperand);
 		} else {
 			// leftOperand -> Encryption.convert(left, from, to)
-			if (leftRef != null) {
+			if (!(leftOperand instanceof JCParens) && leftRef != null) {
 				JCExpression convertMethod = operator.equals("+(int,java.lang.String)") ?
 						findConvertMethod((JCExpression) leftOperand, leftRef, true) :
 						findConvertMethod((JCExpression) leftOperand, leftRef, false);

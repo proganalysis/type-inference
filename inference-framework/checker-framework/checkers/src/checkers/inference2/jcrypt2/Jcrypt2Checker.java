@@ -236,8 +236,11 @@ public class Jcrypt2Checker extends InferenceChecker {
 		case INT_LITERAL:
 			setClear(r);
 			break;
+		case METHOD_INVOCATION: // hashCode() should be clear
 		case MEMBER_SELECT: // list.length should be clear
-			if (isFromLibrary(TreeUtils.elementFromUse((ExpressionTree) t))) {
+			if (isFromLibrary(TreeUtils.elementFromUse((ExpressionTree) t))
+					&& (r.getType().toString().equals("int")
+					|| r.getType().toString().equals("String"))) {
 				setClear(r);
 				break;
 			}
