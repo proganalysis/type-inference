@@ -500,7 +500,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 							tree.meth = convertMethod;
 						}
 					}
-					modifyForComputation(rcvTree, args[0], Tag.EQ, parent, false);
+					modifyForComputation(node, rcvTree, args[0], Tag.EQ, parent, false);
 				} else {
 					if (!rcvRef.getRawAnnotations().contains(checker.CLEAR)) {
 						JCExpression newMeth = findConvertMethod((JCExpression) args[0], argRef, false);
@@ -511,7 +511,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 									"CLEAR", "DET"}, false);
 						}
 						tree.args = List.from(args);
-						modifyForComputation(rcvTree, args[0], Tag.EQ, parent, false);
+						modifyForComputation(node, rcvTree, args[0], Tag.EQ, parent, false);
 					}
 				}
 			} else {
@@ -574,13 +574,13 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			} else {
 				parent = getCurrentPath().getParentPath().getLeaf();
 			}
-			modifyForComputation(node.getLeftOperand(), node.getRightOperand(),
+			modifyForComputation(node, node.getLeftOperand(), node.getRightOperand(),
 					tag, parent, isLeft);
 		}
 	}
 
-	private void modifyForComputation(ExpressionTree left, ExpressionTree right,
-			Tag tag, Tree parent, boolean isLeft) {
+	private void modifyForComputation(Tree node, ExpressionTree left,
+			ExpressionTree right, Tag tag, Tree parent, boolean isLeft) {
 		JCMethodInvocation newCompMethod = getComputeMethod(left, right, tag);
 		if (newCompMethod == null) return;
 		if (parent instanceof JCParens) {
@@ -596,6 +596,16 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			JCBinary binaryTree = (JCBinary) parent;
 			if (isLeft) binaryTree.lhs = newCompMethod;
 			else binaryTree.rhs = newCompMethod;
+		} else if (parent instanceof JCMethodInvocation) {
+			JCMethodInvocation methInvo = (JCMethodInvocation) parent;
+			JCExpression[] args = methInvo.getArguments().toArray(new JCExpression[0]);
+			for (int i = 0; i < args.length; i++) {
+				if (args[i] == node) {
+					args[i] = newCompMethod;
+					break;
+				}
+			}
+			methInvo.args = List.from(args);
 		}
 	}
 
