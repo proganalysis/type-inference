@@ -28,6 +28,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -43,6 +44,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCAssignOp;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -275,18 +277,23 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		// add, compareTo, or equals
 		switch (tag) {
 		case PLUS: // +
+		case PLUS_ASG: // +=
 			fn = encryptionMethods.get("add");
 			break;
 		case MINUS: // -
+		case MINUS_ASG: // -=
 			fn = encryptionMethods.get("minus");
 			break;
-		case MUL: // -
+		case MUL: // *
+		case MUL_ASG: // *=
 			fn = encryptionMethods.get("multiply");
 			break;
-		case DIV: // -
+		case DIV: // /
+		case DIV_ASG: // /=
 			fn = encryptionMethods.get("divide");
 			break;
-		case MOD: // -
+		case MOD: // %
+		case MOD_ASG: // %=
 			fn = encryptionMethods.get("mod");
 			break;
 		case EQ: // ==
@@ -344,10 +351,18 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				// change type: int -> byte[]
 				processVariableTree(init);
 				// process conversion
-				processInit(init, jcvd, initRef);
+				if (shouldConvert(varRef)) {
+					processInit(init, jcvd, initRef);
+				}
 			}
 		}
     	return super.visitVariable(node, p);
+    }
+    
+    // check the type of the variable if it is int or String
+    private boolean shouldConvert(Reference ref) {
+    	String javaType = ref.getType().getUnderlyingType().toString();
+    	return javaType.equals("int") || javaType.equals("java.lang.String");
     }
 
 	private void setByteArrayType(JCVariableDecl jcvd) {
@@ -566,7 +581,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		if (!left.startsWith("Conversion") && !left.startsWith("Computation")) {
 			leftRef = checker.getAnnotatedReference(leftOperand);
 		}
-		if (leftRef == null || !leftRef.getRawAnnotations().contains(checker.CLEAR)) {
+		if (leftRef == null || (shouldConvert(leftRef)
+				&& !leftRef.getRawAnnotations().contains(checker.CLEAR))) {
 			Tag tag = ((JCBinary) node).getTag();
 			Tree parent;
 			if (outerTree != null) {
@@ -608,47 +624,44 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			methInvo.args = List.from(args);
 		}
 	}
+	
+	private void modifyForConversion(BinaryTree node, ExpressionTree operand,
+			boolean isLeft) {
+		// recursively process operand
+		if (operand instanceof JCBinary) {
+			processBinaryTreeForConversion((BinaryTree) operand);
+		} else {
+			Reference ref = operand.toString().startsWith("Conversion") ?
+					null : checker.getAnnotatedReference(operand);
+			if (ref == null) return;
+			JCBinary binary = (JCBinary) node;
+			String operator = binary.getOperator().toString();
+			// String + int: should use convertSpe() method.
+			boolean con = isLeft ? operator.equals("+(int,java.lang.String)") :
+				operator.equals("+(java.lang.String,int)");
+			JCExpression convertMethod;
+			if (con) {
+				convertMethod = findConvertMethod((JCExpression) operand, ref, true);
+				if (convertMethod == null) {
+					if (!ref.getRawAnnotations().contains(checker.CLEAR)) {
+						String type = getSimpleEncryptName(ref);
+						convertMethod = getConvertMethod(operand, new String[]{type, type}, true);
+					}
+				}
+			} else {
+				convertMethod = findConvertMethod((JCExpression) operand, ref, false);
+			}
+			if (convertMethod != null) {
+				if (isLeft) binary.lhs = convertMethod;
+				else binary.rhs = convertMethod;
+			}
+		}
+	}
 
 	private void processBinaryTreeForConversion(BinaryTree node) {
-		ExpressionTree rightOperand = node.getRightOperand();
-		ExpressionTree leftOperand = node.getLeftOperand();
-		Reference leftRef = null, rightRef = null;
-		if (!leftOperand.toString().startsWith("Conversion")) {
-			leftRef = checker.getAnnotatedReference(leftOperand);
-		}
-		if (!rightOperand.toString().startsWith("Conversion")) {
-			rightRef = checker.getAnnotatedReference(rightOperand);
-		}
-		// rightOperand -> Encryption.convert(right, from, to)
-		// String + int: should use convertSpe() method.
-		JCBinary binary = (JCBinary) node;
-		String operator = binary.getOperator().toString();
-		if (rightOperand instanceof JCBinary) {
-			processBinaryTreeForConversion((BinaryTree) rightOperand);
-		} else {
-			if (rightRef != null) {
-				JCExpression convertMethod = operator.equals("+(java.lang.String,int)") ?
-						findConvertMethod((JCExpression) rightOperand, rightRef, true)
-						: findConvertMethod((JCExpression) rightOperand, rightRef, false);
-				if (convertMethod != null) {
-					binary.rhs = convertMethod;
-				}
-			}
-		}
-		// recursively process leftOperand
-		if (leftOperand instanceof JCBinary) {
-			processBinaryTreeForConversion((BinaryTree) leftOperand);
-		} else {
-			// leftOperand -> Encryption.convert(left, from, to)
-			if (!(leftOperand instanceof JCParens) && leftRef != null) {
-				JCExpression convertMethod = operator.equals("+(int,java.lang.String)") ?
-						findConvertMethod((JCExpression) leftOperand, leftRef, true) :
-						findConvertMethod((JCExpression) leftOperand, leftRef, false);
-				if (convertMethod != null) {
-					binary.lhs = convertMethod;
-				}
-			}
-		}
+		// operand -> Encryption.convert(operand, from, to)
+		modifyForConversion(node, node.getRightOperand(), false);
+		modifyForConversion(node, node.getLeftOperand(), true);
 	}
 
 	// skip (a == null) and (a = true)
@@ -707,13 +720,49 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	public Void visitAssignment(AssignmentTree node, Void p) {
 		ExpressionTree expression = node.getExpression();
 		Reference expRef = checker.getAnnotatedReference(expression);
-		JCExpression convertMethod = findConvertMethod((JCExpression) expression, expRef, false);
-    	if (convertMethod != null) {
-			((JCAssign) node).rhs = convertMethod;
+		if (shouldConvert(expRef)) {
+			JCExpression convertMethod = findConvertMethod(
+					(JCExpression) expression, expRef, false);
+			if (convertMethod != null) {
+				((JCAssign) node).rhs = convertMethod;
+			}
 		}
 		return super.visitAssignment(node, p);
 	}
 	
+	@Override
+	public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+		JCAssignOp assign = (JCAssignOp) node;
+		processCompoundAssignment(assign, assign.getTag());
+		return super.visitCompoundAssignment(node, p);
+	}
+	
+	// handle x += y;
+	private void processCompoundAssignment(JCAssignOp assign, Tag tag) {
+		JCExpression exp = assign.getExpression();
+		Reference expRef = checker.getAnnotatedReference(exp);
+		if (expRef.getRawAnnotations().contains(checker.CLEAR)) return;
+		// Encryption.conversion(y, from, to)
+		JCExpression convertMethod = findConvertMethod(exp, expRef, false);
+		ExpressionTree arg = convertMethod == null ? exp : convertMethod;
+		// Computation.add(x, y)
+		JCMethodInvocation computeMethod = getComputeMethod(arg, assign.getVariable(), tag);
+		// covert back to AH from OPE if the enrypt type of exp is not AH
+		String encryptType = getSimpleEncryptName(expRef);
+		JCMethodInvocation method;
+		if (encryptType.equals("AH")) {
+			method = computeMethod;
+		} else {
+			method = getConvertMethod(computeMethod, new String[]{"AH", encryptType}, false);
+		}
+		Tree parent = getCurrentPath().getParentPath().getLeaf();
+		// For now, consider parent is JCExpressionStatement
+		if (parent instanceof JCExpressionStatement) {
+			JCExpressionStatement statement = (JCExpressionStatement) parent;
+			statement.expr = maker.Assign(assign.getVariable(), method);
+		}
+	}
+
 	/**
      * A unary operation. ++, --, ...
      */

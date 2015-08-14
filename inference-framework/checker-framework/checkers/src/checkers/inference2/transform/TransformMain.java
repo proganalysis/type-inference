@@ -51,7 +51,7 @@ public class TransformMain extends InferenceMain {
     
     public static String outputDirTrans = "/home/yao/Projects/swift/src/";
     
-    public static String lastFile, packageName;
+    public static String packageName;
     
     private static TransformMain inferenceMain = null;
 
@@ -186,9 +186,6 @@ public class TransformMain extends InferenceMain {
         int processorIndex = -1;
         for (int i = 0; i < args.length; i++) {
         	String arg = args[i];
-        	if (arg.endsWith(".java")) {
-        		lastFile = arg;
-        	}
         	// Intercept the processor and replace it with ReimChecker
         	if (arg.equals("-processor")) {
         		argList.add(arg);
@@ -229,15 +226,7 @@ public class TransformMain extends InferenceMain {
 		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
         if (main.compile(args.toArray(new String[0])) != Main.Result.OK)
         	return false;
-        String fileName = outputDirTrans + packageName
-        		+ lastFile.substring(lastFile.lastIndexOf('/')+1);
-        try {
-			PrintWriter pw = new PrintWriter(fileName);
-			checker.printResult(pw);
-			pw.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        ((TransformChecker) checker).printResult();
         return true;
 	}
 	
