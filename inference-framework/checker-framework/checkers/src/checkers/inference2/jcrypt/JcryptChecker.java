@@ -396,15 +396,8 @@ public class JcryptChecker extends InferenceChecker {
 
 		for (Reference r : references) {
 			Element elt = r.getElement();
-			if (!r.getFileName().startsWith("LIB-") && r.getKind() == RefKind.PARAMETER) {
-				if (r.getAnnotations(this).contains(POLY)
-						|| r.getAnnotations(this).contains(SENSITIVE)) {
-					if (r.getType().toString().contains("String")
-							|| r.getType().toString().contains("int")) {
-						needCopyMethods.add(r.getIdentifier());
-					}
-				}
-			}
+			findCopyMethods(r);
+			findTypeCastMethods(r);
 			if ((elt == null && r.getKind() != RefKind.ALLOCATION)
 					|| r.getIdentifier().startsWith(LIB_PREFIX)
 					|| (elt instanceof ExecutableElement)
@@ -435,6 +428,33 @@ public class JcryptChecker extends InferenceChecker {
 			sb.append("(" + r.getId() + ")");
 			sb.append(r.getKind());
 			out.println(sb.toString());
+		}
+	}
+
+	protected void findCopyMethods(Reference r) {
+		if (!r.getFileName().startsWith("LIB-") && r.getKind() == RefKind.PARAMETER) {
+			if (r.getAnnotations(this).contains(POLY)
+					|| r.getAnnotations(this).contains(SENSITIVE)) {
+				if (r.getType().toString().contains("String")
+						|| r.getType().toString().contains("int")) {
+					needCopyMethods.add(r.getIdentifier());
+				}
+			}
+		}
+	}
+	
+	protected void findTypeCastMethods(Reference r) {
+		String id = r.getIdentifier();
+		if (!r.getFileName().startsWith("LIB-") && id.endsWith("()-RETURN")) {
+			if (r.getAnnotations(this).contains(POLY)
+					|| r.getAnnotations(this).contains(SENSITIVE)) {
+				if (r.getType().toString().contains("String")
+						|| r.getType().toString().contains("int")) {
+					int start = id.lastIndexOf(':') + 1;
+					int end = id.length() - 9;
+					needTypeCastMethods.add(id.substring(start, end));
+				}
+			}
 		}
 	}
 	

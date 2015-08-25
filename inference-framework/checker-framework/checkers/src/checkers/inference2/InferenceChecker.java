@@ -121,6 +121,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	
 	protected static Set<String> needCopyMethods = new HashSet<>();
 	
+	protected static Set<String> needTypeCastMethods = new HashSet<>();
+	
 	private Set<Constraint> constraints = new LinkedHashSet<Constraint>();
 
 	protected AnnotatedTypeFactory currentFactory;
@@ -148,6 +150,10 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	public Set<String> getNeedCopyMethods() {
 		return needCopyMethods;
+	}
+
+	public Set<String> getNeedTypeCastMethods() {
+		return needTypeCastMethods;
 	}
 
 	public SourcePositions getPositions() {

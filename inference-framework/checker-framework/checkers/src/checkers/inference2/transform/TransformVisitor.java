@@ -33,6 +33,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -58,6 +59,7 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCParens;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
@@ -406,6 +408,18 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	}
     
     @Override
+    public Void visitNewClass(NewClassTree node, Void p) {
+    	Element methElt = TreeUtils.elementFromUse(node);
+		if (checker.isFromLibrary(methElt)) {
+			JCNewClass newClass = (JCNewClass) node;
+			JCExpression[] args = node.getArguments().toArray(
+					new JCExpression[0]);
+			newClass.args = List.from(decryptParameter(args));
+		}
+    	return super.visitNewClass(node, p);
+    }
+    
+    @Override
 	public Void visitMethod(MethodTree node, Void p) {
     	JCMethodDecl jcmd = (JCMethodDecl) node;
     	// create two versions of a sensitive method
@@ -486,7 +500,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	default:
     		processMethodInvocation(jcmi);
     	}
-    	return super.visitMethodInvocation(jcmi, p);
+    	return super.visitMethodInvocation(node, p);
 	}
     
     private void processMethodInvocation(MethodInvocationTree node) {
@@ -532,17 +546,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			} else {
 				// process library method call:
 				// e.g. System.out.print(decrypt(a, "DET"))
-				for (int i = 0; i < args.length; i++) {
-					Reference argRef = checker.getAnnotatedReference(args[i]);
-					if (!argRef.getRawAnnotations().contains(checker.CLEAR)) {
-						String encryptType = getSimpleEncryptName(argRef);
-						if (encryptType != null) {
-							args[i] = getConvertMethod(args[0], new String[] {
-									encryptType, "CLEAR" }, false);
-						}
-					}
-				}
-				tree.args = List.from(args);
+				tree.args = List.from(decryptParameter(args));
 			}
 		} else { // regular method call
 			for (int i = 0; i < args.length; i++) {
@@ -555,6 +559,20 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			tree.args = List.from(args);
 		}
     }
+
+	protected JCExpression[] decryptParameter(JCExpression[] args) {
+		for (int i = 0; i < args.length; i++) {
+			Reference argRef = checker.getAnnotatedReference(args[i]);
+			if (!argRef.getRawAnnotations().contains(checker.CLEAR)) {
+				String encryptType = getSimpleEncryptName(argRef);
+				if (encryptType != null) {
+					args[i] = getConvertMethod(args[0], new String[] {
+							encryptType, "CLEAR" }, false);
+				}
+			}
+		}
+		return args;
+	}
     
     public Void visitBinary(BinaryTree node, Void p) {
 		processBinaryTreeForConversion(node);
@@ -622,6 +640,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				}
 			}
 			methInvo.args = List.from(args);
+		} else if (parent instanceof JCAssign) {
+			JCAssign assign = (JCAssign) parent;
+			assign.rhs = newCompMethod;
+		} else if (parent instanceof JCReturn) {
+			JCReturn ret = (JCReturn) parent;
+			ret.expr = newCompMethod;
 		}
 	}
 	
