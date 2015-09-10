@@ -5,6 +5,8 @@ package checkers.inference2.typeCast;
 
 import java.io.PrintWriter;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -265,7 +267,15 @@ public class TypeCastChecker extends InferenceChecker {
 
 	@Override
 	public void printResult(PrintWriter out) {
-		out.print(this.root.toString().replace("@Sensitive()", "/*@Sensitive()*/").
+		String s = this.root.toString();
+		// a >> 3 -> a / (2^3)
+		Pattern p = Pattern.compile("(>>\\s?)(\\d+)");
+		Matcher m = p.matcher(s);
+		if (m.find()) {
+			int data = Integer.parseInt(m.group(2));
+			s = m.replaceFirst("/" + (int) Math.pow(2, data));
+		}
+		out.print(s.replace("@Sensitive()", "/*@Sensitive()*/").
 				replace("@Poly()", "/*@Poly()*/").replace("@Clear()", "/*@Clear()*/").
 				replace("@BOT()", "/*@BOT()*/"));
 	}

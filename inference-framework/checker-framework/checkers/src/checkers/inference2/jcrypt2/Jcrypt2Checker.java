@@ -209,6 +209,8 @@ public class Jcrypt2Checker extends InferenceChecker {
 		case MULTIPLY:
 		case DIVIDE:
 		case REMAINDER:
+		case LEFT_SHIFT:
+		case RIGHT_SHIFT:
 			r.addAnnotation(AH);
 			r.addAnnotation(DET);
 			r.addAnnotation(OPE);

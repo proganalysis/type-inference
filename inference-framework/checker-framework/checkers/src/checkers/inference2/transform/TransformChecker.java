@@ -5,7 +5,6 @@ package checkers.inference2.transform;
 
 import java.io.PrintWriter;
 import java.util.Set;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;

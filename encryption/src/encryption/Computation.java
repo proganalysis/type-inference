@@ -91,26 +91,50 @@ public class Computation {
 	}
 	
 	public static byte[] divide(byte[] b1, byte[] b2) {
-		return divide(b1, b2, false);
-	}
-	
-	private static byte[] divide(byte[] b1, byte[] b2, boolean mod) {
-		byte[] diffAH = b1;
-		byte[] diffOPE = Conversion.convert(b1, "AH", "OPE");
-		byte[] b2OPE = Conversion.convert(b2, "AH", "OPE");
-		int i = 0;
-		while (greaterThanOrEqualTo(diffOPE, b2OPE)) {
-			diffAH = minus(diffAH, b2);
-			diffOPE = Conversion.convert(diffAH, "AH", "OPE");
-			i++;
-		}
-		if (mod) return diffAH;
-		return Conversion.encrypt(i, "AH");
+		int c1 = Conversion.decrypt(b1, "AH");
+		int c2 = Conversion.decrypt(b2, "AH");
+		return Conversion.encrypt(c1/c2, "AH");
 	}
 	
 	public static byte[] mod(byte[] b1, byte[] b2) {
-		return divide(b1, b2, true);
+		int c1 = Conversion.decrypt(b1, "AH");
+		int c2 = Conversion.decrypt(b2, "AH");
+		return Conversion.encrypt(c1%c2, "AH");
 	}
+	
+	public static byte[] shiftLeft(byte[] b1, byte[] b2) {
+		int c1 = Conversion.decrypt(b1, "AH");
+		int c2 = Conversion.decrypt(b2, "AH");
+		return Conversion.encrypt(c1<<c2, "AH");
+	}
+	
+	public static byte[] shiftRight(byte[] b1, byte[] b2) {
+		int c1 = Conversion.decrypt(b1, "AH");
+		int c2 = Conversion.decrypt(b2, "AH");
+		return Conversion.encrypt(c1>>c2, "AH");
+	}
+	
+//	public static byte[] divide(byte[] b1, byte[] b2) {
+//		return divide(b1, b2, false);
+//	}
+//	
+//	private static byte[] divide(byte[] b1, byte[] b2, boolean mod) {
+//		byte[] diffAH = b1;
+//		byte[] diffOPE = Conversion.convert(b1, "AH", "OPE");
+//		byte[] b2OPE = Conversion.convert(b2, "AH", "OPE");
+//		int i = 0;
+//		while (greaterThanOrEqualTo(diffOPE, b2OPE)) {
+//			diffAH = minus(diffAH, b2);
+//			diffOPE = Conversion.convert(diffAH, "AH", "OPE");
+//			i++;
+//		}
+//		if (mod) return diffAH;
+//		return Conversion.encrypt(i, "AH");
+//	}
+//	
+//	public static byte[] mod(byte[] b1, byte[] b2) {
+//		return divide(b1, b2, true);
+//	}
 	
 	public static byte[] multiply(byte[] b1, byte[] b2) {
 		BigInteger clearb2 = BigInteger.valueOf(Conversion.decrypt(b2, "AH"));

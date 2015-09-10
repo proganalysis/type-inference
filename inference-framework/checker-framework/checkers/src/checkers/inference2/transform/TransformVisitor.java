@@ -298,6 +298,14 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		case MOD_ASG: // %=
 			fn = encryptionMethods.get("mod");
 			break;
+		case SL: // <<
+		case SL_ASG: // <<=
+			fn = encryptionMethods.get("shiftLeft");
+			break;
+		case SR: // >>
+		case SR_ASG: // >>=
+			fn = encryptionMethods.get("shiftRight");
+			break;
 		case EQ: // ==
 			fn = encryptionMethods.get("equals");
 			break;
@@ -388,6 +396,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	}
 	
 	private JCExpression findConvertMethod(JCExpression exp, Reference ref, boolean special) {
+		if (!shouldConvert(ref)) return null;
 		if (convertedReferences.containsKey(ref.getIdentifier())) {
     		Map<Long, String[]> conversions =
     				convertedReferences.get(ref.getIdentifier());
@@ -410,11 +419,20 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     @Override
     public Void visitNewClass(NewClassTree node, Void p) {
     	Element methElt = TreeUtils.elementFromUse(node);
+		JCNewClass newClass = (JCNewClass) node;
+		JCExpression[] args = node.getArguments().toArray(
+				new JCExpression[0]);
 		if (checker.isFromLibrary(methElt)) {
-			JCNewClass newClass = (JCNewClass) node;
-			JCExpression[] args = node.getArguments().toArray(
-					new JCExpression[0]);
 			newClass.args = List.from(decryptParameter(args));
+		} else {
+			for (int i = 0; i < args.length; i++) {
+				Reference argRef = checker.getAnnotatedReference(args[i]);
+				JCExpression convertMethod = findConvertMethod((JCExpression) args[i], argRef, false);
+				if (convertMethod != null) {
+					args[i] = convertMethod;
+				}
+			}
+			newClass.args = List.from(args);
 		}
     	return super.visitNewClass(node, p);
     }
@@ -463,6 +481,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     		break;
     	case "Computation.mod":
     		encryptionMethods.put("mod", jcmi);
+    		break;
+    	case "Computation.shiftLeft":
+    		encryptionMethods.put("shiftLeft", jcmi);
+    		break;
+    	case "Computation.shiftRight":
+    		encryptionMethods.put("shiftRight", jcmi);
     		break;
     	case "Computation.lessThan":
     		encryptionMethods.put("lessThan", jcmi);
@@ -646,6 +670,16 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		} else if (parent instanceof JCReturn) {
 			JCReturn ret = (JCReturn) parent;
 			ret.expr = newCompMethod;
+		} else if (parent instanceof JCNewClass) {
+			JCNewClass newClass = (JCNewClass) parent;
+			JCExpression[] args = newClass.getArguments().toArray(new JCExpression[0]);
+			for (int i = 0; i < args.length; i++) {
+				if (args[i] == node) {
+					args[i] = newCompMethod;
+					break;
+				}
+			}
+			newClass.args = List.from(args);
 		}
 	}
 	
@@ -655,6 +689,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		if (operand instanceof JCBinary) {
 			processBinaryTreeForConversion((BinaryTree) operand);
 		} else {
+			if (operand instanceof JCParens) return;
 			Reference ref = operand.toString().startsWith("Conversion") ?
 					null : checker.getAnnotatedReference(operand);
 			if (ref == null) return;
@@ -858,8 +893,11 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		JCNewArray newArray = (JCNewArray) node;
 		List<JCExpression> newDims = List.nil();
 		for (JCExpression dim : newArray.getDimensions()) {
+			if (dim instanceof JCTypeCast) {
+				dim = ((JCTypeCast) dim).getExpression();
+			}
 			Reference dimRef = checker.getAnnotatedReference(dim);
-			if (dim instanceof JCIdent && !dimRef.getRawAnnotations().contains(checker.CLEAR)) {
+			if (!dimRef.getRawAnnotations().contains(checker.CLEAR)) {
 				newDims = newDims.append(getConvertMethod(dim,
 						new String[]{getSimpleEncryptName(dimRef), "CLEAR"}, false));
 			} else {

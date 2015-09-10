@@ -579,6 +579,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         Reference castedRef = checker.getAnnotatedReference(castedTree);
         // Recursively, cases like (Long (Int)) var;
         generateConstraint(castedRef, castedTree);
+        generateConstraint(castedTree, castedRef);
         
         AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
         if (!checker.isAnnotated(type)) {

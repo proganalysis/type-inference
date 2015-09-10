@@ -73,6 +73,8 @@ public class EncryptionTest extends TestCase {
 		assertTrue(pts1.equals(e.decrypt(cts1)));
 		cts3 = e.encrypt(pts3);
 		cti3 = e.encrypt(pti3);
+		cti4 = e.encrypt(pti4);
+		assertTrue(Computation.greaterThan(cti3, cti4));
 		assertTrue(Computation.lessThan(cti3, cti1));
 		assertTrue(Computation.greaterThan(cti1, cti3));
 		assertTrue(Computation.lessThan(cts1, cts3));

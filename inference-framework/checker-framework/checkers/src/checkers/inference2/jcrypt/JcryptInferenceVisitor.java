@@ -84,6 +84,7 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		for (ExpressionTree dim : node.getDimensions()) {
 			Reference dimRef = checker.getAnnotatedReference(dim);
 			generateConstraint(dim, dimRef);
+			generateConstraint(dimRef, dim);
 		}
 		return super.visitNewArray(node, p);
 	}

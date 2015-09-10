@@ -12,10 +12,12 @@ import checkers.inference2.Reference;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypes;
+
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -23,9 +25,11 @@ import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
 
 /**
  * 
@@ -139,6 +143,17 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
 			}
 		}
     	return super.visitMethodInvocation(node, p);
+	}
+	
+	@Override
+	public Void visitNewArray(NewArrayTree node, Void p) {
+		JCNewArray newArray = (JCNewArray) node;
+		List<JCExpression> newDims = List.nil();
+		for (JCExpression dim : newArray.getDimensions()) {
+			newDims = newDims.append(maker.TypeCast(dim.type, dim));
+		}
+		newArray.dims = newDims;
+		return super.visitNewArray(node, p);
 	}
     
 }
