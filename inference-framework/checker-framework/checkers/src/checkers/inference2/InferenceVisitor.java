@@ -593,7 +593,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     
     private void processParenthesized(Reference lhsRef, ParenthesizedTree pTree, Reference rhsRef) {
         ExpressionTree pExpr = pTree.getExpression();
-        long pos = checker.getPosition(pTree);
+        long pos = checker.getPosition(pExpr);
         Reference pRef = checker.getAnnotatedReference(pExpr);
         // Recursively 
         generateConstraint(pRef, pExpr);

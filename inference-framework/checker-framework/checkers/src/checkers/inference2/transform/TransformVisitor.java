@@ -737,11 +737,14 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		}
 		return false;
 	}
-
+	
 	@Override
 	public Void visitReturn(ReturnTree node, Void p) {
 		ExpressionTree expr = node.getExpression();
 		if (expr != null) {
+			if (expr instanceof JCParens) {
+				expr = ((JCParens) expr).getExpression();
+			}
 			Reference returnRef = checker.getAnnotatedReference(expr);
 			JCExpression convertMethod = findConvertMethod((JCExpression) expr, returnRef, false);
 			if (convertMethod != null) {
