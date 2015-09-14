@@ -8,26 +8,20 @@ import java.util.HashSet;
 import java.util.Set;
 
 import checkers.inference2.InferenceChecker;
-import checkers.inference2.Reference;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypes;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
@@ -52,7 +46,7 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
 
 	//private static boolean hasImported = false, inSample;
 	
-	private static boolean inCopiedMethod;
+	//private static boolean inCopiedMethod;
 	
 	public TypeCastVisitor(InferenceChecker checker, CompilationUnitTree root) {
 		super(checker, root);
@@ -93,19 +87,19 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
         return checker.currentPath;
     }
     
-    @Override
-	public Void visitMethod(MethodTree node, Void p) {
-		for (VariableTree parameter : node.getParameters()) {
-			Reference parRef = checker.getAnnotatedReference(parameter);
-			if (checker.getNeedCopyMethods().contains(parRef.getIdentifier())) {
-				inCopiedMethod = true;
-				break;
-			} else {
-				inCopiedMethod = false;
-			}
-		}
-		return super.visitMethod(node, p);
-    }
+//    @Override
+//	public Void visitMethod(MethodTree node, Void p) {
+//		for (VariableTree parameter : node.getParameters()) {
+//			Reference parRef = checker.getAnnotatedReference(parameter);
+//			if (checker.getNeedCopyMethods().contains(parRef.getIdentifier())) {
+//				inCopiedMethod = true;
+//				break;
+//			} else {
+//				inCopiedMethod = false;
+//			}
+//		}
+//		return super.visitMethod(node, p);
+//    }
     
 	@Override
 	public Void visitClass(ClassTree node, Void p) {
@@ -122,28 +116,28 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
 		return super.visitClass(node, p);
 	}
 
-	@Override
-	public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-		if (inCopiedMethod) {
-			String methodName = node.getMethodSelect().toString();
-			int index = methodName.lastIndexOf('.') + 1;
-			if (index > 0) {
-				methodName = methodName.substring(index);
-			}
-			if (checker.getNeedTypeCastMethods().contains(methodName)) {
-				JCExpression exp = (JCExpression) node;
-				Tree parent = getCurrentPath().getParentPath().getLeaf();
-				if (parent instanceof JCExpressionStatement) {
-					JCExpressionStatement statement = (JCExpressionStatement) parent;
-					statement.expr = maker.TypeCast(exp.type, exp);
-				} else if (parent instanceof JCVariableDecl) {
-					JCVariableDecl variableDecl = (JCVariableDecl) parent;
-					variableDecl.init = maker.TypeCast(exp.type, exp);
-				}
-			}
-		}
-    	return super.visitMethodInvocation(node, p);
-	}
+//	@Override
+//	public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+//		if (inCopiedMethod) {
+//			String methodName = node.getMethodSelect().toString();
+//			int index = methodName.lastIndexOf('.') + 1;
+//			if (index > 0) {
+//				methodName = methodName.substring(index);
+//			}
+//			if (checker.getNeedTypeCastMethods().contains(methodName)) {
+//				JCExpression exp = (JCExpression) node;
+//				Tree parent = getCurrentPath().getParentPath().getLeaf();
+//				if (parent instanceof JCExpressionStatement) {
+//					JCExpressionStatement statement = (JCExpressionStatement) parent;
+//					statement.expr = maker.TypeCast(exp.type, exp);
+//				} else if (parent instanceof JCVariableDecl) {
+//					JCVariableDecl variableDecl = (JCVariableDecl) parent;
+//					variableDecl.init = maker.TypeCast(exp.type, exp);
+//				}
+//			}
+//		}
+//    	return super.visitMethodInvocation(node, p);
+//	}
 	
 	@Override
 	public Void visitNewArray(NewArrayTree node, Void p) {

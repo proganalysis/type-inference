@@ -5,9 +5,6 @@ package checkers.inference2.typeCast;
 
 import java.io.PrintWriter;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
@@ -23,7 +20,6 @@ import checkers.inference2.jcrypt.quals.Clear;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
-import checkers.inference2.InferenceMain;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.RefKind;
 import checkers.quals.TypeQualifiers;
@@ -104,13 +100,7 @@ public class TypeCastChecker extends InferenceChecker {
 	 * javax.lang.model.element.Element, com.sun.source.tree.Tree)
 	 */
 	@Override
-	protected void annotateDefault(Reference r, RefKind kind, Element elt, Tree t) {
-		if (InferenceMain.fullEncrypt) {
-			r.addAnnotation(RND);
-		} else {
-			r.addAnnotation(CLEAR);
-		}
-	}
+	protected void annotateDefault(Reference r, RefKind kind, Element elt, Tree t) {}
 
 	/*
 	 * (non-Javadoc)
@@ -267,15 +257,7 @@ public class TypeCastChecker extends InferenceChecker {
 
 	@Override
 	public void printResult(PrintWriter out) {
-		String s = this.root.toString();
-		// a >> 3 -> a / (2^3)
-		Pattern p = Pattern.compile("(>>\\s?)(\\d+)");
-		Matcher m = p.matcher(s);
-		if (m.find()) {
-			int data = Integer.parseInt(m.group(2));
-			s = m.replaceFirst("/" + (int) Math.pow(2, data));
-		}
-		out.print(s.replace("@Sensitive()", "/*@Sensitive()*/").
+		out.print(this.root.toString().replace("@Sensitive()", "/*@Sensitive()*/").
 				replace("@Poly()", "/*@Poly()*/").replace("@Clear()", "/*@Clear()*/").
 				replace("@BOT()", "/*@BOT()*/"));
 	}

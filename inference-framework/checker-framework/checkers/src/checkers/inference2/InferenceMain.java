@@ -341,8 +341,4 @@ public class InferenceMain {
         }
     }
 
-	public void setTransformDir() {
-		// TODO Auto-generated method stub
-		
-	}
 }

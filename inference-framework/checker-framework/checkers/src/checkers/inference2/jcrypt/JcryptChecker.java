@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -58,6 +59,8 @@ public class JcryptChecker extends InferenceChecker {
 	    SENSITIVE, CLEAR;
 
 	private Set<AnnotationMirror> sourceAnnos;
+	
+	private List<Pattern> specialMethodPatterns = null;
 
 	private AnnotationUtils annoFactory;
 
@@ -76,6 +79,13 @@ public class JcryptChecker extends InferenceChecker {
 		sourceAnnos.add(SENSITIVE);
 		sourceAnnos.add(POLY);
 		sourceAnnos.add(CLEAR);
+		
+		specialMethodPatterns = new ArrayList<Pattern>(5);
+		specialMethodPatterns.add(Pattern
+				.compile("equals\\(java\\.lang\\.Object\\)$"));
+		specialMethodPatterns.add(Pattern.compile("hashCode\\(\\)$"));
+		specialMethodPatterns.add(Pattern.compile("toString\\(\\)$"));
+		specialMethodPatterns.add(Pattern.compile("compareTo\\(.*\\)$"));
 	}
 
 	public Element getEnclosingMethod(Element elt) {
@@ -258,12 +268,19 @@ public class JcryptChecker extends InferenceChecker {
 	@Override
 	protected void annotateReturn(Reference r, ExecutableElement methodElt) {
 		if (r.getType().getKind() != TypeKind.VOID) {
-			if (isFromLibrary(methodElt)) {
+			if (isFromLibrary(methodElt) && !isSpecialMethod(methodElt.toString())) {
 				r.addAnnotation(POLY);
 			} else {
 				r.setAnnotations(sourceAnnos, this);
 			}
 		}
+	}
+	
+	private boolean isSpecialMethod(String method) {
+		for (Pattern p : specialMethodPatterns) {
+			if (p.matcher(method).matches()) return true;
+		}
+		return false;
 	}
 
 	/*
