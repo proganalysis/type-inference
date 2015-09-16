@@ -265,8 +265,11 @@ public class TransformChecker extends InferenceChecker {
 
 	@Override
 	public void printResult(PrintWriter out) {
-		out.print(this.root.toString().replace("@Sensitive()", "").
-				replace("@Poly()", "").replace("@Clear()", "").replace("@BOT()", ""));
+		out.print(this.root.toString().
+				replaceAll("@Poly\\(\\)\\s*.*this,?", "").
+				replace("@Sensitive()", "").
+				replace("@Poly()", "").
+				replace("@Clear()", "").replace("@BOT()", ""));
 	}
 
 }

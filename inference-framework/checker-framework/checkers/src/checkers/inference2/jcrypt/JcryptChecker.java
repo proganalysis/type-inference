@@ -86,6 +86,8 @@ public class JcryptChecker extends InferenceChecker {
 		specialMethodPatterns.add(Pattern.compile("hashCode\\(\\)$"));
 		specialMethodPatterns.add(Pattern.compile("toString\\(\\)$"));
 		specialMethodPatterns.add(Pattern.compile("compareTo\\(.*\\)$"));
+		specialMethodPatterns.add(Pattern.compile("getClass\\(.*\\)$"));
+		specialMethodPatterns.add(Pattern.compile("getName\\(.*\\)$"));
 	}
 
 	public Element getEnclosingMethod(Element elt) {
