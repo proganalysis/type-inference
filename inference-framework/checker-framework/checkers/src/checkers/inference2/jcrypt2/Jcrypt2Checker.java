@@ -344,7 +344,11 @@ public class Jcrypt2Checker extends InferenceChecker {
 	 */
 	@Override
 	protected void annotateReturn(Reference r, ExecutableElement methodElt) {
-		annotateDefault(r, r.getKind(), methodElt, null);
+		if (isSpecialMethod(methodElt.toString())) {
+			setClear(r);
+		} else {
+			annotateDefault(r, r.getKind(), methodElt, null);
+		}
 	}
 
 	/*

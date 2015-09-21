@@ -1,5 +1,8 @@
 package checkers.inference2.jcrypt;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -7,12 +10,13 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.UnaryTree;
-
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.InferenceVisitor;
 import checkers.inference2.Reference;
 
 public class JcryptInferenceVisitor extends InferenceVisitor {
+	
+	public static Map<ExpressionTree, Reference> memberSelectRefs = new HashMap<>();
 	
 	public JcryptInferenceVisitor(InferenceChecker checker,
 			CompilationUnitTree root) {

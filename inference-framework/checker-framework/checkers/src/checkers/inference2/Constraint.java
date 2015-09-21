@@ -82,7 +82,7 @@ public abstract class Constraint {
             res += left.hashCode() * 17;
         if (right != null)
             res += right.hashCode() * 13;
-        return res;
+        return res + (int) pos;
     }
     
     public String toString(String type, String sep) {

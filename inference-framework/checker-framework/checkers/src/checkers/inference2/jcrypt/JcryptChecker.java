@@ -8,10 +8,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
@@ -32,6 +31,7 @@ import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.Reference;
 import checkers.inference2.Reference.AdaptReference;
+import checkers.inference2.Reference.ExecutableReference;
 import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.Reference.RefKind;
@@ -60,8 +60,6 @@ public class JcryptChecker extends InferenceChecker {
 
 	private Set<AnnotationMirror> sourceAnnos;
 	
-	private List<Pattern> specialMethodPatterns = null;
-
 	private AnnotationUtils annoFactory;
 
 	public void initChecker(ProcessingEnvironment processingEnv) {
@@ -79,15 +77,6 @@ public class JcryptChecker extends InferenceChecker {
 		sourceAnnos.add(SENSITIVE);
 		sourceAnnos.add(POLY);
 		sourceAnnos.add(CLEAR);
-		
-		specialMethodPatterns = new ArrayList<Pattern>(5);
-		specialMethodPatterns.add(Pattern
-				.compile("equals\\(java\\.lang\\.Object\\)$"));
-		specialMethodPatterns.add(Pattern.compile("hashCode\\(\\)$"));
-		specialMethodPatterns.add(Pattern.compile("toString\\(\\)$"));
-		specialMethodPatterns.add(Pattern.compile("compareTo\\(.*\\)$"));
-		specialMethodPatterns.add(Pattern.compile("getClass\\(.*\\)$"));
-		specialMethodPatterns.add(Pattern.compile("getName\\(.*\\)$"));
 	}
 
 	public Element getEnclosingMethod(Element elt) {
@@ -278,13 +267,6 @@ public class JcryptChecker extends InferenceChecker {
 		}
 	}
 	
-	private boolean isSpecialMethod(String method) {
-		for (Pattern p : specialMethodPatterns) {
-			if (p.matcher(method).matches()) return true;
-		}
-		return false;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -498,5 +480,35 @@ public class JcryptChecker extends InferenceChecker {
 		return ret;
 	}
 
+	protected void handleMethodOverride(ExecutableElement overrider,
+			ExecutableElement overridden) {
+		ExecutableReference overriderRef = (ExecutableReference) getAnnotatedReference(overrider);
+		ExecutableReference overriddenRef = (ExecutableReference) getAnnotatedReference(overridden);
+
+		long pos = getPosition(overrider);
+		// THIS: overridden <: overrider
+		if (!ElementUtils.isStatic(overrider)) {
+			Reference overriderThisRef = overriderRef.getThisRef();
+			Reference overriddenThisRef = overriddenRef.getThisRef();
+			addSubtypeConstraint(overriddenThisRef, overriderThisRef, pos);
+		}
+
+		// RETURN: overrider <: overridden
+		if (overrider.getReturnType().getKind() != TypeKind.VOID) {
+			Reference overriderReturnRef = overriderRef.getReturnRef();
+			Reference overriddenReturnRef = overriddenRef.getReturnRef();
+			addSubtypeConstraint(overriderReturnRef, overriddenReturnRef, pos);
+			addSubtypeConstraint(overriddenReturnRef, overriderReturnRef, pos);
+		}
+
+		// PARAMETERS:
+		Iterator<Reference> overriderIt = overriderRef.getParamRefs()
+				.iterator();
+		Iterator<Reference> overriddenIt = overriddenRef.getParamRefs()
+				.iterator();
+		for (; overriderIt.hasNext() && overriddenIt.hasNext();) {
+			addSubtypeConstraint(overriddenIt.next(), overriderIt.next(), pos);
+		}
+	}
 
 }

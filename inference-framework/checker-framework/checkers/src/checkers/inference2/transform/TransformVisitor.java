@@ -5,7 +5,6 @@ package checkers.inference2.transform;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -93,11 +92,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	
 	private Map<String, Map<Long, String[]>> convertedReferences;
 	
-	/** For recording visited method invocation trees or allocation sites */
-	protected Set<Tree> visited = new HashSet<Tree>();
-
-	//private static boolean hasImported = false, inSample;
-	
+	private String returnType;	
 	private static boolean inSample;
 	
 	private static JCExpression objectType;
@@ -453,11 +448,13 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 		}
 		// change the return type: int -> byte[]
+		returnType = null;
     	ExecutableElement methodElt = (ExecutableElement) TreeUtils.elementFromDeclaration(node);
     	Reference methodRef = checker.getAnnotatedReference(methodElt);
 		Reference returnRef = ((ExecutableReference) methodRef).getReturnRef();
 		if (!returnRef.getRawAnnotations().contains(checker.CLEAR)) {
 			processVariableTree(jcmd);
+			returnType = getSimpleEncryptName(returnRef);
 		}
 		return super.visitMethod(node, p);
     }
@@ -574,7 +571,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 		} else { // regular method call
 			for (int i = 0; i < args.length; i++) {
-				Reference argRef = checker.getAnnotatedReference(args[i]);
+				Reference argRef = checker.getAnnotatedReferences()
+						.get(checker.getIdentifier(args[i]));
 				JCExpression convertMethod = findConvertMethod((JCExpression) args[i], argRef, false);
 				if (convertMethod != null) {
 					args[i] = convertMethod;
@@ -689,10 +687,11 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		if (operand instanceof JCBinary) {
 			processBinaryTreeForConversion((BinaryTree) operand);
 		} else {
-			if (operand instanceof JCParens) return;
-			Reference ref = operand.toString().startsWith("Conversion") ?
-					null : checker.getAnnotatedReference(operand);
-			if (ref == null) return;
+			if (operand instanceof JCParens ||
+					operand.toString().startsWith("Conversion") ||
+					operand.toString().startsWith("Computation")) return;
+			String id = checker.getIdentifier(operand);
+			Reference ref = checker.getAnnotatedReferences().get(id);
 			JCBinary binary = (JCBinary) node;
 			String operator = binary.getOperator().toString();
 			// String + int: should use convertSpe() method.
@@ -747,9 +746,13 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 			Reference returnRef = checker.getAnnotatedReference(expr);
 			JCExpression convertMethod = findConvertMethod((JCExpression) expr, returnRef, false);
+			JCReturn ret = (JCReturn) node;
 			if (convertMethod != null) {
-				JCReturn ret = (JCReturn) node;
 				ret.expr = convertMethod;
+			} else {
+				if (expr instanceof JCLiteral && returnType != null) {
+					ret.expr = getConvertMethod(expr, new String[]{"CLEAR", returnType}, false);
+				}
 			}
 		}
 		return super.visitReturn(node, p);

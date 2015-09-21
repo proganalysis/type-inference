@@ -127,7 +127,9 @@ public class TransformChecker extends InferenceChecker {
 	 * .Reference, javax.lang.model.element.Element)
 	 */
 	@Override
-	protected void annotateField(Reference r, Element fieldElt) {}
+	protected void annotateField(Reference r, Element fieldElt) {
+		r.getElement();
+	}
 
 	/*
 	 * (non-Javadoc)

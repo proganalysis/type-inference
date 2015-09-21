@@ -18,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
@@ -123,6 +124,8 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	
 	protected static Set<String> needTypeCastMethods = new HashSet<>();
 	
+	protected static List<Pattern> specialMethodPatterns = new ArrayList<Pattern>();
+	
 	private Set<Constraint> constraints = new LinkedHashSet<Constraint>();
 
 	protected AnnotatedTypeFactory currentFactory;
@@ -142,6 +145,14 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		InferenceMain.getInstance().setInferenceChcker(this);
 		Log.set(LEVEL_DEBUG);
 		types = processingEnv.getTypeUtils();
+		
+		specialMethodPatterns.add(Pattern
+				.compile("equals\\(java\\.lang\\.Object\\)$"));
+		specialMethodPatterns.add(Pattern.compile("hashCode\\(\\)$"));
+		specialMethodPatterns.add(Pattern.compile("toString\\(\\)$"));
+		specialMethodPatterns.add(Pattern.compile("compareTo\\(.*\\)$"));
+		specialMethodPatterns.add(Pattern.compile("getClass\\(.*\\)$"));
+		specialMethodPatterns.add(Pattern.compile("getName\\(.*\\)$"));
 	}
 
 	public Map<String, Map<Long, String[]>> getConvertedReferences() {
@@ -158,6 +169,13 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	public SourcePositions getPositions() {
 		return positions;
+	}
+	
+	protected boolean isSpecialMethod(String method) {
+		for (Pattern p : specialMethodPatterns) {
+			if (p.matcher(method).matches()) return true;
+		}
+		return false;
 	}
 
 	@Override
