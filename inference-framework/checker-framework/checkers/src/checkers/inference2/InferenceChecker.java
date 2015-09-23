@@ -124,6 +124,12 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	
 	protected static Set<String> needTypeCastMethods = new HashSet<>();
 	
+	protected static Set<Reference> needTypeCastRefs = new HashSet<>();
+	
+	public Set<Reference> getNeedTypeCastRefs() {
+		return needTypeCastRefs;
+	}
+
 	protected static List<Pattern> specialMethodPatterns = new ArrayList<Pattern>();
 	
 	private Set<Constraint> constraints = new LinkedHashSet<Constraint>();

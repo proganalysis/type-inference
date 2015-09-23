@@ -3,7 +3,10 @@
  */
 package checkers.inference2.typeCast;
 
+import static com.esotericsoftware.minlog.Log.DEBUG;
 import static com.esotericsoftware.minlog.Log.info;
+import static com.esotericsoftware.minlog.Log.warn;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -14,11 +17,23 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import checkers.inference2.Constraint;
+import checkers.inference2.ConstraintSolver;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.InferenceMain;
+import checkers.inference2.MaximalTypingExtractor;
+import checkers.inference2.SetbasedSolver;
+import checkers.inference2.TypingExtractor;
+import checkers.inference2.jcrypt.JcryptConstraintSolver;
+import checkers.inference2.jcrypt.JcryptChecker;
+import checkers.inference2.jcrypt.JcryptTypingExtractor;
+import checkers.inference2.jcrypt2.Jcrypt2Checker;
+import checkers.inference2.jcrypt2.Jcrypt2ConstraintSolver;
+import checkers.inference2.jcrypt2.Jcrypt2TypingExtractor;
 import checkers.util.CheckerMain;
 
 import com.sun.tools.javac.main.Main;
@@ -79,6 +94,81 @@ public class TypeCastMain extends InferenceMain {
 		this.checker = inferenceChcker;
 	}
 	
+	private enum InferType {
+		REIM,
+		JCRYPT,
+		JCRYPT2
+	}
+	
+	private boolean inferImpl(List<String> argList, PrintWriter out, InferType itype) {
+		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
+        if (main.compile(argList.toArray(new String[0])) != Main.Result.OK)
+        	return false;
+
+		if (getInferenceChcker().getConstraints().isEmpty()) {
+			warn(checker.getName(), "No constraints generated.");
+			return false;
+		}
+		// output constraints
+		if (DEBUG) {
+			try {
+				PrintWriter pw = new PrintWriter(TypeCastMain.outputDir
+						+ File.separator + checker.getName() + "-constraints.log");
+                for (Constraint c : checker.getConstraints()) {
+                    pw.println(c.toString());
+                }
+				pw.close();
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		ConstraintSolver solver;
+		if (itype == InferType.JCRYPT2) {
+			solver = new Jcrypt2ConstraintSolver((Jcrypt2Checker) checker);
+		} else if (itype == InferType.JCRYPT) {
+			solver = new JcryptConstraintSolver((JcryptChecker) checker);
+		} else {
+			solver = new SetbasedSolver(checker);
+		}
+        Set<Constraint> setErrors = solver.solve();
+		if (!setErrors.isEmpty()) {
+			for (Constraint c : setErrors) {
+				System.out.println(c);
+			}
+			info(checker.getName(), setErrors.size() + " error(s) in the set-based solution.");
+			return false;
+		}
+		info(checker.getName(), "Extracting a concete typing...");
+		TypingExtractor extractor;
+		if (itype == InferType.JCRYPT2) {
+			extractor = new Jcrypt2TypingExtractor(checker);
+		} else if (itype == InferType.JCRYPT) {
+			extractor = new JcryptTypingExtractor(checker);
+		} else {
+			extractor = new MaximalTypingExtractor(checker);
+		}
+		List<Constraint> typeErrors = extractor.extract();
+		info(checker.getName(), "Finish extracting typing.");
+		try {
+			PrintWriter pw = new PrintWriter(TypeCastMain.outputDir
+					+ File.separator + checker.getName() + "-result.csv");
+			checker.printResult(pw);
+			pw.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (!typeErrors.isEmpty()) {
+			for (Constraint c : typeErrors)  {
+				System.out.println(c);
+			}
+			info(checker.getName(), typeErrors.size() + " error(s) in the concrete typing.");
+			return false;
+		}
+		return true;
+	}
+
 	public boolean infer(String[] args, String jdkBootPaths, PrintWriter out) {
 		for (String path : jdkBootPaths.split(File.pathSeparator)) {
 			if (!path.equals("") && !new File(path).exists()) 
@@ -90,8 +180,8 @@ public class TypeCastMain extends InferenceMain {
 		
 		List<String> argList = new ArrayList<String>(args.length + 10);
         String reimCheckerPath = "checkers.inference2.reim.ReimChecker";
-        //String jcryptCheckerPath = "checkers.inference2.jcrypt.JcryptChecker";
-        //String jcrypt2CheckerPath = "checkers.inference2.jcrypt2.Jcrypt2Checker";
+        String jcryptCheckerPath = "checkers.inference2.jcrypt.JcryptChecker";
+        String jcrypt2CheckerPath = "checkers.inference2.jcrypt2.Jcrypt2Checker";
         String transformCheckerPath = "";
         int processorIndex = -1;
         for (int i = 0; i < args.length; i++) {
@@ -112,6 +202,20 @@ public class TypeCastMain extends InferenceMain {
 		argList.add("-proc:only");
 		argList.add("-Ainfer");
 		argList.add("-Awarns");
+		if (!fullEncrypt) {
+			info("Reim", "Generating constraints...");
+			if (!inferImpl(argList, out, InferType.REIM)) {
+				return false;
+			}
+			info("Jcrypt", "Generating constraints...");
+			// JcryptChecker
+			argList.set(processorIndex, jcryptCheckerPath);
+			inferImpl(argList, out, InferType.JCRYPT);
+		}
+		// Jcrypt2Checker
+		info("Jcrypt2", "Generating constraints...");
+		argList.set(processorIndex, jcrypt2CheckerPath);
+		inferImpl(argList, out, InferType.JCRYPT2);
 		// transform
 		info("Transforming...");
 		argList.set(processorIndex, transformCheckerPath);

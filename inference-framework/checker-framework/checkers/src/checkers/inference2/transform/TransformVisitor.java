@@ -254,6 +254,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	private JCExpression getTypeCast(ExpressionTree arg) {
 		JCExpression argJ = (JCExpression) arg;
 		if (arg instanceof JCLiteral) return argJ;
+		if (arg instanceof JCTypeCast) {
+			argJ = ((JCTypeCast) arg).getExpression();
+		}
 		if (argJ.type != null && argJ.type.toString().equals("java.lang.String")) {
 			argJ = maker.TypeCast(byteArray2, argJ);
 		}
@@ -690,13 +693,13 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			if (operand instanceof JCParens ||
 					operand.toString().startsWith("Conversion") ||
 					operand.toString().startsWith("Computation")) return;
-			String id = checker.getIdentifier(operand);
-			Reference ref = checker.getAnnotatedReferences().get(id);
 			JCBinary binary = (JCBinary) node;
 			String operator = binary.getOperator().toString();
 			// String + int: should use convertSpe() method.
 			boolean con = isLeft ? operator.equals("+(int,java.lang.String)") :
 				operator.equals("+(java.lang.String,int)");
+			String id = checker.getIdentifier(operand);
+			Reference ref = checker.getAnnotatedReferences().get(id);
 			JCExpression convertMethod;
 			if (con) {
 				convertMethod = findConvertMethod((JCExpression) operand, ref, true);
@@ -750,7 +753,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			if (convertMethod != null) {
 				ret.expr = convertMethod;
 			} else {
-				if (expr instanceof JCLiteral && returnType != null) {
+				if (expr instanceof JCLiteral && returnType != null && shouldConvert(returnRef)) {
 					ret.expr = getConvertMethod(expr, new String[]{"CLEAR", returnType}, false);
 				}
 			}

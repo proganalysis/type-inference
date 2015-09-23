@@ -4,26 +4,26 @@
 package checkers.inference2.typeCast;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
 
+import checkers.inference2.Reference;
 import checkers.inference2.InferenceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypes;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.file.JavacFileManager;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
 
 /**
  * 
@@ -42,7 +42,7 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
 	private static TreeMaker maker;
 	
 	/** For recording visited method invocation trees or allocation sites */
-	protected Set<Tree> visited = new HashSet<Tree>();
+	//protected Set<Tree> visited = new HashSet<Tree>();
 
 	//private static boolean hasImported = false, inSample;
 	
@@ -86,6 +86,16 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
     public TreePath getCurrentPath() {
         return checker.currentPath;
     }
+    
+//    @Override
+//    public Void visitIdentifier(IdentifierTree node, Void p) {
+//    	String id = checker.getIdentifier(node);
+//    	Reference ref = checker.getAnnotatedReferences().get(id); 
+//    	if (ref != null && checker.getNeedTypeCastRefs().contains(ref)) {
+//    		
+//    	}
+//    	return super.visitIdentifier(node, p);
+//    }
     
 //    @Override
 //	public Void visitMethod(MethodTree node, Void p) {
@@ -139,15 +149,44 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
 //    	return super.visitMethodInvocation(node, p);
 //	}
 	
+//	@Override
+//	public Void visitNewArray(NewArrayTree node, Void p) {
+//		JCNewArray newArray = (JCNewArray) node;
+//		List<JCExpression> newDims = List.nil();
+//		for (JCExpression dim : newArray.getDimensions()) {
+//			newDims = newDims.append(maker.TypeCast(dim.type, dim));
+//		}
+//		newArray.dims = newDims;
+//		return super.visitNewArray(node, p);
+//	}
+	
 	@Override
-	public Void visitNewArray(NewArrayTree node, Void p) {
-		JCNewArray newArray = (JCNewArray) node;
-		List<JCExpression> newDims = List.nil();
-		for (JCExpression dim : newArray.getDimensions()) {
-			newDims = newDims.append(maker.TypeCast(dim.type, dim));
-		}
-		newArray.dims = newDims;
-		return super.visitNewArray(node, p);
+    public Void visitBinary(BinaryTree node, Void p) {
+		processBinaryTree(node);
+		return super.visitBinary(node, p);
+	}
+	
+	private void processBinaryTree(BinaryTree node) {
+		modifiyForTypeCast(node, node.getRightOperand(), false);
+		modifiyForTypeCast(node, node.getLeftOperand(), true);
 	}
     
+	private void modifiyForTypeCast(BinaryTree node, ExpressionTree operand,
+			boolean isLeft) {
+		// recursively process operand
+		if (operand instanceof BinaryTree) {
+			processBinaryTree((BinaryTree) operand);
+		} else {
+			String id = checker.getIdentifier(operand);
+			Reference ref = checker.getAnnotatedReferences().get(id);
+			if (checker.getNeedTypeCastRefs().contains(ref)) {
+				JCIdent ident = (JCIdent) operand;
+		    	JCTypeCast typeCast = maker.TypeCast(ident.type, ident);
+		    	JCBinary binary = (JCBinary) node;
+		    	if (isLeft) binary.lhs = typeCast;
+				else binary.rhs = typeCast;
+			}
+		}
+	}
+	
 }

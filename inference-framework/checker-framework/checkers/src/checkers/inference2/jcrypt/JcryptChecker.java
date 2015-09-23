@@ -398,7 +398,7 @@ public class JcryptChecker extends InferenceChecker {
 		for (Reference r : references) {
 			Element elt = r.getElement();
 			findCopyMethods(r);
-			findTypeCastMethods(r);
+			//findTypeCastMethods(r);
 			if ((elt == null && r.getKind() != RefKind.ALLOCATION)
 					|| r.getIdentifier().startsWith(LIB_PREFIX)
 					|| (elt instanceof ExecutableElement)

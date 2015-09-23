@@ -33,12 +33,14 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 	private InferenceChecker checker;
 	private Map<String, Map<Long, String[]>> convertedReferences;
 	private Map<String, Constraint> conversions;
+	private Set<Reference> needTypeCastRefs;
 
 	public Jcrypt2TypingExtractor(InferenceChecker c) {
 		super(c);
 		checker = c;
 		conversions = new HashMap<>();
 		convertedReferences = checker.getConvertedReferences();
+		needTypeCastRefs = checker.getNeedTypeCastRefs();
 	}
 
 	/*
@@ -92,6 +94,7 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 			}
 			if (!c.toString().contains("inference-tests/jcrypt/EncryptionSample.java")) {
 				conversionCheck(c, left, right, leftAnnos, rightAnnos);
+				typeCastCheck(c, left, right, rightAnnos);
 			}
 		}
 		info(this.getClass().getSimpleName(),
@@ -101,6 +104,18 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 				"Finished extracting type conversions. " + conversions.size()
 						+ " conversion(s)");
 		return errors;
+	}
+
+	private void typeCastCheck(Constraint c, Reference left,
+			Reference right, Set<AnnotationMirror> rightAnnos) {
+		if (left.getKind() == RefKind.FIELD
+				&& right.getKind() == RefKind.LOCAL
+				&& !rightAnnos.isEmpty()) {
+			String javaType = right.getType().getUnderlyingType().toString();
+	    	if (javaType.equals("int") || javaType.equals("java.lang.String")) {
+	    		needTypeCastRefs.add(right);
+	    	}
+		}
 	}
 
 	public void conversionCheck(Constraint c, Reference left, Reference right,
