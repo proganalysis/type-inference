@@ -35,6 +35,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -574,8 +575,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 		} else { // regular method call
 			for (int i = 0; i < args.length; i++) {
+				JCExpression arg = (JCExpression) args[i];
+				if (arg instanceof JCTypeCast) {
+					arg = ((JCTypeCast) arg).getExpression();
+				}
 				Reference argRef = checker.getAnnotatedReferences()
-						.get(checker.getIdentifier(args[i]));
+						.get(checker.getIdentifier(arg));
 				JCExpression convertMethod = findConvertMethod((JCExpression) args[i], argRef, false);
 				if (convertMethod != null) {
 					args[i] = convertMethod;
@@ -698,7 +703,11 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			// String + int: should use convertSpe() method.
 			boolean con = isLeft ? operator.equals("+(int,java.lang.String)") :
 				operator.equals("+(java.lang.String,int)");
-			String id = checker.getIdentifier(operand);
+			ExpressionTree exp = operand;
+			if (operand instanceof JCTypeCast) {
+				exp = ((JCTypeCast) operand).getExpression();
+			}
+			String id = checker.getIdentifier(exp);
 			Reference ref = checker.getAnnotatedReferences().get(id);
 			JCExpression convertMethod;
 			if (con) {
@@ -915,6 +924,31 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		}
 		newArray.dims = newDims;
 		return super.visitNewArray(node, p);
+	}
+	
+	@Override
+	public Void visitTypeCast(TypeCastTree node, Void p) {
+		String type = node.getType().toString();
+		if (!type.equals("int") && !type.equals("java.lang.String"))
+			return super.visitTypeCast(node, p);
+		ExpressionTree exp = node.getExpression();
+		Tree parent = getCurrentPath().getParentPath().getLeaf();
+		if (parent instanceof JCAssign) {
+    		((JCAssign) parent).rhs = (JCExpression) exp;
+    	} else if (parent instanceof JCVariableDecl) {
+    		((JCVariableDecl) parent).init = (JCExpression) exp;
+    	} else if (parent instanceof JCMethodInvocation) {
+			JCMethodInvocation methInvo = (JCMethodInvocation) parent;
+			JCExpression[] args = methInvo.getArguments().toArray(new JCExpression[0]);
+			for (int i = 0; i < args.length; i++) {
+				if (args[i] == node) {
+					args[i] = (JCExpression) exp;
+					break;
+				}
+			}
+			methInvo.args = List.from(args);
+    	}
+		return super.visitTypeCast(node, p);
 	}
 	
 }

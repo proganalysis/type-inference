@@ -108,7 +108,8 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 
 	private void typeCastCheck(Constraint c, Reference left,
 			Reference right, Set<AnnotationMirror> rightAnnos) {
-		if (left.getKind() == RefKind.FIELD
+		if ((left.getKind() == RefKind.FIELD
+				|| left.getKind() == RefKind.FIELD_ADAPT)
 				&& right.getKind() == RefKind.LOCAL
 				&& !rightAnnos.isEmpty()) {
 			String javaType = right.getType().getUnderlyingType().toString();

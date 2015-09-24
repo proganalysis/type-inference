@@ -158,7 +158,6 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		specialMethodPatterns.add(Pattern.compile("toString\\(\\)$"));
 		specialMethodPatterns.add(Pattern.compile("compareTo\\(.*\\)$"));
 		specialMethodPatterns.add(Pattern.compile("getClass\\(.*\\)$"));
-		specialMethodPatterns.add(Pattern.compile("getName\\(.*\\)$"));
 	}
 
 	public Map<String, Map<Long, String[]>> getConvertedReferences() {
