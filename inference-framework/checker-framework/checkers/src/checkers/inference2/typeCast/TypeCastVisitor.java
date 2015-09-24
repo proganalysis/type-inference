@@ -11,19 +11,30 @@ import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypes;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.file.JavacFileManager;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
 
 /**
  * 
@@ -41,12 +52,9 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
 	
 	private static TreeMaker maker;
 	
-	/** For recording visited method invocation trees or allocation sites */
-	//protected Set<Tree> visited = new HashSet<Tree>();
-
-	//private static boolean hasImported = false, inSample;
+	private static boolean inCopiedMethod;
 	
-	//private static boolean inCopiedMethod;
+	private JCTree stringTree;
 	
 	public TypeCastVisitor(InferenceChecker checker, CompilationUnitTree root) {
 		super(checker, root);
@@ -87,29 +95,47 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
         return checker.currentPath;
     }
     
-//    @Override
-//    public Void visitIdentifier(IdentifierTree node, Void p) {
-//    	String id = checker.getIdentifier(node);
-//    	Reference ref = checker.getAnnotatedReferences().get(id); 
-//    	if (ref != null && checker.getNeedTypeCastRefs().contains(ref)) {
-//    		
-//    	}
-//    	return super.visitIdentifier(node, p);
-//    }
+    @Override
+    public Void visitIdentifier(IdentifierTree node, Void p) {
+    	if (stringTree == null && node.getName().toString().equals("String")) {
+    		stringTree = (JCTree) node;
+    	}
+    	return super.visitIdentifier(node, p);
+    }
     
-//    @Override
-//	public Void visitMethod(MethodTree node, Void p) {
-//		for (VariableTree parameter : node.getParameters()) {
-//			Reference parRef = checker.getAnnotatedReference(parameter);
-//			if (checker.getNeedCopyMethods().contains(parRef.getIdentifier())) {
-//				inCopiedMethod = true;
-//				break;
-//			} else {
-//				inCopiedMethod = false;
-//			}
-//		}
-//		return super.visitMethod(node, p);
-//    }
+    @Override
+    public Void visitAssignment(AssignmentTree node, Void p) {
+    	if (!inCopiedMethod) return super.visitAssignment(node, p);
+    	JCExpression exp = (JCExpression) node.getExpression();
+    	String id = checker.getIdentifier(exp);
+    	Reference ref = checker.getAnnotatedReferences().get(id); 
+    	if (ref != null && checker.getNeedTypeCastRefs().contains(ref)) {
+    		JCAssign assign = (JCAssign) node;
+    		JCTypeCast typeCast;
+			if (assign.type.toString().equals("java.lang.String")) {
+				typeCast = maker.TypeCast(stringTree, exp);
+    		} else {
+    			typeCast = maker.TypeCast(exp.type, exp);
+    		}
+	    	assign.rhs = typeCast;
+    	}
+    	return super.visitAssignment(node, p);
+    }
+    
+    @Override
+    public Void visitVariable(VariableTree node, Void p) {
+    	if (!inCopiedMethod) return super.visitVariable(node, p);
+    	JCExpression init = (JCExpression) node.getInitializer();
+    	if (init == null) return super.visitVariable(node, p);
+    	String id = checker.getIdentifier(init);
+    	Reference ref = checker.getAnnotatedReferences().get(id); 
+    	if (ref != null && checker.getNeedTypeCastRefs().contains(ref)) {
+    		JCVariableDecl variableDecl = (JCVariableDecl) node;
+	    	JCTypeCast typeCast = maker.TypeCast(init.type, init);
+	    	variableDecl.init = typeCast;
+    	}
+    	return super.visitVariable(node, p);
+    }
     
 	@Override
 	public Void visitClass(ClassTree node, Void p) {
@@ -126,43 +152,30 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
 		return super.visitClass(node, p);
 	}
 
-//	@Override
-//	public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-//		if (inCopiedMethod) {
-//			String methodName = node.getMethodSelect().toString();
-//			int index = methodName.lastIndexOf('.') + 1;
-//			if (index > 0) {
-//				methodName = methodName.substring(index);
-//			}
-//			if (checker.getNeedTypeCastMethods().contains(methodName)) {
-//				JCExpression exp = (JCExpression) node;
-//				Tree parent = getCurrentPath().getParentPath().getLeaf();
-//				if (parent instanceof JCExpressionStatement) {
-//					JCExpressionStatement statement = (JCExpressionStatement) parent;
-//					statement.expr = maker.TypeCast(exp.type, exp);
-//				} else if (parent instanceof JCVariableDecl) {
-//					JCVariableDecl variableDecl = (JCVariableDecl) parent;
-//					variableDecl.init = maker.TypeCast(exp.type, exp);
-//				}
-//			}
-//		}
-//    	return super.visitMethodInvocation(node, p);
-//	}
-	
-//	@Override
-//	public Void visitNewArray(NewArrayTree node, Void p) {
-//		JCNewArray newArray = (JCNewArray) node;
-//		List<JCExpression> newDims = List.nil();
-//		for (JCExpression dim : newArray.getDimensions()) {
-//			newDims = newDims.append(maker.TypeCast(dim.type, dim));
-//		}
-//		newArray.dims = newDims;
-//		return super.visitNewArray(node, p);
-//	}
+	@Override
+	public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+		if (!inCopiedMethod) return super.visitMethodInvocation(node, p);
+    	JCExpression[] args = node.getArguments().toArray(new JCExpression[0]);
+		for (int i = 0; i < args.length; i++) {
+			String id = checker.getIdentifier(args[i]);
+	    	Reference ref = checker.getAnnotatedReferences().get(id); 
+	    	if (ref != null && checker.getNeedTypeCastRefs().contains(ref)) {
+	    		if (args[i].type.toString().equals("java.lang.String")) {
+	    			args[i] = maker.TypeCast(stringTree, args[i]);
+	    		} else {
+	    			args[i] = maker.TypeCast(args[i].type, args[i]);
+	    		}
+	    	}
+		}
+		((JCMethodInvocation) node).args = List.from(args);
+    	return super.visitMethodInvocation(node, p);
+	}
 	
 	@Override
     public Void visitBinary(BinaryTree node, Void p) {
-		processBinaryTree(node);
+		if (inCopiedMethod) {
+			processBinaryTree(node);
+		}
 		return super.visitBinary(node, p);
 	}
 	
@@ -177,16 +190,36 @@ public class TypeCastVisitor extends SourceVisitor<Void, Void> {
 		if (operand instanceof BinaryTree) {
 			processBinaryTree((BinaryTree) operand);
 		} else {
+			if (!(operand instanceof JCIdent)) return;
 			String id = checker.getIdentifier(operand);
 			Reference ref = checker.getAnnotatedReferences().get(id);
 			if (checker.getNeedTypeCastRefs().contains(ref)) {
 				JCIdent ident = (JCIdent) operand;
-		    	JCTypeCast typeCast = maker.TypeCast(ident.type, ident);
+				JCTypeCast typeCast;
+				if (ident.type.toString().equals("java.lang.String")) {
+					typeCast = maker.TypeCast(stringTree, ident);
+	    		} else {
+	    			typeCast = maker.TypeCast(ident.type, ident);
+	    		}
 		    	JCBinary binary = (JCBinary) node;
 		    	if (isLeft) binary.lhs = typeCast;
 				else binary.rhs = typeCast;
 			}
 		}
 	}
+	
+  @Override
+	public Void visitMethod(MethodTree node, Void p) {
+		for (VariableTree parameter : node.getParameters()) {
+			Reference parRef = checker.getAnnotatedReference(parameter);
+			if (checker.getNeedCopyMethods().contains(parRef.getIdentifier())) {
+				inCopiedMethod = true;
+				break;
+			} else {
+				inCopiedMethod = false;
+			}
+		}
+		return super.visitMethod(node, p);
+  }
 	
 }
