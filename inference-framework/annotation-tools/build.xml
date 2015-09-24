@@ -1,4 +1,4 @@
-<project name="annotation-tools" default="all">
+<project name="annotation-tools" default="compile">
 
     <property file="${user.home}/.annotations-tools.properties" />
     <property file="build.properties" />
