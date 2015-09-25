@@ -58,15 +58,36 @@ The inference results are dumped to:
   cd type-inference/inference-framework/annotation-tools
   ant
   ```
-  5. Build checkers:
+  5. Build annotated JDK:
   
-```bash
-cd type-inference/inference-framework/checker-framework/checkers
-ant bindist
-```
-Optionally, 
-  6. 
+  ```bash
+  cd type-inference/inference-framework/checker-framework/checkers/jdk
+  make
+  ```
+   * If you only want to build annotated JDK for some specific type system, please edit Makefile and find the line like:
   
+  ```bash
+  CHECKER_DIRS = sflow
+  ```
+  Change sflow to other type system, e.g. reim.
+  
+  6. Build checkers:
+  
+  ```bash
+  cd type-inference/inference-framework/checker-framework/checkers
+  ant bindist
+  ```
+  Optionally, build checkers without buiding annotated JDK:
+  
+  ```bash
+  ant bindist-nojdk
+  ```
+  
+  7. Test run:
+  ```bash
+  cd type-inference/inference-framework/checker-framework/checkers
+  binary/javai-sflow
+  ```
 
 # Instantiation of other type systems #
 Note: Inference results for detecting information violations in web apps are available: [webapps-results.tgz](http://www.cs.rpi.edu//~huangw5/webapps-results.tgz). The instantiated inference will be released shortly (available in the source repository).
