@@ -50,7 +50,7 @@ The inference results are dumped to:
   
   ```bash
   cd type-inference/inference-framework/jsr308-langtools/make
-  make
+  ant
   ```
   4. Build annotation-tools:
   
@@ -58,34 +58,36 @@ The inference results are dumped to:
   cd type-inference/inference-framework/annotation-tools
   ant
   ```
-  5. Build annotated JDK:
-  
-  ```bash
-  cd type-inference/inference-framework/checker-framework/checkers/jdk
-  make
-  ```
-   * If you only want to build annotated JDK for some specific type system, please edit Makefile and find the line like:
-  
-  ```bash
-  CHECKER_DIRS = sflow
-  ```
-  Change sflow to other type system, e.g. reim.
-  
-  6. Build checkers:
+  5. Build checkers:
   
   ```bash
   cd type-inference/inference-framework/checker-framework/checkers
   ant bindist
   ```
-  Optionally, build checkers without buiding annotated JDK:
+  6. (Optional) Build annotated JDK for some specific type system:
   
   ```bash
-  ant bindist-nojdk
+  cd type-inference/inference-framework/checker-framework/checkers/jdk
+  vim Makefile
+  ```
+  Edit Makefile and find the line like:
+  
+  ```bash
+  CHECKER_DIRS = sflow
+  ```
+  Change sflow to other type system, e.g. reim. Then run
+  ```bash
+  make
+  ```
+  Lastly, copy the generated jdk.jar to type-inference/inference-framework/checker-framework/checkers (This is automatically done when you run ant bindist in step 5)
+  ```bash
+  copy jdk.jar ../binary/
   ```
   
   7. Test run:
   ```bash
   cd type-inference/inference-framework/checker-framework/checkers
+  # Run the inference of SFlow type system.
   binary/javai-sflow
   ```
 
