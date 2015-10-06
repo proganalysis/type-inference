@@ -1,0 +1,489 @@
+package edu.rpi.reim;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import checkers.inference.reim.quals.Readonly;
+import checkers.inference.reim.quals.Readonly2;
+import edu.rpi.AnnotatedValue;
+import edu.rpi.AnnotationUtils;
+import edu.rpi.Constraint;
+import edu.rpi.InferenceTransformer;
+import soot.Body;
+import soot.SootMethod;
+import soot.Unit;
+import soot.VoidType;
+import soot.jimple.AssignStmt;
+import soot.jimple.NewExpr;
+import soot.toolkits.graph.Block;
+import soot.toolkits.graph.BlockGraph;
+import soot.toolkits.graph.BriefBlockGraph;
+import soot.Local;
+import soot.jimple.*;
+
+public class ReimUtils {
+	
+	/*
+	// Find the methods called on newly allocated receiver in the same lexical block
+	// $r1 = new ...
+	// r2 = $r1
+	// r2.call() is considered init method.
+	private static HashSet<SootMethod> processAlloc(AnnotatedValue lhs, HashMap<AnnotatedValue,HashSet<Constraint>> constraints, ReimTransformer reimTransformer) {
+		HashSet<SootMethod> result = new HashSet<SootMethod>();
+		SootMethod method = lhs.getEnclosingMethod();
+		//System.out.println("The method: "+method);
+		Body body = reimTransformer.getBodies().get(method);
+		if (body == null) {
+			System.out.println("The method has null body.");
+		}
+		List<Block> blocks = (new BriefBlockGraph(body)).getBlocks();
+		Block theBlock = null;
+		soot.Local theLhs = null;
+		soot.Local theLhs2 = null; 
+		
+		//System.out.println("Starting processAlloc for "+lhs);
+		
+		for (Block b : blocks) {
+			Iterator<Unit> it = b.iterator();
+
+			// Iterates over all basic blocks and finds the block containing the alloc
+			while (it.hasNext()) {
+				Unit u = it.next();
+				if (u instanceof AssignStmt && theBlock == null) {
+					AssignStmt as = (AssignStmt) u;
+					//System.out.println("In Part1, left: "+as.getLeftOp()+" and right: "+as.getRightOp());
+					//System.out.println("And lhs is: "+lhs.getName());
+					if ((as.getRightOp() instanceof NewExpr) && 
+							(as.getLeftOp() instanceof soot.Local) && ((soot.Local) as.getLeftOp()).getName().equals(lhs.getName())) {
+						theBlock = b;
+						theLhs = (soot.Local) as.getLeftOp();
+						continue;
+					}
+				}
+				if (theBlock != null && theLhs2 == null) {
+					if (u instanceof AssignStmt) {
+						//System.out.println("In Part2");
+						AssignStmt as2 = (AssignStmt) u;
+						
+						if (as2.getRightOp().equals(theLhs) && as2.getLeftOp() instanceof soot.Local) {
+							theLhs2 = (soot.Local) as2.getLeftOp();
+							continue;
+						}
+					}
+				}
+				// Now, continue search for invoke expression with receiver theLhs2
+				if (theLhs2 != null) {
+					//System.out.println("In Part 3 "+u+" theLhs2: "+theLhs2);
+					if (((Stmt) u).containsInvokeExpr()) {
+						InvokeExpr ie = ((Stmt) u).getInvokeExpr();
+						if (ie instanceof InstanceInvokeExpr) {
+							
+							InstanceInvokeExpr iie = (InstanceInvokeExpr) ie;
+							SootMethod callee = iie.getMethod();
+							if (iie.getBase().equals(theLhs2) && 
+									!reimTransformer.isLibraryMethod(callee) &&
+									callee.getReturnType() == VoidType.v()) {
+								result.add(iie.getMethod());
+								System.out.println("Found INIT method for lhs: "+lhs);
+								System.out.println("In method: "+method);
+								System.out.println("The INIT method: "+callee);
+							}
+						}
+					}
+				}
+			}
+			if (theBlock != null) break;
+		}
+
+		return result;
+	}
+	
+	// Extracts the Reim constraints and infers init methods. MORE in documentation!
+	public static HashSet<SootMethod> getAllExtraInitMethods(ReimTransformer reimTransformer) {
+		// This is a map from lhs to constraints. E.g., lhs <: rhs is containt in the map for lhs
+		HashMap<AnnotatedValue,HashSet<Constraint>> constraintMap = new HashMap<AnnotatedValue,HashSet<Constraint>>();
+		HashSet<Constraint> allocConstraints = new HashSet<Constraint>();
+		HashSet<SootMethod> result = new HashSet<SootMethod>();
+		
+		for (Constraint c : reimTransformer.getConstraints()) {
+			AnnotatedValue left = c.getLeft();
+			if (left.getKind() == AnnotatedValue.Kind.ALLOC) {
+				allocConstraints.add(c);
+			}
+			if (left.getKind() != AnnotatedValue.Kind.LOCAL) {
+				continue;
+			}
+			HashSet<Constraint> constraintSet = constraintMap.get(c.getLeft());
+			if (constraintSet == null) {
+				constraintSet = new HashSet<Constraint>();
+				constraintMap.put(left,constraintSet);
+			}
+			constraintSet.add(c);
+		}
+		
+		for (Constraint c : allocConstraints) {
+			//System.out.println(c);
+			result.addAll(processAlloc(c.getRight(),constraintMap,reimTransformer));
+		}
+		return result;
+	}
+	*/
+	
+	private static HashSet<String> nonReadonlyMethods = new HashSet<String>();
+	
+	private static HashSet<String> additionalInitMethods = new HashSet<String>();
+	
+	private static HashSet<String> factoryMethods = new HashSet<String>();
+	
+	private static HashSet<String> externalInitMethods = new HashSet<String>();
+	
+	private static HashSet<AnnotatedValue> allocLhss = new HashSet<AnnotatedValue>();
+	
+
+	
+	/* Public Helper functions */
+	
+	public static boolean isLocal(AnnotatedValue v) {
+		return v.getKind() == AnnotatedValue.Kind.LOCAL;
+	}
+	
+	public static boolean isMethAdapt(AnnotatedValue v) {
+		return v.getKind() == AnnotatedValue.Kind.METH_ADAPT;
+	}
+	
+	public static boolean isThis(AnnotatedValue v) {
+		return v.getKind() == AnnotatedValue.Kind.THIS;
+	}
+	
+	public static boolean isReturn(AnnotatedValue v) {
+		return v.getKind() == AnnotatedValue.Kind.RETURN;
+	}
+	
+	public static boolean isAlloc(AnnotatedValue v) {
+		return v.getKind() == AnnotatedValue.Kind.ALLOC;
+	}
+	
+	// requires: isAlloc(v)
+	private static boolean isNewarrayAlloc(AnnotatedValue v) {
+		return v.getName().contains("newarray");
+	}
+	
+	private static boolean isInstanceCall(Constraint c) {
+		AnnotatedValue lhs = c.getLeft();
+		AnnotatedValue rhs = c.getRight();
+		if (!isLocal(lhs) || !isMethAdapt(rhs)) {
+    		return false;
+    	}
+    	AnnotatedValue receiver = ((AnnotatedValue.MethodAdaptValue) rhs).getDeclValue();
+    	if (!isThis(receiver))
+    		return false;
+    	return true;
+	}
+	
+	// requires: c is LOCAL <: METH_ADAPT 
+	private static SootMethod getMethod(Constraint c) {
+		AnnotatedValue.MethodAdaptValue v = (AnnotatedValue.MethodAdaptValue) c.getRight();
+		return v.getDeclValue().getEnclosingMethod();
+	}
+		
+	/*
+	 * Soot's Alloc structure: temp1 = new X; temp1.<init>(); temp2 = temp1. All operations on temp2.
+	 * For arrays though, all operations are on temp1.
+	 *
+	 */
+	private static void findAllocLhs(ReimTransformer reimTransformer) {
+		HashSet<AnnotatedValue> allocs = new HashSet<AnnotatedValue>();
+		HashMap<AnnotatedValue,HashSet<Constraint>> lhsToConstraints = new HashMap<AnnotatedValue,HashSet<Constraint>>();
+		
+		Set<Constraint> constraints = reimTransformer.getConstraints();
+		for (Constraint c : constraints) {
+			if (isAlloc(c.getLeft())) {
+				allocs.add(c.getRight());
+				if (isNewarrayAlloc(c.getLeft()))
+					allocLhss.add(c.getRight());
+			}
+			if (!isLocal(c.getLeft()))
+				continue;
+			// We need all constraints with lhs local, which will be used to process all constraints with lhs some temp1
+			HashSet<Constraint> constraintSet = lhsToConstraints.get(c.getLeft());
+			if (constraintSet == null) {
+				constraintSet = new HashSet<Constraint>();
+				lhsToConstraints.put(c.getLeft(),constraintSet);
+			}
+			constraintSet.add(c);
+		}
+		// Process all collected constraints, find the temp1's, then find the temp2's.
+		for (AnnotatedValue lhs : lhsToConstraints.keySet()) {
+			if (!allocs.contains(lhs)) continue; 
+			HashSet<Constraint> set = lhsToConstraints.get(lhs);
+			for (Constraint c : set) {
+				if (isLocal(c.getRight()))
+					allocLhss.add(c.getRight());
+			}			
+		}		
+	}
+	
+	
+	// requires: findAllocLhs has been called before: allocLhss has been computed
+	private static void collectExternalInits(ReimTransformer reimTransformer) {
+		HashSet<SootMethod> potentialMethods = new HashSet<SootMethod>();
+		HashSet<SootMethod> potentialInternalInits = new HashSet<SootMethod>();
+		Set<Constraint> constraints = reimTransformer.getConstraints();
+		
+		// Step 1: Computes potential external inits
+		for (Constraint c : constraints) {
+			
+			if (isInstanceCall(c) && allocLhss.contains(c.getLeft())) {
+				SootMethod callee = getMethod(c);
+				if (callee.getReturnType() == VoidType.v()) {
+					// System.out.println("ADDING TO POTENTIAL EXTERNAL "+callee+" because of "+c);
+					if (isFactoryMethod(c.getLeft().getEnclosingMethod())) {
+						potentialInternalInits.add(callee);
+					}
+					else {
+						// potentialMethods.add(callee);
+					}
+				}
+			}
+		}
+		// If the call is not an init call, then remove the callee from potentialMethods
+		for (Constraint c : constraints) {
+			if (isInstanceCall(c) && !allocLhss.contains(c.getLeft())) {
+				SootMethod callee = getMethod(c);
+				if (callee.getReturnType() == VoidType.v()) {
+		//			if (potentialMethods.contains(callee)) {
+						// System.out.println("REMOVING FROM POTENTIAL EXTERNAL "+callee+" because of "+c);
+						potentialMethods.remove(callee);
+						potentialInternalInits.remove(callee);
+		//			}
+				}
+			}
+		}
+		
+		for (SootMethod m : potentialMethods) {
+			externalInitMethods.add(m.toString());
+			// System.out.println("FOUND EXTERNAL INIT: "+m);
+			potentialInternalInits.remove(m);
+		}
+		for (SootMethod m : potentialInternalInits) {
+			additionalInitMethods.add(m.toString());
+			// System.out.println("FOUND INTERNAL INIT in a Factory method: "+m);
+		}
+	}
+	private static void collectInternalInits(ReimTransformer reimTransformer) {	
+		// Step 2: TODO Computes potential internal inits. init in a constructor
+		HashSet<SootMethod> potentialMethods = new HashSet<SootMethod>();
+		Set<Constraint> constraints = reimTransformer.getConstraints();
+		
+		// Step 1: Computes potential external inits
+		for (Constraint c : constraints) {
+			
+			if (isInstanceCall(c)) {
+				SootMethod enclMethod = c.getLeft().getEnclosingMethod();
+				AnnotatedValue receiver = c.getLeft();
+				SootMethod callee = null;
+				if (enclMethod.getName().equals("<init>") &&
+						(receiver.equals("r0") || (receiver.equals("this")))) {
+					callee = getMethod(c);
+					if (!callee.getName().equals("<init>") && callee.getReturnType() == VoidType.v()) potentialMethods.add(callee);
+				}
+			}
+		}
+		// If the call is not an init call, then remove the callee from potentialMethods
+		for (Constraint c : constraints) {
+			if (isInstanceCall(c)) {
+				SootMethod enclMethod = c.getLeft().getEnclosingMethod();
+				AnnotatedValue receiver = c.getLeft();
+				SootMethod callee = null;
+				if (!(enclMethod.getName().equals("<init>") && (receiver.equals("r0") || receiver.equals("this")))) {
+					callee = getMethod(c);
+					potentialMethods.remove(callee);
+				}
+			}
+		}
+		
+		for (SootMethod m : potentialMethods) {
+			additionalInitMethods.add(m.toString());
+			// System.out.println("FOUND INTERNAL INIT: "+m);
+		}
+	}
+	
+	// requires: allocLhss has been computed
+	private static void collectFactoryInits(ReimTransformer reimTransformer) {
+		HashSet<SootMethod> potentialMethods = new HashSet<SootMethod>();
+		Set<Constraint> constraints = reimTransformer.getConstraints();
+		
+		for (Constraint c : constraints) {
+			if (isReturn(c.getRight()) && allocLhss.contains(c.getLeft())) {
+				SootMethod callee = c.getLeft().getEnclosingMethod();
+			    potentialMethods.add(callee);
+			}
+		}
+		for (SootMethod m : potentialMethods) {
+			if (m.isStatic()) {
+				factoryMethods.add(m.toString());
+				System.out.println("FOUND FACTORY METHOD: "+m);
+			}
+		}
+		
+	}
+		// Step 3: TODO Computes potential factory method inits. The object is constructed and returned.
+		
+	private static void collectAdditionalInits(ReimTransformer reimTransformer) {
+		// It is important that we first collect factory methods, then internal inits, then external inits
+		findAllocLhs(reimTransformer);
+		collectFactoryInits(reimTransformer);
+		collectInternalInits(reimTransformer);		
+		collectExternalInits(reimTransformer);
+		
+	}
+	
+	
+	private static void collectNonReadonlyMethods(ReimTransformer reimTransformer) {
+		HashMap<SootMethod,HashSet<AnnotatedValue>> parameters = reimTransformer.getParameters();
+		for (SootMethod m : parameters.keySet()) {
+        	HashSet<AnnotatedValue> parameterSet = parameters.get(m);
+        	for (AnnotatedValue v : parameterSet) {
+        		// System.out.println("Parameter "+v.getName());
+        		if (!v.getAnnotations(reimTransformer).contains(AnnotationUtils.fromClass(Readonly.class))) {
+        			nonReadonlyMethods.add(m.toString());
+        			// System.out.println(m.toString()+" is not readonly because parameter "+v+" is not readonly.");
+        		}
+        	}
+		}
+	}
+	
+	/*
+	private static void collectAdditionalInitMethods(ReimTransformer reimTransformer) {
+		Set<Constraint> constraints = reimTransformer.getConstraints();
+		Set<SootMethod> moreInitMethods = new HashSet<SootMethod>();
+		Set<SootMethod> notAdditionalInitMethods = new HashSet<SootMethod>();
+		for (Constraint c : constraints) {
+        	AnnotatedValue lhs = c.getLeft();
+        	AnnotatedValue rhs = c.getRight();
+        	// Looking for constraint x <: ADAPTER |> this, call
+        	if (lhs.getKind() != AnnotatedValue.Kind.LOCAL || rhs.getKind() != AnnotatedValue.Kind.METH_ADAPT) {
+        		continue;
+        	}
+        	SootMethod enclMethod = lhs.getEnclosingMethod();
+        	AnnotatedValue receiver = ((AnnotatedValue.MethodAdaptValue) rhs).getDeclValue();
+        	if (!receiver.getName().equals("this"))
+        		continue;
+        	if (reimTransformer.isInitMethod(enclMethod) && lhs.getName().equals("r0")) { 
+        		if (!reimTransformer.isInitMethod(receiver.getEnclosingMethod())) {
+        			moreInitMethods.add(receiver.getEnclosingMethod());
+        			// System.out.println("FOUND A NEW INIT method: "+receiver.getEnclosingMethod());
+        		}        	
+        	}
+        	else {       		
+        		notAdditionalInitMethods.add(receiver.getEnclosingMethod());
+        	}
+		}
+		for (SootMethod m : notAdditionalInitMethods) {
+			if (moreInitMethods.contains(m)) {
+				moreInitMethods.remove(m);
+			}
+		}
+		for (SootMethod m : moreInitMethods) {
+			//System.out.println("FOUND A NEW INIT method: "+m);
+			additionalInitMethods.add(m.toString());
+		}
+	}
+	*/
+	
+	public static void getAllocSiteData(InferenceTransformer transformer) {
+		
+		HashMap<AnnotatedValue,HashSet<Constraint>> constraintMap = new HashMap<AnnotatedValue,HashSet<Constraint>>();
+		HashSet<Constraint> allocConstraints = new HashSet<Constraint>();
+		
+		for (Constraint c : transformer.getConstraints()) {
+			AnnotatedValue left = c.getLeft();
+			AnnotatedValue right = c.getRight();
+			if (isAlloc(left) && !((ReimTransformer2) transformer).isDefaultReadonlyType(left.getType()))  {
+				allocConstraints.add(c);
+			}
+			if (!isLocal(right)) {
+				continue;
+			}
+			HashSet<Constraint> constraintSet = constraintMap.get(right);
+			if (constraintSet == null) {
+				constraintSet = new HashSet<Constraint>();
+				constraintMap.put(right,constraintSet);
+			}
+			constraintSet.add(c);
+		}
+		int totalAllocs = 0;
+		int readonlyAllocs = 0;
+		
+		for (Constraint alloc : allocConstraints) {
+			System.out.println("Processing alloc: "+alloc);
+			AnnotatedValue lhs = alloc.getLeft();
+			AnnotatedValue rhs = alloc.getRight();
+			AnnotatedValue.MethodAdaptValue meth = null;
+			HashSet<Constraint> lhsSet = constraintMap.get(rhs);
+			if (lhsSet != null) 
+				for (Constraint c2 : lhsSet) {
+					// System.out.println("Constraint c2: "+c2);
+					
+					if (c2.getLeft().getKind() == AnnotatedValue.Kind.METH_ADAPT &&
+							((AnnotatedValue.MethodAdaptValue) c2.getLeft()).getDeclValue().getKind() == AnnotatedValue.Kind.THIS &&
+							((AnnotatedValue.MethodAdaptValue) c2.getLeft()).getDeclValue().getEnclosingMethod().getName().equals("<init>")) {
+						meth = (AnnotatedValue.MethodAdaptValue) c2.getLeft();
+						// System.out.println("FOUND METH: "+meth);
+					}
+				}
+			if (meth == null) { // newarray
+				if (rhs.containsAnno(AnnotationUtils.fromClass(Readonly2.class))) {
+					readonlyAllocs++;
+					System.out.println("---- IS READONLY ARRAY");
+				}
+				else 
+					System.out.println("---- IS NOT READONLY ARRAY");
+			}
+			else {
+				if (rhs.containsAnno(AnnotationUtils.fromClass(Readonly2.class))  &&
+					isReadonly(meth.getDeclValue().getEnclosingMethod()) ) {
+					readonlyAllocs++;
+					System.out.println("---- IS READONLY");
+				}
+				else {
+					if (!isReadonly(meth.getDeclValue().getEnclosingMethod()))
+						System.out.println("---- IS NOT READONLY because "+meth.getDeclValue().getEnclosingMethod()+" is not readonly.");
+					if (!rhs.containsAnno(AnnotationUtils.fromClass(Readonly2.class)))
+						System.out.println("---- IS NOT READONLY because lhs is not readonly.");
+				}
+			}
+			totalAllocs++;
+		}
+		
+		System.out.println(readonlyAllocs+" readonly ALLOCs out of "+totalAllocs);
+	}
+	
+	public static void collectDataAfterReim(ReimTransformer reimTransformer) {
+		collectNonReadonlyMethods(reimTransformer);
+		// collectAdditionalInitMethods(reimTransformer);
+		collectAdditionalInits(reimTransformer);
+		
+	}
+
+	public static boolean isReadonly(SootMethod m) {
+		return !nonReadonlyMethods.contains(m.toString());
+	}
+	
+	public static boolean isAdditionalInit(SootMethod m) {
+		
+		return additionalInitMethods.contains(m.toString());
+	}
+	
+	public static boolean isFactoryMethod(SootMethod m) {
+		return factoryMethods.contains(m.toString());
+	}
+	
+	public static boolean isExternalInit(SootMethod m) {
+		return externalInitMethods.contains(m.toString());
+	}
+}

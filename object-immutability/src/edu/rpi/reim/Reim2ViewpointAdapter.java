@@ -1,0 +1,40 @@
+package edu.rpi.reim;
+
+import java.lang.annotation.*;
+
+import edu.rpi.*;
+
+import checkers.inference.sflow.quals.*;
+import checkers.inference.reim.quals.*;
+
+public class Reim2ViewpointAdapter implements ViewpointAdapter {
+
+    private final Annotation READONLY;
+
+    private final Annotation POLYREAD;
+
+    private final Annotation MUTABLE;
+
+    public Reim2ViewpointAdapter() {
+        READONLY = AnnotationUtils.fromClass(Readonly2.class);
+        POLYREAD = AnnotationUtils.fromClass(Polyread2.class);
+        MUTABLE = AnnotationUtils.fromClass(Mutable2.class);
+    }
+
+    public Annotation adaptField(Annotation context, Annotation decl) {
+        if (decl.equals(READONLY))
+            return READONLY;
+        if (decl.equals(POLYREAD))
+            return context;
+        else if (decl.equals(MUTABLE))
+            return MUTABLE;
+        else
+            throw new RuntimeException("Unknow decl annotation: " + decl);
+    }
+
+    public Annotation adaptMethod(Annotation context, Annotation decl) {
+        return adaptField(context, decl);
+    }
+
+}
+
