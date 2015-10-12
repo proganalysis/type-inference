@@ -3,6 +3,7 @@ package edu.rpi.sflow;
 import java.util.Iterator;
 import java.util.*;
 import java.lang.annotation.*;
+import java.lang.Thread;
 
 import soot.Body;
 import soot.BodyTransformer;
@@ -27,8 +28,8 @@ import soot.jimple.*;
 import soot.jimple.Jimple;
 import soot.jimple.StringConstant;
 import soot.options.Options;
-import soot.tagkit.*; 
-
+import soot.tagkit.*;
+import soot.util.Chain;
 import edu.rpi.Constraint.SubtypeConstraint;
 import edu.rpi.AnnotatedValue.FieldAdaptValue;
 import edu.rpi.AnnotatedValue.MethodAdaptValue;
@@ -38,6 +39,7 @@ import edu.rpi.ConstraintSolver.FailureStatus;
  
 import checkers.inference.sflow.quals.*;
 import checkers.inference.reim.quals.*;
+import soot.util.NumberedString;
 
 
 public class SFlowTransformer extends InferenceTransformer {
@@ -170,6 +172,24 @@ public class SFlowTransformer extends InferenceTransformer {
     protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
         // Add default annotations/constraints for library methods
         SootMethod invokeMethod = v.getMethod();
+        // String lindsey_format = "LINDSEY: %s --> %s";
+        String method_name = invokeMethod.getName();
+        // String invoking_class;
+        String pnames;
+        try {
+        	// invoking_class = v.getMethodRef().declaringClass().getName();
+            pnames = v.getMethodRef().declaringClass().getSuperclass().getName();
+        } catch(RuntimeException e) {
+            // invoking_class = "ERROR getting invoking class";
+            pnames = "ERROR getting superclass";
+        }
+        if(pnames.equals("java.lang.Thread") && method_name.equals("start")) {
+            /*System.out.println(String.format(lindsey_format, "Method", method_name));
+            System.out.println(String.format(lindsey_format, "Invoking Class", invoking_class));
+            System.out.println(String.format(lindsey_format, "Parent superclass", pnames));
+            System.out.println("----------------------");*/
+            invokeMethod = v.getMethodRef().declaringClass().getMethodByName("run");
+        }
         if (isPolyLibrary() && isLibraryMethod(invokeMethod)) {
             // Add constraints PARAM -> RET for library methods if 
             // there are no sources or sinks. Otherwise, it may 
