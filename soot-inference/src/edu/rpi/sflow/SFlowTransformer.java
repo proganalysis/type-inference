@@ -174,7 +174,7 @@ public class SFlowTransformer extends InferenceTransformer {
         String methodName = invokeMethod.getName();
         String superClassName;
         // Author: Lindsey
-        // this is to catch the start() run() fiasco
+        // this is to catch the start() run() fiasco, still not done TODO: follow method calls to find error
         try {
             superClassName = v.getMethodRef().declaringClass().getSuperclass().getName();
         } catch(RuntimeException e) {
@@ -182,7 +182,13 @@ public class SFlowTransformer extends InferenceTransformer {
             superClassName = "";
         }
         if(superClassName.equals("java.lang.Thread") && methodName.equals("start")) {
+            System.out.println("THREAD FIX: CLASS NAME  = ".concat(v.getMethodRef().declaringClass().getName()));
+            System.out.println("THREAD FIX: changing from start to run for the call in ".concat(v.getMethodRef().declaringClass().getName()));
             invokeMethod = v.getMethodRef().declaringClass().getMethodByName("run");
+            List<SootMethod> methodList = v.getMethodRef().declaringClass().getMethods();
+            for(int i = 0; i < methodList.size(); i++) {
+                System.out.println("\tMETHODS: ".concat(methodList.get(i).getName()));
+            }
         }
         if (isPolyLibrary() && isLibraryMethod(invokeMethod)) {
             // Add constraints PARAM -> RET for library methods if 
