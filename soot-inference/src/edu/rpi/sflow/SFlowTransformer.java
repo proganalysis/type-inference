@@ -29,7 +29,6 @@ import soot.jimple.Jimple;
 import soot.jimple.StringConstant;
 import soot.options.Options;
 import soot.tagkit.*;
-import soot.util.Chain;
 import edu.rpi.Constraint.SubtypeConstraint;
 import edu.rpi.AnnotatedValue.FieldAdaptValue;
 import edu.rpi.AnnotatedValue.MethodAdaptValue;
