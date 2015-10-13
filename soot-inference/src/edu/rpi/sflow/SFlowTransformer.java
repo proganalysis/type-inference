@@ -172,22 +172,17 @@ public class SFlowTransformer extends InferenceTransformer {
     protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
         // Add default annotations/constraints for library methods
         SootMethod invokeMethod = v.getMethod();
-        // String lindsey_format = "LINDSEY: %s --> %s";
-        String method_name = invokeMethod.getName();
-        // String invoking_class;
-        String pnames;
+        String methodName = invokeMethod.getName();
+        String superClassName;
+        // Author: Lindsey
+        // this is to catch the start() run() fiasco
         try {
-        	// invoking_class = v.getMethodRef().declaringClass().getName();
-            pnames = v.getMethodRef().declaringClass().getSuperclass().getName();
+            superClassName = v.getMethodRef().declaringClass().getSuperclass().getName();
         } catch(RuntimeException e) {
-            // invoking_class = "ERROR getting invoking class";
-            pnames = "ERROR getting superclass";
+            // The class has no superclass
+            superClassName = "";
         }
-        if(pnames.equals("java.lang.Thread") && method_name.equals("start")) {
-            /*System.out.println(String.format(lindsey_format, "Method", method_name));
-            System.out.println(String.format(lindsey_format, "Invoking Class", invoking_class));
-            System.out.println(String.format(lindsey_format, "Parent superclass", pnames));
-            System.out.println("----------------------");*/
+        if(superClassName.equals("java.lang.Thread") && methodName.equals("start")) {
             invokeMethod = v.getMethodRef().declaringClass().getMethodByName("run");
         }
         if (isPolyLibrary() && isLibraryMethod(invokeMethod)) {
