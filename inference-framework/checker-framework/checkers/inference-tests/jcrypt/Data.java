@@ -1,11 +1,12 @@
-import checkers.inference2.jcrypt.quals.*;
-
 public class Data {
-    String secret;
-    String get() {
-       return this.secret;
+    int d;
+    int get() {
+	if (d < 0) {
+	    d = d + 1;
+	}
+	return d;
     }
-    void set(String p) {
-       this.secret = p;
+    void set(int p) {
+	d = p;
     }
 }
