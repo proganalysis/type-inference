@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.*;
 import java.lang.annotation.*;
 import java.lang.Thread;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import soot.Body;
 import soot.BodyTransformer;
@@ -35,7 +37,7 @@ import edu.rpi.AnnotatedValue.MethodAdaptValue;
 import edu.rpi.AnnotatedValue.Kind;
 import edu.rpi.*;
 import edu.rpi.ConstraintSolver.FailureStatus;
- 
+
 import checkers.inference.sflow.quals.*;
 import checkers.inference.reim.quals.*;
 import soot.util.NumberedString;
@@ -184,11 +186,18 @@ public class SFlowTransformer extends InferenceTransformer {
         if(superClassName.equals("java.lang.Thread") && methodName.equals("start")) {
             System.out.println("THREAD FIX: CLASS NAME  = ".concat(v.getMethodRef().declaringClass().getName()));
             System.out.println("THREAD FIX: changing from start to run for the call in ".concat(v.getMethodRef().declaringClass().getName()));
-            invokeMethod = v.getMethodRef().declaringClass().getMethodByName("run");
             List<SootMethod> methodList = v.getMethodRef().declaringClass().getMethods();
             for(int i = 0; i < methodList.size(); i++) {
                 System.out.println("\tMETHODS: ".concat(methodList.get(i).getName()));
             }
+            System.out.println("THREAD FIX: Has active body: " + Boolean.toString(invokeMethod.hasActiveBody()));
+            if(invokeMethod.hasActiveBody()) {
+                String[] activeBodySplit = invokeMethod.getActiveBody().toString().split("\n");
+                for(int i = 0; i < activeBodySplit.length; i++) {
+                    System.out.println("\t" + activeBodySplit[i]);
+                }
+            }
+            invokeMethod = v.getMethodRef().declaringClass().getMethodByName("run");
         }
         if (isPolyLibrary() && isLibraryMethod(invokeMethod)) {
             // Add constraints PARAM -> RET for library methods if 
@@ -440,6 +449,17 @@ public class SFlowTransformer extends InferenceTransformer {
 //                }
 //            }
             String methodName = sm.getName();
+            Pattern pattern = Pattern.compile("^.*(start|run).*$");
+            Matcher matcher = pattern.matcher(methodName);
+            if(matcher.find()) {
+                if(matcher.group(1).equals("start")) {
+                    System.out.println("THREAD FIX: Found a start method.");
+                }
+                else {
+                    System.out.println("THREAD FIX: Found a run method.");
+                }
+                System.out.println(String.format("THREAD FIX: it is called by \'%s\'", sm.getDeclaringClass().getName()));
+            }
             if (!needConnect/* && sm.isConstructor()*/
                     && !sm.isStatic()
                     && !methodName.equals("<clinit>")
