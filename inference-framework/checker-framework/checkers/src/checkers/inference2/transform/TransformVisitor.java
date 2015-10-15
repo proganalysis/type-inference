@@ -709,6 +709,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 			String id = checker.getIdentifier(exp);
 			Reference ref = checker.getAnnotatedReferences().get(id);
+			if (ref == null) ref = checker.getAnnotatedReference(exp);
 			JCExpression convertMethod;
 			if (con) {
 				convertMethod = findConvertMethod((JCExpression) operand, ref, true);
@@ -909,6 +910,10 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	@Override
 	public Void visitNewArray(NewArrayTree node, Void p) {
 		JCNewArray newArray = (JCNewArray) node;
+		Reference ref = checker.getAnnotatedReference(newArray);
+		if (!ref.getRawAnnotations().contains(checker.CLEAR)) {
+			processVariableTree(newArray);
+		}
 		List<JCExpression> newDims = List.nil();
 		for (JCExpression dim : newArray.getDimensions()) {
 			if (dim instanceof JCTypeCast) {
