@@ -173,32 +173,6 @@ public class SFlowTransformer extends InferenceTransformer {
     protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
         // Add default annotations/constraints for library methods
         SootMethod invokeMethod = v.getMethod();
-        String methodName = invokeMethod.getName();
-        String superClassName;
-        // Author: Lindsey
-        // this is to catch the start() run() fiasco, still not done TODO: follow method calls to find error
-        try {
-            superClassName = v.getMethodRef().declaringClass().getSuperclass().getName();
-        } catch(RuntimeException e) {
-            // The class has no superclass
-            superClassName = "";
-        }
-        if(superClassName.equals("java.lang.Thread") && methodName.equals("start")) {
-            System.out.println("THREAD FIX: CLASS NAME  = ".concat(v.getMethodRef().declaringClass().getName()));
-            System.out.println("THREAD FIX: changing from start to run for the call in ".concat(v.getMethodRef().declaringClass().getName()));
-            List<SootMethod> methodList = v.getMethodRef().declaringClass().getMethods();
-            for(int i = 0; i < methodList.size(); i++) {
-                System.out.println("\tMETHODS: ".concat(methodList.get(i).getName()));
-            }
-            System.out.println("THREAD FIX: Has active body: " + Boolean.toString(invokeMethod.hasActiveBody()));
-            if(invokeMethod.hasActiveBody()) {
-                String[] activeBodySplit = invokeMethod.getActiveBody().toString().split("\n");
-                for(int i = 0; i < activeBodySplit.length; i++) {
-                    System.out.println("\t" + activeBodySplit[i]);
-                }
-            }
-            invokeMethod = v.getMethodRef().declaringClass().getMethodByName("run");
-        }
         if (isPolyLibrary() && isLibraryMethod(invokeMethod)) {
             // Add constraints PARAM -> RET for library methods if 
             // there are no sources or sinks. Otherwise, it may 
@@ -449,17 +423,6 @@ public class SFlowTransformer extends InferenceTransformer {
 //                }
 //            }
             String methodName = sm.getName();
-            Pattern pattern = Pattern.compile("^.*(start|run).*$");
-            Matcher matcher = pattern.matcher(methodName);
-            if(matcher.find()) {
-                if(matcher.group(1).equals("start")) {
-                    System.out.println("THREAD FIX: Found a start method.");
-                }
-                else {
-                    System.out.println("THREAD FIX: Found a run method.");
-                }
-                System.out.println(String.format("THREAD FIX: it is called by \'%s\'", sm.getDeclaringClass().getName()));
-            }
             if (!needConnect/* && sm.isConstructor()*/
                     && !sm.isStatic()
                     && !methodName.equals("<clinit>")

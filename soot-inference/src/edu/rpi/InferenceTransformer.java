@@ -601,6 +601,32 @@ public abstract class InferenceTransformer extends BodyTransformer {
     protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
         SootMethod enclosingMethod = getVisitorState().getSootMethod();
         SootMethod invokeMethod = v.getMethod();
+        String methodName = invokeMethod.getName();
+        String superClassName;
+        // Author: Lindsey
+        // this is to catch the start() run() fiasco, I think it is fixed now
+        try {
+            superClassName = v.getMethodRef().declaringClass().getSuperclass().getName();
+        } catch(RuntimeException e) {
+            // The class has no superclass
+            superClassName = "";
+        }
+        if(superClassName.equals("java.lang.Thread") && methodName.equals("start")) {
+            /*System.out.println("THREAD FIX: CLASS NAME  = ".concat(v.getMethodRef().declaringClass().getName()));
+            System.out.println("THREAD FIX: changing from start to run for the call in ".concat(v.getMethodRef().declaringClass().getName()));
+            List<SootMethod> methodList = v.getMethodRef().declaringClass().getMethods();
+            for(int i = 0; i < methodList.size(); i++) {
+                System.out.println("\tMETHODS: ".concat(methodList.get(i).getName()));
+            }
+            System.out.println("THREAD FIX: Has active body: " + Boolean.toString(invokeMethod.hasActiveBody()));
+            if(invokeMethod.hasActiveBody()) {
+                String[] activeBodySplit = invokeMethod.getActiveBody().toString().split("\n");
+                for(int i = 0; i < activeBodySplit.length; i++) {
+                    System.out.println("\t" + activeBodySplit[i]);
+                }
+            }*/
+            invokeMethod = v.getMethodRef().declaringClass().getMethodByName("run");
+        }
         AnnotatedValue aBase = null;
         if (v instanceof InstanceInvokeExpr) {
             // receiver
