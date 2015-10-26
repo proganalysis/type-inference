@@ -4,24 +4,10 @@ import java.util.Iterator;
 import java.util.*;
 import java.lang.annotation.*;
 import java.io.PrintStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import soot.Body;
-import soot.BodyTransformer;
-import soot.Local;
-import soot.PackManager;
-import soot.PatchingChain;
-import soot.RefType;
-import soot.Type;
-import soot.ArrayType;
-import soot.VoidType;
-import soot.Scene;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.SootField;
-import soot.MethodSource;
-import soot.Transform;
-import soot.Unit;
-import soot.Value;
+import soot.*;
 import soot.jimple.AbstractStmtSwitch;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
@@ -39,6 +25,9 @@ import edu.rpi.AnnotatedValue.MethodAdaptValue;
 import edu.rpi.AnnotatedValue.AdaptValue;
 import edu.rpi.AnnotatedValue.Kind;
 import edu.rpi.ConstraintSolver.FailureStatus;
+import soot.util.Chain;
+
+import javax.swing.text.html.HTMLDocument;
 
 public abstract class InferenceTransformer extends BodyTransformer {
 
@@ -99,6 +88,26 @@ public abstract class InferenceTransformer extends BodyTransformer {
     public abstract FailureStatus getFailureStatus(Constraint c);
 
     public abstract String getName();
+
+    // Lindsey, Threadfix variables
+    private HashMap<Integer, SootMethod> threadFixTable = null;
+
+    private String THREAD_CLASS = "java.lang.Thread";
+
+    private String RUNNABLE_CLASS = "java.lang.Runnable";
+
+    private String OBJ_CLASS = "java.lang.Object";
+
+    private String START_METHOD = "start";
+
+    // private Pattern CONSTRUCTOR_METHOD = Pattern.compile("<init>", Pattern.CASE_INSENSITIVE);
+
+    //private String CONSTRUCTOR_METHOD_UPPER = "<INIT>";
+    //private String CONSTRUCTOR_METHOD_LOWER = "<init>";
+
+    private String RUN_METHOD = "run";
+
+    // end threadfix
 
     protected AnnotatedValue getFieldAdaptValue(AnnotatedValue context, 
             AnnotatedValue decl, AnnotatedValue assignTo) {
@@ -603,29 +612,73 @@ public abstract class InferenceTransformer extends BodyTransformer {
         SootMethod invokeMethod = v.getMethod();
         String methodName = invokeMethod.getName();
         String superClassName;
+        String className;
         // Author: Lindsey
         // this is to catch the start() run() fiasco, I think it is fixed now
         try {
+            className = v.getMethodRef().declaringClass().getName();
             superClassName = v.getMethodRef().declaringClass().getSuperclass().getName();
         } catch(RuntimeException e) {
             // The class has no superclass
             superClassName = "";
+            className = "";
         }
-        if(superClassName.equals("java.lang.Thread") && methodName.equals("start")) {
-            /*System.out.println("THREAD FIX: CLASS NAME  = ".concat(v.getMethodRef().declaringClass().getName()));
-            System.out.println("THREAD FIX: changing from start to run for the call in ".concat(v.getMethodRef().declaringClass().getName()));
-            List<SootMethod> methodList = v.getMethodRef().declaringClass().getMethods();
-            for(int i = 0; i < methodList.size(); i++) {
-                System.out.println("\tMETHODS: ".concat(methodList.get(i).getName()));
-            }
-            System.out.println("THREAD FIX: Has active body: " + Boolean.toString(invokeMethod.hasActiveBody()));
-            if(invokeMethod.hasActiveBody()) {
-                String[] activeBodySplit = invokeMethod.getActiveBody().toString().split("\n");
-                for(int i = 0; i < activeBodySplit.length; i++) {
-                    System.out.println("\t" + activeBodySplit[i]);
+        /*if(threadFixTable != null) {
+            for(Map.Entry<Integer, List<Integer>> entry : threadFixTable.entrySet()) {
+                int key = entry.getKey();
+                List<Integer> value = entry.getValue();
+                for (int i = 0; i < value.size(); i++) {
+                        System v.getMethod().getDeclaringClass().hashCode()) {
+                        System.out.println(String.format("THREADFIX: GOT IT (MAYBE): %s --> %s", className, methodName));
+                    }
                 }
-            }*/
-            invokeMethod = v.getMethodRef().declaringClass().getMethodByName("run");
+            }
+        }*/
+        if(v.getMethod().getDeclaringClass().implementsInterface(RUNNABLE_CLASS)) {
+            System.out.println(String.format("THREADFIX: current name: %s --> %s", v.getMethod().retrieveActiveBody().getThisLocal().getName(), v.getMethod().getDeclaringClass().getName()));
+        }
+        if(superClassName.equals(THREAD_CLASS) || className.equals(THREAD_CLASS)) {
+
+            if(methodName.equals(START_METHOD) && !className.equals(THREAD_CLASS)) {
+                invokeMethod = v.getMethodRef().declaringClass().getMethodByName(RUN_METHOD);
+            }
+            else if(className.equals(THREAD_CLASS) && superClassName.equals(OBJ_CLASS) && methodName.equals(START_METHOD)) {
+                /*if(threadFixTable == null) {
+                    threadFixTable = new HashMap<>();
+                }
+                if(invokeMethod.isConstructor()) {
+                    /*List<String> tmpList = new ArrayList<>();
+                    List<Type> paramList = v.getMethod().getParameterTypes();
+                    int paramCount = v.getMethod().getParameterCount();
+                    System.out.println(String.format("THREADFIX: PARAM COUNT: %d", paramCount));
+                    for(int i = 0; i < paramCount; i++) {
+                        String name = v.getMethod().retrieveActiveBody().getParameterLocal(i).getName();
+                        System.out.println("THREADFIX: test: " + name);
+                        tmpList.add(name);
+                    }
+                    threadFixTable.put(v.hashCode(), tmpList);
+                    if(v.getMethod().hasActiveBody()) {
+                        System.out.println(String.format("THREADFIX: %s has an active body.", v.getMethod().getName()));
+                        List<Value> localVariables = v.getMethod().getActiveBody().getParameterRefs();
+                        Iterator itr = localVariables.iterator();
+                        int i = 0;
+                        while(itr.hasNext()) {
+                            Value value = (Value)itr.next();
+                            // System.out.println(String.format("THREADFIX: value #%d --> %s", i, value.get));
+                            i++;
+                        }
+                    }
+                }
+                System.out.println(String.format("THREADFIX: METHOD HASH: %d", v.hashCode()));
+                System.out.println(String.format("THREADFIX: %s --> %S", v.getMethodRef().getSubSignature(), v.getMethod().getName()));
+                System.out.println("THREADFIX: Method name: '" + v.getMethod().getName() + "'");
+                System.out.println("THREADFIX: assignTo --> " + assignTo.getName()); */
+                for(Map.Entry<Integer, SootMethod> entry : threadFixTable.entrySet()) {
+                    int key = entry.getKey();
+                    SootMethod value = entry.getValue();
+                    System.out.println(String.format("THREADFIX: GOT IT (MAYBE): %d --> %d", v.getMethod().hashCode(), value.hashCode()));
+                }
+            }
         }
         AnnotatedValue aBase = null;
         if (v instanceof InstanceInvokeExpr) {
@@ -643,6 +696,23 @@ public abstract class InferenceTransformer extends BodyTransformer {
             assert arg instanceof Local;
             AnnotatedValue aArg = getAnnotatedValue(arg);
             AnnotatedValue aParam = getAnnotatedParameter(invokeMethod, i);
+            SootClass encClass = aParam.getEnclosingClass();
+            SootMethod encMethod = aParam.getEnclosingMethod();
+            if(encClass.getName().equals(THREAD_CLASS) && encMethod.isConstructor()) {
+                if(threadFixTable == null) {
+                    threadFixTable = new HashMap<>();
+                }
+                System.out.println("THREADFIX: ------------> " + encClass.getName() + " " + encMethod.getName());
+                System.out.println("THREADFIX: ------------> " + aParam.getName());
+                try {
+                    SootMethod sootMethod = encClass.getMethodByName("run");
+                    threadFixTable.put(v.getMethod().getDeclaringClass().getMethodByName("start").hashCode(), sootMethod);
+
+                }
+                catch (RuntimeException rte) {
+                    System.out.println("Run time exception: " + rte.getMessage());
+                }
+            }
             addSubtypeConstraint(aArg, getMethodAdaptValue(aBase, aParam, assignTo));
         }
         // return
