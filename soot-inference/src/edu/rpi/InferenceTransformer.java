@@ -104,6 +104,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
     private String START_METHOD = "start";
 
     private String RUN_METHOD = "run";
+
+    private String EXEC_SERVICE_CLASS = "java.util.concurrent.ExecutorService";
+
+    private String EXEC_CLASS = "java.util.concurrent.Executors";
     // end Lindsey
 
     protected AnnotatedValue getFieldAdaptValue(AnnotatedValue context,
@@ -624,6 +628,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
             superClassName = "";
             className = "";
         }
+        if(methodName.equals("execute")) {
+            int nothing = 0;
+            // TODO: Look for it here
+        }
         if(superClassName.equals(THREAD_CLASS) || className.equals(THREAD_CLASS)) {
             if(methodName.equals(START_METHOD) && !className.equals(THREAD_CLASS)) {
                 // basic thread start run replace
@@ -679,6 +687,15 @@ public abstract class InferenceTransformer extends BodyTransformer {
             // Author: Lindsey, for JavaThread2
             // TODO: make less hacky/redic
             SootClass decClass = invokeMethod.getDeclaringClass();
+            if(!decClass.getName().equals(EXEC_SERVICE_CLASS) && !decClass.getName().equals(EXEC_CLASS)
+                    && decClass.implementsInterface(RUNNABLE_CLASS) && invokeMethod.isConstructor()) {
+                int nothing = 0;
+                /** TODO:
+                 *  find the run method for this class, put it in the hashmap
+                 *  this is for threads of type:
+                 *    Executors.newCachedThreadPool().execute(new MyRunnable(telephonyManager.getDeviceId()));
+                 */
+            }
             if(!decClass.getName().equals(THREAD_CLASS) && invokeMethod.isConstructor()
                     && decClass.implementsInterface(RUNNABLE_CLASS)) {
                 if(threadFixTableRun == null) {
