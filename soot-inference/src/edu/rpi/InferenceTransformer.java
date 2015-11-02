@@ -101,13 +101,15 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     private String OBJ_CLASS = "java.lang.Object";
 
+    private String EXEC_SERVICE_CLASS = "java.util.concurrent.ExecutorService";
+
+    private String EXEC_CLASS = "java.util.concurrent.Executors";
+
     private String START_METHOD = "start";
 
     private String RUN_METHOD = "run";
 
-    private String EXEC_SERVICE_CLASS = "java.util.concurrent.ExecutorService";
-
-    private String EXEC_CLASS = "java.util.concurrent.Executors";
+    private String EXECUTE_METHOD = "execute";
     // end Lindsey
 
     protected AnnotatedValue getFieldAdaptValue(AnnotatedValue context,
@@ -616,7 +618,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         SootMethod enclosingMethod = getVisitorState().getSootMethod();
         SootMethod invokeMethod = v.getMethod();
         // Author: Lindsey
-        // this is to catch the start() run() fiasco, I think it is fixed now
+        // These are fixes for Javathread1 and Executor1
         String methodName = invokeMethod.getName();
         String superClassName;
         String className;
@@ -628,11 +630,24 @@ public abstract class InferenceTransformer extends BodyTransformer {
             superClassName = "";
             className = "";
         }
-        if(methodName.equals("execute")) {
-            int nothing = 0;
+        if(methodName.equals(EXECUTE_METHOD) &&
+                invokeMethod.getParameterType(0).toString().equals(RUNNABLE_CLASS)) {
             // TODO: Look for it here
+            System.out.println("THREADFIX: execute method found. ");
+            if(threadFixTableRun != null) {
+                for (Map.Entry<String, SootMethod> entry : threadFixTableRun.entrySet()) {
+                    String key = entry.getKey();
+                    SootMethod value = entry.getValue();
+                    System.out.println(String.format(
+                            "\tSearching Hashmap... Key->'%s' Value->'%s'",
+                            key, value.getName()));
+                }
+            }
+            else {
+                System.out.println("Nothing in threadFixTableRun.");
+            }
         }
-        if(superClassName.equals(THREAD_CLASS) || className.equals(THREAD_CLASS)) {
+        else if(superClassName.equals(THREAD_CLASS) || className.equals(THREAD_CLASS)) {
             if(methodName.equals(START_METHOD) && !className.equals(THREAD_CLASS)) {
                 // basic thread start run replace
                 invokeMethod = v.getMethodRef().declaringClass().getMethodByName(RUN_METHOD);
@@ -684,24 +699,26 @@ public abstract class InferenceTransformer extends BodyTransformer {
             assert arg instanceof Local;
             AnnotatedValue aArg = getAnnotatedValue(arg);
             AnnotatedValue aParam = getAnnotatedParameter(invokeMethod, i);
-            // Author: Lindsey, for JavaThread2
+            // Author: Lindsey, for JavaThread2 and Executor1
             // TODO: make less hacky/redic
             SootClass decClass = invokeMethod.getDeclaringClass();
-            if(!decClass.getName().equals(EXEC_SERVICE_CLASS) && !decClass.getName().equals(EXEC_CLASS)
-                    && decClass.implementsInterface(RUNNABLE_CLASS) && invokeMethod.isConstructor()) {
-                int nothing = 0;
+            if(invokeMethod.isConstructor()
+                    && decClass.implementsInterface(RUNNABLE_CLASS)
+                    && !decClass.getName().equals(THREAD_CLASS)
+                    && !decClass.getName().equals(EXEC_SERVICE_CLASS)
+                    && !decClass.getName().equals(EXEC_CLASS)) {
                 /** TODO:
-                 *  find the run method for this class, put it in the hashmap
+                 *  find the run method for this class, put it in the hashmap, executor is tricky
                  *  this is for threads of type:
                  *    Executors.newCachedThreadPool().execute(new MyRunnable(telephonyManager.getDeviceId()));
                  */
-            }
-            if(!decClass.getName().equals(THREAD_CLASS) && invokeMethod.isConstructor()
-                    && decClass.implementsInterface(RUNNABLE_CLASS)) {
                 if(threadFixTableRun == null) {
                     threadFixTableRun = new HashMap<>();
                 }
                 SootMethod sootMethod = decClass.getMethodByName(RUN_METHOD);
+                System.out.println(String.format(
+                        "THREADFIX: put '%s' '%s' in threadFixTableRun.",
+                        arg.getType().toString(), sootMethod.getName()));
                 threadFixTableRun.put(arg.getType().toString(), sootMethod);
             }
             else if(decClass.getName().equals(THREAD_CLASS) && invokeMethod.isConstructor()) {
