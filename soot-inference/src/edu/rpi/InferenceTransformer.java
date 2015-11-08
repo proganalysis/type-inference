@@ -644,8 +644,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
             threadFixRunnables.put(invokeMethod.getDeclaringClass().getName(), v);
         }
         // for Executor1
-        else if(methodName.equals(EXECUTE_METHOD)) {
+        else if(methodName.equals(EXECUTE_METHOD) &&
+                className.equals(EXEC_SERVICE_CLASS)) {
             // System.out.println("THREADFIX: execute method found. ");
+            // System.out.println("\t " + invokeMethod.getDeclaringClass().getName());
             if(invokeMethod.getParameterCount() == 1) {
                 String argType = v.getArgs().get(0).getType().toString();
                 for (Map.Entry<String, InvokeExpr> entry : threadFixRunnables.entrySet()) {
