@@ -9,15 +9,15 @@ import thep.paillier.exceptions.PublicKeysNotEqualException;
 
 public class Computation {
 
-	public static boolean equals(byte[] b1, byte[] b2) {
-		return Arrays.equals(b1, b2);
+	public static boolean equals(EncryptedData b1, EncryptedData b2) {
+		return Arrays.equals(b1.getValue(), b2.getValue());
 	}
 
 	public static boolean equals(byte[][] b1, byte[][] b2) {
 		return Arrays.deepEquals(b1, b2);
 	}
 	
-	public static boolean notEquals(byte[] b1, byte[] b2) {
+	public static boolean notEquals(EncryptedData b1, EncryptedData b2) {
 		return !equals(b1, b2);
 	}
 	

@@ -5,11 +5,12 @@ import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-
 import javax.crypto.Cipher;
 
-public class Deterministic extends Encryption {
+import encryption.EncryptedData.DataKind;
+import encryption.EncryptedData.EncryptKind;
+
+public class Deterministic implements Encryption {
 
 	private static final Key publicKey, privateKey;
 	private Cipher cipher;
@@ -36,7 +37,7 @@ public class Deterministic extends Encryption {
 	}
 
 	@Override
-	public byte[] encrypt(int ptext) {
+	public EncryptedData encrypt(int ptext) {
 		byte[] input = ByteBuffer.allocate(4).putInt(ptext).array();
 		byte[] ctext = null;
 		try {
@@ -45,21 +46,36 @@ public class Deterministic extends Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return ctext;
+		return new EncryptedData(DataKind.INT, EncryptKind.DET, ctext);
 	}
-
+	
 	@Override
-	public int decrypt(byte[] ctext) {
-		byte[] plainText = null;
+	public EncryptedData encrypt(String ptext) {
+		byte[] ctext = null;
 		try {
-			cipher.init(Cipher.DECRYPT_MODE, privateKey);
-			plainText = cipher.doFinal(ctext);
+			cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+			ctext = cipher.doFinal(ptext.getBytes());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		ByteBuffer wrapped = ByteBuffer.wrap(Arrays.copyOfRange(plainText,
-				plainText.length - 4, plainText.length));
-		return wrapped.getInt();
+		return new EncryptedData(DataKind.STRING, EncryptKind.DET, ctext);
+	}
+
+	@Override
+	public Object decrypt(EncryptedData ctext) {
+		byte[] plainText = null;
+		try {
+			cipher.init(Cipher.DECRYPT_MODE, privateKey);
+			plainText = cipher.doFinal(ctext.getValue());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (ctext.getDataKind() == DataKind.INT) {
+			ByteBuffer wrapped = ByteBuffer.wrap(plainText);
+			return wrapped.getInt();
+		} else {
+			return new String(plainText);
+		}
 	}
 
 }
