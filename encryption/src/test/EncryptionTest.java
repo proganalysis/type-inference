@@ -1,13 +1,12 @@
 package test;
 
-import java.util.Arrays;
-
 import encryption.*;
+import encryption.EncryptedData.DataKind;
 import junit.framework.TestCase;
 
 public class EncryptionTest extends TestCase {
 
-	private static final int pti1 = 12345768, pti2 = 12345768, pti3 = 10, pti4 = -1;
+	private static final int pti1 = 12345768, pti2 = 12345768, pti3 = -10, pti4 = -1;
 	private EncryptedData cti1, cti2, cti3, cti4, cts1, cts2, cts3;
 	private static final String pts1 = "Hello", pts2 = "Hello", pts3 = "Jello";
 	
@@ -15,14 +14,20 @@ public class EncryptionTest extends TestCase {
 		Encryption e;
 		e = new Deterministic();
 		cti1 = e.encrypt(pti1);
+		e = new Deterministic();
 		cti2 = e.encrypt(pti2);
-		assertTrue(Arrays.equals(cti1.getValue(), cti2.getValue())); 
+		assertTrue(cti1.getValue().equals(cti2.getValue()));
+		cti3 = e.encrypt(pti3);
+		assertTrue(pti3 == (int) e.decrypt(cti3));
 		cts1 = e.encrypt(pts1);
 		cts2 = e.encrypt(pts2);
-		assertTrue(Arrays.equals(cts1.getValue(), cts2.getValue()));
-//		e = new Deterministic();
-//		assertTrue(pti1 == (int) e.decrypt(cti1));
-//		assertTrue(pts1.equals(e.decrypt(cts1)));
+		assertTrue(cts1.getValue().equals(cts2.getValue()));
+		e = new Deterministic();
+		assertTrue(pti1 == (int) e.decrypt(cti1));
+		assertTrue(pts1.equals(e.decrypt(cts1)));
+		assertEquals(pti1*pti3,
+				(int) e.decrypt(new EncryptedData(DataKind.INT,
+						cti1.getValue().multiply(cti3.getValue()))));
 //		cti2 = e.encrypt(pti2);
 //		assertTrue(Computation.equals(cti1, cti2));
 //		cti3 = e.encrypt(pti3);
@@ -66,16 +71,18 @@ public class EncryptionTest extends TestCase {
 //		assertEquals(pti3 % pti2, e.decrypt(Computation.mod(cti3, cti2)));
 //	}
 //	
-//	public void testOPE() {
-//		Encryption e;
-//		e = new OrderPreserving();
-//		cti1 = e.encrypt(pti1);
-//		cts1 = e.encrypt(pts1);
-//		e = new OrderPreserving();
-//		cti2 = e.encrypt(pti2);
+	public void testOPE() {
+		Encryption e;
+		e = new OrderPreserving();
+		cti1 = e.encrypt(pti1);
+		cti2 = e.encrypt(pti2);
+		cts1 = e.encrypt(pts1);
+		e = new OrderPreserving();
+//		e.decrypt(cts1);
+//		cti3 = e.encrypt(pti3);
 //		assertFalse(Computation.lessThan(cti1, cti2));
-//		assertTrue(pti1 == (int) e.decrypt(cti1));
-//		assertTrue(pts1.equals(e.decrypt(cts1)));
+		assertTrue(pti1 == (int) e.decrypt(cti1));
+		assertTrue(pts1.equals(e.decrypt(cts1)));
 //		cts3 = e.encrypt(pts3);
 //		cti3 = e.encrypt(pti3);
 //		cti4 = e.encrypt(pti4);
@@ -83,8 +90,8 @@ public class EncryptionTest extends TestCase {
 //		assertTrue(Computation.lessThan(cti3, cti1));
 //		assertTrue(Computation.greaterThan(cti1, cti3));
 //		assertTrue(Computation.lessThan(cts1, cts3));
-//	}
-//	
+	}
+	
 	public void testRND() {
 		Encryption e;
 		e = new Random();

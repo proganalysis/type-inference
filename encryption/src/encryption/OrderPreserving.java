@@ -1,69 +1,75 @@
 package encryption;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import encryption.EncryptedData.DataKind;
+import encryption.EncryptedData.EncryptKind;
 
 public class OrderPreserving implements Encryption {
-	
-	private static String prg
-	
-	try{
-		 
-		String prg = "import sys\nprint&nbsp;int(sys.argv[1])+int(sys.argv[2])\n";
-		BufferedWriter out = new BufferedWriter(new FileWriter("test1.py"));
-		out.write(prg);
-		out.close();
-		int number1 = 10;
-		int number2 = 32;
-		 
-		ProcessBuilder pb = new ProcessBuilder("python","test1.py",""+number1,""+number2);
-		Process p = pb.start();
-		 
-		BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		int ret = new Integer(in.readLine()).intValue();
-		System.out.println("value is : "+ret);
-		}catch(Exception e){System.out.println(e);}
-		}
 
-//	private static File dir = new File("lib");
-//	private static String[] envp = new String[] { "LD_LIBRARY_PATH=." };
-//
-//	@Override
-//	public int decrypt(byte[] ctext) {
-//		String s = null;
-//		try {
-//			Process p = Runtime.getRuntime().exec(
-//					"./ope_decrypt " + new String(ctext), envp, dir);
-//			p.waitFor();
-//			InputStream input = p.getInputStream();
-//			byte[] targetArray = new byte[input.available()];
-//			input.read(targetArray);
-//			s = new String(Arrays.copyOf(targetArray, targetArray.length - 1));
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-//		return Integer.parseInt(s);
-//	}
-//
-//	@Override
-//	public byte[] encrypt(int ptext) {
-//		byte[] targetArray = new byte[100];
-//		int num = 0;
-//		try {
-//			Process p = Runtime.getRuntime().exec("./ope_encrypt " + ptext,
-//					envp, dir);
-//			p.waitFor();
-//			num = p.getInputStream().read(targetArray);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-//		return Arrays.copyOf(targetArray, num);
-//	}
+	@Override
+	public Object decrypt(EncryptedData ctext) {
+		ArrayList<String> array = new ArrayList<>();
+		try {
+			ProcessBuilder pb = new ProcessBuilder("python", "lib/ope_decrypt.py", new String(ctext.getValue()));
+			Process p = pb.start();
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String s;
+			while ((s = in.readLine()) != null) {
+				array.add(s);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (array.size() == 1) {
+			return Integer.parseInt(array.get(0));
+		} else {
+			char[] charArray = new char[array.size()];
+			for (int i = 0; i < array.size(); i++) {
+				charArray[i] = (char) Integer.parseInt(array.get(i));
+			}
+			return new String(charArray);
+		}
+	}
+
+	@Override
+	public EncryptedData encrypt(String ptext) {
+		String res = "";
+		try {
+			ProcessBuilder pb = new ProcessBuilder("python", "lib/ope_encrypt_String.py", "" + ptext);
+			Process p = pb.start();
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String s;
+			while ((s = in.readLine()) != null) {
+				res += s + " ";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new EncryptedData(DataKind.INT, EncryptKind.OPE, res.getBytes());
+	}
+
+	@Override
+	public EncryptedData encrypt(int ptext) {
+		String s = null;
+		try {
+			ProcessBuilder pb = new ProcessBuilder("python", "lib/ope_encrypt.py", "" + ptext);
+			Process p = pb.start();
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			s = in.readLine();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new EncryptedData(DataKind.INT, EncryptKind.OPE, s.getBytes());
+	}
 
 }
