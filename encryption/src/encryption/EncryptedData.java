@@ -9,27 +9,27 @@ public class EncryptedData {
 		STRING
 	}
 	
-//	public enum EncryptKind {
-//		RND,
-//		AH,
-//		OPE,
-//		DET
-//	}
+	public enum EncryptKind {
+		RND,
+		AH,
+		OPE,
+		DET
+	}
 	
 	private DataKind dataKind;
-	//private EncryptKind encryptKind;
+	private EncryptKind encryptKind;
 	private BigInteger value;
 	
-//	public EncryptedData(DataKind dataKind, EncryptKind encryptKind, BigInteger value) {
-//		this.dataKind = dataKind;
-//		this.encryptKind = encryptKind;
-//		this.value = value;
-//	}
-	
-	public EncryptedData(DataKind dataKind, BigInteger value) {
+	public EncryptedData(DataKind dataKind, EncryptKind encryptKind, BigInteger value) {
 		this.dataKind = dataKind;
+		this.encryptKind = encryptKind;
 		this.value = value;
 	}
+	
+//	public EncryptedData(DataKind dataKind, BigInteger value) {
+//		this.dataKind = dataKind;
+//		this.value = value;
+//	}
 	
 	public DataKind getDataKind() {
 		return dataKind;
@@ -37,12 +37,12 @@ public class EncryptedData {
 	public void setDataKind(DataKind dataKind) {
 		this.dataKind = dataKind;
 	}
-//	public EncryptKind getEncryptKind() {
-//		return encryptKind;
-//	}
-//	public void setEncryptKind(EncryptKind encryptKind) {
-//		this.encryptKind = encryptKind;
-//	}
+	public EncryptKind getEncryptKind() {
+		return encryptKind;
+	}
+	public void setEncryptKind(EncryptKind encryptKind) {
+		this.encryptKind = encryptKind;
+	}
 	public BigInteger getValue() {
 		return value;
 	}

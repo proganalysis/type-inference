@@ -1,13 +1,9 @@
 package encryption;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import encryption.EncryptedData.DataKind;
 import encryption.EncryptedData.EncryptKind;
 
@@ -17,7 +13,8 @@ public class OrderPreserving implements Encryption {
 	public Object decrypt(EncryptedData ctext) {
 		ArrayList<String> array = new ArrayList<>();
 		try {
-			ProcessBuilder pb = new ProcessBuilder("python", "lib/ope_decrypt.py", new String(ctext.getValue()));
+			ProcessBuilder pb = new ProcessBuilder("python",
+					"lib/ope_decrypt.py", new String(ctext.getValue().toByteArray()));
 			Process p = pb.start();
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -43,7 +40,8 @@ public class OrderPreserving implements Encryption {
 	public EncryptedData encrypt(String ptext) {
 		String res = "";
 		try {
-			ProcessBuilder pb = new ProcessBuilder("python", "lib/ope_encrypt_String.py", "" + ptext);
+			ProcessBuilder pb = new ProcessBuilder("python",
+					"lib/ope_encrypt_String.py", ptext);
 			Process p = pb.start();
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -54,7 +52,7 @@ public class OrderPreserving implements Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, EncryptKind.OPE, res.getBytes());
+		return new EncryptedData(DataKind.INT, EncryptKind.OPE, new BigInteger(res.getBytes()));
 	}
 
 	@Override
@@ -69,7 +67,7 @@ public class OrderPreserving implements Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, EncryptKind.OPE, s.getBytes());
+		return new EncryptedData(DataKind.INT, EncryptKind.OPE, new BigInteger(s.getBytes()));
 	}
 
 }

@@ -1,5 +1,6 @@
 package encryption;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -19,8 +20,8 @@ public class Random implements Encryption {
 
 	private static final Key keyAES, keyBF; // AES and blowfish
 	private Cipher cipherAES, cipherBF;
-	private static Map<byte[], byte[]> initIVsAES = new HashMap<>();
-	private static Map<byte[], byte[]> initIVsBF = new HashMap<>();
+	private static Map<EncryptedData, byte[]> initIVsAES = new HashMap<>();
+	private static Map<EncryptedData, byte[]> initIVsBF = new HashMap<>();
 
 	static {
 		KeyGenerator generatorAES = null, generatorBF = null;
@@ -48,11 +49,13 @@ public class Random implements Encryption {
 		try {
 			cipherAES.init(Cipher.ENCRYPT_MODE, keyAES);
 			ctext = cipherAES.doFinal(ptext.getBytes());
-			initIVsAES.put(ctext, cipherAES.getIV());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.STRING, EncryptKind.RND, ctext);
+		EncryptedData encrypted = new EncryptedData(DataKind.STRING, EncryptKind.RND,
+				new BigInteger(ctext));
+		initIVsAES.put(encrypted, cipherAES.getIV());
+		return encrypted;
 	}
 
 	public EncryptedData encrypt(int ptext) {
@@ -60,11 +63,13 @@ public class Random implements Encryption {
 		try {
 			cipherBF.init(Cipher.ENCRYPT_MODE, keyBF);
 			ctext = cipherBF.doFinal(ByteBuffer.allocate(4).putInt(ptext).array());
-			initIVsBF.put(ctext, cipherBF.getIV());
 		} catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, EncryptKind.RND, ctext);
+		EncryptedData encrypted = new EncryptedData(DataKind.INT, EncryptKind.RND,
+				new BigInteger(ctext));
+		initIVsBF.put(encrypted, cipherBF.getIV());
+		return encrypted;
 	}
 
 	@Override
@@ -72,8 +77,9 @@ public class Random implements Encryption {
 		byte[] plainText = null;
 		if (ctext.getDataKind() == DataKind.INT) { // blowfish: 64-bit block size
 			try {
-				cipherBF.init(Cipher.DECRYPT_MODE, keyBF, new IvParameterSpec(initIVsBF.get(ctext.getValue())));
-				plainText = cipherBF.doFinal(ctext.getValue());
+				cipherBF.init(Cipher.DECRYPT_MODE, keyBF,
+						new IvParameterSpec(initIVsBF.get(ctext)));
+				plainText = cipherBF.doFinal(ctext.getValue().toByteArray());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -81,8 +87,9 @@ public class Random implements Encryption {
 			return wrapped.getInt();
 		} else { // AES: 128-bit block size
 			try {
-				cipherAES.init(Cipher.DECRYPT_MODE, keyAES, new IvParameterSpec(initIVsAES.get(ctext.getValue())));
-				plainText = cipherAES.doFinal(ctext.getValue());
+				cipherAES.init(Cipher.DECRYPT_MODE, keyAES,
+						new IvParameterSpec(initIVsAES.get(ctext)));
+				plainText = cipherAES.doFinal(ctext.getValue().toByteArray());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

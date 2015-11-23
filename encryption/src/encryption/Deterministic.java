@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 import java.math.BigInteger;
 
 import encryption.EncryptedData.DataKind;
+import encryption.EncryptedData.EncryptKind;
 
 public class Deterministic implements Encryption {
 
@@ -34,7 +35,7 @@ public class Deterministic implements Encryption {
 		BigInteger message = BigInteger.valueOf(ptext);
 		BigInteger encrypted = message.signum() == 1 ? message.modPow(publicKey, modulus)
 				: message.negate().modPow(publicKey, modulus).negate();
-		return new EncryptedData(DataKind.INT, encrypted);
+		return new EncryptedData(DataKind.INT, EncryptKind.DET, encrypted);
 	}
 
 	@Override
@@ -52,7 +53,8 @@ public class Deterministic implements Encryption {
 	@Override
 	public EncryptedData encrypt(String ptext) {
 		BigInteger message = new BigInteger(ptext.getBytes());
-		return new EncryptedData(DataKind.STRING, message.modPow(publicKey, modulus));
+		return new EncryptedData(DataKind.STRING, EncryptKind.DET,
+				message.modPow(publicKey, modulus));
 	}
 
 }

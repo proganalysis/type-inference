@@ -1,5 +1,7 @@
 package encryption;
 
+import encryption.EncryptedData.EncryptKind;
+
 public class Conversion {
 	
 	public static Encryption rnd = new Random();
@@ -7,59 +9,52 @@ public class Conversion {
 	public static Encryption ah = new Homomorphic();
 	public static Encryption det = new Deterministic();
 
-	public static byte[] encrypt(int ptext, String to) {
+	public static EncryptedData encrypt(int ptext, EncryptKind to) {
 		Encryption toType = createEncryption(to);
-		byte[] e = toType.encrypt(ptext);
+		EncryptedData e = toType.encrypt(ptext);
 		return e;
 	}
 	
-	public static byte[][] encryptSpe(int ptext, String to) {
+	public static EncryptedData encryptSpe(int ptext, EncryptKind to) {
 		String s = Integer.toString(ptext);
 		return createEncryption(to).encrypt(s);
 	}
 	
-	public static byte[][] encrypt(String ptext, String to) {
+	public static EncryptedData encrypt(String ptext, EncryptKind to) {
 		Encryption toType = createEncryption(to);
 		return toType.encrypt(ptext);
 	}
 
-	public static int decrypt(byte[] ctext, String from) {
-		Encryption fromType = createEncryption(from);
-		int e = fromType.decrypt(ctext);
-		return e;
-	}
-	
-	public static String decrypt(byte[][] ctext, String from) {
+	public static Object decrypt(EncryptedData ctext, EncryptKind from) {
 		Encryption fromType = createEncryption(from);
 		return fromType.decrypt(ctext);
 	}
-
-	public static byte[] convert(byte[] ctext, String from, String to) {
-		int ptext = decrypt(ctext, from);
-		return encrypt(ptext, to);
+	
+	public static EncryptedData convert(EncryptedData ctext, EncryptKind from, EncryptKind to) {
+		Object ptext = decrypt(ctext, from);
+		if (ptext instanceof String) {
+			return encrypt((String) ptext, to);
+		} else {
+			return encrypt((int) ptext, to);
+		}
 	}
 	
-	public static byte[][] convertSpe(byte[] ctext, String from, String to) {
-		int ptext = decrypt(ctext, from);
+	public static EncryptedData convertSpe(EncryptedData ctext, EncryptKind from, EncryptKind to) {
+		int ptext = (int) decrypt(ctext, from);
 		String s = String.valueOf(ptext);
 		return encrypt(s, to);
 	}
 
-	public static byte[][] convert(byte[][] ctext, String from, String to) {
-		String ptext = decrypt(ctext, from);
-		return encrypt(ptext, to);
-	}
-
-	private static Encryption createEncryption(String type) {
+	private static Encryption createEncryption(EncryptKind type) {
 		switch (type) {
-		case "RND":
+		case RND:
 			return rnd;
-		case "OPE":
+		case OPE:
 			return ope;
-		case "AH":
+		case AH:
 			return ah;
 		default:
-			assert (type.equals("DET"));
+			assert (type == EncryptKind.DET);
 			return det;
 		}
 	}
