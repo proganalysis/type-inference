@@ -1,12 +1,13 @@
 import encryption.Computation;
 import encryption.Conversion;
+import encryption.EncryptedData;
 
 class EncryptionSample {
 	public static void main(String[] args) {
 		Object o;
-		byte[] b1 = new byte[1];
-		byte[][] b2 = new byte[1][];
-		String s = "";
+		EncryptedData b1 = null;
+		EncryptedData b2 = null;
+		String s = null;
 		Computation.add(b1, b1);
 		Computation.minus(b1, b1);
 		Computation.multiply(b1, b1);

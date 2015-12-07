@@ -96,8 +96,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	private String returnType;	
 	private static boolean inSample;
 	
-	private static JCExpression objectType;
-	private static JCArrayTypeTree byteArray1, byteArray2;
+//	private static JCArrayTypeTree byteArray1, byteArray2;
+	private static JCExpression objectType, encryptedDataType;
 	
 	private static List<JCTree> imports	= List.nil();
 
@@ -147,7 +147,13 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	return jci;
     }
     
-    private void processVariableTree(JCTree jctree) {
+    private JCExpression getEncryptedDataType(int pos) {
+    	JCIdent jci = maker.Ident(((JCIdent) encryptedDataType).getName());
+    	jci.setPos(pos);
+    	return jci;
+    }
+
+    private void processVariableTree(JCTree jctree, Reference ref) {
     	JCTree eleTypeTree;
     	Tag tag = jctree.getTag();
     	switch (tag) {
@@ -171,7 +177,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			break;
     	}
 		if (eleTypeTree != null) {
-			modifyTree(jctree, eleTypeTree, tag);
+			modifyTree(jctree, eleTypeTree, tag, ref);
 		}
     }
 
@@ -183,7 +189,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	 * @param eleTypeTree
 	 * @param tag
 	 */
-	private void modifyTree(JCTree jctree, JCTree eleTypeTree, Tag tag) {
+	private void modifyTree(JCTree jctree, JCTree eleTypeTree, Tag tag, Reference ref) {
 		if (eleTypeTree.getTag() == Tag.TYPEIDENT) {
 			JCPrimitiveTypeTree jcptt = (JCPrimitiveTypeTree) eleTypeTree;
 			if (jcptt.getPrimitiveTypeKind() == TypeKind.INT) {
@@ -197,7 +203,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 				modifyType(jctree, tag, jce);
 			}
 		} else {
-			processVariableTree(eleTypeTree);
+			processVariableTree(eleTypeTree, ref);
 		}
 	}
 
@@ -258,12 +264,15 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		if (arg instanceof JCTypeCast) {
 			argJ = ((JCTypeCast) arg).getExpression();
 		}
-		if (argJ.type != null && argJ.type.toString().equals("java.lang.String")) {
-			argJ = maker.TypeCast(byteArray2, argJ);
+		if (argJ.type != null) {
+			argJ = maker.TypeCast(encryptedDataType, argJ);
 		}
-		if (argJ.type != null && argJ.type.toString().equals("int")) {
-			argJ = maker.TypeCast(byteArray1, argJ);
-		}
+//		if (argJ.type != null && argJ.type.toString().equals("java.lang.String")) {
+//			argJ = maker.TypeCast(byteArray2, argJ);
+//		}
+//		if (argJ.type != null && argJ.type.toString().equals("int")) {
+//			argJ = maker.TypeCast(byteArray1, argJ);
+//		}
 		return argJ;
 	}
 	
@@ -348,21 +357,23 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	// get Object type from EncryptionSample
     	if (objectType == null) setObjectType(jcvd);
     	// get byte array type from EncryptionSample;
-    	if (byteArray1 == null || byteArray2 == null) setByteArrayType(jcvd);
+    	//if (byteArray1 == null || byteArray2 == null) setByteArrayType(jcvd);
+    	// get EncryptedData type from EncryptionSample
+    	if (encryptedDataType == null) setEncryptedDataType(jcvd);
 		Reference varRef = checker.getAnnotatedReference(varElt);
 		if (inSample) return super.visitVariable(node, p);
 		if (!varRef.getRawAnnotations().contains(checker.CLEAR)
 				&& !varRef.getRawAnnotations().contains(checker.BOT)) {
-			processVariableTree(jcvd);
+			processVariableTree(jcvd, varRef);
 			JCExpression init = jcvd.getInitializer();
 			if (init != null) {
 				Reference initRef = checker.getAnnotatedReference(init);
-				// change type: int -> byte[]
-				processVariableTree(init);
+				// change type: int -> EncryptedData
+				processVariableTree(init, initRef);
 				// process conversion
-				if (shouldConvert(varRef)) {
-					processInit(init, jcvd, initRef);
-				}
+				//if (shouldConvert(varRef)) {
+				processInit(init, jcvd, initRef);
+				//}
 			}
 		}
     	return super.visitVariable(node, p);
@@ -374,15 +385,15 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	return javaType.equals("int") || javaType.equals("java.lang.String");
     }
 
-	private void setByteArrayType(JCVariableDecl jcvd) {
-		JCTree type = jcvd.getType();
-		if (byteArray1 == null && type.toString().equals("byte[]")) {
-			byteArray1 = (JCArrayTypeTree) type;
-		}
-		if (byteArray2 == null && type.toString().equals("byte[][]")) {
-			byteArray2 = (JCArrayTypeTree) type;
-		}
-	}
+//	private void setByteArrayType(JCVariableDecl jcvd) {
+//		JCTree type = jcvd.getType();
+//		if (byteArray1 == null && type.toString().equals("byte[]")) {
+//			byteArray1 = (JCArrayTypeTree) type;
+//		}
+//		if (byteArray2 == null && type.toString().equals("byte[][]")) {
+//			byteArray2 = (JCArrayTypeTree) type;
+//		}
+//	}
 
 	private void setObjectType(JCVariableDecl jcvd) {
 		JCTree eleTypeTree = jcvd.getType();
@@ -393,7 +404,17 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     		}
     	}
 	}
-	
+
+	private void setEncryptedDataType(JCVariableDecl jcvd) {
+		JCTree eleTypeTree = jcvd.getType();
+    	if (eleTypeTree.getTag() == Tag.IDENT) {
+    		JCIdent jci = (JCIdent) eleTypeTree;
+    		if (jci.getName().toString().equals("EncryptedData")) {
+    			encryptedDataType = jci;
+    		}
+    	}
+	}
+
 	private JCExpression findConvertMethod(JCExpression exp, Reference ref, boolean special) {
 		if (!shouldConvert(ref)) return null;
 		if (convertedReferences.containsKey(ref.getIdentifier())) {
@@ -457,7 +478,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	Reference methodRef = checker.getAnnotatedReference(methodElt);
 		Reference returnRef = ((ExecutableReference) methodRef).getReturnRef();
 		if (!returnRef.getRawAnnotations().contains(checker.CLEAR)) {
-			processVariableTree(jcmd);
+			processVariableTree(jcmd, returnRef);
 			returnType = getSimpleEncryptName(returnRef);
 		}
 		return super.visitMethod(node, p);
@@ -912,7 +933,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		JCNewArray newArray = (JCNewArray) node;
 		Reference ref = checker.getAnnotatedReference(newArray);
 		if (!ref.getRawAnnotations().contains(checker.CLEAR)) {
-			processVariableTree(newArray);
+			processVariableTree(newArray, ref);
 		}
 		List<JCExpression> newDims = List.nil();
 		for (JCExpression dim : newArray.getDimensions()) {

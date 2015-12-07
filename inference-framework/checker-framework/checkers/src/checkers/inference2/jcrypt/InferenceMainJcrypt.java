@@ -98,20 +98,6 @@ public class InferenceMainJcrypt extends InferenceMain {
 			warn(checker.getName(), "No constraints generated.");
 			return false;
 		}
-		// output constraints
-		if (DEBUG) {
-			try {
-				PrintWriter pw = new PrintWriter(InferenceMainJcrypt.outputDir
-						+ File.separator + checker.getName() + "-constraints.log");
-                for (Constraint c : checker.getConstraints()) {
-                    pw.println(c.toString());
-                }
-				pw.close();
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 		ConstraintSolver solver;
 		if (itype == InferType.JCRYPT) {
 			solver = new JcryptConstraintSolver((JcryptChecker) checker);
@@ -143,6 +129,20 @@ public class InferenceMainJcrypt extends InferenceMain {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		// output constraints
+		if (DEBUG) {
+			try {
+				PrintWriter pw = new PrintWriter(InferenceMainJcrypt.outputDir
+						+ File.separator + checker.getName() + "-constraints.log");
+                for (Constraint c : checker.getConstraints()) {
+                    pw.println(c.toString());
+                }
+				pw.close();
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		if (!typeErrors.isEmpty()) {
 			for (Constraint c : typeErrors)  {

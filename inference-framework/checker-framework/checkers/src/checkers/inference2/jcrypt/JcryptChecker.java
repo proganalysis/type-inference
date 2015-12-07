@@ -498,7 +498,7 @@ public class JcryptChecker extends InferenceChecker {
 			Reference overriderReturnRef = overriderRef.getReturnRef();
 			Reference overriddenReturnRef = overriddenRef.getReturnRef();
 			addSubtypeConstraint(overriderReturnRef, overriddenReturnRef, pos);
-			addSubtypeConstraint(overriddenReturnRef, overriderReturnRef, pos);
+			//addSubtypeConstraint(overriddenReturnRef, overriderReturnRef, pos);
 		}
 
 		// PARAMETERS:

@@ -17,6 +17,7 @@ import checkers.inference2.jcrypt2.quals.AH;
 import checkers.inference2.jcrypt2.quals.DET;
 import checkers.inference2.jcrypt2.quals.BOT;
 import checkers.inference2.jcrypt.quals.Clear;
+import checkers.inference2.jcrypt.quals.Poly;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
@@ -39,7 +40,7 @@ import com.sun.source.tree.Tree;
 @TypeQualifiers({ RND.class, OPE.class, DET.class, AH.class ,BOT.class })
 public class TransformChecker extends InferenceChecker {
 
-	public AnnotationMirror RND, OPE, DET, AH, CLEAR, BOT;
+	public AnnotationMirror RND, OPE, DET, AH, CLEAR, POLY, BOT;
 
 	private Set<AnnotationMirror> sourceAnnos;
 
@@ -56,6 +57,7 @@ public class TransformChecker extends InferenceChecker {
 		DET = annoFactory.fromClass(DET.class);
 		CLEAR = annoFactory.fromClass(Clear.class);
 		BOT = annoFactory.fromClass(BOT.class);
+		POLY = annoFactory.fromClass(Poly.class);
 
 		sourceAnnos = AnnotationUtils.createAnnotationSet();
 		sourceAnnos.add(RND);

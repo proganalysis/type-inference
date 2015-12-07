@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry excluding="checkers/nullness/NullnessUtils.java" kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/jna.jar"/>
 	<classpathentry kind="lib" path="lib/javaparser.jar"/>
 	<classpathentry kind="lib" path="/Users/yaodong/Documents/Projects/type-inference/trunk/inference-framework/jsr308-langtools/dist/lib/doclets.jar"/>
@@ -7,7 +8,6 @@
 	<classpathentry kind="lib" path="/Users/yaodong/Documents/Projects/type-inference/trunk/inference-framework/jsr308-langtools/dist/lib/javadoc.jar"/>
 	<classpathentry kind="lib" path="/Users/yaodong/Documents/Projects/type-inference/trunk/inference-framework/jsr308-langtools/dist/lib/javah.jar"/>
 	<classpathentry kind="lib" path="/Users/yaodong/Documents/Projects/type-inference/trunk/inference-framework/jsr308-langtools/dist/lib/javap.jar"/>
-	<classpathentry excluding="checkers/nullness/NullnessUtils.java" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="build"/>

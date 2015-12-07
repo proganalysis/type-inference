@@ -49,7 +49,7 @@ public class TransformMain extends InferenceMain {
     
     public static final String outputDir = "infer-output";
     
-    public static String outputDirTrans = "/home/yao/Projects/swift/src/";
+    public static String outputDirTrans = "/Users/yaodong/Documents/Projects/swift/src/";
     
     public static String packageName;
     
@@ -109,20 +109,6 @@ public class TransformMain extends InferenceMain {
 			warn(checker.getName(), "No constraints generated.");
 			return false;
 		}
-		// output constraints
-		if (DEBUG) {
-			try {
-				PrintWriter pw = new PrintWriter(TransformMain.outputDir
-						+ File.separator + checker.getName() + "-constraints.log");
-                for (Constraint c : checker.getConstraints()) {
-                    pw.println(c.toString());
-                }
-				pw.close();
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 		ConstraintSolver solver;
 		if (itype == InferType.JCRYPT2) {
 			solver = new Jcrypt2ConstraintSolver((Jcrypt2Checker) checker);
@@ -150,6 +136,20 @@ public class TransformMain extends InferenceMain {
 		}
 		List<Constraint> typeErrors = extractor.extract();
 		info(checker.getName(), "Finish extracting typing.");
+		// output constraints
+		if (DEBUG) {
+			try {
+				PrintWriter pw = new PrintWriter(TransformMain.outputDir
+						+ File.separator + checker.getName() + "-constraints.log");
+                for (Constraint c : checker.getConstraints()) {
+                    pw.println(c.toString());
+                }
+				pw.close();
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		try {
 			PrintWriter pw = new PrintWriter(TransformMain.outputDir
 					+ File.separator + checker.getName() + "-result.csv");

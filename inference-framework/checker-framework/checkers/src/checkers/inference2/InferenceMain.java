@@ -110,7 +110,18 @@ public class InferenceMain {
 			warn(checker.getName(), "No constraints generated.");
 			return false;
 		}
-		
+		ConstraintSolver solver = new SetbasedSolver(checker);
+        Set<Constraint> setErrors = solver.solve();
+		if (!setErrors.isEmpty()) {
+			for (Constraint c : setErrors) 
+				System.out.println(c);
+			info(checker.getName(), setErrors.size() + " error(s) in the set-based solution.");
+			//return false;
+		}
+		info(checker.getName(), "Extracting a concete typing...");
+		TypingExtractor extractor = new MaximalTypingExtractor(checker);
+		List<Constraint> typeErrors = extractor.extract();
+		info(checker.getName(), "Finish extracting typing.");
 		// FIXME: output constraints
 		if (DEBUG) {
 			try {
@@ -125,18 +136,6 @@ public class InferenceMain {
 				e.printStackTrace();
 			}
 		}
-		ConstraintSolver solver = new SetbasedSolver(checker);
-        Set<Constraint> setErrors = solver.solve();
-		if (!setErrors.isEmpty()) {
-			for (Constraint c : setErrors) 
-				System.out.println(c);
-			info(checker.getName(), setErrors.size() + " error(s) in the set-based solution.");
-			//return false;
-		}
-		info(checker.getName(), "Extracting a concete typing...");
-		TypingExtractor extractor = new MaximalTypingExtractor(checker);
-		List<Constraint> typeErrors = extractor.extract();
-		info(checker.getName(), "Finish extracting typing.");
 		try {
 			PrintWriter pw = new PrintWriter(InferenceMain.outputDir
 					+ File.separator + checker.getName() + "-result.csv");
