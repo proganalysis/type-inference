@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import encryption.EncryptedData.DataKind;
-import encryption.EncryptedData.EncryptKind;
 
 public class OrderPreserving implements Encryption {
 
@@ -52,7 +51,7 @@ public class OrderPreserving implements Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, EncryptKind.OPE, new BigInteger(res.getBytes()));
+		return new EncryptedData(DataKind.INT, "OPE", new BigInteger(res.getBytes()));
 	}
 
 	@Override
@@ -67,7 +66,7 @@ public class OrderPreserving implements Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, EncryptKind.OPE, new BigInteger(s.getBytes()));
+		return new EncryptedData(DataKind.INT, "OPE", new BigInteger(s.getBytes()));
 	}
 
 }

@@ -2,7 +2,6 @@ package encryption;
 
 import java.math.BigInteger;
 import encryption.EncryptedData.DataKind;
-import encryption.EncryptedData.EncryptKind;
 import thep.paillier.EncryptedInteger;
 import thep.paillier.exceptions.BigIntegerClassNotValid;
 import thep.paillier.exceptions.PublicKeysNotEqualException;
@@ -62,7 +61,7 @@ public class Computation {
 	}
 
 	public static EncryptedData multiply(EncryptedData b1, EncryptedData b2) {
-		return new EncryptedData(DataKind.INT, EncryptKind.DET, b1.getValue().multiply(b2.getValue()));
+		return new EncryptedData(DataKind.INT, "DET", b1.getValue().multiply(b2.getValue()));
 	}
 
 	public static EncryptedData multiply(EncryptedData b1, int b2) {
@@ -73,7 +72,7 @@ public class Computation {
 		} catch (BigIntegerClassNotValid e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, EncryptKind.AH, e1.getCipherVal());
+		return new EncryptedData(DataKind.INT, "AH", e1.getCipherVal());
 	}
 
 	public static EncryptedData add(EncryptedData b1, EncryptedData b2) {
@@ -87,7 +86,7 @@ public class Computation {
 			} catch (PublicKeysNotEqualException e) {
 				e.printStackTrace();
 			}
-			return new EncryptedData(DataKind.INT, EncryptKind.AH, e1.getCipherVal());
+			return new EncryptedData(DataKind.INT, "AH", e1.getCipherVal());
 		} else {
 			BigInteger res = new BigInteger(b1.getValue().toString() + b2.getValue().toString());
 			return new EncryptedData(DataKind.STRING, b1.getEncryptKind(), res);
@@ -107,7 +106,7 @@ public class Computation {
 		} catch (BigIntegerClassNotValid e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, EncryptKind.AH, e1.getCipherVal());
+		return new EncryptedData(DataKind.INT, "AH", e1.getCipherVal());
 	}
 
 }

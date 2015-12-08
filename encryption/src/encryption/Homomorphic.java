@@ -3,7 +3,6 @@ package encryption;
 import java.math.BigInteger;
 
 import encryption.EncryptedData.DataKind;
-import encryption.EncryptedData.EncryptKind;
 import thep.paillier.EncryptedInteger;
 import thep.paillier.PrivateKey;
 import thep.paillier.PublicKey;
@@ -35,7 +34,7 @@ public class Homomorphic implements Encryption {
 		} catch (BigIntegerClassNotValid e1) {
 			e1.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, EncryptKind.AH, ei.getCipherVal());
+		return new EncryptedData(DataKind.INT, "AH", ei.getCipherVal());
 	}
 	
 	@Override

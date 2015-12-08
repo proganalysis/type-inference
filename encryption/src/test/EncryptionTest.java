@@ -28,8 +28,14 @@ public class EncryptionTest extends TestCase {
 		e = new Deterministic();
 		assertTrue(Computation.equals(cts1, cts2));
 		cts3 = e.encrypt(pts3);
+		cti4 = e.encrypt(pti4);
 		assertFalse(Computation.equals(cts1, cts3));
+		// 1 * 1000
 		assertEquals(pti1*pti3, e.decrypt(Computation.multiply(cti1, cti3)));
+		// -1 * 1000
+		assertEquals(pti4*pti3, e.decrypt(Computation.multiply(cti4, cti3)));
+		// -1 * (-1)
+		assertEquals(pti4*pti4, e.decrypt(Computation.multiply(cti4, cti4)));
 	}
 	
 	public void testAH() {

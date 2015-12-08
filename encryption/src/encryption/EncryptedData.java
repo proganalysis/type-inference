@@ -1,26 +1,22 @@
 package encryption;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
-public class EncryptedData {
+public class EncryptedData implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	
 	public enum DataKind {
 		INT,
 		STRING
 	}
 	
-	public enum EncryptKind {
-		RND,
-		AH,
-		OPE,
-		DET
-	}
-	
 	private DataKind dataKind;
-	private EncryptKind encryptKind;
+	private String encryptKind;
 	private BigInteger value;
 	
-	public EncryptedData(DataKind dataKind, EncryptKind encryptKind, BigInteger value) {
+	public EncryptedData(DataKind dataKind, String encryptKind, BigInteger value) {
 		this.dataKind = dataKind;
 		this.encryptKind = encryptKind;
 		this.value = value;
@@ -37,10 +33,10 @@ public class EncryptedData {
 	public void setDataKind(DataKind dataKind) {
 		this.dataKind = dataKind;
 	}
-	public EncryptKind getEncryptKind() {
+	public String getEncryptKind() {
 		return encryptKind;
 	}
-	public void setEncryptKind(EncryptKind encryptKind) {
+	public void setEncryptKind(String encryptKind) {
 		this.encryptKind = encryptKind;
 	}
 	public BigInteger getValue() {
@@ -49,5 +45,5 @@ public class EncryptedData {
 	public void setValue(BigInteger value) {
 		this.value = value;
 	}
-	
+
 }

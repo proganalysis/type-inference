@@ -14,7 +14,6 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
 
 import encryption.EncryptedData.DataKind;
-import encryption.EncryptedData.EncryptKind;
 
 public class Random implements Encryption {
 
@@ -52,8 +51,7 @@ public class Random implements Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		EncryptedData encrypted = new EncryptedData(DataKind.STRING, EncryptKind.RND,
-				new BigInteger(ctext));
+		EncryptedData encrypted = new EncryptedData(DataKind.STRING, "RND", new BigInteger(ctext));
 		initIVsAES.put(encrypted, cipherAES.getIV());
 		return encrypted;
 	}
@@ -66,8 +64,7 @@ public class Random implements Encryption {
 		} catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
 		}
-		EncryptedData encrypted = new EncryptedData(DataKind.INT, EncryptKind.RND,
-				new BigInteger(ctext));
+		EncryptedData encrypted = new EncryptedData(DataKind.INT, "RND", new BigInteger(ctext));
 		initIVsBF.put(encrypted, cipherBF.getIV());
 		return encrypted;
 	}
@@ -75,10 +72,10 @@ public class Random implements Encryption {
 	@Override
 	public Object decrypt(EncryptedData ctext) {
 		byte[] plainText = null;
-		if (ctext.getDataKind() == DataKind.INT) { // blowfish: 64-bit block size
+		if (ctext.getDataKind() == DataKind.INT) { // blowfish: 64-bit block
+													// size
 			try {
-				cipherBF.init(Cipher.DECRYPT_MODE, keyBF,
-						new IvParameterSpec(initIVsBF.get(ctext)));
+				cipherBF.init(Cipher.DECRYPT_MODE, keyBF, new IvParameterSpec(initIVsBF.get(ctext)));
 				plainText = cipherBF.doFinal(ctext.getValue().toByteArray());
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -87,8 +84,7 @@ public class Random implements Encryption {
 			return wrapped.getInt();
 		} else { // AES: 128-bit block size
 			try {
-				cipherAES.init(Cipher.DECRYPT_MODE, keyAES,
-						new IvParameterSpec(initIVsAES.get(ctext)));
+				cipherAES.init(Cipher.DECRYPT_MODE, keyAES, new IvParameterSpec(initIVsAES.get(ctext)));
 				plainText = cipherAES.doFinal(ctext.getValue().toByteArray());
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -4,7 +4,6 @@ import java.security.SecureRandom;
 import java.math.BigInteger;
 
 import encryption.EncryptedData.DataKind;
-import encryption.EncryptedData.EncryptKind;
 
 public class Deterministic implements Encryption {
 
@@ -21,12 +20,12 @@ public class Deterministic implements Encryption {
 		p = BigInteger.probablePrime(N / 2, random);
 		q = BigInteger.probablePrime(N / 2, random);
 	}
-	
+
 	public Deterministic() {
 		BigInteger phi = (p.subtract(one)).multiply(q.subtract(one));
 		modulus = p.multiply(q);
 		// common value in practice = 2^16 + 1
-		publicKey = new BigInteger("65537"); 
+		publicKey = new BigInteger("65537");
 		privateKey = publicKey.modInverse(phi);
 	}
 
@@ -35,15 +34,14 @@ public class Deterministic implements Encryption {
 		BigInteger message = BigInteger.valueOf(ptext);
 		BigInteger encrypted = message.signum() == 1 ? message.modPow(publicKey, modulus)
 				: message.negate().modPow(publicKey, modulus).negate();
-		return new EncryptedData(DataKind.INT, EncryptKind.DET, encrypted);
+		return new EncryptedData(DataKind.INT, "DET", encrypted);
 	}
 
 	@Override
 	public Object decrypt(EncryptedData ctext) {
 		BigInteger encrypted = ctext.getValue();
 		if (ctext.getDataKind() == DataKind.INT) {
-			return encrypted.signum() == 1 ?
-					encrypted.modPow(privateKey, modulus).intValue()
+			return encrypted.signum() == 1 ? encrypted.modPow(privateKey, modulus).intValue()
 					: -encrypted.negate().modPow(privateKey, modulus).intValue();
 		} else {
 			return new String(encrypted.modPow(privateKey, modulus).toByteArray());
@@ -53,8 +51,7 @@ public class Deterministic implements Encryption {
 	@Override
 	public EncryptedData encrypt(String ptext) {
 		BigInteger message = new BigInteger(ptext.getBytes());
-		return new EncryptedData(DataKind.STRING, EncryptKind.DET,
-				message.modPow(publicKey, modulus));
+		return new EncryptedData(DataKind.STRING, "DET", message.modPow(publicKey, modulus));
 	}
 
 }
