@@ -7,10 +7,10 @@ import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.Tag;
 
 import checkers.inference2.InferenceChecker;
-import checkers.inference2.InferenceVisitor;
 import checkers.inference2.Reference;
+import checkers.inference2.jcrypt.JcryptInferenceVisitor;
 
-public class Jcrypt2InferenceVisitor extends InferenceVisitor {
+public class Jcrypt2InferenceVisitor extends JcryptInferenceVisitor {
 	
 	//public static Map<ExpressionTree, Reference> memberSelectRefs = new HashMap<>();
 	
@@ -19,14 +19,6 @@ public class Jcrypt2InferenceVisitor extends InferenceVisitor {
 		super(checker, root);
 	}
 		
-	@Override
-    public Void visitBinary(BinaryTree node, Void p) {
-		if (!visited.contains(node)) {
-			processBinaryTree(null, node);
-		}
-		return super.visitBinary(node, p);
-	}
-	
 	@Override
 	public void processBinaryTree(Reference lhsRef, BinaryTree bTree) {
 		Reference ref = checker.getAnnotatedReference(bTree);

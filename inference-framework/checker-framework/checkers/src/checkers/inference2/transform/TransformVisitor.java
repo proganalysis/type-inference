@@ -147,12 +147,6 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	return jci;
     }
     
-    private JCExpression getEncryptedDataType(int pos) {
-    	JCIdent jci = maker.Ident(((JCIdent) encryptedDataType).getName());
-    	jci.setPos(pos);
-    	return jci;
-    }
-
     private void processVariableTree(JCTree jctree, Reference ref) {
     	JCTree eleTypeTree;
     	Tag tag = jctree.getTag();
@@ -260,7 +254,9 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 
 	private JCExpression getTypeCast(ExpressionTree arg) {
 		JCExpression argJ = (JCExpression) arg;
-		if (arg instanceof JCLiteral) return argJ;
+		if (arg instanceof JCLiteral || arg.toString().startsWith("Conversion")
+				|| arg.toString().startsWith("Computation")
+				|| checker.containsAnno(checker.getAnnotatedReference(arg), checker.CLEAR)) return argJ;
 		if (arg instanceof JCTypeCast) {
 			argJ = ((JCTypeCast) arg).getExpression();
 		}
