@@ -97,7 +97,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	private static boolean inSample;
 	
 //	private static JCArrayTypeTree byteArray1, byteArray2;
-	private static JCExpression objectType, encryptedDataType;
+	private static JCExpression objectType;
 	
 	private static List<JCTree> imports	= List.nil();
 
@@ -221,19 +221,25 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			break;
 		}
 	}
+	
+	private JCExpression removeTypeCast(ExpressionTree arg) {
+		if (arg instanceof JCTypeCast) return ((JCTypeCast) arg).getExpression();
+		else return (JCExpression) arg;
+	}
     
 	private JCMethodInvocation getConvertMethod(ExpressionTree arg, String[] con, boolean special) {
 		JCMethodInvocation fn;
 		// from, to
 		JCExpression fromTree = maker.Literal(con[0]);
 		JCExpression toTree = maker.Literal(con[1]);
-		// add type cast: from Object to byte[]
-		JCExpression argJ = getTypeCast(arg);
+//		// add type cast: from Object to byte[]
+//		JCExpression argJ = getTypeCast(arg);
+		JCExpression argJ = removeTypeCast(arg);
 		List<JCExpression> args;
 		if (con[0].equals("CLEAR") || con[0].equals("BOT")) {
 			// Encryption.encrypt(arg, to)
 			fn = special ? encryptionMethods.get("encryptSpe") : encryptionMethods.get("encrypt");
-			args = List.of((JCExpression) arg, toTree);
+			args = List.of(argJ, toTree);
 		} else if (con[1].equals("CLEAR")) {
 			// Encryption.decrypt(arg, from)
 			fn = encryptionMethods.get("decrypt");
@@ -252,32 +258,34 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		return maker.Apply(null, meth, args);
 	}
 
-	private JCExpression getTypeCast(ExpressionTree arg) {
-		JCExpression argJ = (JCExpression) arg;
-		if (arg instanceof JCLiteral || arg.toString().startsWith("Conversion")
-				|| arg.toString().startsWith("Computation")
-				|| checker.containsAnno(checker.getAnnotatedReference(arg), checker.CLEAR)) return argJ;
-		if (arg instanceof JCTypeCast) {
-			argJ = ((JCTypeCast) arg).getExpression();
-		}
-		if (argJ.type != null) {
-			argJ = maker.TypeCast(encryptedDataType, argJ);
-		}
-//		if (argJ.type != null && argJ.type.toString().equals("java.lang.String")) {
-//			argJ = maker.TypeCast(byteArray2, argJ);
+//	private JCExpression getTypeCast(ExpressionTree arg) {
+//		JCExpression argJ = (JCExpression) arg;
+//		if (arg instanceof JCLiteral || arg.toString().startsWith("Conversion")
+//				|| arg.toString().startsWith("Computation")
+//				|| checker.containsAnno(checker.getAnnotatedReference(arg), checker.CLEAR)) return argJ;
+//		if (arg instanceof JCTypeCast) {
+//			argJ = ((JCTypeCast) arg).getExpression();
 //		}
-//		if (argJ.type != null && argJ.type.toString().equals("int")) {
-//			argJ = maker.TypeCast(byteArray1, argJ);
+//		if (argJ.type != null) {
+//			argJ = maker.TypeCast(encryptedDataType, argJ);
 //		}
-		return argJ;
-	}
+////		if (argJ.type != null && argJ.type.toString().equals("java.lang.String")) {
+////			argJ = maker.TypeCast(byteArray2, argJ);
+////		}
+////		if (argJ.type != null && argJ.type.toString().equals("int")) {
+////			argJ = maker.TypeCast(byteArray1, argJ);
+////		}
+//		return argJ;
+//	}
 	
 	private JCMethodInvocation getComputeMethod(ExpressionTree left, ExpressionTree right,
 			Tag tag) {
 		// a + b -> Computation.add(a, b)
 		JCMethodInvocation fn;
-		JCExpression leftJ = getTypeCast(left);
-		JCExpression rightJ = getTypeCast(right);
+//		JCExpression leftJ = getTypeCast(left);
+//		JCExpression rightJ = getTypeCast(right);
+		JCExpression leftJ = removeTypeCast(left);
+		JCExpression rightJ = removeTypeCast(right);
 		// a, b
 		List<JCExpression> args = List.of(leftJ, rightJ);
 		// add, compareTo, or equals
@@ -294,22 +302,22 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		case MUL_ASG: // *=
 			fn = encryptionMethods.get("multiply");
 			break;
-		case DIV: // /
-		case DIV_ASG: // /=
-			fn = encryptionMethods.get("divide");
-			break;
-		case MOD: // %
-		case MOD_ASG: // %=
-			fn = encryptionMethods.get("mod");
-			break;
-		case SL: // <<
-		case SL_ASG: // <<=
-			fn = encryptionMethods.get("shiftLeft");
-			break;
-		case SR: // >>
-		case SR_ASG: // >>=
-			fn = encryptionMethods.get("shiftRight");
-			break;
+//		case DIV: // /
+//		case DIV_ASG: // /=
+//			fn = encryptionMethods.get("divide");
+//			break;
+//		case MOD: // %
+//		case MOD_ASG: // %=
+//			fn = encryptionMethods.get("mod");
+//			break;
+//		case SL: // <<
+//		case SL_ASG: // <<=
+//			fn = encryptionMethods.get("shiftLeft");
+//			break;
+//		case SR: // >>
+//		case SR_ASG: // >>=
+//			fn = encryptionMethods.get("shiftRight");
+//			break;
 		case EQ: // ==
 			fn = encryptionMethods.get("equals");
 			break;
@@ -354,8 +362,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	if (objectType == null) setObjectType(jcvd);
     	// get byte array type from EncryptionSample;
     	//if (byteArray1 == null || byteArray2 == null) setByteArrayType(jcvd);
-    	// get EncryptedData type from EncryptionSample
-    	if (encryptedDataType == null) setEncryptedDataType(jcvd);
+//    	// get EncryptedData type from EncryptionSample
+//    	if (encryptedDataType == null) setEncryptedDataType(jcvd);
 		Reference varRef = checker.getAnnotatedReference(varElt);
 		if (inSample) return super.visitVariable(node, p);
 		if (!varRef.getRawAnnotations().contains(checker.CLEAR)
@@ -401,15 +409,15 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	}
 	}
 
-	private void setEncryptedDataType(JCVariableDecl jcvd) {
-		JCTree eleTypeTree = jcvd.getType();
-    	if (eleTypeTree.getTag() == Tag.IDENT) {
-    		JCIdent jci = (JCIdent) eleTypeTree;
-    		if (jci.getName().toString().equals("EncryptedData")) {
-    			encryptedDataType = jci;
-    		}
-    	}
-	}
+//	private void setEncryptedDataType(JCVariableDecl jcvd) {
+//		JCTree eleTypeTree = jcvd.getType();
+//    	if (eleTypeTree.getTag() == Tag.IDENT) {
+//    		JCIdent jci = (JCIdent) eleTypeTree;
+//    		if (jci.getName().toString().equals("EncryptedData")) {
+//    			encryptedDataType = jci;
+//    		}
+//    	}
+//	}
 
 	private JCExpression findConvertMethod(JCExpression exp, Reference ref, boolean special) {
 		if (!shouldConvert(ref)) return null;
@@ -494,18 +502,18 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     	case "Computation.multiply":
     		encryptionMethods.put("multiply", jcmi);
     		break;
-    	case "Computation.divide":
-    		encryptionMethods.put("divide", jcmi);
-    		break;
-    	case "Computation.mod":
-    		encryptionMethods.put("mod", jcmi);
-    		break;
-    	case "Computation.shiftLeft":
-    		encryptionMethods.put("shiftLeft", jcmi);
-    		break;
-    	case "Computation.shiftRight":
-    		encryptionMethods.put("shiftRight", jcmi);
-    		break;
+//    	case "Computation.divide":
+//    		encryptionMethods.put("divide", jcmi);
+//    		break;
+//    	case "Computation.mod":
+//    		encryptionMethods.put("mod", jcmi);
+//    		break;
+//    	case "Computation.shiftLeft":
+//    		encryptionMethods.put("shiftLeft", jcmi);
+//    		break;
+//    	case "Computation.shiftRight":
+//    		encryptionMethods.put("shiftRight", jcmi);
+//    		break;
     	case "Computation.lessThan":
     		encryptionMethods.put("lessThan", jcmi);
     		break;
@@ -592,10 +600,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 		} else { // regular method call
 			for (int i = 0; i < args.length; i++) {
-				JCExpression arg = (JCExpression) args[i];
-				if (arg instanceof JCTypeCast) {
-					arg = ((JCTypeCast) arg).getExpression();
-				}
+				JCExpression arg = removeTypeCast(args[i]);
 				Reference argRef = checker.getAnnotatedReferences()
 						.get(checker.getIdentifier(arg));
 				JCExpression convertMethod = findConvertMethod((JCExpression) args[i], argRef, false);
@@ -720,10 +725,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			// String + int: should use convertSpe() method.
 			boolean con = isLeft ? operator.equals("+(int,java.lang.String)") :
 				operator.equals("+(java.lang.String,int)");
-			ExpressionTree exp = operand;
-			if (operand instanceof JCTypeCast) {
-				exp = ((JCTypeCast) operand).getExpression();
-			}
+			ExpressionTree exp = removeTypeCast(operand);
 			String id = checker.getIdentifier(exp);
 			Reference ref = checker.getAnnotatedReferences().get(id);
 			if (ref == null) ref = checker.getAnnotatedReference(exp);
@@ -933,9 +935,7 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		}
 		List<JCExpression> newDims = List.nil();
 		for (JCExpression dim : newArray.getDimensions()) {
-			if (dim instanceof JCTypeCast) {
-				dim = ((JCTypeCast) dim).getExpression();
-			}
+			dim = removeTypeCast(dim);
 			Reference dimRef = checker.getAnnotatedReference(dim);
 			if (!dimRef.getRawAnnotations().contains(checker.CLEAR)) {
 				newDims = newDims.append(getConvertMethod(dim,
