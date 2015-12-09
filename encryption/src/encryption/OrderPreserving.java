@@ -2,18 +2,15 @@ package encryption;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.util.ArrayList;
-import encryption.EncryptedData.DataKind;
 
 public class OrderPreserving implements Encryption {
 
 	@Override
-	public Object decrypt(EncryptedData ctext) {
+	public Object decrypt(Object ctext) {
 		ArrayList<String> array = new ArrayList<>();
 		try {
-			ProcessBuilder pb = new ProcessBuilder("python",
-					"lib/ope_decrypt.py", new String(ctext.getValue().toByteArray()));
+			ProcessBuilder pb = new ProcessBuilder("python", "lib/ope_decrypt.py", ctext.toString());
 			Process p = pb.start();
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -27,8 +24,8 @@ public class OrderPreserving implements Encryption {
 		if (array.size() == 1) {
 			return Integer.parseInt(array.get(0));
 		} else {
-			char[] charArray = new char[array.size()];
-			for (int i = 0; i < array.size(); i++) {
+			char[] charArray = new char[array.size()-1];
+			for (int i = 0; i < array.size() - 1; i++) {
 				charArray[i] = (char) Integer.parseInt(array.get(i));
 			}
 			return new String(charArray);
@@ -36,11 +33,10 @@ public class OrderPreserving implements Encryption {
 	}
 
 	@Override
-	public EncryptedData encrypt(String ptext) {
+	public String encrypt(String ptext) {
 		String res = "";
 		try {
-			ProcessBuilder pb = new ProcessBuilder("python",
-					"lib/ope_encrypt_String.py", ptext);
+			ProcessBuilder pb = new ProcessBuilder("python", "lib/ope_encrypt_String.py", ptext);
 			Process p = pb.start();
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -51,11 +47,11 @@ public class OrderPreserving implements Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, "OPE", new BigInteger(res.getBytes()));
+		return res;
 	}
 
 	@Override
-	public EncryptedData encrypt(int ptext) {
+	public String encrypt(int ptext) {
 		String s = null;
 		try {
 			ProcessBuilder pb = new ProcessBuilder("python", "lib/ope_encrypt.py", "" + ptext);
@@ -66,7 +62,7 @@ public class OrderPreserving implements Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, "OPE", new BigInteger(s.getBytes()));
+		return s;
 	}
 
 }

@@ -1,12 +1,14 @@
 package test;
 
+import java.util.Arrays;
+
 import encryption.*;
 import junit.framework.TestCase;
 
 public class EncryptionTest extends TestCase {
 
-	private static final int pti1 = 1, pti2 = 1, pti3 = 1000, pti4 = -1;
-	private EncryptedData cti1, cti2, cti3, cti4, cts1, cts2, cts3;
+	private static final int pti1 = 2, pti2 = 2, pti3 = 1000, pti4 = -1;
+	private Object cti1, cti2, cti3, cti4, cts1, cts2, cts3;
 	private static final String pts1 = "Hello", pts2 = "Hello", pts3 = "Jello";
 	
 	public void testDET() {
@@ -19,7 +21,7 @@ public class EncryptionTest extends TestCase {
 		assertTrue(pti3 == (int) e.decrypt(cti3));
 		cts1 = e.encrypt(pts1);
 		cts2 = e.encrypt(pts2);
-		assertTrue(cts1.getValue().equals(cts2.getValue()));
+		assertTrue(Arrays.equals((byte[]) cts1, (byte[]) cts2));
 		e = new Deterministic();
 		assertTrue(pti1 == (int) e.decrypt(cti1));
 		assertTrue(pts1.equals(e.decrypt(cts1)));
@@ -82,7 +84,9 @@ public class EncryptionTest extends TestCase {
 		assertTrue(Computation.greaterThan(cti3, cti4));
 		assertFalse(Computation.lessThan(cti3, cti1));
 		assertFalse(Computation.greaterThan(cti1, cti3));
-		assertTrue(Computation.lessThan(cts1, cts3));
+		assertTrue(Computation.compareTo(cts1, cts3) < 0);
+		assertTrue("h".equals(e.decrypt(e.encrypt("h"))));
+		assertTrue(Computation.compareTo(e.encrypt("h"), e.encrypt("he")) < 0);
 	}
 	
 	public void testRND() {
@@ -90,10 +94,10 @@ public class EncryptionTest extends TestCase {
 		e = new Random();
 		cti1 = e.encrypt(pti1);
 		cti2 = e.encrypt(pti2);
-		assertFalse(cti1.getValue().equals(cti2.getValue()));
+		assertFalse(Arrays.equals((byte[]) cti1, (byte[]) cti2));
 		cts1 = e.encrypt(pts1);
 		cts2 = e.encrypt(pts2);
-		assertFalse(cts1.getValue().equals(cts2.getValue()));
+		assertFalse(Arrays.equals((byte[]) cts1, (byte[]) cts2));
 		e = new Random();
 		assertTrue(pti1 == (int) e.decrypt(cti1));
 		assertTrue(pts1.equals(e.decrypt(cts1)));

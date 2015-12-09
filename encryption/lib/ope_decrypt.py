@@ -6,5 +6,6 @@ input = sys.argv[1]
 if " " in input:
 	for i in input.split():
 		print cipher.decrypt(int(i))
+	print 0
 else:
 	print cipher.decrypt(int(input))

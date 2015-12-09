@@ -1,26 +1,20 @@
 package encryption;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.security.InvalidKeyException;
 import java.security.Key;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
-
-import encryption.EncryptedData.DataKind;
 
 public class Random implements Encryption {
 
 	private static final Key keyAES, keyBF; // AES and blowfish
 	private Cipher cipherAES, cipherBF;
-	private static Map<EncryptedData, byte[]> initIVsAES = new HashMap<>();
-	private static Map<EncryptedData, byte[]> initIVsBF = new HashMap<>();
+	private static Map<byte[], byte[]> initIVsAES = new HashMap<>();
+	private static Map<byte[], byte[]> initIVsBF = new HashMap<>();
 
 	static {
 		KeyGenerator generatorAES = null, generatorBF = null;
@@ -43,7 +37,7 @@ public class Random implements Encryption {
 		}
 	}
 
-	public EncryptedData encrypt(String ptext) {
+	public byte[] encrypt(String ptext) {
 		byte[] ctext = null;
 		try {
 			cipherAES.init(Cipher.ENCRYPT_MODE, keyAES);
@@ -51,32 +45,30 @@ public class Random implements Encryption {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		EncryptedData encrypted = new EncryptedData(DataKind.STRING, "RND", new BigInteger(ctext));
-		initIVsAES.put(encrypted, cipherAES.getIV());
-		return encrypted;
+		initIVsAES.put(ctext, cipherAES.getIV());
+		return ctext;
 	}
 
-	public EncryptedData encrypt(int ptext) {
+	public byte[] encrypt(int ptext) {
 		byte[] ctext = null;
 		try {
 			cipherBF.init(Cipher.ENCRYPT_MODE, keyBF);
 			ctext = cipherBF.doFinal(ByteBuffer.allocate(4).putInt(ptext).array());
-		} catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		EncryptedData encrypted = new EncryptedData(DataKind.INT, "RND", new BigInteger(ctext));
-		initIVsBF.put(encrypted, cipherBF.getIV());
-		return encrypted;
+		initIVsBF.put(ctext, cipherBF.getIV());
+		return ctext;
 	}
 
 	@Override
-	public Object decrypt(EncryptedData ctext) {
+	public Object decrypt(Object ctext) {
 		byte[] plainText = null;
-		if (ctext.getDataKind() == DataKind.INT) { // blowfish: 64-bit block
-													// size
+		byte[] ciphertext = (byte[]) ctext;
+		if (ciphertext.length == 8) { // blowfish: 64-bit block size
 			try {
 				cipherBF.init(Cipher.DECRYPT_MODE, keyBF, new IvParameterSpec(initIVsBF.get(ctext)));
-				plainText = cipherBF.doFinal(ctext.getValue().toByteArray());
+				plainText = cipherBF.doFinal(ciphertext);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -85,7 +77,7 @@ public class Random implements Encryption {
 		} else { // AES: 128-bit block size
 			try {
 				cipherAES.init(Cipher.DECRYPT_MODE, keyAES, new IvParameterSpec(initIVsAES.get(ctext)));
-				plainText = cipherAES.doFinal(ctext.getValue().toByteArray());
+				plainText = cipherAES.doFinal(ciphertext);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

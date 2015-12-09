@@ -2,7 +2,6 @@ package encryption;
 
 import java.math.BigInteger;
 
-import encryption.EncryptedData.DataKind;
 import thep.paillier.EncryptedInteger;
 import thep.paillier.PrivateKey;
 import thep.paillier.PublicKey;
@@ -22,7 +21,7 @@ public class Homomorphic implements Encryption {
 	}
 		
 	@Override
-	public EncryptedData encrypt(int ptext) {
+	public BigInteger encrypt(int ptext) {
 		try {
 			ei.set(BigInteger.valueOf(Math.abs(ptext)));
 			if (ptext < 0) {
@@ -34,12 +33,12 @@ public class Homomorphic implements Encryption {
 		} catch (BigIntegerClassNotValid e1) {
 			e1.printStackTrace();
 		}
-		return new EncryptedData(DataKind.INT, "AH", ei.getCipherVal());
+		return ei.getCipherVal();
 	}
 	
 	@Override
-	public Object decrypt(EncryptedData ctext) {
-		ei.setCipherVal(ctext.getValue());
+	public Object decrypt(Object ctext) {
+		ei.setCipherVal((BigInteger) ctext);
 		BigInteger ptext = null;
 		try {
 			ptext = ei.decrypt(priv);
@@ -53,7 +52,7 @@ public class Homomorphic implements Encryption {
 	}
 
 	@Override
-	public EncryptedData encrypt(String ptext) {
+	public Object encrypt(String ptext) {
 		return null;
 	}
 

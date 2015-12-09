@@ -7,28 +7,28 @@ public class Conversion {
 	public static Encryption ah = new Homomorphic();
 	public static Encryption det = new Deterministic();
 
-	public static EncryptedData encrypt(int ptext, String to) {
+	public static Object encrypt(int ptext, String to) {
 		Encryption toType = createEncryption(to);
-		EncryptedData e = toType.encrypt(ptext);
+		Object e = toType.encrypt(ptext);
 		return e;
 	}
 	
-	public static EncryptedData encryptSpe(int ptext, String to) {
+	public static Object encryptSpe(int ptext, String to) {
 		String s = Integer.toString(ptext);
 		return createEncryption(to).encrypt(s);
 	}
 	
-	public static EncryptedData encrypt(String ptext, String to) {
+	public static Object encrypt(String ptext, String to) {
 		Encryption toType = createEncryption(to);
 		return toType.encrypt(ptext);
 	}
 
-	public static Object decrypt(EncryptedData ctext, String from) {
+	public static Object decrypt(Object ctext, String from) {
 		Encryption fromType = createEncryption(from);
 		return fromType.decrypt(ctext);
 	}
 	
-	public static EncryptedData convert(EncryptedData ctext, String from, String to) {
+	public static Object convert(Object ctext, String from, String to) {
 		Object ptext = decrypt(ctext, from);
 		if (ptext instanceof String) {
 			return encrypt((String) ptext, to);
@@ -37,7 +37,7 @@ public class Conversion {
 		}
 	}
 	
-	public static EncryptedData convertSpe(EncryptedData ctext, String from, String to) {
+	public static Object convertSpe(Object ctext, String from, String to) {
 		int ptext = (int) decrypt(ctext, from);
 		String s = String.valueOf(ptext);
 		return encrypt(s, to);

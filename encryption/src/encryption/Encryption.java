@@ -2,8 +2,8 @@ package encryption;
 
 public interface Encryption {
 	
-	public EncryptedData encrypt(int ptext);
-	public EncryptedData encrypt(String ptext);
-	public Object decrypt(EncryptedData ctext);
+	public Object encrypt(int ptext);
+	public Object encrypt(String ptext);
+	public Object decrypt(Object ctext);
 	
 }
