@@ -21,7 +21,7 @@ import checkers.inference2.InferenceChecker;
 import checkers.inference2.MaximalTypingExtractor;
 import checkers.inference2.Reference;
 import checkers.inference2.ConstraintSolver.FailureStatus;
-import checkers.inference2.Reference.RefKind;
+import checkers.inference2.Reference.*;
 import checkers.util.AnnotationUtils;
 
 /**
@@ -78,6 +78,8 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 				"Verifying the concrete typing...");
 		Set<Constraint> constraints = checker.getConstraints();
 		List<Constraint> errors = new ArrayList<>();
+		// avoid AH -> RND for print();
+		updateConstraints(constraints);
 		for (Constraint c : constraints) {
 			Reference left = c.getLeft();
 			Reference right = c.getRight();
@@ -93,6 +95,8 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 				}
 			}
 			if (!c.toString().contains("inference-tests/jcrypt/EncryptionSample.java")) {
+				leftAnnos = left.getAnnotations(checker);
+				rightAnnos = right.getAnnotations(checker);
 				conversionCheck(c, left, right, leftAnnos, rightAnnos);
 				typeCastCheck(c, left, right, rightAnnos);
 			}
@@ -104,6 +108,36 @@ public class Jcrypt2TypingExtractor extends MaximalTypingExtractor {
 				"Finished extracting type conversions. " + conversions.size()
 						+ " conversion(s)");
 		return errors;
+	}
+
+	private void updateConstraints(Set<Constraint> constraints) {
+		// avoid AH -> RND for print();
+		boolean hasUpdate;
+		do {
+			hasUpdate = false;
+			for (Constraint c : constraints) {
+				Reference left = c.getLeft();
+				Reference right = c.getRight();
+				Set<AnnotationMirror> leftAnnos = left.getAnnotations(checker);
+				Set<AnnotationMirror> rightAnnos = right.getAnnotations(checker);
+				if (!leftAnnos.isEmpty() && !rightAnnos.isEmpty()) {
+					AnnotationMirror leftAnno = leftAnnos.iterator().next();
+					AnnotationMirror rightAnno = rightAnnos.iterator().next();
+					if (getSimpleName(rightAnno.toString()).equals("RND")
+							&& leftAnno != ((Jcrypt2Checker) checker).RND) {
+						Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+						annotations.add(leftAnno);
+						if (right.getKind() == RefKind.METH_ADAPT) {
+							Reference ref = ((MethodAdaptReference) right).getDeclRef();
+							ref.setAnnotations(annotations, checker);
+						} else {
+							right.setAnnotations(annotations, checker);
+						}
+						hasUpdate = true;
+					}
+				}
+			}
+		} while (hasUpdate);
 	}
 
 	private void typeCastCheck(Constraint c, Reference left,

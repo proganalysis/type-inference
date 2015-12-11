@@ -369,7 +369,10 @@ public class Jcrypt2Checker extends InferenceChecker {
 	@Override
 	public AnnotationMirror adaptField(AnnotationMirror contextAnno,
 			AnnotationMirror declAnno) {
-		return adaptMethod(contextAnno, declAnno);
+		if (declAnno.toString().equals(CLEAR.toString()))
+			return CLEAR;
+		else
+			return declAnno;
 	}
 
 	/*
@@ -514,11 +517,11 @@ public class Jcrypt2Checker extends InferenceChecker {
 		}
 	}
 
-	@Override
-	public Set<AnnotationMirror> adaptFieldSet(
-			Set<AnnotationMirror> contextSet, Set<AnnotationMirror> declSet) {
-		return declSet;
-	}
+//	@Override
+//	public Set<AnnotationMirror> adaptFieldSet(
+//			Set<AnnotationMirror> contextSet, Set<AnnotationMirror> declSet) {
+//		return declSet;
+//	}
 
 	@Override
 	public Set<AnnotationMirror> adaptMethodSet(
@@ -583,6 +586,36 @@ public class Jcrypt2Checker extends InferenceChecker {
 			Reference returnRef = methodRef.getReturnRef();
 			addSubtypeConstraint(assignToRef, 
 					getMethodAdaptReference(receiverRef, returnRef, assignToRef), pos);
+		}
+	}
+	
+	@Override
+	protected void handleStaticFieldRead(Reference aField, Reference aLhs, long pos) {
+		addSubtypeConstraint(aField, aLhs, pos);
+		addSubtypeConstraint(aLhs, aField, pos);
+	}
+
+	@Override
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, long pos) {
+		addSubtypeConstraint(aRhs, aField, pos);
+		addSubtypeConstraint(aField, aRhs, pos);
+	}
+	
+	@Override
+	protected void handleInstanceFieldRead(Reference aBase, Reference aField,
+			Reference aLhs, long pos) {
+		Reference afv = getFieldAdaptReference(aBase, aField, aLhs);
+		addSubtypeConstraint(afv, aLhs, pos);
+		addSubtypeConstraint(aLhs, afv, pos);
+	}
+
+	@Override
+	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
+			Reference aRhs, long pos) {
+		if (aBase != null) {
+			Reference afv = getFieldAdaptReference(aBase, aField, aRhs);
+			addSubtypeConstraint(aRhs, afv, pos);
+			addSubtypeConstraint(afv, aRhs, pos);
 		}
 	}
 

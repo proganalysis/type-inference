@@ -36,6 +36,7 @@ public class JcryptTypingExtractor extends MaximalTypingExtractor {
 		List<Constraint> conflicts = super.extract();
 		if (conflicts.isEmpty()) return conflicts;
 		for (Constraint c : conflicts) {
+			System.out.println(c.toString());
 			if (check(c)) continue;
 			Reference left = c.getLeft();
 			Reference right = c.getRight();
@@ -44,6 +45,7 @@ public class JcryptTypingExtractor extends MaximalTypingExtractor {
 			} else if (right.getKind() == RefKind.METH_ADAPT) {
 				updateAnnotation(right, c);
 			}
+			System.out.println(c.toString());
 		}
 		return typeCheck();
 	}

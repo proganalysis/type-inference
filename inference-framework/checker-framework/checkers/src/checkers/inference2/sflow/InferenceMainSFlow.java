@@ -24,6 +24,7 @@ import java.util.zip.ZipFile;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver;
 import checkers.inference2.InferenceChecker;
+import checkers.inference2.InferenceMain;
 import checkers.inference2.MaximalTypingExtractor;
 import checkers.inference2.SetbasedSolver;
 import checkers.inference2.TypingExtractor;
@@ -36,7 +37,7 @@ import com.sun.tools.javac.main.Main;
  * @author huangw5
  *
  */
-public class InferenceMainSFlow {
+public class InferenceMainSFlow extends InferenceMain {
 
     private static final String VERSION = "1";
     
@@ -46,9 +47,9 @@ public class InferenceMainSFlow {
 
     protected boolean needCheck = true;
     
-    protected InferenceChecker checker; 
+    public InferenceChecker checker; 
     
-    protected InferenceMainSFlow() {
+    public InferenceMainSFlow() {
     	checker = null;
     }
     
