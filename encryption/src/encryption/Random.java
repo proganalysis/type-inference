@@ -2,66 +2,87 @@ package encryption;
 
 import java.nio.ByteBuffer;
 import java.security.Key;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
-public class Random extends Encryption {
+public class Random implements Encryption {
 
-	private static final byte[] ivBytes = "1234567812345678".getBytes();
-	private static final Key encryptionKey, decryptionKey;
-	private Cipher cipher;
+	private static final Key keyAES, keyBF; // AES and blowfish
+	private Cipher cipherAES, cipherBF;
+	private static Map<byte[], byte[]> initIVsAES = new HashMap<>();
+	private static Map<byte[], byte[]> initIVsBF = new HashMap<>();
 
 	static {
-		KeyGenerator generator = null;
+		KeyGenerator generatorAES = null, generatorBF = null;
 		try {
-			generator = KeyGenerator.getInstance("AES");
+			generatorAES = KeyGenerator.getInstance("AES");
+			generatorBF = KeyGenerator.getInstance("Blowfish");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		generator.init(128);
-		encryptionKey = generator.generateKey();
-		decryptionKey = new SecretKeySpec(encryptionKey.getEncoded(),
-				encryptionKey.getAlgorithm());
+		keyAES = generatorAES.generateKey();
+		keyBF = generatorBF.generateKey();
 	}
 
 	public Random() {
 		try {
-			cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipherAES = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipherBF = Cipher.getInstance("Blowfish/CBC/PKCS5PADDING");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Override
-	public int decrypt(byte[] ctext) {
-		byte[] plainText = null;
-		try {
-			cipher.init(Cipher.DECRYPT_MODE, decryptionKey,
-					new IvParameterSpec(ivBytes));
-			plainText = cipher.doFinal(ctext);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		ByteBuffer wrapped = ByteBuffer.wrap(Arrays.copyOf(plainText, 4));
-		return wrapped.getInt();
-	}
-
-	@Override
-	public byte[] encrypt(int ptext) {
-		byte[] input = ByteBuffer.allocate(4).putInt(ptext).array();
+	public byte[] encrypt(String ptext) {
 		byte[] ctext = null;
 		try {
-			cipher.init(Cipher.ENCRYPT_MODE, encryptionKey,
-					new IvParameterSpec(ivBytes));
-			ctext = cipher.doFinal(input);
+			cipherAES.init(Cipher.ENCRYPT_MODE, keyAES);
+			ctext = cipherAES.doFinal(ptext.getBytes());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		initIVsAES.put(ctext, cipherAES.getIV());
 		return ctext;
+	}
+
+	public byte[] encrypt(int ptext) {
+		byte[] ctext = null;
+		try {
+			cipherBF.init(Cipher.ENCRYPT_MODE, keyBF);
+			ctext = cipherBF.doFinal(ByteBuffer.allocate(4).putInt(ptext).array());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		initIVsBF.put(ctext, cipherBF.getIV());
+		return ctext;
+	}
+
+	@Override
+	public Object decrypt(Object ctext) {
+		byte[] plainText = null;
+		byte[] ciphertext = (byte[]) ctext;
+		if (ciphertext.length == 8) { // blowfish: 64-bit block size
+			try {
+				cipherBF.init(Cipher.DECRYPT_MODE, keyBF, new IvParameterSpec(initIVsBF.get(ctext)));
+				plainText = cipherBF.doFinal(ciphertext);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			ByteBuffer wrapped = ByteBuffer.wrap(plainText);
+			return wrapped.getInt();
+		} else { // AES: 128-bit block size
+			try {
+				cipherAES.init(Cipher.DECRYPT_MODE, keyAES, new IvParameterSpec(initIVsAES.get(ctext)));
+				plainText = cipherAES.doFinal(ciphertext);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return new String(plainText);
+		}
 	}
 
 }

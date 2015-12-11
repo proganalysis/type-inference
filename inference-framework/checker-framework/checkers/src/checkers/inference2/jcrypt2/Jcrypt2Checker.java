@@ -24,13 +24,8 @@ import javax.lang.model.type.TypeKind;
 
 import checkers.inference.reim.quals.Polyread;
 import checkers.inference.reim.quals.Mutable;
-import checkers.inference2.jcrypt2.quals.BOT;
-import checkers.inference2.jcrypt2.quals.RND;
-import checkers.inference2.jcrypt2.quals.OPE;
-import checkers.inference2.jcrypt2.quals.AH;
-import checkers.inference2.jcrypt2.quals.DET;
-import checkers.inference2.jcrypt.JcryptInferenceVisitor;
-import checkers.inference2.jcrypt.quals.Clear;
+import checkers.inference2.jcrypt2.quals.*;
+import checkers.inference2.jcrypt.quals.*;
 import checkers.inference2.Constraint;
 import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
@@ -53,9 +48,10 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 
 /**
- * @author huangw5
+ * @author dongy6
  * 
  */
 @SupportedOptions({ "warn", "infer", "debug", "noReim", "inferLibrary",
@@ -80,7 +76,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 		BOT = annoFactory.fromClass(BOT.class);
 		MUTABLE = annoFactory.fromClass(Mutable.class);
 		POLYREAD = annoFactory.fromClass(Polyread.class);
-
+		
 		sourceAnnos = AnnotationUtils.createAnnotationSet();
 		sourceAnnos.add(RND);
 		sourceAnnos.add(OPE);
@@ -206,15 +202,27 @@ public class Jcrypt2Checker extends InferenceChecker {
 		case POSTFIX_DECREMENT:
 		case PLUS_ASSIGNMENT:
 		case MINUS_ASSIGNMENT:
-		case MULTIPLY:
-		case DIVIDE:
-		case REMAINDER:
-		case LEFT_SHIFT:
-		case RIGHT_SHIFT:
 			r.addAnnotation(AH);
 			r.addAnnotation(DET);
 			r.addAnnotation(OPE);
 			r.setCryptType(AH);
+			break;
+		case MULTIPLY:
+		case LEFT_SHIFT:
+			JCExpression left = ((JCBinary) t).getLeftOperand();
+			JCExpression right = ((JCBinary) t).getRightOperand();
+			Reference leftRef = getAnnotatedReference(left);
+			Reference rightRef = getAnnotatedReference(right);
+			if (containsAnno(leftRef, CLEAR) || containsAnno(rightRef, CLEAR)) {
+				r.addAnnotation(AH);
+				r.addAnnotation(DET);
+				r.addAnnotation(OPE);
+				r.setCryptType(AH);
+			} else {
+				r.addAnnotation(DET);
+				r.addAnnotation(OPE);
+				r.setCryptType(DET);
+			}
 			break;
 		case LESS_THAN:
 		case LESS_THAN_EQUAL:
@@ -361,7 +369,10 @@ public class Jcrypt2Checker extends InferenceChecker {
 	@Override
 	public AnnotationMirror adaptField(AnnotationMirror contextAnno,
 			AnnotationMirror declAnno) {
-		return adaptMethod(contextAnno, declAnno);
+		if (declAnno.toString().equals(CLEAR.toString()))
+			return CLEAR;
+		else
+			return declAnno;
 	}
 
 	/*
@@ -451,7 +462,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 	@Override
 	protected SourceVisitor<?, ?> getInferenceVisitor(
 			InferenceChecker inferenceChecker, CompilationUnitTree root) {
-		return new JcryptInferenceVisitor(this, root);
+		return new Jcrypt2InferenceVisitor(this, root);
 	}
 
 	@Override
@@ -506,11 +517,11 @@ public class Jcrypt2Checker extends InferenceChecker {
 		}
 	}
 
-	@Override
-	public Set<AnnotationMirror> adaptFieldSet(
-			Set<AnnotationMirror> contextSet, Set<AnnotationMirror> declSet) {
-		return declSet;
-	}
+//	@Override
+//	public Set<AnnotationMirror> adaptFieldSet(
+//			Set<AnnotationMirror> contextSet, Set<AnnotationMirror> declSet) {
+//		return declSet;
+//	}
 
 	@Override
 	public Set<AnnotationMirror> adaptMethodSet(
@@ -575,6 +586,36 @@ public class Jcrypt2Checker extends InferenceChecker {
 			Reference returnRef = methodRef.getReturnRef();
 			addSubtypeConstraint(assignToRef, 
 					getMethodAdaptReference(receiverRef, returnRef, assignToRef), pos);
+		}
+	}
+	
+	@Override
+	protected void handleStaticFieldRead(Reference aField, Reference aLhs, long pos) {
+		addSubtypeConstraint(aField, aLhs, pos);
+		addSubtypeConstraint(aLhs, aField, pos);
+	}
+
+	@Override
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, long pos) {
+		addSubtypeConstraint(aRhs, aField, pos);
+		addSubtypeConstraint(aField, aRhs, pos);
+	}
+	
+	@Override
+	protected void handleInstanceFieldRead(Reference aBase, Reference aField,
+			Reference aLhs, long pos) {
+		Reference afv = getFieldAdaptReference(aBase, aField, aLhs);
+		addSubtypeConstraint(afv, aLhs, pos);
+		addSubtypeConstraint(aLhs, afv, pos);
+	}
+
+	@Override
+	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
+			Reference aRhs, long pos) {
+		if (aBase != null) {
+			Reference afv = getFieldAdaptReference(aBase, aField, aRhs);
+			addSubtypeConstraint(aRhs, afv, pos);
+			addSubtypeConstraint(afv, aRhs, pos);
 		}
 	}
 

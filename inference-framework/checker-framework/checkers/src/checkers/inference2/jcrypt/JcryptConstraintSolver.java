@@ -149,7 +149,7 @@ public class JcryptConstraintSolver extends AbstractConstraintSolver<JcryptCheck
 	 */
 	@Override
 	public Set<Constraint> solveImpl() {
-		Set<Constraint> constraints = checker.getConstraints();
+		//Set<Constraint> constraints = checker.getConstraints();
 		BitSet warnConstraints = new BitSet(Constraint.maxId());
 		buildRefToConstraintMapping(constraints);
 		worklist.addAll(constraints);
@@ -164,7 +164,8 @@ public class JcryptConstraintSolver extends AbstractConstraintSolver<JcryptCheck
 				Set<Constraint> newCons = addLinearConstraints(c, constraints,
 						newConstraints);
 				if (!newCons.isEmpty()) {
-					worklist.addAll(newCons);
+					//worklist.addAll(newCons);
+					constraints.addAll(newCons);
 					worklist.addAll(constraints);
 				}
 				
@@ -279,8 +280,8 @@ public class JcryptConstraintSolver extends AbstractConstraintSolver<JcryptCheck
 				for (Constraint lc : left.getLessSet()) {
 					Reference r = lc.getLeft();
 					if (!r.equals(right)
-							&& (right.getElement() != null || r.getElement() != null)
-							&& checker.isParamOrRetRef(r)) {
+							&& (right.getElement() != null || r.getElement() != null)) {
+							//&& checker.isParamOrRetRef(r)) {
 						Constraint linear = new SubtypeConstraint(r, right);
 						tmplist.add(linear);
 					}
@@ -379,17 +380,17 @@ public class JcryptConstraintSolver extends AbstractConstraintSolver<JcryptCheck
 									.isSubtype(rightEType, leftEType))) {
 					// if leftEType != rightEType, then it should be
 					// subclassing constraint
-					Element leftElt, rightElt;
-					if (leftEType != null
-							&& rightEType != null
-							&& leftEType.equals(rightEType)
-							|| (leftElt = linear.getLeft().getElement()) != null
-							&& (rightElt = linear.getRight().getElement()) != null
-							&& leftElt.getKind() == rightElt.getKind()) {
+//					Element leftElt, rightElt;
+//					if (leftEType != null
+//							&& rightEType != null
+//							&& leftEType.equals(rightEType)
+//							|| (leftElt = linear.getLeft().getElement()) != null
+//							&& (rightElt = linear.getRight().getElement()) != null
+//							&& leftElt.getKind() == rightElt.getKind()) {
 						newCons.add(linear);
 						buildRefToConstraintMapping(linear);
 						queue.add(linear);
-					}
+//					}
 				} else if (!(linear.getLeft() instanceof AdaptReference)
 						&& (linear.getRight() instanceof MethodAdaptReference))
 					queue.add(linear); // add method adapt constraint

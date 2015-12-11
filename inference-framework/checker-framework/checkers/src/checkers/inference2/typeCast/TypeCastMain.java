@@ -49,7 +49,7 @@ public class TypeCastMain extends InferenceMain {
     
     public static final String outputDir = "infer-output";
     
-    public static String outputDirTrans = "/home/yao/Projects/temp/src/";
+    public static String outputDirTrans = "/Users/yaodong/Documents/Projects/temp/src/";
     
     public static String packageName;
     

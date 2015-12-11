@@ -118,7 +118,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected static Map<String, Map<Long, String[]>> convertedReferences = new HashMap<>();
 	
-	protected static Map<String, ExecutableReference> allocationReferences = new HashMap<>();
+	//protected static Map<String, ExecutableReference> allocationReferences = new HashMap<>();
 	
 	protected static Set<String> needCopyMethods = new HashSet<>();
 	

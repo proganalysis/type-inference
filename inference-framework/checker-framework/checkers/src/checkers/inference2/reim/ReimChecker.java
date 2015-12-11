@@ -5,7 +5,6 @@ package checkers.inference2.reim;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -29,8 +28,6 @@ import checkers.inference2.ConstraintSolver.FailureStatus;
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.InferenceUtils;
 import checkers.inference2.Reference;
-import checkers.inference2.Reference.ArrayReference;
-import checkers.inference2.Reference.ExecutableReference;
 import checkers.inference2.Reference.FieldAdaptReference;
 import checkers.inference2.Reference.MethodAdaptReference;
 import checkers.inference2.Reference.RefKind;
@@ -361,17 +358,17 @@ public class ReimChecker extends InferenceChecker {
 		}
 	}
 	
-	@Override
-	protected void handleMethodCall(ExecutableElement invokeMethod,
-			Reference receiverRef, Reference assignToRef,
-			List<Reference> argumentRefs, long pos, List<Long> argPos) {
-		super.handleMethodCall(invokeMethod, receiverRef, assignToRef,
-				argumentRefs, pos, argPos);
-		if (receiverRef != null && receiverRef.getKind() == RefKind.ALLOCATION) {
-			ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
-			allocationReferences.put(receiverRef.getIdentifier(), methodRef);
-		}
-	}
+//	@Override
+//	protected void handleMethodCall(ExecutableElement invokeMethod,
+//			Reference receiverRef, Reference assignToRef,
+//			List<Reference> argumentRefs, long pos, List<Long> argPos) {
+//		super.handleMethodCall(invokeMethod, receiverRef, assignToRef,
+//				argumentRefs, pos, argPos);
+//		if (receiverRef != null && receiverRef.getKind() == RefKind.ALLOCATION) {
+//			ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
+//			allocationReferences.put(receiverRef.getIdentifier(), methodRef);
+//		}
+//	}
 	
 	public boolean isReadonly(Reference r) {
 		if (r.getAnnotations(this).contains(READONLY))
@@ -379,32 +376,32 @@ public class ReimChecker extends InferenceChecker {
 		else return false;
 	}
 	
-	private boolean isReadonlyArrayAllocation(Reference r) {
-		ArrayReference ar = (ArrayReference) r;
-		return isReadonly(ar) && isReadonly(ar.getComponentRef());
-	}
+//	private boolean isReadonlyArrayAllocation(Reference r) {
+//		ArrayReference ar = (ArrayReference) r;
+//		return isReadonly(ar) && isReadonly(ar.getComponentRef());
+//	}
 	
-	private boolean isReadonlyAllocation(Reference r) {
-		boolean isReadonly = true;
-		// allocation is readonly
-		if (!isReadonly(r)) isReadonly = false;
-		// parameters are readonly
-		ExecutableReference er = allocationReferences.get(r.getIdentifier());
-		for (Reference p : er.getParamRefs()) {
-			if (!isReadonly(p)) {
-				isReadonly = false;
-				break;
-			}
-		}
-		// does the constructor modify static field?
-		AnnotationMirror[] annos = er.getAnnotations(this)
-				.toArray(new AnnotationMirror[0]);
-		Arrays.sort(annos, getComparator());
-		if (annos[0].equals(MUTABLE)) {
-			isReadonly = false;
-		}
-		return isReadonly;
-	}
+//	private boolean isReadonlyAllocation(Reference r) {
+//		boolean isReadonly = true;
+//		// allocation is readonly
+//		if (!isReadonly(r)) isReadonly = false;
+//		// parameters are readonly
+//		ExecutableReference er = allocationReferences.get(r.getIdentifier());
+//		for (Reference p : er.getParamRefs()) {
+//			if (!isReadonly(p)) {
+//				isReadonly = false;
+//				break;
+//			}
+//		}
+//		// does the constructor modify static field?
+//		AnnotationMirror[] annos = er.getAnnotations(this)
+//				.toArray(new AnnotationMirror[0]);
+//		Arrays.sort(annos, getComparator());
+//		if (annos[0].equals(MUTABLE)) {
+//			isReadonly = false;
+//		}
+//		return isReadonly;
+//	}
 	
 	public void printResult(PrintWriter out) {
 		List<Reference> references = new ArrayList<Reference>(
@@ -426,18 +423,18 @@ public class ReimChecker extends InferenceChecker {
 		int readonlyAllocationNum = 0, allocationNum = 0, allReadonly = 0;
 		for (Reference r : references) {
 			// object immutability
-			if (r.getKind() == RefKind.ALLOCATION) {
-				allocationNum++;
-				if (r instanceof ArrayReference) {
-					if (isReadonlyArrayAllocation(r))
-						readonlyAllocationNum++;
-				} else {
-					if (isReadonlyAllocation(r))
-						allReadonly++;
-					if (isReadonly(r))
-						readonlyAllocationNum++;
-				}
-			}
+//			if (r.getKind() == RefKind.ALLOCATION) {
+//				allocationNum++;
+//				if (r instanceof ArrayReference) {
+//					if (isReadonlyArrayAllocation(r))
+//						readonlyAllocationNum++;
+//				} else {
+//					if (isReadonlyAllocation(r))
+//						allReadonly++;
+//					if (isReadonly(r))
+//						readonlyAllocationNum++;
+//				}
+//			}
 			
 			Element elt = r.getElement();
 			if ((elt == null && r.getKind() != RefKind.ALLOCATION)
