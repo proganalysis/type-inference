@@ -55,6 +55,6 @@ public class Conversion {
 			assert (type.equals("DET"));
 			return det;
 		}
-	}
+	} 
 
 }
