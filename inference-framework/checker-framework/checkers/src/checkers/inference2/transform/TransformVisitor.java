@@ -90,7 +90,6 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	private static TreeMaker maker;
 	
 	private static Map<String, JCMethodInvocation> encryptionMethods = new HashMap<>();
-	
 	private Map<String, Map<Long, String[]>> convertedReferences;
 	
 	private String returnType;	
