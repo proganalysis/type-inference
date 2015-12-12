@@ -192,7 +192,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 			}
 		} else if (eleTypeTree.getTag() == Tag.IDENT) {
 			JCIdent jci = (JCIdent) eleTypeTree;
-			if (jci.getName().contentEquals("String")) {
+			if (jci.getName().contentEquals("String")
+					|| jci.getName().contentEquals("Integer")) {
 				JCExpression jce = getObjectType(jci.getStartPosition());
 				modifyType(jctree, tag, jce);
 			}
@@ -386,7 +387,8 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
     // check the type of the variable if it is int or String
     private boolean shouldConvert(Reference ref) {
     	String javaType = ref.getType().getUnderlyingType().toString();
-    	return javaType.equals("int") || javaType.equals("java.lang.String");
+    	return javaType.equals("int") || javaType.equals("java.lang.String")
+    			|| javaType.equals("Integer");
     }
 
 //	private void setByteArrayType(JCVariableDecl jcvd) {

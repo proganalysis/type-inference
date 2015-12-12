@@ -437,7 +437,8 @@ public class JcryptChecker extends InferenceChecker {
 			if (r.getAnnotations(this).contains(POLY)
 					|| r.getAnnotations(this).contains(SENSITIVE)) {
 				if (r.getType().toString().contains("String")
-						|| r.getType().toString().contains("int")) {
+						|| r.getType().toString().contains("int")
+						|| r.getType().toString().contains("Integer")) {
 					needCopyMethods.add(r.getIdentifier());
 				}
 			}
