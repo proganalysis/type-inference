@@ -51,6 +51,7 @@ import checkers.util.TreeUtils;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.tree.JCTree;
 
 /**
  * @author huangw5
@@ -235,7 +236,7 @@ public class SFlowChecker extends InferenceChecker {
 		ExecutableReference overriderRef = (ExecutableReference) getAnnotatedReference(overrider);
 		ExecutableReference overriddenRef = (ExecutableReference) getAnnotatedReference(overridden);
 
-		long pos = getPosition(overrider);
+		int pos = ((JCTree) overrider).getStartPosition();
 		// THIS: overridden <: overrider 
 		if (!ElementUtils.isStatic(overrider)) {
 			Reference overriderThisRef = overriderRef.getThisRef();
@@ -455,7 +456,7 @@ public class SFlowChecker extends InferenceChecker {
 	}
 	
 	@Override
-	public void addSubtypeConstraint(Reference sub, Reference sup, long pos) {
+	public void addSubtypeConstraint(Reference sub, Reference sup, int pos) {
 		super.addSubtypeConstraint(sub, sup, pos);
 		if (!containsReadonly(sub) && !containsReadonly(sup)) {
 			// add a subtying constraint with opposite direction

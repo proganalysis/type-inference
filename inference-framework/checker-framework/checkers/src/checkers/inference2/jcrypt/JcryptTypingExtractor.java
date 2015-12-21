@@ -20,10 +20,12 @@ import checkers.util.AnnotationUtils;
 public class JcryptTypingExtractor extends MaximalTypingExtractor {
 
 	private JcryptChecker checker;
+	private Set<Reference> needTypeCastRefs;
 
 	public JcryptTypingExtractor(InferenceChecker c) {
 		super(c);
 		checker = (JcryptChecker) c;
+		needTypeCastRefs = checker.getNeedTypeCastRefs();
 	}
 
 	/*
@@ -45,7 +47,13 @@ public class JcryptTypingExtractor extends MaximalTypingExtractor {
 			} else if (right.getKind() == RefKind.METH_ADAPT) {
 				updateAnnotation(right, c);
 			}
-			System.out.println(c.toString());
+			//System.out.println(c.toString());
+		}
+		for (Constraint c : checker.getConstraints()) {
+			Reference left = c.getLeft();
+			Reference right = c.getRight();
+			Set<AnnotationMirror> rightAnnos = right.getAnnotations(checker);
+			typeCastCheck(c, left, right, rightAnnos);
 		}
 		return typeCheck();
 	}
@@ -79,6 +87,19 @@ public class JcryptTypingExtractor extends MaximalTypingExtractor {
 		if (checker.getQualifierHierarchy().isSubtype(leftAnno, rightAnno))
 			return true;
 		return false;
+	}
+	
+	private void typeCastCheck(Constraint c, Reference left,
+			Reference right, Set<AnnotationMirror> rightAnnos) {
+		if ((left.getKind() == RefKind.FIELD
+				|| left.getKind() == RefKind.FIELD_ADAPT)
+				&& right.getKind() == RefKind.LOCAL
+				&& !rightAnnos.isEmpty()) {
+			String javaType = right.getType().getUnderlyingType().toString();
+	    	if (javaType.equals("int") || javaType.equals("java.lang.String")) {
+	    		needTypeCastRefs.add(right);
+	    	}
+		}
 	}
 
 }

@@ -50,6 +50,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.Tag;
@@ -195,7 +196,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         AnnotatedTypeMirror exprType = exprRef.getType();
     	// Recursively
     	generateConstraint(exprRef, expr);
-        long pos = checker.getPosition(expr);
+        int pos = ((JCTree) expr).getStartPosition();
         if (exprType.getKind() == TypeKind.ARRAY) {
 	        // In the case of arrays
         	ArrayReference arrayRef = (ArrayReference) exprRef;
@@ -295,10 +296,10 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 			Reference initRef = checker.getAnnotatedReference(initializer);
 			if (varElt.getKind().isField()) {
 				generateConstraint(initRef, initializer);
-				processVariableTree(node, initRef, checker.getPosition(initializer));
+				processVariableTree(node, initRef, ((JCTree) initializer).getStartPosition());
 			} else {
 				generateConstraint(initRef, initializer);
-				checker.addSubtypeConstraint(initRef, varRef, checker.getPosition(initializer));
+				checker.addSubtypeConstraint(initRef, varRef, ((JCTree) initializer).getStartPosition());
 			}
 		}
 		return super.visitVariable(node, p);
@@ -378,20 +379,20 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		// Process arguments
 		List<? extends ExpressionTree> arguments = node.getArguments();
 		List<Reference> argumentRefs = new ArrayList<Reference>(arguments.size());
-		List<Long> argPos = new ArrayList<>(arguments.size());
+		List<Integer> argPos = new ArrayList<>(arguments.size());
 		for (ExpressionTree arg : arguments) {
 			Reference argRef = checker.getAnnotatedReference(arg);
 			// recursively 
 			generateConstraint(argRef, arg);
 			argumentRefs.add(argRef);
-			argPos.add(checker.getPosition(arg));
+			argPos.add(((JCTree) arg).getStartPosition());
 		}
 		checker.handleMethodCall(invokeMethodElt, rcvRef, assignToRef, argumentRefs,
-				checker.getPosition(node), argPos);
+				((JCTree) node).getStartPosition(), argPos);
     }
     
     private void processNewClass(NewClassTree node, Reference assignToRef) {
-    	long pos = checker.getPosition(node);
+    	int pos = ((JCTree) node).getStartPosition();
 		// Receiver
 		Reference rcvRef = checker.getAnnotatedReference(node);
 		// always connect to the LHS
@@ -399,13 +400,13 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		// Arguments
 		List<? extends ExpressionTree> arguments = node.getArguments();
 		List<Reference> argumentRefs = new ArrayList<Reference>(arguments.size());
-		List<Long> argPos = new ArrayList<>(arguments.size());
+		List<Integer> argPos = new ArrayList<>(arguments.size());
 		for (ExpressionTree arg : arguments) {
 			Reference argRef = checker.getAnnotatedReference(arg);
 			// recursively 
 			generateConstraint(argRef, arg);
 			argumentRefs.add(argRef);
-			argPos.add(checker.getPosition(arg));
+			argPos.add(((JCTree) arg).getStartPosition());
 		}
 		checker.handleMethodCall(TreeUtils.elementFromUse(node), rcvRef,
 				assignToRef, argumentRefs, 0, argPos);
@@ -415,7 +416,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         ExpressionTree rcvExpr = mTree.getExpression();
         Element fieldElt = TreeUtils.elementFromUse(mTree);
         AnnotatedTypeMirror rcvType = factory.getAnnotatedType(rcvExpr);
-        long pos = checker.getPosition(mTree);
+        int pos = ((JCTree) mTree).getStartPosition();
         if (checker.isAccessOuterThis(mTree)) {
             // If it is like Body.this
             Element outerElt = checker.getOuterThisElement(mTree, getCurrentMethodElt());
@@ -465,7 +466,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     private void processIdentifier(Reference lhsRef, IdentifierTree idTree, Reference rhsRef) {
         ExecutableElement currentMethodElt = getCurrentMethodElt();
         Element idElt = TreeUtils.elementFromUse(idTree);
-        long pos = checker.getPosition(idTree);
+        int pos = ((JCTree) idTree).getStartPosition();
         // If idElt is "this", then we create the thisRef
         Reference idRef = null;
         if (idElt.getSimpleName().contentEquals("this")) {
@@ -525,7 +526,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
     }
     
     private void processNewArray(Reference lhsRef, NewArrayTree nArrayTree) {
-    	long pos = checker.getPosition(nArrayTree);
+    	int pos = ((JCTree) nArrayTree).getStartPosition();
     	// Create the reference of the new array
 		ArrayReference nArrayRef = (ArrayReference) checker.getAnnotatedReference(nArrayTree);
 		// Generate constraints
@@ -559,7 +560,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 
 		// Get the component reference of this array access
 		Reference componentRef = ((ArrayReference) exprRef).getComponentRef();
-		long pos = checker.getPosition(aaTree);
+		int pos = ((JCTree) aaTree).getStartPosition();
 		// Now add the adapt constraint
 		if (lhsRef != null && rhsRef == null) {
 			checker.handleInstanceFieldRead(exprRef, componentRef, lhsRef, pos);
@@ -587,13 +588,13 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
             // connect the casted expr and the lhs.
         	// However, if we have something like A x = (@Mutable A) y, 
         	// then we don't connect, because "type" is annotated
-            checker.addSubtypeConstraint(castedRef, lhsRef, checker.getPosition(tree));
+            checker.addSubtypeConstraint(castedRef, lhsRef, ((JCTree) tree).getStartPosition());
         }
     }
     
     private void processParenthesized(Reference lhsRef, ParenthesizedTree pTree, Reference rhsRef) {
         ExpressionTree pExpr = pTree.getExpression();
-        long pos = checker.getPosition(pExpr);
+        int pos = ((JCTree) pExpr).getStartPosition();
         Reference pRef = checker.getAnnotatedReference(pExpr);
         // Recursively 
         generateConstraint(pRef, pExpr);
@@ -609,7 +610,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
         Reference aRef = checker.getAnnotatedReference(aExpr);
         // Recursively
         generateConstraint(aRef, aExpr);
-        checker.addSubtypeConstraint(aRef, lhsRef, checker.getPosition(aTree));
+        checker.addSubtypeConstraint(aRef, lhsRef, ((JCTree) aTree).getStartPosition());
 	}
     
     /**
@@ -618,7 +619,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
      * @param cTree
      */
     private void processConditionalExpression(Reference lhsRef, ConditionalExpressionTree cTree) {
-    	long pos = checker.getPosition(cTree);
+    	int pos = ((JCTree) cTree).getStartPosition();
     	ExpressionTree cTrueExpr = cTree.getTrueExpression();
         Reference cTrueRef = checker.getAnnotatedReference(cTrueExpr);
         generateConstraint(cTrueRef, cTrueExpr);
@@ -636,8 +637,8 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		Reference leftRef = checker.getAnnotatedReference(left);
 		Reference rightRef = checker.getAnnotatedReference(right);
 		if (lhsRef != null) {
-			checker.addSubtypeConstraint(leftRef, lhsRef, checker.getPosition(left));
-			checker.addSubtypeConstraint(rightRef, lhsRef, checker.getPosition(right));
+			checker.addSubtypeConstraint(leftRef, lhsRef, ((JCTree) left).getStartPosition());
+			checker.addSubtypeConstraint(rightRef, lhsRef, ((JCTree) right).getStartPosition());
 		}
 		generateConstraint(leftRef, left);
 		generateConstraint(rightRef, right);
@@ -647,12 +648,12 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 		ExpressionTree exprTree = uTree.getExpression();
 		Reference ref = checker.getAnnotatedReference(exprTree);
 		if (lhsRef != null) {
-			checker.addSubtypeConstraint(ref, lhsRef, checker.getPosition(uTree));
+			checker.addSubtypeConstraint(ref, lhsRef, ((JCTree) uTree).getStartPosition());
 		}
 		generateConstraint(ref, exprTree);
     }
     
-    protected void processVariableTree(VariableTree tree, Reference initRef, long pos) {
+    protected void processVariableTree(VariableTree tree, Reference initRef, int pos) {
     	VariableElement varElt = TreeUtils.elementFromDeclaration(tree);
 		Reference varRef = checker.getAnnotatedReference(varElt);
 		if (initRef != null) {
@@ -681,7 +682,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
 	protected void generateConstraint(ExpressionTree lhsTree, ExpressionTree rhsTree) {
 		Reference lhsRef = checker.getAnnotatedReference(lhsTree);
 		Reference rhsRef = checker.getAnnotatedReference(rhsTree);
-		checker.addSubtypeConstraint(rhsRef, lhsRef, checker.getPosition(rhsTree));
+		checker.addSubtypeConstraint(rhsRef, lhsRef, ((JCTree) rhsTree).getStartPosition());
 		generateConstraint(lhsTree, lhsRef);
 		generateConstraint(rhsRef, rhsTree);
 	}
@@ -762,7 +763,7 @@ public class InferenceVisitor extends SourceVisitor<Void, Void> {
             switch (lhsTree.getKind()) {
             case VARIABLE:
                 // generate Reference of element
-                processVariableTree((VariableTree) lhsTree, rhsRef, checker.getPosition(lhsTree));
+                processVariableTree((VariableTree) lhsTree, rhsRef, ((JCTree) lhsTree).getStartPosition());
                 break;
             case IDENTIFIER:
             	processIdentifier(null, (IdentifierTree) lhsTree, rhsRef);

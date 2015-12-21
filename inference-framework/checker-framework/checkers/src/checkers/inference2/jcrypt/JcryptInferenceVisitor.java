@@ -7,6 +7,8 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.tools.javac.tree.JCTree;
+
 import checkers.inference2.InferenceChecker;
 import checkers.inference2.InferenceVisitor;
 import checkers.inference2.Reference;
@@ -28,7 +30,7 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 	        Reference ref = checker.getAnnotatedReference(node);
 	        Reference varRef = checker.getAnnotatedReference(var);
 	        Reference exprRef = checker.getAnnotatedReference(expr);
-	        long pos = checker.getPosition(node);
+	        int pos = ((JCTree) node).getStartPosition();
 	        checker.addSubtypeConstraint(varRef, ref, pos);
 	        checker.addSubtypeConstraint(exprRef, ref, pos);
 		}
@@ -50,10 +52,10 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		ExpressionTree right = bTree.getRightOperand();
 		Reference leftRef = checker.getAnnotatedReference(left);
 		Reference rightRef = checker.getAnnotatedReference(right);
-		checker.addSubtypeConstraint(leftRef, ref, checker.getPosition(left));
-		checker.addSubtypeConstraint(rightRef, ref, checker.getPosition(right));
+		checker.addSubtypeConstraint(leftRef, ref, ((JCTree) left).getStartPosition());
+		checker.addSubtypeConstraint(rightRef, ref, ((JCTree) right).getStartPosition());
 		if (lhsRef != null) {
-			checker.addSubtypeConstraint(ref, lhsRef, checker.getPosition(left));
+			checker.addSubtypeConstraint(ref, lhsRef, ((JCTree) left).getStartPosition());
 		}
 		generateConstraint(leftRef, left);
 		generateConstraint(rightRef, right);
@@ -72,7 +74,7 @@ public class JcryptInferenceVisitor extends InferenceVisitor {
 		Reference treeRef = checker.getAnnotatedReference(uTree);
 		ExpressionTree exprTree = uTree.getExpression();
 		Reference ref = checker.getAnnotatedReference(exprTree);
-		long pos = checker.getPosition(uTree);
+		int pos = ((JCTree) uTree).getStartPosition();
 		checker.addSubtypeConstraint(ref, treeRef, pos);
 		if (lhsRef != null) {
 			checker.addSubtypeConstraint(treeRef, lhsRef, pos);

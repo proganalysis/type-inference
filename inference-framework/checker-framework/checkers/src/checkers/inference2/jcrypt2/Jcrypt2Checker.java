@@ -567,7 +567,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 	@Override
 	protected void handleMethodCall(ExecutableElement invokeMethod,
 			Reference receiverRef, Reference assignToRef,
-			List<Reference> argumentRefs, long pos, List<Long> argPos) {
+			List<Reference> argumentRefs, int pos, List<Integer> argPos) {
 		super.handleMethodCall(invokeMethod, receiverRef, assignToRef,
 				argumentRefs, pos, argPos);
 		ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
@@ -590,20 +590,20 @@ public class Jcrypt2Checker extends InferenceChecker {
 	}
 	
 	@Override
-	protected void handleStaticFieldRead(Reference aField, Reference aLhs, long pos) {
+	protected void handleStaticFieldRead(Reference aField, Reference aLhs, int pos) {
 		addSubtypeConstraint(aField, aLhs, pos);
 		addSubtypeConstraint(aLhs, aField, pos);
 	}
 
 	@Override
-	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, long pos) {
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, int pos) {
 		addSubtypeConstraint(aRhs, aField, pos);
 		addSubtypeConstraint(aField, aRhs, pos);
 	}
 	
 	@Override
 	protected void handleInstanceFieldRead(Reference aBase, Reference aField,
-			Reference aLhs, long pos) {
+			Reference aLhs, int pos) {
 		Reference afv = getFieldAdaptReference(aBase, aField, aLhs);
 		addSubtypeConstraint(afv, aLhs, pos);
 		addSubtypeConstraint(aLhs, afv, pos);
@@ -611,7 +611,7 @@ public class Jcrypt2Checker extends InferenceChecker {
 
 	@Override
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs, long pos) {
+			Reference aRhs, int pos) {
 		if (aBase != null) {
 			Reference afv = getFieldAdaptReference(aBase, aField, aRhs);
 			addSubtypeConstraint(aRhs, afv, pos);

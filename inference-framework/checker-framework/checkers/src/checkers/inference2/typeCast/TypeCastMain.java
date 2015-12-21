@@ -31,9 +31,6 @@ import checkers.inference2.TypingExtractor;
 import checkers.inference2.jcrypt.JcryptConstraintSolver;
 import checkers.inference2.jcrypt.JcryptChecker;
 import checkers.inference2.jcrypt.JcryptTypingExtractor;
-import checkers.inference2.jcrypt2.Jcrypt2Checker;
-import checkers.inference2.jcrypt2.Jcrypt2ConstraintSolver;
-import checkers.inference2.jcrypt2.Jcrypt2TypingExtractor;
 import checkers.util.CheckerMain;
 
 import com.sun.tools.javac.main.Main;
@@ -97,7 +94,7 @@ public class TypeCastMain extends InferenceMain {
 	private enum InferType {
 		REIM,
 		JCRYPT,
-		JCRYPT2
+		//JCRYPT2
 	}
 	
 	private boolean inferImpl(List<String> argList, PrintWriter out, InferType itype) {
@@ -124,9 +121,10 @@ public class TypeCastMain extends InferenceMain {
 			}
 		}
 		ConstraintSolver solver;
-		if (itype == InferType.JCRYPT2) {
-			solver = new Jcrypt2ConstraintSolver((Jcrypt2Checker) checker);
-		} else if (itype == InferType.JCRYPT) {
+//		if (itype == InferType.JCRYPT2) {
+//			solver = new Jcrypt2ConstraintSolver((Jcrypt2Checker) checker);
+//		} else 
+		if (itype == InferType.JCRYPT) {
 			solver = new JcryptConstraintSolver((JcryptChecker) checker);
 		} else {
 			solver = new SetbasedSolver(checker);
@@ -141,9 +139,10 @@ public class TypeCastMain extends InferenceMain {
 		}
 		info(checker.getName(), "Extracting a concete typing...");
 		TypingExtractor extractor;
-		if (itype == InferType.JCRYPT2) {
-			extractor = new Jcrypt2TypingExtractor(checker);
-		} else if (itype == InferType.JCRYPT) {
+//		if (itype == InferType.JCRYPT2) {
+//			extractor = new Jcrypt2TypingExtractor(checker);
+//		} else 
+		if (itype == InferType.JCRYPT) {
 			extractor = new JcryptTypingExtractor(checker);
 		} else {
 			extractor = new MaximalTypingExtractor(checker);
@@ -181,7 +180,7 @@ public class TypeCastMain extends InferenceMain {
 		List<String> argList = new ArrayList<String>(args.length + 10);
         String reimCheckerPath = "checkers.inference2.reim.ReimChecker";
         String jcryptCheckerPath = "checkers.inference2.jcrypt.JcryptChecker";
-        String jcrypt2CheckerPath = "checkers.inference2.jcrypt2.Jcrypt2Checker";
+        //String jcrypt2CheckerPath = "checkers.inference2.jcrypt2.Jcrypt2Checker";
         String transformCheckerPath = "";
         int processorIndex = -1;
         for (int i = 0; i < args.length; i++) {
@@ -213,9 +212,9 @@ public class TypeCastMain extends InferenceMain {
 			inferImpl(argList, out, InferType.JCRYPT);
 		}
 		// Jcrypt2Checker
-		info("Jcrypt2", "Generating constraints...");
-		argList.set(processorIndex, jcrypt2CheckerPath);
-		inferImpl(argList, out, InferType.JCRYPT2);
+//		info("Jcrypt2", "Generating constraints...");
+//		argList.set(processorIndex, jcrypt2CheckerPath);
+//		inferImpl(argList, out, InferType.JCRYPT2);
 		// transform
 		info("Transforming...");
 		argList.set(processorIndex, transformCheckerPath);

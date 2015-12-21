@@ -20,7 +20,7 @@ public abstract class Constraint {
 	
 	protected int id; 
 	
-	protected long pos;
+	protected int pos;
 	
     /**
      * kind = 0: subkind 
@@ -31,11 +31,11 @@ public abstract class Constraint {
 	
 	private static int counter = 0;
 	
-	public long getPos() {
+	public int getPos() {
 		return pos;
 	}
 	
-	public Constraint(long pos) {
+	public Constraint(int pos) {
 		id = counter++;
 		causes = new ArrayList<Constraint>();
 		this.pos = pos;
@@ -116,7 +116,7 @@ public abstract class Constraint {
             this.kind = 0;
 		}
 		
-		public SubtypeConstraint(Reference sub, Reference sup, long pos) {
+		public SubtypeConstraint(Reference sub, Reference sup, int pos) {
             super(pos);
             this.left = sub;
             this.right = sup;

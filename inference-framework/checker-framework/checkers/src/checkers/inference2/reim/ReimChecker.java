@@ -129,7 +129,7 @@ public class ReimChecker extends InferenceChecker {
 	
 	@Override
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs, long pos) {
+			Reference aRhs, int pos) {
 		if (aBase != null) {
 			Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
 			set.add(MUTABLE);
@@ -345,7 +345,7 @@ public class ReimChecker extends InferenceChecker {
 	}
 	
 	@Override
-	protected void handleStaticFieldWrite(Reference aField, Reference aRhs,	long pos) {
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs,	int pos) {
 		super.handleStaticFieldWrite(aField, aRhs, pos);
 		ExecutableElement e = getCurrentMethodElt();
 		if (e != null) {

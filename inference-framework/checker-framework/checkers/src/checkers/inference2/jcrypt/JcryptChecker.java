@@ -44,6 +44,7 @@ import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.tree.JCTree;
 
 /**
  * @author dongy6
@@ -362,7 +363,7 @@ public class JcryptChecker extends InferenceChecker {
 	}
 
 	@Override
-	public void addSubtypeConstraint(Reference sub, Reference sup, long pos) {
+	public void addSubtypeConstraint(Reference sub, Reference sup, int pos) {
 		super.addSubtypeConstraint(sub, sup, pos);
 		if ((containsAnno(sub, MUTABLE) || containsAnno(sub, POLYREAD))
 				&& (containsAnno(sup, MUTABLE) || containsAnno(sup, POLYREAD))) {
@@ -486,7 +487,7 @@ public class JcryptChecker extends InferenceChecker {
 		ExecutableReference overriderRef = (ExecutableReference) getAnnotatedReference(overrider);
 		ExecutableReference overriddenRef = (ExecutableReference) getAnnotatedReference(overridden);
 
-		long pos = getPosition(overrider);
+		int pos = ((JCTree) overrider).getStartPosition();
 		// THIS: overridden <: overrider
 		if (!ElementUtils.isStatic(overrider)) {
 			Reference overriderThisRef = overriderRef.getThisRef();

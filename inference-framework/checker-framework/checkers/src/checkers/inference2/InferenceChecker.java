@@ -116,7 +116,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected static Map<String, Reference> annotatedReferences = new HashMap<String, Reference>();
 
-	protected static Map<String, Map<Long, String[]>> convertedReferences = new HashMap<>();
+	protected static Map<String, Map<Integer, String[]>> convertedReferences = new HashMap<>();
 	
 	//protected static Map<String, ExecutableReference> allocationReferences = new HashMap<>();
 	
@@ -160,7 +160,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		specialMethodPatterns.add(Pattern.compile("getClass\\(.*\\)$"));
 	}
 
-	public Map<String, Map<Long, String[]>> getConvertedReferences() {
+	public Map<String, Map<Integer  , String[]>> getConvertedReferences() {
 		return convertedReferences;
 	}
 
@@ -810,7 +810,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		return createMethodAdaptReference(context, decl, assignTo);
 	}
 
-	public void addSubtypeConstraint(Reference sub, Reference sup, long pos) {
+	public void addSubtypeConstraint(Reference sub, Reference sup, int pos) {
 		if (sub.equals(sup))
 			return;
 		Constraint c = new SubtypeConstraint(sub, sup, pos);
@@ -882,7 +882,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		ExecutableReference overriderRef = (ExecutableReference) getAnnotatedReference(overrider);
 		ExecutableReference overriddenRef = (ExecutableReference) getAnnotatedReference(overridden);
 
-		long pos = getPosition(overrider);
+		int pos = ((JCTree) overrider).getStartPosition();
 		// THIS: overridden <: overrider
 		if (!ElementUtils.isStatic(overrider)) {
 			Reference overriderThisRef = overriderRef.getThisRef();
@@ -908,30 +908,30 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	}
 
 	protected void handleInstanceFieldRead(Reference aBase, Reference aField,
-			Reference aLhs, long pos) {
+			Reference aLhs, int pos) {
 		Reference afv = getFieldAdaptReference(aBase, aField, aLhs);
 		addSubtypeConstraint(afv, aLhs, pos);
 	}
 
 	protected void handleInstanceFieldWrite(Reference aBase, Reference aField,
-			Reference aRhs, long pos) {
+			Reference aRhs, int pos) {
 		if (aBase != null) {
 			Reference afv = getFieldAdaptReference(aBase, aField, aRhs);
 			addSubtypeConstraint(aRhs, afv, pos);
 		}
 	}
 
-	protected void handleStaticFieldRead(Reference aField, Reference aLhs, long pos) {
+	protected void handleStaticFieldRead(Reference aField, Reference aLhs, int pos) {
 		addSubtypeConstraint(aField, aLhs, pos);
 	}
 
-	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, long pos) {
+	protected void handleStaticFieldWrite(Reference aField, Reference aRhs, int pos) {
 		addSubtypeConstraint(aRhs, aField, pos);
 	}
 
 	protected void handleMethodCall(ExecutableElement invokeMethod,
 			Reference receiverRef, Reference assignToRef,
-			List<Reference> argumentRefs, long pos, List<Long> argPos) {
+			List<Reference> argumentRefs, int pos, List<Integer> argPos) {
 		ExecutableReference methodRef = (ExecutableReference) getAnnotatedReference(invokeMethod);
 		if (!ElementUtils.isStatic(invokeMethod)
 				&& !receiverRef.getName().equals("super")) {
@@ -957,7 +957,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		// parameters: z <: C |> p
 		Iterator<Reference> argIt = argumentRefs.iterator();
 		Iterator<Reference> paramIt = methodRef.getParamRefs().iterator();
-		Iterator<Long> argPosIt = argPos.iterator();
+		Iterator<Integer> argPosIt = argPos.iterator();
 		for (; argIt.hasNext() && paramIt.hasNext();) {
 			Reference argRef = argIt.next();
 			Reference paramRef = paramIt.next();

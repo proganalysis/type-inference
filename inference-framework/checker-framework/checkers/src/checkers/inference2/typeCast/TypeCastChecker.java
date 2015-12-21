@@ -257,9 +257,9 @@ public class TypeCastChecker extends InferenceChecker {
 
 	@Override
 	public void printResult(PrintWriter out) {
-		out.print(this.root.toString().replace("@Sensitive()", "/*@Sensitive()*/").
-				replace("@Poly()", "/*@Poly()*/").replace("@Clear()", "/*@Clear()*/").
-				replace("@BOT()", "/*@BOT()*/"));
+		out.print(this.root.toString().replace("@Sensitive()", "/*@Sensitive*/").
+				replace("@Poly()", "/*@Poly*/").replace("@Clear()", "/*@Clear*/").
+				replace("@BOT()", "/*@BOT*/"));
 	}
 
 }
