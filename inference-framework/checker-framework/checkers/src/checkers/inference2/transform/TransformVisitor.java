@@ -29,7 +29,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -54,7 +53,6 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -301,12 +299,16 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		// operand -> Encryption.convert(operand, from, to)
 		if (leftOperand instanceof JCBinary) {
 			binaryTree.lhs = processBinaryTree(leftOperand);
+		} else if (leftOperand instanceof JCMethodInvocation) {
+			binaryTree.lhs = processMethodInvocation(leftOperand);
 		} else {
 			binaryTree.lhs = findConvertMethod(leftOperand);
 		}
 		JCExpression rightOperand = binaryTree.getRightOperand();
 		if (rightOperand instanceof JCBinary) {
 			binaryTree.rhs = processBinaryTree(rightOperand);
+		} else if (rightOperand instanceof JCMethodInvocation) {
+			binaryTree.rhs = processMethodInvocation(rightOperand);
 		} else {
 			binaryTree.rhs = findConvertMethod(rightOperand);
 		}
@@ -626,31 +628,6 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 		return super.visitClass(node, p);
 	}
 
-//	@Override
-//	public Void visitAssignment(AssignmentTree node, Void p) {
-//		JCAssign assign = (JCAssign) node;
-//		JCExpression exp = removeTypeCast(assign.getExpression());
-//		if (!hasChanged(exp)) {
-//			Reference expRef = checker.getAnnotatedReference(exp);
-//			if (exp instanceof JCUnary) {
-//				JCExpression var = ((JCUnary) exp).getExpression();
-//				Reference varRef = checker.getAnnotatedReference(var);
-//				if (!varRef.getRawAnnotations().contains(checker.CLEAR)) {
-//					assign.rhs = var;
-//					Tree parent = getCurrentPath().getParentPath().getLeaf();
-//					Tag tag = exp.getTag();
-//					if (tag == Tag.POSTDEC || tag == Tag.POSTINC) {
-//						assign.rhs = processUnaryTree(tag, varRef, var);		
-//					}
-//				}
-//				
-//				
-//			}
-//			else assign.rhs = findConvertMethod(exp, exp.getStartPosition(), expRef,	false);
-//		}
-//		return super.visitAssignment(node, p);
-//	}
-
 	@Override
 	public Void visitExpressionStatement(ExpressionStatementTree node, Void p) {
 		ExpressionTree expression = node.getExpression();
@@ -756,20 +733,12 @@ public class TransformVisitor extends SourceVisitor<Void, Void> {
 	}
 
 	@Override
-	public Void visitIf(IfTree node, Void p) {
-		JCExpression condition = ((JCParens) node.getCondition()).getExpression();
-		if (condition instanceof JCBinary) {
-			((JCIf) node).cond = processBinaryTree((JCExpression) condition);
-		}
-		return super.visitIf(node, p);
-	}
-	
-	@Override
 	public Void visitParenthesized(ParenthesizedTree node, Void p) {
 		JCParens paren = (JCParens) node;
 		JCExpression exp = paren.getExpression();
 		if (exp instanceof JCBinary) paren.expr = processBinaryTree(exp);
-		if (exp instanceof JCAssign) paren.expr = processAssignment(exp);
+		else if (exp instanceof JCAssign) paren.expr = processAssignment(exp);
+		else if (exp instanceof JCMethodInvocation) paren.expr = processMethodInvocation(exp);
 		return super.visitParenthesized(node, p);
 	}
 	
