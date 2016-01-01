@@ -33,6 +33,7 @@ import edu.rpi.AnnotatedValue.Kind;
 import edu.rpi.*;
 import edu.rpi.ConstraintSolver.FailureStatus;
 import checkers.inference.leak.quals.*;
+import checkers.inference.reim.quals.Readonly;
 
 public class LeakTransformer extends InferenceTransformer {
 
@@ -63,7 +64,7 @@ public class LeakTransformer extends InferenceTransformer {
     @Override
     protected boolean isAnnotated(AnnotatedValue v) {
         Set<Annotation> diff = v.getRawAnnotations();
-       
+                
         diff.retainAll(sourceAnnos);
         return !diff.isEmpty();
     }
@@ -103,11 +104,29 @@ public class LeakTransformer extends InferenceTransformer {
 
     @Override
     protected void annotateField(AnnotatedValue v, SootField field) {
+    	
         if (!isAnnotated(v)) {
             if (field.getName().equals("this$0")) {
                 v.setAnnotations(sourceAnnos, this);
-            } else
-                v.addAnnotation(LEAK);
+            } else {
+            	
+            	//System.out.println("Annotating field "+v);
+            	
+            	if (!v.getRawAnnotations().contains(AnnotationUtils.fromClass(Readonly.class))) {    
+            		//System.out.println("NON-READONLY field, annotating LEAK");
+            		v.addAnnotation(LEAK);
+            		
+            	}
+            	else {
+            		//System.out.println("READONLY Field "+v);
+            		v.addAnnotation(LEAK);
+            		v.addAnnotation(NOLEAK);
+            		//v.addAnnotation(POLY);
+            	}
+            }
+        }
+        else {
+        	System.out.println("Field is already annotated: "+v);
         }
     }
 
@@ -134,8 +153,10 @@ public class LeakTransformer extends InferenceTransformer {
         if (!isAnnotated(v)) {
         	if (isLibraryMethod(method)) {
                 v.addAnnotation(LEAK);
-            } else 
+            } else {
                 v.setAnnotations(sourceAnnos, this);
+                // thisSet.add(v); // ANA: Added to count number of parameters.
+            }
         }
     }
 

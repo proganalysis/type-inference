@@ -21,13 +21,14 @@ public class LeakViewpointAdapter implements ViewpointAdapter {
     }
 
     public Annotation adaptField(Annotation context, Annotation decl) {
-        /*if (decl.equals(LEAK))
-            return LEAK;
-        else if (decl.equals(NOLEAK))
-            return LEAK;
+    	/*
+    	if (decl.equals(NOLEAK))
+            return NOLEAK;
+        else if (decl.equals(POLY))
+            return context;
         else
             throw new RuntimeException("Unknow decl annotation: " + decl);
-            */
+        */
     	return decl;
     }
 

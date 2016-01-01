@@ -54,9 +54,9 @@ public class ReimTransformer2 extends InferenceTransformer {
 
     public ReimTransformer2() {
 
-        READONLY = AnnotationUtils.fromClass(Readonly2.class);
-        POLYREAD = AnnotationUtils.fromClass(Polyread2.class);
-        MUTABLE = AnnotationUtils.fromClass(Mutable2.class);
+        READONLY = AnnotationUtils.fromClass(Readonly.class);
+        POLYREAD = AnnotationUtils.fromClass(Polyread.class);
+        MUTABLE = AnnotationUtils.fromClass(Mutable.class);
 
         sourceAnnos = AnnotationUtils.createAnnotationSet();
         sourceAnnos.add(READONLY);
@@ -114,6 +114,7 @@ public class ReimTransformer2 extends InferenceTransformer {
     @Override
     protected boolean isAnnotated(AnnotatedValue v) {
         Set<Annotation> diff = v.getRawAnnotations();
+                
         diff.retainAll(sourceAnnos);
                 
         return !diff.isEmpty();
@@ -175,14 +176,14 @@ public class ReimTransformer2 extends InferenceTransformer {
                 v.addAnnotation(READONLY);
             } else if (isLibraryMethod(method)) {
             	// System.out.println("ANNOTATING a library method with default MUTABLE: "+method);
-                // v.addAnnotation(MUTABLE);
-                annotateLibraryParameter(v);               
+                v.addAnnotation(MUTABLE);
+                // annotateLibraryParameter(v);               
             } else
                 v.setAnnotations(sourceAnnos, this);
         }
         // ANA: added to check if any lib is annotated.
         else {
-        	// System.out.println("ANNOTATED LIB: "+method+" is annotated: "+isAnnotated(v));
+            // System.out.println("ANNOTATED LIB: "+method+" is annotated: "+isAnnotated(v));
         }
     }
 
@@ -192,8 +193,8 @@ public class ReimTransformer2 extends InferenceTransformer {
             if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
             } else if (isLibraryMethod(method)) {
-                // v.addAnnotation(MUTABLE);
-            	annotateLibraryParameter(v);
+                v.addAnnotation(MUTABLE);
+            	// annotateLibraryParameter(v);
             } else 
                 v.setAnnotations(sourceAnnos, this);
         }
@@ -234,7 +235,7 @@ public class ReimTransformer2 extends InferenceTransformer {
  
         // ANA: Ignore writes on ALLOC vars
         // System.out.println("TRYING to skip init write: "+aBase+" "+aField+"="+aRhs);
-        if (ReimUtils.isAllocVar(aBase)) {
+        if (ReimUtils.isAllocVar(aBase) && isDefaultReadonlyType(aRhs.getType())) {
         	// System.out.println("HERE skipping init write: "+aBase+" "+aField+"="+aRhs);
         	super.handleInstanceFieldWrite(aBase, aField, aRhs);
         	return;
@@ -302,7 +303,8 @@ public class ReimTransformer2 extends InferenceTransformer {
         if (ReimUtils.isMethAdapt(sup) &&
         	ReimUtils.isThis(((AnnotatedValue.AdaptValue) sup).getDeclValue()) &&
         	ReimUtils.isAllocVar(sub) &&
-        	ReimUtils.isReadonly(((AnnotatedValue.AdaptValue) sup).getDeclValue().getEnclosingMethod())) {
+        	ReimUtils.isNotEscaping(((AnnotatedValue.AdaptValue) sup).getDeclValue().getEnclosingMethod()) &&
+        	hasDefaultReadonlyParameters(((AnnotatedValue.AdaptValue) sup).getDeclValue().getEnclosingMethod())) {
         	// System.out.println("HERE Skipping a call on alloc var: "+sub+" <: "+sup);
         	return;
         }
@@ -336,11 +338,25 @@ public class ReimTransformer2 extends InferenceTransformer {
     	else 
     		return sm.getName().equals("<init>") || ReimUtils.isAdditionalInit(sm);
     }
+    
+    private boolean hasDefaultReadonlyParameters(SootMethod sm) {
+    	boolean result = true;
+    	//for (int i=0; i < sm.getParameterCount(); i++) {
+    	//	if (!isDefaultReadonlyType(sm.getParameterType(i)))
+    	//		return false;
+    	//}
+    	
+    	return result;
+    }
+    
+    
+    
+    /*
  
     private void annotateLibraryParameter(AnnotatedValue v) {
     	Set<Annotation> set = v.getRawAnnotations();
     	
-    	// System.out.println("ANNOTATING LIBRARY PARAMETER: "+v);
+        // System.out.println("ANNOTATING LIBRARY PARAMETER: "+v+ " and the set "+set);
     	
     	// if the set is empty, or if it does not contain either of the Reim annotations, add Mutable.
     	if (set.isEmpty() || !(set.contains(AnnotationUtils.fromClass(Readonly.class)) ||
@@ -349,7 +365,7 @@ public class ReimTransformer2 extends InferenceTransformer {
     		v.addAnnotation(MUTABLE);
     	}
     	else {
-    		// System.out.println("HERE, annotating "+v);
+    		System.out.println("HERE, annotating "+v+" and set: "+set);
     		if (set.contains(AnnotationUtils.fromClass(Readonly.class))) {
     			v.addAnnotation(READONLY); 
     			System.out.println("HERE, ADDED Readonly anno on the parameter!");
@@ -359,5 +375,6 @@ public class ReimTransformer2 extends InferenceTransformer {
     	}
     	
     }
+    */
     
 }

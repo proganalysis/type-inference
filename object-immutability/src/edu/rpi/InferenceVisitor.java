@@ -1,6 +1,5 @@
 package edu.rpi;
 
-import java.util.Iterator;
 import java.util.*;
 import java.lang.annotation.*;
 
@@ -20,16 +19,9 @@ import soot.Transform;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
-import soot.jimple.AbstractStmtSwitch;
-import soot.jimple.AbstractJimpleValueSwitch;
-import soot.jimple.InvokeExpr;
-import soot.jimple.InvokeStmt;
 import soot.jimple.*;
-import soot.jimple.Jimple;
-import soot.jimple.StringConstant;
 import soot.options.Options;
 import soot.tagkit.*; 
-
 import edu.rpi.Constraint.SubtypeConstraint;
 import edu.rpi.AnnotatedValue.Kind;
 
@@ -345,6 +337,14 @@ public class InferenceVisitor extends AbstractStmtSwitch {
         }
 
         private void handleMethodCall(InvokeExpr v) {
+        	try {
+        		SootMethod m = v.getMethod();
+        	}
+        	catch (RuntimeException e) {
+        		System.out.println("WARN: Cannot find method at "
+                        + "\n\t" + t.getVisitorState().getUnit());
+                return;
+        	}
             if (v.getMethod() == null) {
                 System.out.println("WARN: Cannot find method at "
                         + "\n\t" + t.getVisitorState().getUnit());

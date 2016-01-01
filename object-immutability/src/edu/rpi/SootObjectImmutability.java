@@ -36,63 +36,17 @@ import static com.esotericsoftware.minlog.Log.*;
 
 
 public class SootObjectImmutability {
-	
-	public static void main(String[] args) {
-        long startTime = System.currentTimeMillis();
-		        
-		//prefer Android APK files// -src-prec apk
-//        Options.v().set_src_prec(Options.src_prec_apk);
+
+	private static void tackTransformer(String name, InferenceTransformer transformer, String[] args) {
 		
-		//output as APK, too//-f J
-//        Options.v().set_output_format(Options.output_format_none);
-//        Options.v().set_output_format(Options.output_format_jimple);
-//        Options.v().set_keep_line_number(true);
-
-        // Exclude packages
-        String[] excludes = new String[] {
-            "android.annotation",
-            "android.hardware",
-            "android.support",
-            "android.media", 
-            "com.android",
-            "android.bluetooth", 
-            "android.media",
-            "com.google",
-            "com.yume.android",
-            "com.squareup.okhttp",
-            "com.crashlytics",
-//            "com.nbpcorp.mobilead", // ad
-//            "com.inmobi.androidsdk", //ad
-//            "com.millennialmedia", //ad
-//            "com.admob",  //ad
-//            "com.admarvel.android.ads",  // ad
-//            "com.mopub.mobileads",  //ad
-//            "com.medialets", // ad
-            "com.slidingmenu",
-            "com.amazon.inapp.purchasing",
-            "com.loopj",
-            "com.appbrain",
-            "com.heyzap.sdk",
-            "net.daum.adam.publisher",
-            "twitter4j.",
-            "org.java_websocket",
-            "org.acra",
-            "org.apache"
-        };
-        List<String> exclude = new ArrayList<String>(Arrays.asList(excludes));
-        Options.v().set_exclude(exclude);
-
-        set(LEVEL_DEBUG);
-
-
-        InferenceTransformer leakTransformer = new LeakTransformer();
-        InferenceTransformer reimTransformer2 = new ReimTransformer2();
-
-        PackManager.v().getPack("jtp").add(new Transform("jtp.reim", leakTransformer));    
+		System.out.println("Starting a new "+name+" transfromer.");
+		
+		PackManager.v().getPack("jtp").add(new Transform("jtp."+name, transformer));    
         Scene.v().addBasicClass("java.io.FileFilter",SootClass.SIGNATURES);
         Scene.v().addBasicClass("javax.swing.event.ChangeListener",SootClass.SIGNATURES);
         Scene.v().addBasicClass("javax.swing.event.ListSelectionListener",SootClass.SIGNATURES);
-		soot.Main.main(args);
+		
+        soot.Main.main(args);
 
         info(String.format("%6s: %14d", "size", AnnotatedValueMap.v().size()));
         info(String.format("%6s: %14f MB", "free", ((float) Runtime.getRuntime().freeMemory()) / (1024*1024)));
@@ -102,79 +56,80 @@ public class SootObjectImmutability {
 
         boolean needTrace = !(System.getProperty("noTrace") != null);
 
-        System.out.println("INFO: Solving Reim constraints:  " + leakTransformer.getConstraints().size() + " in total...");
-        ConstraintSolver cs = new SetbasedSolver(leakTransformer, false);
+        System.out.println("INFO: Solving "+name+" constraints:  " + transformer.getConstraints().size() + " in total...");
+        ConstraintSolver cs = new SetbasedSolver(transformer, false);
         Set<Constraint> errors = cs.solve();
         try {
-            PrintStream leakOut = new PrintStream(outputDir + File.separator + "leak-constraints.log");
-            for (Constraint c : leakTransformer.getConstraints()) {
-                leakOut.println(c);                
-                // Count # of allocs vs # of readonly allocs
-                leakOut.println(c.getLeft().getKind()+"\t"+c.getRight().getKind());
+            PrintStream Out = new PrintStream(outputDir + File.separator + name+"-constraints.log");
+            for (Constraint c : transformer.getConstraints()) {
+                Out.println(c);                
+                Out.println(c.getLeft().getKind()+"\t"+c.getRight().getKind());
             }
-            leakOut.close(); // ANA            
+            Out.close(); // ANA            
         } catch (Exception e) {
             e.printStackTrace();
         }
         for (Constraint c : errors)
             System.out.println(c);
-        System.out.println("INFO: Finish solving Reim constraints. " + errors.size() + " error(s)");
+        System.out.println("INFO: Finish solving "+name+" constraints. " + errors.size() + " error(s)");
 
         try {
-           PrintStream leakOut = new PrintStream(outputDir + File.separator + "reim-result.jaif");
+           PrintStream transOut = new PrintStream(outputDir + File.separator + name+"-result.jaif");
 	
-           leakTransformer.printJaif(leakOut); 
+           transformer.printJaif(transOut); 
             
         } catch (Exception e) {
             e.printStackTrace();
         }
+                        
+	}
+	
+	
+	public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
+		        
+
+
+        set(LEVEL_DEBUG);
+          
+        InferenceTransformer plainTransformer = new PlainTransformer();
+        
+        tackTransformer("plain",plainTransformer,args);
+        
+        ReimUtils.findAllocLhs(plainTransformer);
+        //ReimUtils.collectLeakedThisData((LeakTransformer) plainTransformer);
                 
-        ReimUtils.collectDataAfterReim((LeakTransformer) leakTransformer);
-        
-        leakTransformer.clear();
-        
+        plainTransformer.clear();        
         
         soot.G.v().reset();
         
-        exclude = new ArrayList<String>(Arrays.asList(excludes));
-        Options.v().set_exclude(exclude);
 
         set(LEVEL_DEBUG);
+                        
+        InferenceTransformer reim2Transformer = new ReimTransformer2();
         
-        PackManager.v().getPack("jtp").add(new Transform("jtp.reim2", reimTransformer2));
+        tackTransformer("reim2",reim2Transformer,args);
         
-        Scene.v().addBasicClass("java.io.FileFilter",SootClass.SIGNATURES);
-        Scene.v().addBasicClass("javax.swing.event.ChangeListener",SootClass.SIGNATURES);
-        Scene.v().addBasicClass("javax.swing.event.ListSelectionListener",SootClass.SIGNATURES);
+        // ReimUtils.getAllocSiteData(reim2Transformer);
+
+        // reim2Transformer.clear();
         
-        soot.Main.main(args);
+        soot.G.v().reset();
+        
+        set(LEVEL_DEBUG);                        
 
         
-        System.out.println("\nINFO: Solving Reim2 constraints:  " + reimTransformer2.getConstraints().size() + " in total...");
-        ConstraintSolver cs2 = new SetbasedSolver(reimTransformer2, false);
-        errors = cs2.solve();
-        try {
-            PrintStream reim2Out = new PrintStream(outputDir + File.separator + "reim2-constraints.log");
-            for (Constraint c : reimTransformer2.getConstraints()) {
-                reim2Out.println(c);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("Printing reim2 run errors: ");
-        for (Constraint c : errors)
-            System.out.println(c + "\n");
-        System.out.println("INFO: Finish solving Reim2 constraints. " + errors.size() + " error(s)");
-        try {
-            PrintStream reim2Out = new PrintStream(outputDir + File.separator + "reim2-result.jaif");
-            reimTransformer2.printJaif(reim2Out);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        InferenceTransformer leakTransformer = new LeakTransformer();
         
-        ReimUtils.getAllocSiteData(reimTransformer2);
+        tackTransformer("leak",leakTransformer,args);
+        
+        ReimUtils.collectLeakedThisData((LeakTransformer) leakTransformer);
 
-        System.out.println("INFO: Annotated value size: " + AnnotatedValueMap.v().size());
+        ReimUtils.getAllocSiteData(reim2Transformer);
+        
+        // leakTransformer.clear();
+
+        // System.out.println("INFO: Annotated value size: " + AnnotatedValueMap.v().size());
 		
         long endTime   = System.currentTimeMillis();
         System.out.println("INFO: Total running time: " + ((float)(endTime - startTime) / 1000) + " sec");

@@ -9,6 +9,7 @@ import soot.BodyTransformer;
 import soot.Local;
 import soot.PackManager;
 import soot.PatchingChain;
+import soot.RefLikeType;
 import soot.RefType;
 import soot.Type;
 import soot.VoidType;
@@ -237,12 +238,13 @@ public class ReimTransformer extends InferenceTransformer {
     protected void handleInstanceFieldWrite(AnnotatedValue aBase, 
             AnnotatedValue aField, AnnotatedValue aRhs) {
         Set<Annotation> set = AnnotationUtils.createAnnotationSet();
-        // ANA: Added ignore of r0
-        if (isInitMethod(aBase.getEnclosingMethod()) &&
-        		aBase.getName().equals("r0")) {
+        // ANA: change to ignore setting to MUTABLE if simple type field write
+        // ANA: TODO: refactor test into a predicate method: isSimpleType(a.getType())
+        if (!(aRhs.getType() instanceof RefLikeType)) {
         	super.handleInstanceFieldWrite(aBase, aField, aRhs);
         	return;
         }
+        // ANA: end of change.
         
         set.add(MUTABLE);
         AnnotatedValue mutableConstant = getAnnotatedValue(

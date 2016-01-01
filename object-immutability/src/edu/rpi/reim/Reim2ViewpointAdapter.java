@@ -16,9 +16,9 @@ public class Reim2ViewpointAdapter implements ViewpointAdapter {
     private final Annotation MUTABLE;
 
     public Reim2ViewpointAdapter() {
-        READONLY = AnnotationUtils.fromClass(Readonly2.class);
-        POLYREAD = AnnotationUtils.fromClass(Polyread2.class);
-        MUTABLE = AnnotationUtils.fromClass(Mutable2.class);
+        READONLY = AnnotationUtils.fromClass(Readonly.class);
+        POLYREAD = AnnotationUtils.fromClass(Polyread.class);
+        MUTABLE = AnnotationUtils.fromClass(Mutable.class);
     }
 
     public Annotation adaptField(Annotation context, Annotation decl) {

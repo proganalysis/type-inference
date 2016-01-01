@@ -143,7 +143,7 @@ public class AnnotatedValue {
     }
 
     public Set<Annotation> getAnnotations(InferenceTransformer t) {
-        Set<Annotation> annos = getRawAnnotations();
+        Set<Annotation> annos = getRawAnnotations();        
         annos.retainAll(t.getSourceLevelQualifiers());
         return annos;
     }
@@ -166,10 +166,26 @@ public class AnnotatedValue {
         return annos.contains(anno);
     }
 
+    /*
     public String toString() {
         return "(" +id + ")" + identifier + ": " 
             + annos.toString().replace('[', '{').replace(']', '}') 
             + " [" + type.toString() + "]";
+    }
+    */
+    public String toString() {
+    	String method = "null";
+    	String typeString = "null";
+    	if (enclosingMethod != null)
+    		method = enclosingMethod.toString();
+    	if (type == null) {
+    		// type should be null only when using with Fake annotated value that 
+    		assert (identifier.equals("Arrays.") || identifier.equals("Subtype."));
+    		typeString = "null";
+    	}
+    	else 
+    		typeString = type.toString();
+    	return "("+ id + ")" + method+"."+name + " ["+typeString+"]";
     }
 
     @Override

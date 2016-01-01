@@ -54,7 +54,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     private Set<SootClass> visitedClasses = new TreeSet<SootClass>(comparator);
 
-    private boolean needLocals = false; // ANA changed to true from false
+    private boolean needLocals = false;
 
     private static Map<SootMethod, Map<String, AnnotatedValue>> locals = new HashMap<SootMethod, Map<String, AnnotatedValue>>();
 
@@ -73,14 +73,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
     public final static String FAKE_PREFIX = "fake-";
 
     public final static String LIB_PREFIX = "lib-";
-
-    //ANA
-    private static Map<SootMethod, Body> bodies = new HashMap<SootMethod,Body>();
-    
-    //ANA
-    public Map<SootMethod,Body> getBodies() { 
-    	return bodies; 
-    }
     
     public VisitorState getVisitorState() {
         return visitorState;
@@ -198,14 +190,14 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     protected AnnotatedValue getAnnotatedValue(NewExpr e) {
         SootClass sc = visitorState.getSootClass();
-        String identifier = sc.getName() + "@" + e.toString();
+        String identifier = sc.getName() + "@" + e.toString()+" "+e.hashCode();
         AnnotatedValue ret = getAnnotatedValue(identifier, e.getType(), Kind.ALLOC, e);
         return ret;
     }
     
     protected AnnotatedValue getAnnotatedValue(NewArrayExpr e) {
         SootClass sc = visitorState.getSootClass();
-        String identifier = sc.getName() + "@" + e.toString();
+        String identifier = sc.getName() + "@" + e.toString()+" "+e.hashCode();
         AnnotatedValue ret = getAnnotatedValue(identifier, e.getType(), Kind.ALLOC, e);
         return ret;
     }
@@ -331,11 +323,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
     }
 
     protected void processMethod(SootMethod sm) {
-    	
-        // ANA: saving Active bodies
-        if (!isLibraryMethod(sm)) {
-        	if (bodies.get(sm) == null) bodies.put(sm,sm.retrieveActiveBody());
-        }
     	
         // Add override constraints
         if (sm.getName().equals("<init>") || sm.getName().equals("<clinit>"))
@@ -595,6 +582,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     protected void handleMethodOverride(SootMethod overrider, SootMethod overridden) {
         // only handle overridden methods with active body?
+    	assert (!overrider.isStatic());
+    	assert (!overridden.isStatic());
         if (!overrider.isStatic()) {
             // this: overridden <: overrider 
             AnnotatedValue overriderThis = getAnnotatedThis(overrider);
@@ -652,7 +641,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         List<Value> args = v.getArgs();
         for (int i = 0; i < v.getArgCount(); i++) {
             Value arg = args.get(i);
-            assert arg instanceof Local;
+            //assert arg instanceof Local;
             AnnotatedValue aArg = getAnnotatedValue(arg);
             AnnotatedValue aParam = getAnnotatedParameter(invokeMethod, i);
             addSubtypeConstraint(aArg, getMethodAdaptValue(aBase, aParam, assignTo));

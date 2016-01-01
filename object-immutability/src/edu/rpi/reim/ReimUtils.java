@@ -105,10 +105,10 @@ public class ReimUtils {
 	 * For arrays though, all operations are on temp1.
 	 *
 	 */
-	private static void findAllocLhs(LeakTransformer leakTransformer) {
+	public static void findAllocLhs(InferenceTransformer plainTransformer) {
 		HashSet<AnnotatedValue> allocs = new HashSet<AnnotatedValue>();
 		HashMap<AnnotatedValue,HashSet<Constraint>> lhsToConstraints = new HashMap<AnnotatedValue,HashSet<Constraint>>();		
-		Set<Constraint> constraints = leakTransformer.getConstraints();
+		Set<Constraint> constraints = plainTransformer.getConstraints();
 		for (Constraint c : constraints) {
 			AnnotatedValue lhs = c.getLeft();
 			if (isAlloc(lhs) || isNewarrayAlloc(lhs)) {
@@ -120,7 +120,7 @@ public class ReimUtils {
 			    allocLhss.add(formString(c.getRight()));
 			    // System.out.println("========Added to allocLhss I: "+c.getRight());
 			}
-			if (isFieldAdapt(lhs)) System.out.println("HERE, POTENTIAL CONSTRAINT "+c);
+			// if (isFieldAdapt(lhs)) System.out.println("HERE, POTENTIAL CONSTRAINT "+c);
 			if (!(isLocal(lhs) || (isFieldAdapt(lhs) && isR0(((AnnotatedValue.AdaptValue) lhs).getContextValue()))))				
 				continue;
 			// if (!isLocal(lhs)) System.out.println("HERE, ADDING CONSTRAINT "+c);
@@ -156,7 +156,7 @@ public class ReimUtils {
 					else {
 						for (Constraint cc : lhsToConstraints.get(rhs)) {
 							// System.out.println("======Adding to allocLhss III: "+cc.getRight());
-							allocLhss.add(formString(cc.getRight()));
+							if (rhs.getEnclosingMethod().getName().equals("<init>")) allocLhss.add(formString(cc.getRight()));
 						}
 					}
 				}
@@ -210,53 +210,53 @@ public class ReimUtils {
 		}
 		int totalAllocs = 0;
 		int readonlyAllocs = 0;
+		int stringBuilderAllocs = 0;
+		int shortLivedAllocs = 0;
 		
 		for (Constraint alloc : allocConstraints) {
-			System.out.println("Processing alloc: "+alloc);
+			// System.out.println("Processing alloc: "+alloc);
 			AnnotatedValue lhs = alloc.getLeft();
 			AnnotatedValue rhs = alloc.getRight();
 			AnnotatedValue.MethodAdaptValue meth = null;
 			HashSet<Constraint> lhsSet = constraintMap.get(rhs);
-			/*
-			if (lhsSet != null) 
-				for (Constraint c2 : lhsSet) {
-					// System.out.println("Constraint c2: "+c2);
-					
-					if (c2.getLeft().getKind() == AnnotatedValue.Kind.METH_ADAPT &&
-							((AnnotatedValue.MethodAdaptValue) c2.getLeft()).getDeclValue().getKind() == AnnotatedValue.Kind.THIS &&
-							((AnnotatedValue.MethodAdaptValue) c2.getLeft()).getDeclValue().getEnclosingMethod().getName().equals("<init>")) {
-						meth = (AnnotatedValue.MethodAdaptValue) c2.getLeft();
-						// System.out.println("FOUND METH: "+meth);
-					}
-				}
-			*/	
-			if (meth == null) { // newarray
-				if (rhs.containsAnno(AnnotationUtils.fromClass(Readonly2.class))) {
-					readonlyAllocs++;
-					System.out.println("---- IS READONLY ALLOC");
-				}
-				else 
-					System.out.println("---- IS NOT READONLY ALLOC");
-			}
-			/*
-			else {
-				if (rhs.containsAnno(AnnotationUtils.fromClass(Readonly2.class))  &&
-					isReadonly(meth.getDeclValue().getEnclosingMethod()) ) {
-					readonlyAllocs++;
-					System.out.println("---- IS READONLY");
-				}
-				else {
-					if (!isReadonly(meth.getDeclValue().getEnclosingMethod()))
-						System.out.println("---- IS NOT READONLY because "+meth.getDeclValue().getEnclosingMethod()+" is not readonly.");
-					if (!rhs.containsAnno(AnnotationUtils.fromClass(Readonly2.class)))
-						System.out.println("---- IS NOT READONLY because lhs is not readonly.");
-				}
-			}
-			*/
 			totalAllocs++;
+			if (rhs.containsAnno(AnnotationUtils.fromClass(Readonly.class))) {
+				readonlyAllocs++;
+				// System.out.println("---- IS READONLY ALLOC");
+				if (lhs.getName().contains("new java.lang.String") || lhs.getName().contains("Exception")) {
+					stringBuilderAllocs++;
+					// Don't print anything.
+				}
+				else if (isNewarrayAlloc(lhs) &&
+					// Very dumb way of doing things!
+					(lhs.toString().contains("(java.lang.String)[") ||
+							lhs.toString().contains("(int)[") ||
+							lhs.toString().contains("(char)[") ||
+							lhs.toString().contains("(long)[") ||
+							lhs.toString().contains("(float)[") || 
+							lhs.toString().contains("(byte)[") ||
+							lhs.toString().contains("(boolean)["))) {
+						stringBuilderAllocs++;
+						// arrays of immutables.								
+				}		
+				
+				else {
+					System.out.println("Processing alloc: "+alloc);
+					System.out.println("---- IS READONLY ALLOC");
+					if (lhs.containsAnno(AnnotationUtils.fromClass(Noleak.class))) {
+						shortLivedAllocs++;
+						System.out.println("---- IS SHORT-LIVED OBJECT");
+					}
+				}					
+			}
+			else {
+				// System.out.println("---- IS NOT READONLY ALLOC");
+			}
 		}
 		
 		System.out.println(readonlyAllocs+" readonly ALLOCs out of "+totalAllocs);
+		System.out.println(stringBuilderAllocs+" are StringBuilder/Exception ALLOCs out of "+readonlyAllocs);
+		System.out.println(shortLivedAllocs+" are short-lived ALLOCs out of all non-StringBuilder/non-Exception allocs");
 	}
 	
 	public static void collectLeakedThisData(LeakTransformer leakTransformer) {
@@ -269,7 +269,7 @@ public class ReimUtils {
 			total++;
 			if (a.containsAnno(AnnotationUtils.fromClass(Noleak.class))) {				
 				// System.out.println(a +" is: ");
-				// System.out.println("---- IS NOLEAK!");
+				// System.out.println("---- IS NOLEAK!");								
 			}
 			else {
 				leaks++;
@@ -282,15 +282,8 @@ public class ReimUtils {
 		
 	}
 	
-	public static void collectDataAfterReim(LeakTransformer leakTransformer) {
-		collectLeakedThisData(leakTransformer);
-		findAllocLhs(leakTransformer);
-		// collectAdditionalInitMethods(reimTransformer);
-		// collectAdditionalInits(reimTransformer);
-		
-	}
-
-	public static boolean isReadonly(SootMethod m) {
+	
+	public static boolean isNotEscaping(SootMethod m) {
 		return !nonReadonlyMethods.contains(m.toString());
 	}
 	
