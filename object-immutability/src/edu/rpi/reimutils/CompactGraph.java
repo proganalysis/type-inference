@@ -6,12 +6,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+/*
 class IntEdge<N> {
+	boolean fieldWrite;
 	N source;
 	CfgSymbol label;
-	public IntEdge(N source, CfgSymbol label) {
+	public IntEdge(N source, CfgSymbol label, boolean fieldWrite) {
 		this.source = source;
 		this.label = label;
+		this.fieldWrite = fieldWrite;
 	}
 	@Override
 	public boolean equals(Object other) {		
@@ -33,6 +36,7 @@ class IntEdge<N> {
 		return label;
 	}
 }
+*/
 
 public class CompactGraph<N> {
 	// HashSet<N> nodes;
@@ -100,7 +104,7 @@ public class CompactGraph<N> {
 		    result = call.add(source);
 		}
 		else {
-			System.out.println("This shoudl not happen!!! "+label);
+			System.out.println("This should not happen!!! "+label);
 			return false;
 		}
 		

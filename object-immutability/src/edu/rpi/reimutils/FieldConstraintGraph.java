@@ -1,5 +1,7 @@
 package edu.rpi.reimutils;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -22,33 +24,67 @@ public class FieldConstraintGraph extends ConstraintGraph {
 
 	@Override
 	protected void addFieldOpen(AnnotatedValue left, AnnotatedValue right,
-			AnnotatedValue annotation) {
-		graph.addEdge(left,right,CfgSymbol.getAtomicOpen(annotation));
-		graph.addEdge(left,right,CfgSymbol.OPENPAREN);
+			AnnotatedValue annotation, boolean isInverse) {
+		Edge<AnnotatedValue,CfgSymbol> edge1 = new Edge(left,right,CfgSymbol.getAtomicOpen(annotation));
+		Edge<AnnotatedValue,CfgSymbol> edge2 = new Edge(left,right,CfgSymbol.OPENPAREN);		
+		
+		graph.addEdge(edge1);
+		graph.addEdge(edge2);
+		if (isInverse == false) {
+			originalGraph.addEdge(edge1);
+			originalGraph.addEdge(edge2);
+		}
 	}
 
 	@Override
 	protected void addFieldClose(AnnotatedValue left, AnnotatedValue right,
-			AnnotatedValue annotation) {
-		graph.addEdge(left,right,CfgSymbol.getAtomicClose(annotation));
-		graph.addEdge(left,right,CfgSymbol.CLOSEPAREN);
+			AnnotatedValue annotation, boolean isInverse) {
+		Edge<AnnotatedValue,CfgSymbol> edge1 = new Edge(left,right,CfgSymbol.getAtomicClose(annotation));
+		Edge<AnnotatedValue,CfgSymbol> edge2 = new Edge(left,right,CfgSymbol.CLOSEPAREN);
+		
+		graph.addEdge(edge1);
+		graph.addEdge(edge2);
+		
+		if (isInverse == false) {
+			originalGraph.addEdge(edge1);
+			originalGraph.addEdge(edge2);
+		}
 	}
 
 	@Override
 	protected void addCallOpen(AnnotatedValue left, AnnotatedValue right,
-			AnnotatedValue annotation) {
-		if (!left.equals(right)) graph.addEdge(left,right,CfgSymbol.LOCAL);
+			AnnotatedValue annotation, boolean isInverse) {
+		if (!left.equals(right)) { 
+			Edge<AnnotatedValue,CfgSymbol> edge = new Edge(left,right,CfgSymbol.LOCAL);
+			graph.addEdge(edge);
+			if (isInverse == false) {
+				originalGraph.addEdge(edge);
+			}
+		}
 	}
 
 	@Override
 	protected void addCallClose(AnnotatedValue left, AnnotatedValue right,
-			AnnotatedValue annotation) {
-		if (!left.equals(right)) graph.addEdge(left,right,CfgSymbol.LOCAL);
+			AnnotatedValue annotation, boolean isInverse) {
+		if (!left.equals(right)) { 
+			
+			Edge<AnnotatedValue,CfgSymbol> edge = new Edge(left,right,CfgSymbol.LOCAL);
+			graph.addEdge(edge);
+			if (isInverse == false) {
+				originalGraph.addEdge(edge);
+			}
+		}
 	}
 
 	@Override
-	protected void addLocal(AnnotatedValue left, AnnotatedValue right) {
-		if (!left.equals(right)) graph.addEdge(left,right,CfgSymbol.LOCAL);
+	protected void addLocal(AnnotatedValue left, AnnotatedValue right, boolean isInverse) {
+		if (!left.equals(right)) { 
+			Edge<AnnotatedValue,CfgSymbol> edge = new Edge(left,right,CfgSymbol.LOCAL);
+			graph.addEdge(edge);
+			if (isInverse == false) {
+				originalGraph.addEdge(edge);
+			}
+		}
 	}
 
 	@Override
@@ -56,23 +92,23 @@ public class FieldConstraintGraph extends ConstraintGraph {
 		System.out.println("Printing fields graph");
 	}
 	
-	
+	/*
 	protected void dynamicClosure(Queue<Edge<AnnotatedValue, CfgSymbol>> queue,
 			Set<Edge<AnnotatedValue, CfgSymbol>> visitedEdges) {
 		int count=0;
 		while (!queue.isEmpty()) {
 			System.out.println("queue.size: "+queue.size());
 			Edge<AnnotatedValue,CfgSymbol> curr = queue.remove();
-			//System.out.println("Current popped edge: "+curr);
+			// System.out.println("Current popped edge: "+curr);
 			// Invariant: curr is LOCAL
 			for (Edge<AnnotatedValue,CfgSymbol> next : graph.getEdgesFrom(curr.getTarget())) {
 				addTransitiveLocalEdge(curr,next,queue,visitedEdges);
 			}
-			/*
-			for (Edge<AnnotatedValue,CfgSymbol> prev : graph.getEdgesInto(curr.getSource())) {
-				addTransitiveLocalEdge(prev,curr,queue,visitedEdges);
-			}
-			*/
+			
+			//for (Edge<AnnotatedValue,CfgSymbol> prev : graph.getEdgesInto(curr.getSource())) {
+			//	addTransitiveLocalEdge(prev,curr,queue,visitedEdges);
+			//}
+			
 						
 			for (Edge<AnnotatedValue,CfgSymbol> next : graph.getEdgesFrom(curr.getTarget())) {
 				for (Edge<AnnotatedValue,CfgSymbol> prev : graph.getEdgesInto(curr.getSource())) {
@@ -88,6 +124,7 @@ public class FieldConstraintGraph extends ConstraintGraph {
 		}
 		System.out.println("Counted "+count+" first level ci ci edges.");
 	}
+	*/
 	
 	private boolean hasAtomicOpenPredecessor(AnnotatedValue source) {
 		for (Edge<AnnotatedValue,CfgSymbol> prevprev : graph.getEdgesInto(source)) {
@@ -98,23 +135,25 @@ public class FieldConstraintGraph extends ConstraintGraph {
 		return false;
 	}
 	
+	/*
 	private void addTransitiveLocal(Queue<Edge<AnnotatedValue, CfgSymbol>> queue,
 			Set<Edge<AnnotatedValue, CfgSymbol>> visitedEdges,
 			AnnotatedValue left, AnnotatedValue right) {
 		if (graph.hasEdge(left,right,CfgSymbol.LOCAL)) return; // edge is already in the graph.
 		for (Edge<AnnotatedValue,CfgSymbol> prev : graph.getEdgesInto(left)) {
 			if (prev.getLabel() instanceof AtomicOpenParen) {
-				addLocalEdge(queue,visitedEdges,left,right,CfgSymbol.LOCAL);
+				addLocalEdge(queue,visitedEdges,left,right);
 			}
 			else if (prev.getLabel() == CfgSymbol.LOCAL) {
 				if (hasAtomicOpenPredecessor(prev.getSource())) {
-					addLocalEdge(queue,visitedEdges,prev.getSource(),right,CfgSymbol.LOCAL);
+					addLocalEdge(queue,visitedEdges,prev.getSource(),right);
 				}
 			}
 		}
 		if (!skipAddEdge(left,right)) 
 			graph.addEdge(left,right,CfgSymbol.LOCAL);
 	}
+	*/
 	
 	// TODO: have to implement structural "merge" for ArrayTypes
 	// TODO: THIS HAS TO BE REDONE. THIS IS JUST A QUICK THING TO SEE IF IT SCALES!!!
@@ -183,27 +222,129 @@ public class FieldConstraintGraph extends ConstraintGraph {
 			return false;
 	}
 
-		
+	/* === BUILDING THE PT GRAPH ==== */
+	
 	@Override
-	protected void addTransitiveEdgeToQueue(Queue<Edge<AnnotatedValue, CfgSymbol>> queue,
+	protected boolean addTransitiveEdgeToQueue(Queue<Edge<AnnotatedValue, CfgSymbol>> queue,
 			Edge<AnnotatedValue, CfgSymbol> e1, Edge<AnnotatedValue, CfgSymbol> e2) {		
 		if (e2.getLabel() == CfgSymbol.LOCAL) {
 			Edge<AnnotatedValue, CfgSymbol> newEdge = 
 					new Edge<AnnotatedValue,CfgSymbol>(e1.getSource(),e2.getTarget(),CfgSymbol.LOCAL);
-			if (!ptGraph.hasEdge(e1.getSource(),e2.getTarget(),CfgSymbol.LOCAL)) {
+			if (!ptGraph.hasEdge(e1.getSource(),e2.getTarget(),CfgSymbol.LOCAL) && 
+					typeCompatible(e1.getSource().getType(),e2.getTarget().getType())) {  
 				ptGraph.addEdge(e1.getSource(),e2.getTarget(),CfgSymbol.LOCAL);
 				queue.add(newEdge);
+				//System.out.println("ADDED TRANSITIVE EDGE TO QUEUE: "+newEdge+" FOR EDGES "+e1+" AND "+e2);
+				return true;
 			}
 		}
+		return false;
 	}
 
 	@Override
 	protected void addEdgeToQueue(Queue<Edge<AnnotatedValue, CfgSymbol>> queue,
 			Edge<AnnotatedValue, CfgSymbol> e) {
-		if (e.getLabel() == CfgSymbol.LOCAL) {
+		if (e.getLabel() == CfgSymbol.LOCAL && typeCompatible(e.getSource().getType(),e.getTarget().getType())) { 			
 			ptGraph.addEdge(e.getSource(),e.getTarget(),e.getLabel());
-			queue.add(new Edge(e.getSource(),e.getTarget(),e.getLabel()));
+			Edge<AnnotatedValue, CfgSymbol> newEdge = new Edge(e.getSource(),e.getTarget(),e.getLabel());
+			queue.add(newEdge);
+			//System.out.println("ADDED EDGE TO QUEUE: "+newEdge);
 		}
+	}
+	
+	
+	protected boolean propagateOverInverseEdges(Edge<AnnotatedValue,CfgSymbol> e1) {
+		return false;
+	}
+	
+	@Override
+	protected boolean isFieldWrite(Edge<AnnotatedValue,CfgSymbol> e1) {	
+		return false;
+	}
+
+	@Override
+	protected void addAllTransitiveEdges() {
+		// TODO Auto-generated method stub
+		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> revNodeToRep = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
+		for (AnnotatedValue X : nodeToRep.keySet()) {
+			//System.out.println("Adding "+X+" to "+nodeToRep.get(X));
+			addToMap(revNodeToRep,nodeToRep.get(X),X);
+		}			
+		
+		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> incomingMap = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
+		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> outgoingMap = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
+		
+		collectTransitiveSourceAndTargetNodes(incomingMap,outgoingMap);
+		
+		System.out.println("Started addAllTransitiveEdges");
+		
+		Graph<AnnotatedValue,CfgSymbol> uncollapsedTransitiveEdges = new Graph<AnnotatedValue,CfgSymbol>();
+		
+		int i=0;
+		int k=0;
+		int numNodes = transitiveEdges.getNodes().size();
+		HashSet<Pair> visited = new HashSet<Pair>();
+		for (AnnotatedValue v : transitiveEdges.getNodes()) {
+			i += transitiveEdges.getEdgesFrom(v).size();
+			//System.out.println("Added "+i+"edges for node "+k++ + " out of "+numNodes);
+			k++;
+			for (Edge<AnnotatedValue,CfgSymbol> e : transitiveEdges.getEdgesFrom(v)) {
+				//System.out.println(" Edge: "+e);
+				AnnotatedValue source = e.getSource();
+				AnnotatedValue target = e.getTarget();
+				HashSet<AnnotatedValue> sSet = revNodeToRep.get(source);
+				if (sSet == null) sSet = revNodeToRep.get(nodeToRep.get(source));
+				HashSet<AnnotatedValue> tSet = revNodeToRep.get(target);
+				if (tSet == null) tSet = revNodeToRep.get(nodeToRep.get(target));
+				
+				if (visited.contains(new Pair(sSet,tSet))) continue;
+				visited.add(new Pair(sSet,tSet));
+				
+				//System.out.println("sSet size: "+sSet.size() +" and tSet size: "+tSet.size()+" at "+k+" out of "+numNodes);
+				
+				
+				for (AnnotatedValue s : sSet) {
+					for (AnnotatedValue t : tSet) {
+						if (skipAddEdge(s,t)) continue;
+						if ((outgoingMap.get(s) != null) && (incomingMap.get(t) != null) && 
+								intersect(outgoingMap.get(s),incomingMap.get(t))) {
+							//originalGraph.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
+							uncollapsedTransitiveEdges.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
+						}
+					}
+				}
+				
+			}
+		}
+		
+		transitiveEdges = uncollapsedTransitiveEdges;
+		
+		System.out.println("transitiveEdges has "+i+ " edges! ");
+		
+	}	
+	
+}
+
+class Pair {
+	HashSet<AnnotatedValue> sSet;
+	HashSet<AnnotatedValue> tSet;
+	
+	Pair(HashSet<AnnotatedValue> sSet, HashSet<AnnotatedValue> tSet) {
+		this.sSet = sSet;
+		this.tSet = tSet;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Pair) {
+			Pair o = (Pair) other;
+			return sSet == o.sSet && tSet == o.tSet;
+		}
+		return false;
+	}
+	@Override
+	public int hashCode() {
+		return sSet.hashCode() + tSet.hashCode();
 	}
 	
 }

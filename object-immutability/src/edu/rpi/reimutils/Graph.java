@@ -37,11 +37,14 @@ public class Graph<N,L> {
 	// effects: adds an edge from source and target in Graph
 	//          if source or target not in graph, they are added
 	//          if edge already in graph, addEdge has no effect
-	public boolean addEdge(N source, N target, L label) {
+	public boolean addEdge(Edge<N,L> e) {
+		N source = e.getSource();
+		N target = e.getTarget();
+		
 		if (!nodes.contains(source)) nodes.add(source);
 		if (!nodes.contains(target)) nodes.add(target);
 		
-		Edge<N,L> e = new Edge<N,L>(source,target,label);
+		//Edge<N,L> e = new Edge<N,L>(source,target,label);
 		HashSet<Edge<N,L>> hs = edges.get(source);
 		if (hs == null) {
 			hs = new HashSet<Edge<N,L>>();

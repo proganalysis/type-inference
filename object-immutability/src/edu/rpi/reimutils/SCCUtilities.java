@@ -135,7 +135,7 @@ public class SCCUtilities {
 				AnnotatedValue repTarget = reps.get(edge.getTarget());
 				CfgSymbol label = edge.getLabel();
 				if (repSource == repTarget && label == CfgSymbol.LOCAL) continue;
-				theNewGraph.addEdge(repSource,repTarget,label);
+				theNewGraph.addEdge(new Edge(repSource,repTarget,label));
 			}
 		}
 		cg.graph = theNewGraph;

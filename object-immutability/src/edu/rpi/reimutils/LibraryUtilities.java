@@ -149,8 +149,10 @@ public class LibraryUtilities {
 		}
 		for (SootClass sub : l) {
 			if (!sub.isLibraryClass()) {
-				System.out.println("found overriden method: "+m+" overriden by "+sub);
-				return true;
+				if (sub.declaresMethod(m.getSubSignature())) {					
+					System.out.println("found overriden method: "+m+" overriden by "+sub);
+					return true;
+				}
 			}
 		}		
 		return result;
