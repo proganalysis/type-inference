@@ -54,6 +54,7 @@ public class LibraryUtilities {
 		AnnotatedValue lhs = null; // left-hand-side at call
 		
 		for (Constraint c : callConstraints) {
+						
 			if (c.getLeft() instanceof AnnotatedValue.AdaptValue) {
 				// return
 				assert !(c.getRight() instanceof AnnotatedValue.AdaptValue);
@@ -67,7 +68,7 @@ public class LibraryUtilities {
 				actuals.add(c.getLeft());				
 			}
 		}
-		if (lhs != null) {
+		if (lhs != null && !UtilFuncs.isArrayOfSimpleType(lhs)) {
 			// create actual -> lhs constraints
 			for (int i=0; i<params.size(); i++) {
 				if (!actuals.get(i).equals(lhs)) {
@@ -75,11 +76,11 @@ public class LibraryUtilities {
 					if (!cg.skipAddEdge(actuals.get(i),lhs)) {
 						cg.processLocal(actuals.get(i),lhs);
 						cg.processFieldClose(actuals.get(i),lhs,ConstraintGraph.LIB,lhs);
-						System.out.println("Added LIB EMPTY edge from "+actuals.get(i)+" to "+lhs);
+						//if (params.get(i).toString().indexOf("add(")>=0) System.out.println("Added LIB EMPTY/CLOSE edge from "+actuals.get(i)+" to "+lhs);
 					}
 					else {
 						cg.processFieldClose(actuals.get(i),lhs,ConstraintGraph.LIB,lhs);
-						System.out.println("Added LIB CLOSE edge from "+actuals.get(i)+" to "+lhs);
+						//if (params.get(i).toString().indexOf("add(")>=0) System.out.println("Added LIB CLOSE edge from "+actuals.get(i)+" to "+lhs);
 					}
 					// end of TODO fix.
 					// System.out.println("Added edge from "+actuals.get(i)+" to "+lhs);
@@ -88,17 +89,23 @@ public class LibraryUtilities {
 		}
 		for (int i=0; i<params.size(); i++) {
 			//System.out.println(params.get(i));
-			if (cg.isMutable(params.get(i))) {
-				System.out.println("Mutable parameter: "+params.get(i));
+			// TODO: Improve!
+			// If static method, create constraints x_i -> x_j for each i and mutable j.
+			// If instance, only create constraints x_i -> x_0 (this)
+			if (!params.get(i).getEnclosingMethod().isStatic() && params.get(i).getKind() != AnnotatedValue.Kind.THIS) continue; 
+			if (UtilFuncs.isMutable(params.get(i),cg.reimTransformer) && !UtilFuncs.isArrayOfSimpleType(actuals.get(i))) {
+				//System.out.println("Mutable parameter: "+params.get(i));
 				for (int j=0; j<actuals.size(); j++) {
 					if (!actuals.get(j).equals(actuals.get(i))) {
 						// skipEdge should always return false when cg is a CallsGraph!
 						if (!cg.skipAddEdge(actuals.get(j),actuals.get(i))) {
 							cg.processLocal(actuals.get(j),actuals.get(i));
+							cg.processFieldOpen(actuals.get(j),actuals.get(i),ConstraintGraph.LIB,actuals.get(i)); 
+							//if (params.get(i).toString().indexOf("add(")>=0) System.out.println("Added LIB OPEN/EMPTY edge from "+actuals.get(j)+" to "+actuals.get(i));
 						}
 						else {
-							cg.processFieldOpen(actuals.get(j),actuals.get(i),ConstraintGraph.LIB,actuals.get(i));
-							System.out.println("Added LIB OPEN edge from "+actuals.get(j)+" to "+actuals.get(i));
+							cg.processFieldOpen(actuals.get(j),actuals.get(i),ConstraintGraph.LIB,actuals.get(i));							
+							//if (params.get(i).toString().indexOf("add(")>=0) System.out.println("Added LIB OPEN edge from "+actuals.get(j)+" to "+actuals.get(i));
 						}
 						/*
 						if (actuals.get(j).getType().equals(actuals.get(i).getType())) {
@@ -125,7 +132,7 @@ public class LibraryUtilities {
 			//System.out.println("Key: "+key);
 			for (Constraint c : contextToLibraryCallConstraints.get(key)) {
 				SootMethod m = extractLibraryMethod(c);
-				if (m.getName().equals("append") || m.getName().equals("toString")) continue;
+				//if (m.getName().equals("append") || m.getName().equals("toString")) continue;
 				if (m.getDeclaringClass().getName().equals("java.lang.String") || 
 						m.getDeclaringClass().getName().equals("java.lang.StringBuffer")) continue;
 				processLibraryCall(graph, contextToLibraryCallConstraints.get(key));
@@ -135,9 +142,11 @@ public class LibraryUtilities {
 		
 	}
 	
+	/*
+	// TODO: Move to UtilFuncs
 	public boolean isOverriden(SootMethod m) {
-		boolean result = false;
 		
+		if (m.getName().equals("<init>")) return false;
  		Hierarchy hier = Scene.v().getActiveHierarchy();
 		SootClass c = m.getDeclaringClass();
 		List<SootClass> l; 
@@ -149,14 +158,15 @@ public class LibraryUtilities {
 		}
 		for (SootClass sub : l) {
 			if (!sub.isLibraryClass()) {
-				if (sub.declaresMethod(m.getSubSignature())) {					
+				if (sub.declaresMethod(m.getSubSignature())) {	
 					System.out.println("found overriden method: "+m+" overriden by "+sub);
 					return true;
 				}
 			}
 		}		
-		return result;
+		return false;
 	}
+	*/
 	
 	// TODO: Extremely ugly.
 	// effects: if library constraint, store in libraryUtils
@@ -170,7 +180,7 @@ public class LibraryUtilities {
 			SootMethod enclMethod = ((AnnotatedValue.AdaptValue) c.getLeft()).getDeclValue().getEnclosingMethod();
 			storeLibraryCall(context,c);
 			//TODO: DOUBLE CHECK THIS! Have to return false if library method is overriden by user
-			if (isOverriden(enclMethod)) { return false; };
+			if (UtilFuncs.isOverriden(enclMethod)) { return false; };
 			return true;
 		}
 		// We have x <: y |> param
@@ -181,7 +191,7 @@ public class LibraryUtilities {
 			SootMethod enclMethod = ((AnnotatedValue.AdaptValue) c.getRight()).getDeclValue().getEnclosingMethod();
 			storeLibraryCall(context,c);
 			//TODO: DOUBLE CHECK. Have to return false if library method is overriden by user
-			if (isOverriden(enclMethod)) { return false; }
+			if (UtilFuncs.isOverriden(enclMethod)) { return false; }
 			return true;
 		}
 		else {

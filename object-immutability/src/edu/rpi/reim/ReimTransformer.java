@@ -157,9 +157,9 @@ public class ReimTransformer extends InferenceTransformer {
     @Override
     protected void annotateField(AnnotatedValue v, SootField field) {
         if (!isAnnotated(v)) {
-            if (field.getName().equals("this$0")) {
+            /*if (field.getName().equals("this$0")) {
                 v.setAnnotations(sourceAnnos, this);
-            } else if (isDefaultReadonlyType(v.getType())) {
+            } else*/ if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
             } else if (!field.isStatic()) {
                 v.addAnnotation(READONLY);
@@ -175,7 +175,7 @@ public class ReimTransformer extends InferenceTransformer {
             if (isDefaultReadonlyType(v.getType()) && !method.isConstructor()) {
                 v.addAnnotation(READONLY);
             } else if (isLibraryMethod(method)) {
-            	System.out.println("Annotating a library method with default MUTABLE: "+method);
+            	// System.out.println("Annotating a library method with default MUTABLE: "+method);
                 v.addAnnotation(MUTABLE);
             	// v.addAnnotation(READONLY); // ANA, will change!
             } else
@@ -242,6 +242,7 @@ public class ReimTransformer extends InferenceTransformer {
         // ANA: TODO: refactor test into a predicate method: isSimpleType(a.getType())
         if (!(aRhs.getType() instanceof RefLikeType)) {
         	super.handleInstanceFieldWrite(aBase, aField, aRhs);
+        	//System.out.println("WRITE NOT MUTABLE: "+aField);
         	return;
         }
         // ANA: end of change.

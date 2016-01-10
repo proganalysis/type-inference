@@ -202,6 +202,13 @@ public abstract class InferenceTransformer extends BodyTransformer {
         return ret;
     }
     
+    protected AnnotatedValue getAnnotatedValue(NewMultiArrayExpr e) {
+        SootClass sc = visitorState.getSootClass();
+        String identifier = sc.getName() + "@" + e.toString()+" "+e.hashCode();
+        AnnotatedValue ret = getAnnotatedValue(identifier, e.getType(), Kind.ALLOC, e);
+        return ret;
+    } // TODO: Refactor extractMethod to eliminate code duplication    
+    
     protected AnnotatedValue getAnnotatedValue(Value v) {
         if (v instanceof Local)
             return getAnnotatedValue((Local) v);

@@ -149,19 +149,27 @@ public class InferenceVisitor extends AbstractStmtSwitch {
             Value base = v.getBase();
             assert base instanceof Local;
             AnnotatedValue aBase = t.getAnnotatedValue((Local) base);
-            SootField field = v.getField();
+            SootField field = null;
+            try {
+            	field = v.getField();
+            }
+            catch (RuntimeException e) {
+            	System.out.println("WARN: " + base.getType() + " doesn't have field, at"
+                        + "\n\t" + t.getVisitorState().getUnit());
+                return;
+            }
             if (field == null) {
                 System.out.println("WARN: " + base.getType() + " doesn't have field, at"
                         + "\n\t" + t.getVisitorState().getUnit());
                 return;
             }
             AnnotatedValue aField = t.getAnnotatedField(field);
-
+            /* ANA: Changed back. do need adaptation...
             if (field.getName().equals("this$0")) {
                 // this is inner class, no adaptation
                 add(aField);
             }
-            else if (sub != null && sup == null) 
+            else */ if (sub != null && sup == null) 
                 t.handleInstanceFieldWrite(aBase, aField, sub);
             else if (sub == null && sup != null)
                 t.handleInstanceFieldRead(aBase, aField, sup);
@@ -277,8 +285,14 @@ public class InferenceVisitor extends AbstractStmtSwitch {
         }
 
         @Override
-        public void caseNewMultiArrayExpr(NewMultiArrayExpr v) {}
-        //TODO: Need to implement this eventually! 
+        public void caseNewMultiArrayExpr(NewMultiArrayExpr v) {
+        	//System.out.println("MultiArrayExpr: "+v);
+        	//System.out.println("baseType "+v.getBaseType());
+        	//System.out.println("type "+v.getType());
+        	AnnotatedValue av = t.getAnnotatedValue(v);
+            add(av);
+        }
+        //TODO: Double check... 
         
         
         @Override
@@ -351,11 +365,13 @@ public class InferenceVisitor extends AbstractStmtSwitch {
                 return;
             }
             // Skip accesses from inner classes, e.g. access$0
+            /* ANA: Commented out Wei's code. Should be handled like a regular static call.
             if (v.getMethod().isStatic() 
                     && v.getMethod().getName().startsWith("access$")) {
                 handleInnerAccessCall((StaticInvokeExpr) v, sup);
                 return;
             }
+            */
             // Skip Object.<init>
             SootMethod sm = v.getMethod();
             if (sm.getName().equals("<init>") 

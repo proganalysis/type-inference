@@ -231,7 +231,7 @@ public class FieldConstraintGraph extends ConstraintGraph {
 			Edge<AnnotatedValue, CfgSymbol> newEdge = 
 					new Edge<AnnotatedValue,CfgSymbol>(e1.getSource(),e2.getTarget(),CfgSymbol.LOCAL);
 			if (!ptGraph.hasEdge(e1.getSource(),e2.getTarget(),CfgSymbol.LOCAL) && 
-					typeCompatible(e1.getSource().getType(),e2.getTarget().getType())) {  
+					UtilFuncs.typeCompatible(e1.getSource().getType(),e2.getTarget().getType())) {  
 				ptGraph.addEdge(e1.getSource(),e2.getTarget(),CfgSymbol.LOCAL);
 				queue.add(newEdge);
 				//System.out.println("ADDED TRANSITIVE EDGE TO QUEUE: "+newEdge+" FOR EDGES "+e1+" AND "+e2);
@@ -244,7 +244,7 @@ public class FieldConstraintGraph extends ConstraintGraph {
 	@Override
 	protected void addEdgeToQueue(Queue<Edge<AnnotatedValue, CfgSymbol>> queue,
 			Edge<AnnotatedValue, CfgSymbol> e) {
-		if (e.getLabel() == CfgSymbol.LOCAL && typeCompatible(e.getSource().getType(),e.getTarget().getType())) { 			
+		if (e.getLabel() == CfgSymbol.LOCAL && UtilFuncs.typeCompatible(e.getSource().getType(),e.getTarget().getType())) { 			
 			ptGraph.addEdge(e.getSource(),e.getTarget(),e.getLabel());
 			Edge<AnnotatedValue, CfgSymbol> newEdge = new Edge(e.getSource(),e.getTarget(),e.getLabel());
 			queue.add(newEdge);
@@ -253,9 +253,7 @@ public class FieldConstraintGraph extends ConstraintGraph {
 	}
 	
 	
-	protected boolean propagateOverInverseEdges(Edge<AnnotatedValue,CfgSymbol> e1) {
-		return false;
-	}
+	
 	
 	@Override
 	protected boolean isFieldWrite(Edge<AnnotatedValue,CfgSymbol> e1) {	
@@ -268,7 +266,7 @@ public class FieldConstraintGraph extends ConstraintGraph {
 		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> revNodeToRep = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
 		for (AnnotatedValue X : nodeToRep.keySet()) {
 			//System.out.println("Adding "+X+" to "+nodeToRep.get(X));
-			addToMap(revNodeToRep,nodeToRep.get(X),X);
+			UtilFuncs.addToMap(revNodeToRep,nodeToRep.get(X),X);
 		}			
 		
 		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> incomingMap = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
@@ -300,15 +298,20 @@ public class FieldConstraintGraph extends ConstraintGraph {
 				if (visited.contains(new Pair(sSet,tSet))) continue;
 				visited.add(new Pair(sSet,tSet));
 				
-				//System.out.println("sSet size: "+sSet.size() +" and tSet size: "+tSet.size()+" at "+k+" out of "+numNodes);
+				if (sSet.size() > 10000 && sSet.containsAll(tSet)) continue;
+				if (tSet.size() > 10000 && tSet.containsAll(sSet)) continue;
+				
+				// System.out.println("sSet size: "+sSet.size() +" and tSet size: "+tSet.size()+" at "+k+" out of "+numNodes);
 				
 				
 				for (AnnotatedValue s : sSet) {
 					for (AnnotatedValue t : tSet) {
 						if (skipAddEdge(s,t)) continue;
 						if ((outgoingMap.get(s) != null) && (incomingMap.get(t) != null) && 
-								intersect(outgoingMap.get(s),incomingMap.get(t))) {
+								intersect(outgoingMap.get(s),incomingMap.get(t)).size() != 0) {
 							//originalGraph.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
+							if (s.getId() == 25771) System.out.println("TR EDGE: "+t);
+							if (s.equals(t)) continue;
 							uncollapsedTransitiveEdges.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
 						}
 					}

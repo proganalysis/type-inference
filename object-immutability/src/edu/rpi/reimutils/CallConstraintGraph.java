@@ -119,7 +119,7 @@ public class CallConstraintGraph extends ConstraintGraph {
 			Edge<AnnotatedValue, CfgSymbol> newEdge = 
 					new Edge<AnnotatedValue,CfgSymbol>(e1.getSource(),e2.getTarget(),label);
 			if (!ptGraph.hasEdge(e1.getSource(),e2.getTarget(),label)) {
-			    ptGraph.addEdge(e1.getSource(),e2.getTarget(),label);
+			    ptGraph.addEdge(e1.getSource(),e2.getTarget(),label);			    
 			//if (!((tryPtGraph.get(e1.getSource()) != null) && tryPtGraph.get(e1.getSource()).contains(e2.getTarget()))) {
 			//	addToMap(tryPtGraph,e1.getSource(),e2.getTarget());
 				queue.add(newEdge);
@@ -143,18 +143,22 @@ public class CallConstraintGraph extends ConstraintGraph {
 	}
 	
 	@Override
-	protected boolean isFieldWrite(Edge<AnnotatedValue,CfgSymbol> e1) {		
-		return fieldWrites.hasEdge(e1.getSource(),e1.getTarget(),e1.getLabel());		
+	protected boolean isFieldWrite(Edge<AnnotatedValue,CfgSymbol> e) {		
+		if (fieldWrites.hasEdge(e.getSource(),e.getTarget(),e.getLabel())) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 	
 	@Override
 	protected void addAllTransitiveEdges() {
-		
 		// TODO Auto-generated method stub
 		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> revNodeToRep = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
 		for (AnnotatedValue X : nodeToRep.keySet()) {
 			//System.out.println("Adding "+X+" to "+nodeToRep.get(X));
-			addToMap(revNodeToRep,nodeToRep.get(X),X);
+			UtilFuncs.addToMap(revNodeToRep,nodeToRep.get(X),X);
 		}			
 		
 		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> incomingMap = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
@@ -186,16 +190,46 @@ public class CallConstraintGraph extends ConstraintGraph {
 				if (visited.contains(new Pair(sSet,tSet))) continue;
 				visited.add(new Pair(sSet,tSet));
 				
+				if (sSet.size() > 10000 && sSet.containsAll(tSet)) continue;
+				if (tSet.size() > 10000 && tSet.containsAll(sSet)) continue;
+				
 				//System.out.println("sSet size: "+sSet.size() +" and tSet size: "+tSet.size()+" at "+k+" out of "+numNodes);
 				
 				
 				for (AnnotatedValue s : sSet) {
 					for (AnnotatedValue t : tSet) {
 						if (skipAddEdge(s,t)) continue;
-						if ((outgoingMap.get(s) != null) && (incomingMap.get(t) != null) && 
-								intersect(outgoingMap.get(s),incomingMap.get(t))) {
+						if ((outgoingMap.get(s) != null) && (incomingMap.get(t) != null)) {
+							
+							if (s.equals(t)) continue;
+							
+							Set<AnnotatedValue> annoInfo = intersect(outgoingMap.get(s),incomingMap.get(t));
+							if (annoInfo.size() == 0) continue;
 							//originalGraph.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
+							
 							uncollapsedTransitiveEdges.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
+							// TODO: This is a hack. mark a trans edge as fieldWrite...
+							for (AnnotatedValue info : annoInfo) {
+								for (Edge<AnnotatedValue,CfgSymbol> in : originalGraph.getEdgesFrom(s)) {
+									if (!((in.getLabel() instanceof AtomicOpenParen) && 
+											((AtomicOpenParen) in.getLabel()).getInfo() == info)) continue;
+									for (Edge<AnnotatedValue,CfgSymbol> out : originalGraph.getEdgesFrom(t)) {
+										if (!((out.getLabel() instanceof AtomicOpenParen) && 
+												((AtomicOpenParen) out.getLabel()).getInfo() == info)) continue;
+										// in: A - (_i -> X and out: Y -)_i -> B
+										if (in.getTarget().getKind() == AnnotatedValue.Kind.PARAMETER &&
+												(out.getTarget().getKind() == AnnotatedValue.Kind.PARAMETER || 
+												out.getTarget().getKind() == AnnotatedValue.Kind.THIS)) {
+											if (!skipAddEdge(s,t) && !s.equals(t)) { 
+												System.out.println("ADDED fieldWrite: "+s+" to "+t);
+												fieldWrites.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
+											}
+										}
+									}
+								}
+							}
+								
+							
 						}
 					}
 				}
@@ -205,7 +239,8 @@ public class CallConstraintGraph extends ConstraintGraph {
 		
 		transitiveEdges = uncollapsedTransitiveEdges;
 		
-		System.out.println("transitiveEdges has "+i+ " edges! ");		
-	}
+		System.out.println("transitiveEdges has "+i+ " edges! ");
+		
+	}	
 			
 }
