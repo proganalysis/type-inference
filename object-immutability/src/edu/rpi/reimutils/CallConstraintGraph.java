@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -69,6 +70,11 @@ public class CallConstraintGraph extends ConstraintGraph {
 	@Override
 	protected void addLocal(AnnotatedValue left, AnnotatedValue right, boolean isInverse) {
 		if (!left.equals(right)) { 
+			
+			//if (left.getEnclosingMethod() != right.getEnclosingMethod()) {
+			//	System.out.println("SOMETHING WRONG! "+left+" AND "+right);
+			//}
+			
 			Edge<AnnotatedValue, CfgSymbol> edge = new Edge(left,right,CfgSymbol.LOCAL);
 			graph.addEdge(edge);
 			if (isInverse == false) {
@@ -85,10 +91,10 @@ public class CallConstraintGraph extends ConstraintGraph {
 	
 	@Override
 	protected boolean skipAddEdge(AnnotatedValue left, AnnotatedValue right) {		
-		if (SCCUtilities.isStaticField(left) && SCCUtilities.isStaticField(right)) {
+		if (SCC.isStaticField(left) && SCC.isStaticField(right)) {
 			return false;
 		}
-		else if (SCCUtilities.isStaticField(left) != SCCUtilities.isStaticField(right)) {
+		else if (SCC.isStaticField(left) != SCC.isStaticField(right)) {
 			return true;
 		}
 		else if (!left.getEnclosingMethod().equals(right.getEnclosingMethod())) 
@@ -155,14 +161,14 @@ public class CallConstraintGraph extends ConstraintGraph {
 	@Override
 	protected void addAllTransitiveEdges() {
 		// TODO Auto-generated method stub
-		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> revNodeToRep = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
+		Map<AnnotatedValue,Set<AnnotatedValue>> revNodeToRep = new HashMap<AnnotatedValue,Set<AnnotatedValue>>();
 		for (AnnotatedValue X : nodeToRep.keySet()) {
 			//System.out.println("Adding "+X+" to "+nodeToRep.get(X));
 			UtilFuncs.addToMap(revNodeToRep,nodeToRep.get(X),X);
 		}			
 		
-		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> incomingMap = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
-		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> outgoingMap = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
+		Map<AnnotatedValue, Set<AnnotatedValue>> incomingMap = new HashMap<AnnotatedValue, Set<AnnotatedValue>>();
+		Map<AnnotatedValue, Set<AnnotatedValue>> outgoingMap = new HashMap<AnnotatedValue, Set<AnnotatedValue>>();
 		
 		collectTransitiveSourceAndTargetNodes(incomingMap,outgoingMap);
 		
@@ -182,9 +188,9 @@ public class CallConstraintGraph extends ConstraintGraph {
 				//System.out.println(" Edge: "+e);
 				AnnotatedValue source = e.getSource();
 				AnnotatedValue target = e.getTarget();
-				HashSet<AnnotatedValue> sSet = revNodeToRep.get(source);
+				Set<AnnotatedValue> sSet = revNodeToRep.get(source);
 				if (sSet == null) sSet = revNodeToRep.get(nodeToRep.get(source));
-				HashSet<AnnotatedValue> tSet = revNodeToRep.get(target);
+				Set<AnnotatedValue> tSet = revNodeToRep.get(target);
 				if (tSet == null) tSet = revNodeToRep.get(nodeToRep.get(target));
 				
 				if (visited.contains(new Pair(sSet,tSet))) continue;
@@ -221,7 +227,7 @@ public class CallConstraintGraph extends ConstraintGraph {
 												(out.getTarget().getKind() == AnnotatedValue.Kind.PARAMETER || 
 												out.getTarget().getKind() == AnnotatedValue.Kind.THIS)) {
 											if (!skipAddEdge(s,t) && !s.equals(t)) { 
-												System.out.println("ADDED fieldWrite: "+s+" to "+t);
+												// System.out.println("ADDED fieldWrite: "+s+" to "+t);
 												fieldWrites.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
 											}
 										}

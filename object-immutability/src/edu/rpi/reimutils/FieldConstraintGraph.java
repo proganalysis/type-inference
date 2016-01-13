@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -263,14 +264,14 @@ public class FieldConstraintGraph extends ConstraintGraph {
 	@Override
 	protected void addAllTransitiveEdges() {
 		// TODO Auto-generated method stub
-		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> revNodeToRep = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
+		Map<AnnotatedValue,Set<AnnotatedValue>> revNodeToRep = new HashMap<AnnotatedValue,Set<AnnotatedValue>>();
 		for (AnnotatedValue X : nodeToRep.keySet()) {
 			//System.out.println("Adding "+X+" to "+nodeToRep.get(X));
 			UtilFuncs.addToMap(revNodeToRep,nodeToRep.get(X),X);
 		}			
 		
-		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> incomingMap = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
-		HashMap<AnnotatedValue,HashSet<AnnotatedValue>> outgoingMap = new HashMap<AnnotatedValue,HashSet<AnnotatedValue>>();
+		Map<AnnotatedValue,Set<AnnotatedValue>> incomingMap = new HashMap<AnnotatedValue,Set<AnnotatedValue>>();
+		Map<AnnotatedValue,Set<AnnotatedValue>> outgoingMap = new HashMap<AnnotatedValue,Set<AnnotatedValue>>();
 		
 		collectTransitiveSourceAndTargetNodes(incomingMap,outgoingMap);
 		
@@ -290,9 +291,9 @@ public class FieldConstraintGraph extends ConstraintGraph {
 				//System.out.println(" Edge: "+e);
 				AnnotatedValue source = e.getSource();
 				AnnotatedValue target = e.getTarget();
-				HashSet<AnnotatedValue> sSet = revNodeToRep.get(source);
+				Set<AnnotatedValue> sSet = revNodeToRep.get(source);
 				if (sSet == null) sSet = revNodeToRep.get(nodeToRep.get(source));
-				HashSet<AnnotatedValue> tSet = revNodeToRep.get(target);
+				Set<AnnotatedValue> tSet = revNodeToRep.get(target);
 				if (tSet == null) tSet = revNodeToRep.get(nodeToRep.get(target));
 				
 				if (visited.contains(new Pair(sSet,tSet))) continue;
@@ -329,10 +330,10 @@ public class FieldConstraintGraph extends ConstraintGraph {
 }
 
 class Pair {
-	HashSet<AnnotatedValue> sSet;
-	HashSet<AnnotatedValue> tSet;
+	Set<AnnotatedValue> sSet;
+	Set<AnnotatedValue> tSet;
 	
-	Pair(HashSet<AnnotatedValue> sSet, HashSet<AnnotatedValue> tSet) {
+	Pair(Set<AnnotatedValue> sSet, Set<AnnotatedValue> tSet) {
 		this.sSet = sSet;
 		this.tSet = tSet;
 	}
