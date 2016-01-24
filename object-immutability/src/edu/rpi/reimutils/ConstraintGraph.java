@@ -21,6 +21,7 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.SourceLocator;
 import soot.Type;
+import soot.VoidType;
 import checkers.inference.reim.quals.Readonly;
 import checkers.inference.reim.quals.Polyread;
 import edu.rpi.AnnotatedValue;
@@ -39,18 +40,19 @@ public abstract class ConstraintGraph {
 	protected Graph<AnnotatedValue,CfgSymbol> originalGraph; // This is the original graph, without inverse edges
 	protected Graph<AnnotatedValue,CfgSymbol> transitiveEdges; // This is the set of edges added during dynamicClosure
 	
-	protected Map<SootMethod,Set<Constraint>> allConstraintsMap; // Maps each method to corresponding constraints.
+	protected Map<String,Set<Constraint>> allConstraintsMap; // Maps each method to corresponding constraints.
 	protected Set<Constraint> subtypeConstraints; // All subtype constraints
+	protected Map<String,SootMethod> toSootMethod; // Maps String -> SootMethod. Can't use SootMethod as key
 	
 	// Utilities:
 	protected InferenceTransformer reimTransformer;
 	protected Libraries libraryUtils;
 	
 	
-	// Special array "annotation".
-	private static AnnotatedValue ARRAY = new AnnotatedValue("Arrays.",null,AnnotatedValue.Kind.COMPONENT,null);
+	// Special array, subtype and library "annotations".
+	static AnnotatedValue ARRAY = new AnnotatedValue("Arrays.",null,AnnotatedValue.Kind.COMPONENT,null);
 	
-	private static AnnotatedValue SUBTYPE = new AnnotatedValue("Subtype.",null,AnnotatedValue.Kind.COMPONENT,null);
+	static AnnotatedValue SUBTYPE = new AnnotatedValue("Subtype.",null,AnnotatedValue.Kind.COMPONENT,null);
 	
 	static AnnotatedValue LIB = new AnnotatedValue("Lib.",null,AnnotatedValue.Kind.COMPONENT,null);
 	
@@ -65,8 +67,9 @@ public abstract class ConstraintGraph {
 		libraryUtils = new Libraries(this);
 		nodeToRep = new HashMap<AnnotatedValue, AnnotatedValue>();
 		
-		allConstraintsMap = new HashMap<SootMethod, Set<Constraint>>();
+		allConstraintsMap = new HashMap<String, Set<Constraint>>();
 		subtypeConstraints = new HashSet<Constraint>();
+		toSootMethod = new HashMap<String, SootMethod>();
 		
 		originalGraph = new Graph<AnnotatedValue,CfgSymbol>();
 		transitiveEdges = new Graph<AnnotatedValue,CfgSymbol>();
@@ -81,8 +84,9 @@ public abstract class ConstraintGraph {
 	private void processCallClose(AnnotatedValue left, AnnotatedValue right, AnnotatedValue annotation,
 			AnnotatedValue rightHandSide) {
 		addCallClose(left,right,annotation,false);
-		if (!UtilFuncs.isReadonly(rightHandSide,reimTransformer))
+		if (!UtilFuncs.isReadonly(rightHandSide,reimTransformer)) {
 			addCallOpen(right,left,annotation,true);
+		}
 	}
 	private void processCallOpen(AnnotatedValue left, AnnotatedValue right, AnnotatedValue annotation,
 			AnnotatedValue rightHandSide) {
@@ -120,11 +124,13 @@ public abstract class ConstraintGraph {
 		
 		// Ignore constraints on simple types:
 		if (!(c.getLeft() instanceof AnnotatedValue.AdaptValue) && 
-				!(c.getLeft().getType() instanceof RefLikeType)) {
+				!(c.getLeft().getType() instanceof RefLikeType) && 
+					!(c.getLeft().getType() == VoidType.v())) {
 			return true;			
 		}
 		if (!(c.getRight() instanceof AnnotatedValue.AdaptValue) && 
-				!(c.getRight().getType() instanceof RefLikeType)) {
+				!(c.getRight().getType() instanceof RefLikeType) &&
+					!(c.getRight().getType() == VoidType.v())) {
 			return true;
 		}
 		
@@ -139,7 +145,7 @@ public abstract class ConstraintGraph {
 	// **************** GRAPH CREATION ****************************** //
 		
 	public void createGraph() {
-		Set<SootMethod> processedMethods = new HashSet<SootMethod>();		
+		Set<String> processedMethods = new HashSet<String>();		
 		Queue<SootMethod> reachableMethods = new LinkedList<SootMethod>();
 		
 		preprocess(); // processes all constraints and fills up subtypeConstraints and allConstraintsMap.
@@ -148,16 +154,17 @@ public abstract class ConstraintGraph {
 		
 		// Added main to reachable methods
 		reachableMethods.add(Scene.v().getMainMethod()); 
-		processedMethods.add(Scene.v().getMainMethod());
+		processedMethods.add(Scene.v().getMainMethod().toString());
 	
 		// now, add all static methods with void return and no parameters (including <clinit>) to reachable
 		// this is because there are no constraints to these methods, even if they are called.
 		// this is overly conservative... 
-		for (SootMethod m : allConstraintsMap.keySet()) {
+		for (String sm : allConstraintsMap.keySet()) {
+			SootMethod m = toSootMethod.get(sm);
 			if (m.isAbstract() || m.isNative()) continue;
 			if (UtilFuncs.isNoReturnNoParamStatic(m)) {
 				reachableMethods.add(m); 
-				processedMethods.add(m);
+				processedMethods.add(m.toString());
 			}
 		}
 		
@@ -167,10 +174,12 @@ public abstract class ConstraintGraph {
 			if (method == null) {
 				throw new RuntimeException(method + " is null.");
 			}
-			if (allConstraintsMap.get(method) == null) {
-				throw new RuntimeException(method + " No constraints for "+method+"?");
+			if (allConstraintsMap.get(method.toString()) != null) {
+				
+				// throw new RuntimeException(method + " No constraints for "+method+"?");
+				// System.out.println("Processing method: "+method);
+				processMethodConstraints(reachableMethods,processedMethods,method,allConstraintsMap.get(method.toString()));
 			}
-			processMethodConstraints(reachableMethods,processedMethods,method,allConstraintsMap.get(method));
 		}
 		
 		String outputDir = SourceLocator.v().getOutputDir();
@@ -184,7 +193,7 @@ public abstract class ConstraintGraph {
 			e.printStackTrace();
 		}
 		
-		for (SootMethod m : processedMethods) {
+		for (String m : processedMethods) {
 			reachableDump.println(m);
 		}
 		reachableDump.close();
@@ -225,7 +234,8 @@ public abstract class ConstraintGraph {
 				//"This should not happen!");
 			}
 			assert method != null : "Enclosing method for constraint "+c+" is NULL!";
-			UtilFuncs.addToMap(allConstraintsMap,method,c);
+			toSootMethod.put(method.toString(),method);
+			UtilFuncs.addToMap(allConstraintsMap,method.toString(),c);
 		}
 		
 	}
@@ -249,7 +259,7 @@ public abstract class ConstraintGraph {
 	 * @effects fills in graph g
 	 * @modifies this.g
 	 */	
-	public void processMethodConstraints(Queue<SootMethod> reachableMethods, Set<SootMethod> processedMethods, 
+	public void processMethodConstraints(Queue<SootMethod> reachableMethods, Set<String> processedMethods, 
 											SootMethod m, Set<Constraint> mConstraints) {
 
 		Set<Constraint> constructorCallConstraints = new HashSet<Constraint>();
@@ -359,21 +369,25 @@ public abstract class ConstraintGraph {
 	}
 	
 	private void addCHACaleesToReachableMethods(SootMethod declCalee, SootClass receiverClass, 
-			Set<SootMethod> processedMethods, Queue<SootMethod> reachableMethods) {
+			Set<String> processedMethods, Queue<SootMethod> reachableMethods) {
 		if (declCalee.isStatic()) {
 			assert receiverClass == null;
-			if (!declCalee.getDeclaringClass().isLibraryClass() && !declCalee.isNative() && !processedMethods.contains(declCalee)) {
+			if (declCalee.getName().equals("run")) System.out.println("HERE for run, trying to add "+declCalee);
+			if (!declCalee.getDeclaringClass().isLibraryClass() && !declCalee.isNative() && !processedMethods.contains(declCalee.toString())) {
+				if (declCalee.getName().equals("run") && declCalee.isStatic()) System.out.println("----Adding to queue: "+declCalee);
 				reachableMethods.add(declCalee);
-				processedMethods.add(declCalee);
+				processedMethods.add(declCalee.toString());
 			}
 		}
 		else if (receiverClass != null) {
+			
 			for (SootMethod calee : UtilFuncs.retrieveOverridingMethods(declCalee,receiverClass)) {
 				// TODO: Double check this. We should not ever get a library class here.
+				if (declCalee.getName().equals("run") && declCalee.isStatic()) System.out.println("----Trying to add to queue: "+calee);
 				if (!calee.isAbstract() && !calee.getDeclaringClass().isLibraryClass() && !calee.isNative() &&
-						!processedMethods.contains(calee)) {
+						!processedMethods.contains(calee.toString())) {
 					reachableMethods.add(calee);
-					processedMethods.add(calee);
+					processedMethods.add(calee.toString());
 				}							
 			}
 		}
@@ -382,12 +396,25 @@ public abstract class ConstraintGraph {
 	protected boolean isConstructorCallConstraint(Constraint c) {
 		if (!UtilFuncs.isCallConstraint(c)) return false;
 		SootMethod enclMethod = UtilFuncs.getAdaptedValue(c.getRight()).getEnclosingMethod();
-		
+		AnnotatedValue receiver = UtilFuncs.getAdaptedValue(c.getRight());
+		/*
 		if (enclMethod.getName().equals("<init>") &&
 				UtilFuncs.extendsLibraryClass(enclMethod.getDeclaringClass())) {
 			//TODO: Have to filter out invokes through this., e.g., this.<init>()
 			return true;
 		}
+		*/
+		/*
+		if (enclMethod.getName().equals("<init>") && 
+				!enclMethod.getDeclaringClass().isLibraryClass()) { // !c.getLeft().getName().equals("r0")) {
+			return true;
+			//TODO: Improve filtering of invokes through this!. Was not an issue when requiring non-lib class
+		}
+		*/
+		if ( enclMethod.getName().equals("<init>") && receiver.getKind() == AnnotatedValue.Kind.THIS ) {
+			return true;
+		}
+		
 		return false;			
 	}
 	
@@ -396,7 +423,7 @@ public abstract class ConstraintGraph {
 		SootMethod enclMethod = UtilFuncs.getAdaptedValue(c.getLeft()).getEnclosingMethod();
 		
 		if (enclMethod.getName().equals("newInstance") &&
-				(enclMethod.getDeclaringClass().getName().equals("java.lang.Class"))) { // || enclMethod.getDeclaringClass().getName().equals("java.lang.reflect.Constructor"))) {			
+				(enclMethod.getDeclaringClass().getName().equals("java.lang.Class") || enclMethod.getDeclaringClass().getName().equals("java.lang.reflect.Constructor"))) {			
 			return true;
 		}
 		return false;			
@@ -406,25 +433,30 @@ public abstract class ConstraintGraph {
 	// Handles special cases such as r.start() -> r.run();
 	// Must be called at the end of createNewGraph, on original nodes
 	protected void handleRunCallbacks(Set<Constraint> initCallConstraints, 
-			Set<SootMethod> processedMethods,Queue<SootMethod> reachableMethods) {
-		HashSet<AnnotatedValue> thisOfRun = new HashSet<AnnotatedValue>();
-		// TODO: This won't work. Needs improvement!	
-		for (SootMethod m : allConstraintsMap.keySet()) {
-			if (!(m.getName().equals("run") && UtilFuncs.extendsLibraryClass(m.getDeclaringClass()))) continue;
-			for (Constraint c : allConstraintsMap.get(m)) {
+			Set<String> processedMethods,Queue<SootMethod> reachableMethods) {
+		HashSet<AnnotatedValue> thisOfCallbackMethod = new HashSet<AnnotatedValue>();
+		for (String sm : allConstraintsMap.keySet()) {
+			SootMethod m = toSootMethod.get(sm);
+			// if (!(m.getName().equals("run") && UtilFuncs.extendsLibraryClass(m.getDeclaringClass()))) continue;
+			if (!UtilFuncs.extendsLibraryMethod(m)) continue;
+			//if (!(m.getName().equals("run") || m.getName().equals("equals") || m.getName().equals("toString") ||
+			//		m.getName().equals("hashCode") || m.getName().equals("finalize"))) continue; //System.out.println("POTENTIAL CALLBACK: "+m);
+			//if (m.toString().indexOf("SynPredBlock")>=0) System.out.println("THIS of toString? "+m);
+			for (Constraint c : allConstraintsMap.get(sm)) {
 				if (c.getLeft().getKind() == AnnotatedValue.Kind.THIS) {
-					thisOfRun.add(c.getLeft());
+					thisOfCallbackMethod.add(c.getLeft());
 				}
 			}
 		}
 		for (Constraint c : initCallConstraints) {
-			for (AnnotatedValue t : thisOfRun) {
+			for (AnnotatedValue t : thisOfCallbackMethod) {
 				AnnotatedValue context = ((AnnotatedValue.MethodAdaptValue) c.getRight()).getContextValue();
 				if (t.getEnclosingMethod().getDeclaringClass().getType().equals(c.getLeft().getType())) {
 					processCallOpen(c.getLeft(),t,context, new AnnotatedValue.MethodAdaptValue(context,t));
-					System.out.println("Just created a new CALL OPEN, from "+c.getLeft()+" to "+t);
-					if (!processedMethods.contains(t.getEnclosingMethod())) {
-						processedMethods.add(t.getEnclosingMethod());
+					//if (c.toString().indexOf("SynPredBlock")>=0) System.out.println("Just created a new CALL OPEN due to CALLBACK:");
+					//if (c.toString().indexOf("SynPredBlock")>=0) System.out.println("------ from "+c.getLeft()+" to "+t);
+					if (!processedMethods.contains(t.getEnclosingMethod().toString())) {
+						processedMethods.add(t.getEnclosingMethod().toString());
 						reachableMethods.add(t.getEnclosingMethod());
 					}
 				}
@@ -435,13 +467,14 @@ public abstract class ConstraintGraph {
 	// Handles special newInstance calls
 	// Must be called at the end of createNewGraph, on original nodes
 	protected void handleNewInstance(Set<Constraint> newInstanceConstraints,
-			Set<SootMethod> processedMethods,Queue<SootMethod> reachableMethods) {
+			Set<String> processedMethods,Queue<SootMethod> reachableMethods) {
 		HashSet<AnnotatedValue> thisOfConstructors = new HashSet<AnnotatedValue>();		
 		// TODO: This won't work. Needs improvement!	
-		for (SootMethod m : allConstraintsMap.keySet()) {
+		for (String sm : allConstraintsMap.keySet()) {
+			SootMethod m = toSootMethod.get(sm);
 			if (m.getDeclaringClass().isAbstract()) continue;
 			if (!(m.getName().equals("<init>") && m.getParameterCount() == 0)) continue;
-			for (Constraint c : allConstraintsMap.get(m)) {
+			for (Constraint c : allConstraintsMap.get(sm)) {
 				if (c.getLeft().getKind() == AnnotatedValue.Kind.THIS) {
 					thisOfConstructors.add(c.getLeft());
 				}
@@ -454,12 +487,11 @@ public abstract class ConstraintGraph {
 			// lhs of newInstance constraint should be in graphNodes
 			System.out.println("New instance constraint: "+c);
 			
-			for (Constraint mc : allConstraintsMap.get(enclMethod)) {
+			for (Constraint mc : allConstraintsMap.get(enclMethod.toString())) {
 				if (mc.getLeft() == c.getRight()) {
 					AnnotatedValue cast = mc.getRight();
 					if (!(cast.getType() instanceof RefType)) continue;
 					RefType castType = (RefType) cast.getType();
-					if (castType.getSootClass().isLibraryClass()) continue;
 					HashSet<SootClass> allSubclasses = new HashSet<SootClass>();					
 					if (castType.getSootClass().isInterface())
 						allSubclasses.addAll(hier.getImplementersOf(((RefType) cast.getType()).getSootClass()));
@@ -473,8 +505,8 @@ public abstract class ConstraintGraph {
 							if (t.getEnclosingMethod().getDeclaringClass().equals(userClass)) {
 								processCallOpen(cast, t, context, new AnnotatedValue.MethodAdaptValue(context,t));
 								System.out.println("Just created a NEW INSTANCE CALL OPEN, from "+cast+" to "+t);
-								if (!processedMethods.contains(t.getEnclosingMethod())) {
-									processedMethods.add(t.getEnclosingMethod());
+								if (!processedMethods.contains(t.getEnclosingMethod().toString())) {
+									processedMethods.add(t.getEnclosingMethod().toString());
 									reachableMethods.add(t.getEnclosingMethod());
 								}
 							}
@@ -864,7 +896,7 @@ public abstract class ConstraintGraph {
 				
 				HashSet<AnnotatedValue> fieldWriteNodes = new HashSet<AnnotatedValue>();
 				
-				// System.out.println("Start propagate alloc value "+node+" number "+i++ +" out of"+total+" allocs...");
+				System.out.println("Start propagate alloc value "+node+" number "+i++ +" out of"+total+" allocs...");
 				
 				Queue<Edge<AnnotatedValue,CfgSymbol>> queue = new LinkedList();
 				// initialize queue
@@ -882,13 +914,13 @@ public abstract class ConstraintGraph {
 					
 					Edge<AnnotatedValue,CfgSymbol> e1 = queue.remove();
 					
-					//if ((node.getId() == 5027) && e1.getTarget().getId() == 21092) { 
-					//	System.out.println("--- TOOK OFF EDGE OFF QUEUE: "+e1);												
+					//if (node.getId() == 34139) { //&& e1.getTarget().getId() == 87214) { 
+					//	System.out.println("--- TOOK OFF QUEUE: "+e1.getTarget());												
 					//}
 					// if (node.getId() == 29111) System.out.println("--- TOOK OFF EDGE OFF QUEUE: "+e1);
 					
 					for (Edge<AnnotatedValue,CfgSymbol> e2 : originalGraph.getEdgesFrom(e1.getTarget())) {
-						//if ((node.getId() == 5027) && e1.getTarget().getId() == 21092)  System.out.println("-------- AND ORIG e2: "+e2);
+						//if (node.getId() == 34139)  System.out.println("-------- AND ORIG e2: "+e2);
 						
 						if (fieldWriteNodes.contains(e1.getTarget()) || isFieldWrite(e2) ) {
 							if (addTransitiveEdgeToQueue(queue, e1, e2)) {
@@ -901,8 +933,9 @@ public abstract class ConstraintGraph {
 					}
 					
 					for (Edge<AnnotatedValue,CfgSymbol> e2 : transitiveEdges.getEdgesFrom(e1.getTarget())) {
-						//if ((node.getId() == 5027) && e1.getTarget().getId() == 21092) System.out.println("-------- AND TRANS e2: "+e2);
+						//if (node.getId() == 34139) System.out.println("-------- AND TRANS e2: "+e2);
 						if (fieldWriteNodes.contains(e1.getTarget()) || isFieldWrite(e2) ) {
+							//if (node.getId() == 86185 && e1.getTarget().getId() == 87214) System.out.println("... AND HERE...");
 							if (addTransitiveEdgeToQueue(queue, e1, e2)) {
 								fieldWriteNodes.add(e2.getTarget());
 							}
@@ -915,9 +948,9 @@ public abstract class ConstraintGraph {
 					//if (e1.getSource().getId() == 28944 && e1.getTarget().getId() == 28941) System.out.println("**** HERE");
 					
 					if (fieldWriteNodes.contains(e1.getTarget())) {
-						//if (e1.getSource().getId() == 28944 && e1.getTarget().getId() == 28941) System.out.println("-------- AND INVERSES for e1...");
+						//if (node.getId() == 34139) System.out.println("-------- fieldWrite for e1.target is true...");
 						for (Edge<AnnotatedValue,CfgSymbol> e2 : originalGraph.getEdgesInto(e1.getTarget())) {
-							//if ((node.getId() == 5027) && e1.getTarget().getId() == 21092) System.out.println("------- HERE: "+e2);
+							//if (node.getId() == 34139) System.out.println("------- HERE INVERSES: "+e2);
 							CfgSymbol label = null;
 							if (e2.getSource().getKind() == AnnotatedValue.Kind.ALLOC) continue; // No need to add self-edges for ALLOCs
 							if (e2.getLabel() == CfgSymbol.OPENPAREN && 

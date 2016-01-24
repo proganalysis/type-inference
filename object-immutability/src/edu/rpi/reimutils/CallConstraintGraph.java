@@ -48,6 +48,7 @@ public class CallConstraintGraph extends ConstraintGraph {
 		Edge<AnnotatedValue, CfgSymbol> edge2 = new Edge(left,right,CfgSymbol.OPENPAREN);		
 		graph.addEdge(edge1);
 		graph.addEdge(edge2);
+		
 		if (isInverse == false) {
 			originalGraph.addEdge(edge1);
 			originalGraph.addEdge(edge2);
@@ -130,8 +131,8 @@ public class CallConstraintGraph extends ConstraintGraph {
 			//	addToMap(tryPtGraph,e1.getSource(),e2.getTarget());
 				queue.add(newEdge);
 				//System.out.println("ADDED TRANSITIVE EDGE TO QUEUE: "+newEdge+" FOR EDGES "+e1+" AND "+e2);
-				return true;
 			}
+			return true;
 		}
 		return false;
 	}
@@ -212,7 +213,8 @@ public class CallConstraintGraph extends ConstraintGraph {
 							Set<AnnotatedValue> annoInfo = intersect(outgoingMap.get(s),incomingMap.get(t));
 							if (annoInfo.size() == 0) continue;
 							//originalGraph.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
-							
+							if (s.getId() == 86992) System.out.println("ADDED TR edge: "+s+" to "+t);
+							if (s.getId() == 86994) System.out.println("ADDED TR edge: "+s+" to "+t);
 							uncollapsedTransitiveEdges.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
 							// TODO: This is a hack. mark a trans edge as fieldWrite...
 							for (AnnotatedValue info : annoInfo) {
@@ -227,7 +229,7 @@ public class CallConstraintGraph extends ConstraintGraph {
 												(out.getTarget().getKind() == AnnotatedValue.Kind.PARAMETER || 
 												out.getTarget().getKind() == AnnotatedValue.Kind.THIS)) {
 											if (!skipAddEdge(s,t) && !s.equals(t)) { 
-												// System.out.println("ADDED fieldWrite: "+s+" to "+t);
+												
 												fieldWrites.addEdge(new Edge(s,t,CfgSymbol.LOCAL));
 											}
 										}
