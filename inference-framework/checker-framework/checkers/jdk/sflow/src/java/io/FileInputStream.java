@@ -5,7 +5,7 @@ import checkers.inference.reim.quals.*;
 import java.nio.channels.FileChannel;
 
 public class FileInputStream extends InputStream {
-    public FileInputStream(/*-@Safe*/ String name) throws FileNotFoundException {
+    public FileInputStream(/*@Safe*/ String name) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 

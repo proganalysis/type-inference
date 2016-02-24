@@ -14,12 +14,12 @@ public interface HttpServletResponse extends ServletResponse {
     String encodeRedirectURL(String arg0);
     String encodeUrl(String arg0);
     String encodeRedirectUrl(String arg0);
-    void sendError(/*-@Safe*/ int arg0, String arg1) throws IOException;
-    void sendError(/*-@Safe*/ int arg0) throws IOException;
-    void sendRedirect(/*-@Safe*/ String arg0) throws IOException;
+    void sendError(/*@Safe*/ int arg0, String arg1) throws IOException;
+    void sendError(/*@Safe*/ int arg0) throws IOException;
+    void sendRedirect(/*@Safe*/ String arg0) throws IOException;
     void setDateHeader(String arg0, long arg1);
     void addDateHeader(String arg0, long arg1);
-    void setHeader(/*-@Safe*/ String arg0, /*-@Safe*/ String arg1);
+    void setHeader(/*@Safe*/ String arg0, /*@Safe*/ String arg1);
     void addHeader(String arg0, String arg1);
     void setIntHeader(String arg0, int arg1);
     void addIntHeader(String arg0, int arg1);

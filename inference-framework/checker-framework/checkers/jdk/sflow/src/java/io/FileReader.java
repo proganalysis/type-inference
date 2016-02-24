@@ -4,7 +4,7 @@ import checkers.inference.reim.quals.*;
 
 public class FileReader extends InputStreamReader {
 
-    public FileReader(/*-@Safe*/ String fileName) throws FileNotFoundException {
+    public FileReader(/*@Safe*/ String fileName) throws FileNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 

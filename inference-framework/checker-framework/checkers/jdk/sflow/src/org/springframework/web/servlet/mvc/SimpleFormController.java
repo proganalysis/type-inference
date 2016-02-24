@@ -214,7 +214,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @throws Exception in case of invalid state or arguments
 	 * @see ModelAndView
 	 */
-	protected Map referenceData(HttpServletRequest request, /*-@Tainted*/ Object command, Errors errors) throws Exception {
+	protected Map referenceData(HttpServletRequest request, /*@Tainted*/ Object command, Errors errors) throws Exception {
 		return referenceData(request);
 	}
 
@@ -252,7 +252,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @see #doSubmitAction(Object)
 	 */
 	protected ModelAndView processFormSubmission(
-			HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command, BindException errors)
+			HttpServletRequest request, HttpServletResponse response, /*@Tainted*/ Object command, BindException errors)
 			throws Exception {
 
 		if (errors.hasErrors()) {
@@ -278,7 +278,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * validated but just show the new form.
 	 * @see #isFormChangeRequest
 	 */
-	protected boolean suppressValidation(HttpServletRequest request, /*-@Tainted*/ Object command) {
+	protected boolean suppressValidation(HttpServletRequest request, /*@Tainted*/ Object command) {
 		return isFormChangeRequest(request, command);
 	}
 
@@ -297,7 +297,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @see #suppressValidation
 	 * @see #processFormSubmission
 	 */
-	protected boolean isFormChangeRequest(HttpServletRequest request, /*-@Tainted*/ Object command) {
+	protected boolean isFormChangeRequest(HttpServletRequest request, /*@Tainted*/ Object command) {
 		return isFormChangeRequest(request);
 	}
 
@@ -331,7 +331,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @see #onFormChange(HttpServletRequest, HttpServletResponse, Object)
 	 */
 	protected void onFormChange(
-			HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command, BindException errors)
+			HttpServletRequest request, HttpServletResponse response, /*@Tainted*/ Object command, BindException errors)
 			throws Exception {
 
 		onFormChange(request, response, command);
@@ -347,7 +347,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @throws Exception in case of errors
 	 * @see #onFormChange(HttpServletRequest, HttpServletResponse, Object, BindException)
 	 */
-	protected void onFormChange(HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command)
+	protected void onFormChange(HttpServletRequest request, HttpServletResponse response, /*@Tainted*/ Object command)
 			throws Exception {
 	}
 
@@ -379,7 +379,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @see org.springframework.validation.BindException#getModel
 	 */
 	protected ModelAndView onSubmit(
-			HttpServletRequest request,	HttpServletResponse response, /*-@Tainted*/ Object command,	BindException errors)
+			HttpServletRequest request,	HttpServletResponse response, /*@Tainted*/ Object command,	BindException errors)
 			throws Exception {
 
 		return onSubmit(command, errors);
@@ -409,7 +409,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @see org.springframework.validation.Errors
 	 * @see org.springframework.validation.BindException#getModel
 	 */
-	protected ModelAndView onSubmit(/*-@Tainted*/ Object command, BindException errors) throws Exception {
+	protected ModelAndView onSubmit(/*@Tainted*/ Object command, BindException errors) throws Exception {
 		ModelAndView mv = onSubmit(command);
 		if (mv != null) {
 			// simplest onSubmit variant implemented in custom subclass
@@ -443,7 +443,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @see #doSubmitAction
 	 * @see #setSuccessView
 	 */
-	protected ModelAndView onSubmit(/*-@Tainted*/ Object command) throws Exception {
+	protected ModelAndView onSubmit(/*@Tainted*/ Object command) throws Exception {
 		doSubmitAction(command);
 		return null;
 	}
@@ -460,7 +460,7 @@ public class SimpleFormController extends AbstractFormController {
 	 * @see #onSubmit(Object)
 	 * @see #setSuccessView
 	 */
-	protected void doSubmitAction(/*-@Tainted*/ Object command) throws Exception {
+	protected void doSubmitAction(/*@Tainted*/ Object command) throws Exception {
 	}
 
 }

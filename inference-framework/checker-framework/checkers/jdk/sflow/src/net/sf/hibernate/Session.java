@@ -361,7 +361,7 @@ public interface Session extends Serializable {
 	 * @return a distinct list of instances (or arrays of instances)
 	 * @throws HibernateException
 	 */
-	public List find(/*-@Safe*/ String query) throws HibernateException;
+	public List find(/*@Safe*/ String query) throws HibernateException;
 			
 	/**
 	 * Execute a query with bind parameters.
@@ -375,7 +375,7 @@ public interface Session extends Serializable {
 	 * @return a distinct list of instances (or arrays of instances)
 	 * @throws HibernateException
 	 */
-	public List find(/*-@Safe*/ String query, Object value, Type type) throws HibernateException;
+	public List find(/*@Safe*/ String query, Object value, Type type) throws HibernateException;
 	
 	/**
 	 * Execute a query with bind parameters.
@@ -389,7 +389,7 @@ public interface Session extends Serializable {
 	 * @return a distinct list of instances
 	 * @throws HibernateException
 	 */
-	public List find(/*-@Safe*/ String query, Object[] values, Type[] types) throws HibernateException;
+	public List find(/*@Safe*/ String query, Object[] values, Type[] types) throws HibernateException;
 	
 	/**
 	 * Execute a query and return the results in an iterator. If the query has multiple
@@ -403,7 +403,7 @@ public interface Session extends Serializable {
 	 * @return an iterator
 	 * @throws HibernateException
 	 */
-	public Iterator iterate(/*-@Safe*/ String query) throws HibernateException;
+	public Iterator iterate(/*@Safe*/ String query) throws HibernateException;
 	
 	/**
 	 * Execute a query and return the results in an iterator. Write the given value to "?"
@@ -420,7 +420,7 @@ public interface Session extends Serializable {
 	 * @return an iterator
 	 * @throws HibernateException
 	 */
-	public Iterator iterate(/*-@Safe*/ String query, Object value, Type type) throws HibernateException;
+	public Iterator iterate(/*@Safe*/ String query, Object value, Type type) throws HibernateException;
 	
 	/**
 	 * Execute a query and return the results in an iterator. Write the given values to "?"
@@ -437,7 +437,7 @@ public interface Session extends Serializable {
 	 * @return an iterator
 	 * @throws HibernateException
 	 */
-	public Iterator iterate(/*-@Safe*/ String query, Object[] values, Type[] types) throws HibernateException;
+	public Iterator iterate(/*@Safe*/ String query, Object[] values, Type[] types) throws HibernateException;
 	
 	/**
 	 * Apply a filter to a persistent collection. A filter is a Hibernate query that may refer to
@@ -486,7 +486,7 @@ public interface Session extends Serializable {
 	 * @return the number of instances deleted
 	 * @throws HibernateException
 	 */
-	public int delete(/*-@Safe*/ String query) throws HibernateException;
+	public int delete(/*@Safe*/ String query) throws HibernateException;
 	
 	/**
 	 * Delete all objects returned by the query. Return the number of objects deleted.
@@ -497,7 +497,7 @@ public interface Session extends Serializable {
 	 * @return the number of instances deleted
 	 * @throws HibernateException
 	 */
-	public int delete(/*-@Safe*/ String query, Object value, Type type) throws HibernateException;
+	public int delete(/*@Safe*/ String query, Object value, Type type) throws HibernateException;
 	
 	/**
 	 * Delete all objects returned by the query. Return the number of objects deleted.
@@ -508,7 +508,7 @@ public interface Session extends Serializable {
 	 * @return the number of instances deleted
 	 * @throws HibernateException
 	 */
-	public int delete(/*-@Safe*/ String query, Object[] values, Type[] types) throws HibernateException;
+	public int delete(/*@Safe*/ String query, Object[] values, Type[] types) throws HibernateException;
 	
 	/**
 	 * Obtain the specified lock level upon the given object. This may be used to
@@ -587,7 +587,7 @@ public interface Session extends Serializable {
 	 * @return Query
 	 * @throws HibernateException
 	 */
-	public Query createQuery(/*-@Safe*/ String queryString) throws HibernateException;
+	public Query createQuery(/*@Safe*/ String queryString) throws HibernateException;
 	
 	/**
 	 * Create a new instance of <tt>Query</tt> for the given collection and filter string.
@@ -616,7 +616,7 @@ public interface Session extends Serializable {
 	 * @param returnAlias a table alias that appears inside <tt>{}</tt> in the SQL string
 	 * @param returnClass the returned persistent class
 	 */
-	public Query createSQLQuery(/*-@Safe*/ String sql, String returnAlias, Class returnClass);
+	public Query createSQLQuery(/*@Safe*/ String sql, String returnAlias, Class returnClass);
 	/**
 	 * Create a new instance of <tt>Query</tt> for the given SQL string.
 	 * 
@@ -624,7 +624,7 @@ public interface Session extends Serializable {
 	 * @param returnAliases an array of table aliases that appear inside <tt>{}</tt> in the SQL string
 	 * @param returnClasses the returned persistent classes
 	 */
-	public Query createSQLQuery(/*-@Safe*/ String sql, String[] returnAliases, Class[] returnClasses);
+	public Query createSQLQuery(/*@Safe*/ String sql, String[] returnAliases, Class[] returnClasses);
 	
 	/**
 	 * Completely clear the session. Evict all loaded instances and cancel all pending

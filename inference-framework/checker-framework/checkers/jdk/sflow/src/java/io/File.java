@@ -26,16 +26,16 @@ public class File implements Serializable, Comparable<File> {
     public static final char pathSeparatorChar = fs.getPathSeparator();
     public static final String pathSeparator = "" + pathSeparatorChar;
 
-    public File(/*-@Safe*/ String pathname) {
+    public File(/*@Safe*/ String pathname) {
         throw new RuntimeException("skeleton method");
     }
-    public File(/*-@Safe*/ String parent, /*-@Safe*/ String child) {
+    public File(/*@Safe*/ String parent, /*@Safe*/ String child) {
         throw new RuntimeException("skeleton method");
     }
-    public File(@Polyread File this, @Polyread File parent, /*-@Safe*/ String child)  {
+    public File(@Polyread File this, @Polyread File parent, /*@Safe*/ String child)  {
       throw new RuntimeException("skeleton method");
     }
-    public File(/*-@Safe*/ @Readonly URI uri) {
+    public File(/*@Safe*/ @Readonly URI uri) {
         throw new RuntimeException("skeleton method");
     }
 

@@ -344,7 +344,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @throws Exception if the command object could not be obtained
 	 * @see #createCommand
 	 */
-	protected /*-@Tainted*/ Object getCommand(HttpServletRequest request) throws Exception {
+	protected /*@Tainted*/ Object getCommand(HttpServletRequest request) throws Exception {
 		return createCommand();
 	}
 
@@ -357,7 +357,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @throws Exception if the command object could not be instantiated
 	 * @see org.springframework.beans.BeanUtils#instantiateClass(Class)
 	 */
-	protected final /*-@Tainted*/ Object createCommand() throws Exception {
+	protected final /*@Tainted*/ Object createCommand() throws Exception {
 		if (this.commandClass == null) {
 			throw new IllegalStateException("Cannot create command without commandClass being set - " +
 					"either set commandClass or (in a form controller) override formBackingObject");
@@ -374,7 +374,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @param command the command object to check
 	 * @return if the command object is valid for this controller
 	 */
-	protected final boolean checkCommand(/*-@Tainted*/ Object command) {
+	protected final boolean checkCommand(/*@Tainted*/ Object command) {
 		return (this.commandClass == null || this.commandClass.isInstance(command));
 	}
 
@@ -386,7 +386,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @return the ServletRequestDataBinder instance for additional custom validation
 	 * @throws Exception in case of invalid state or arguments
 	 */
-	protected final ServletRequestDataBinder bindAndValidate(HttpServletRequest request, /*-@Tainted*/ Object command)
+	protected final ServletRequestDataBinder bindAndValidate(HttpServletRequest request, /*@Tainted*/ Object command)
 			throws Exception {
 
 		ServletRequestDataBinder binder = createBinder(request, command);
@@ -434,7 +434,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @see #prepareBinder
 	 * @see #initBinder
 	 */
-	protected ServletRequestDataBinder createBinder(HttpServletRequest request, /*-@Tainted*/ Object command)
+	protected ServletRequestDataBinder createBinder(HttpServletRequest request, /*@Tainted*/ Object command)
 	    throws Exception {
 
 		ServletRequestDataBinder binder = new ServletRequestDataBinder(command, getCommandName());
@@ -515,7 +515,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @see #bindAndValidate
 	 * @see #onBind(HttpServletRequest, Object)
 	 */
-	protected void onBind(HttpServletRequest request, /*-@Tainted*/ Object command, BindException errors) throws Exception {
+	protected void onBind(HttpServletRequest request, /*@Tainted*/ Object command, BindException errors) throws Exception {
 		onBind(request, command);
 	}
 
@@ -530,7 +530,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @throws Exception in case of invalid state or arguments
 	 * @see #onBind(HttpServletRequest, Object, BindException)
 	 */
-	protected void onBind(HttpServletRequest request, /*-@Tainted*/ Object command) throws Exception {
+	protected void onBind(HttpServletRequest request, /*@Tainted*/ Object command) throws Exception {
 	}
 
 	/**
@@ -542,7 +542,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * custom registration of binding errors
 	 * @return whether to suppress validation for the given request
 	 */
-	protected boolean suppressValidation(HttpServletRequest request, /*-@Tainted*/ Object command, BindException errors) {
+	protected boolean suppressValidation(HttpServletRequest request, /*@Tainted*/ Object command, BindException errors) {
 		return suppressValidation(request, command);
 	}
 
@@ -556,7 +556,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @param command the command object to validate
 	 * @return whether to suppress validation for the given request
 	 */
-	protected boolean suppressValidation(HttpServletRequest request, /*-@Tainted*/ Object command) {
+	protected boolean suppressValidation(HttpServletRequest request, /*@Tainted*/ Object command) {
 		return suppressValidation(request);
 	}
 
@@ -588,7 +588,7 @@ public abstract class BaseCommandController extends AbstractController {
 	 * @see #bindAndValidate
 	 * @see org.springframework.validation.Errors
 	 */
-	protected void onBindAndValidate(HttpServletRequest request, /*-@Tainted*/ Object command, BindException errors)
+	protected void onBindAndValidate(HttpServletRequest request, /*@Tainted*/ Object command, BindException errors)
 			throws Exception {
 	}
 

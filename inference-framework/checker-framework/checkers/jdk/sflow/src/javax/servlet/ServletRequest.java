@@ -16,11 +16,11 @@ public interface ServletRequest {
     int getContentLength(/*>>> @Readonly ServletRequest this*/);
     String getContentType(/*>>> @Readonly ServletRequest this*/);
     ServletInputStream getInputStream(/*>>> @Readonly ServletRequest this*/) throws IOException;
-    /*-@Tainted*/ String getParameter(/*>>> @Readonly ServletRequest this,*/ String arg0);
-    /*-@Tainted*/ Enumeration<String> getParameterNames(/*>>> @Readonly ServletRequest this*/ );
-    /*-@Tainted*/ /*@Poly*/ String /*-@Tainted*/ [] getParameterValues(/*>>> @Readonly ServletRequest this,*/ String arg0);
-    /*-@Tainted*/ Map<String,String[]> getParameterMap(/*>>> @Readonly ServletRequest this*/ );
-    /*-@Tainted*/ String getProtocol(/*>>> @Readonly ServletRequest this*/ );
+    /*@Tainted*/ String getParameter(/*>>> @Readonly ServletRequest this,*/ String arg0);
+    /*@Tainted*/ Enumeration<String> getParameterNames(/*>>> @Readonly ServletRequest this*/ );
+    /*@Tainted*/ /*@Poly*/ String /*@Tainted*/ [] getParameterValues(/*>>> @Readonly ServletRequest this,*/ String arg0);
+    /*@Tainted*/ Map<String,String[]> getParameterMap(/*>>> @Readonly ServletRequest this*/ );
+    /*@Tainted*/ String getProtocol(/*>>> @Readonly ServletRequest this*/ );
     String getScheme(/*>>> @Readonly ServletRequest this*/ );
     String getServerName(/*>>> @Readonly ServletRequest this*/ );
     int getServerPort(/*>>> @Readonly ServletRequest this*/ );

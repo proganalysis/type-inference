@@ -226,7 +226,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	/**
 	 * Calls page-specific onBindAndValidate method.
 	 */
-	protected final void onBindAndValidate(HttpServletRequest request, /*-@Tainted*/ Object command, BindException errors)
+	protected final void onBindAndValidate(HttpServletRequest request, /*@Tainted*/ Object command, BindException errors)
 	    throws Exception {
 
 		onBindAndValidate(request, command, errors, getCurrentPage(request));
@@ -248,7 +248,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @see #processFormSubmission
 	 * @see org.springframework.validation.Errors
 	 */
-	protected void onBindAndValidate(HttpServletRequest request, /*-@Tainted*/ Object command, BindException errors, int page)
+	protected void onBindAndValidate(HttpServletRequest request, /*@Tainted*/ Object command, BindException errors, int page)
 	    throws Exception {
 	}
 
@@ -264,7 +264,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	/**
 	 * Calls page-specific referenceData method.
 	 */
-	protected final Map referenceData(HttpServletRequest request, /*-@Tainted*/ Object command, Errors errors)
+	protected final Map referenceData(HttpServletRequest request, /*@Tainted*/ Object command, Errors errors)
 	    throws Exception {
 
 		return referenceData(request, command, errors, getCurrentPage(request));
@@ -284,7 +284,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @see #referenceData(HttpServletRequest, int)
 	 * @see ModelAndView
 	 */
-	protected Map referenceData(HttpServletRequest request, /*-@Tainted*/ Object command, Errors errors, int page)
+	protected Map referenceData(HttpServletRequest request, /*@Tainted*/ Object command, Errors errors, int page)
 	    throws Exception {
 
 		return referenceData(request, page);
@@ -370,7 +370,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @return the current page count
 	 * @see #getPageCount
 	 */
-	protected int getPageCount(HttpServletRequest request, /*-@Tainted*/ Object command) {
+	protected int getPageCount(HttpServletRequest request, /*@Tainted*/ Object command) {
 		return getPageCount();
 	}
 
@@ -385,7 +385,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @return the current page count
 	 * @see #getPageCount
 	 */
-	protected String getViewName(HttpServletRequest request, /*-@Tainted*/ Object command, int page) {
+	protected String getViewName(HttpServletRequest request, /*@Tainted*/ Object command, int page) {
 		return getPages()[page];
 	}
 
@@ -398,7 +398,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @see #getInitialPage(HttpServletRequest)
 	 * @see #formBackingObject
 	 */
-	protected int getInitialPage(HttpServletRequest request, /*-@Tainted*/ Object command) {
+	protected int getInitialPage(HttpServletRequest request, /*@Tainted*/ Object command) {
 		return getInitialPage(request);
 	}
 
@@ -466,7 +466,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * Apply wizard workflow: finish, cancel, page change.
 	 */
 	protected final ModelAndView processFormSubmission(
-			HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command, BindException errors)
+			HttpServletRequest request, HttpServletResponse response, /*@Tainted*/ Object command, BindException errors)
 			throws Exception {
 
 		int currentPage = getCurrentPage(request);
@@ -601,7 +601,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @return the page specified in the request, or current page if not found
 	 * @see #getTargetPage(HttpServletRequest, int)
 	 */
-	protected int getTargetPage(HttpServletRequest request, /*-@Tainted*/ Object command, Errors errors, int currentPage) {
+	protected int getTargetPage(HttpServletRequest request, /*@Tainted*/ Object command, Errors errors, int currentPage) {
 		return getTargetPage(request, currentPage);
 	}
 
@@ -693,7 +693,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @param page number of page to post-process
 	 * @throws Exception in case of invalid state or arguments
 	 */
-	protected void postProcessPage(HttpServletRequest request, /*-@Tainted*/ Object command, Errors errors, int page)
+	protected void postProcessPage(HttpServletRequest request, /*@Tainted*/ Object command, Errors errors, int page)
 			throws Exception {
 	}
 
@@ -716,7 +716,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @see #showPage(javax.servlet.http.HttpServletRequest, org.springframework.validation.BindException, int)
 	 */
 	protected abstract ModelAndView processFinish(
-			HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command, BindException errors)
+			HttpServletRequest request, HttpServletResponse response, /*@Tainted*/ Object command, BindException errors)
 			throws Exception;
 
 	/**
@@ -737,7 +737,7 @@ public abstract class AbstractWizardFormController extends AbstractFormControlle
 	 * @see org.springframework.validation.BindException#getModel
 	 */
 	protected ModelAndView processCancel(
-			HttpServletRequest request, HttpServletResponse response, /*-@Tainted*/ Object command, BindException errors)
+			HttpServletRequest request, HttpServletResponse response, /*@Tainted*/ Object command, BindException errors)
 			throws Exception {
 
 		throw new ServletException(

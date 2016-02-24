@@ -106,11 +106,11 @@ public final class System {
         throw new RuntimeException("skeleton method");
     }
 
-    public static void load(/*-@Safe*/ String filename) {
+    public static void load(/*@Safe*/ String filename) {
         throw new RuntimeException("skeleton method");
     }
 
-    public static void loadLibrary(/*-@Safe*/ String libname) {
+    public static void loadLibrary(/*@Safe*/ String libname) {
         throw new RuntimeException("skeleton method");
     }
 

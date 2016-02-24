@@ -46,10 +46,10 @@ public class Action {
     public Action() { throw new RuntimeException("skeleton method"); }
     public ActionServlet getServlet() { throw new RuntimeException("skeleton method"); }
     public void setServlet(ActionServlet arg0) { throw new RuntimeException("skeleton method"); }
-    public ActionForward execute(ActionMapping arg0, /*-@Tainted*/ ActionForm arg1, ServletRequest arg2, ServletResponse arg3) throws Exception { throw new RuntimeException("skeleton method"); }
-    public ActionForward execute(ActionMapping arg0, /*-@Tainted*/ ActionForm arg1, HttpServletRequest arg2, HttpServletResponse arg3) throws Exception { throw new RuntimeException("skeleton method"); }
-    public ActionForward perform(ActionMapping arg0, /*-@Tainted*/ ActionForm arg1, ServletRequest arg2, ServletResponse arg3) throws IOException,ServletException { throw new RuntimeException("skeleton method"); }
-    public ActionForward perform(ActionMapping arg0, /*-@Tainted*/ ActionForm arg1, HttpServletRequest arg2, HttpServletResponse arg3) throws IOException,ServletException { throw new RuntimeException("skeleton method"); }
+    public ActionForward execute(ActionMapping arg0, /*@Tainted*/ ActionForm arg1, ServletRequest arg2, ServletResponse arg3) throws Exception { throw new RuntimeException("skeleton method"); }
+    public ActionForward execute(ActionMapping arg0, /*@Tainted*/ ActionForm arg1, HttpServletRequest arg2, HttpServletResponse arg3) throws Exception { throw new RuntimeException("skeleton method"); }
+    public ActionForward perform(ActionMapping arg0, /*@Tainted*/ ActionForm arg1, ServletRequest arg2, ServletResponse arg3) throws IOException,ServletException { throw new RuntimeException("skeleton method"); }
+    public ActionForward perform(ActionMapping arg0, /*@Tainted*/ ActionForm arg1, HttpServletRequest arg2, HttpServletResponse arg3) throws IOException,ServletException { throw new RuntimeException("skeleton method"); }
     protected String generateToken(/*@Readonly*/ HttpServletRequest arg0) { throw new RuntimeException("skeleton method"); }
     protected DataSource getDataSource(/*@Readonly*/ HttpServletRequest arg0) { throw new RuntimeException("skeleton method"); }
     protected DataSource getDataSource(/*@Readonly*/ HttpServletRequest arg0, String arg1) { throw new RuntimeException("skeleton method"); }
