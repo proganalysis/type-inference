@@ -1,36 +1,18 @@
 package edu.rpi;
 
-import java.util.Iterator;
 import java.util.*;
-import java.lang.annotation.*;
-
-import soot.Body;
-import soot.BodyTransformer;
 import soot.Local;
-import soot.PackManager;
-import soot.PatchingChain;
-import soot.RefType;
 import soot.ArrayType;
 import soot.VoidType;
-import soot.Scene;
-import soot.SootClass;
 import soot.SootMethod;
 import soot.SootField;
-import soot.Transform;
-import soot.Unit;
 import soot.Value;
-import soot.ValueBox;
 import soot.jimple.AbstractStmtSwitch;
 import soot.jimple.AbstractJimpleValueSwitch;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.*;
-import soot.jimple.Jimple;
 import soot.jimple.StringConstant;
-import soot.options.Options;
-import soot.tagkit.*; 
-
-import edu.rpi.Constraint.SubtypeConstraint;
 import edu.rpi.AnnotatedValue.Kind;
 
 public class InferenceVisitor extends AbstractStmtSwitch {
@@ -48,7 +30,8 @@ public class InferenceVisitor extends AbstractStmtSwitch {
 
     @Override
     public void caseInvokeStmt(InvokeStmt stmt) {
-        AnnotatedValue fakeLhs = t.getAnnotatedValue(InferenceTransformer.FAKE_PREFIX + t.getVisitorState().getSootMethod().getSignature()
+    	// Edit by Yao: change Fake prefix to Callsite prefix
+        AnnotatedValue fakeLhs = t.getAnnotatedValue(InferenceTransformer.CALLSITE_PREFIX + t.getVisitorState().getSootMethod().getSignature()
                 + "<" + stmt.hashCode() + ">", VoidType.v(), Kind.LOCAL, stmt.getInvokeExpr());
         stmt.getInvokeExpr().apply(new ValueVisitor(null, fakeLhs));
     }
@@ -308,7 +291,6 @@ public class InferenceVisitor extends AbstractStmtSwitch {
          */
         private void handleInnerAccessCall(StaticInvokeExpr v, AnnotatedValue assignTo) {
             SootMethod invokeMethod = v.getMethod();
-            AnnotatedValue aBase = null;
             // parameters
             List<Value> args = v.getArgs();
             for (int i = 0; i < v.getArgCount(); i++) {

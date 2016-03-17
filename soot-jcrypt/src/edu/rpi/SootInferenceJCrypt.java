@@ -62,16 +62,7 @@ public class SootInferenceJCrypt {
         System.out.println("INFO: Solving JCrypt constraints:  " + jcryptTransformer.getConstraints().size() + " in total...");
         ConstraintSolver jcryptSolver = new JCryptConstraintSolver(jcryptTransformer);
         errors = jcryptSolver.solve();
-        try {
-            PrintStream jcryptOut = new PrintStream(outputDir + File.separator + "jcrypt-constraints.log");
-            for (Constraint c : jcryptTransformer.getConstraints()) {
-                jcryptOut.println(c);
-                jcryptOut.println();
-            }
-            jcryptOut.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+		
         System.out.println();
         for (Constraint c : errors)
             System.out.println(c + "\n");
@@ -83,7 +74,17 @@ public class SootInferenceJCrypt {
 		if (!typeErrors.isEmpty()) {
 			for (Constraint c : typeErrors) System.out.println(c);
 		}
-		info(jcryptTransformer.getName(), typeErrors.size() + " error(s) in the concrete typing.");
+		try {
+            PrintStream jcryptOut = new PrintStream(outputDir + File.separator + "jcrypt-constraints.log");
+            for (Constraint c : jcryptTransformer.getConstraints()) {
+                jcryptOut.println(c);
+                jcryptOut.println();
+            }
+            jcryptOut.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         try {
             PrintStream jcryptOut = new PrintStream(outputDir + File.separator + "jcrypt-result.jaif");
             jcryptTransformer.printJaif(jcryptOut);
@@ -92,6 +93,9 @@ public class SootInferenceJCrypt {
         }
 
         System.out.println("INFO: Annotated value size: " + AnnotatedValueMap.v().size());
+        
+        JCryptTranslator translator = new JCryptTranslator(jcryptTransformer);
+        translator.getPolyMethods();
 		
         long endTime   = System.currentTimeMillis();
         System.out.println("INFO: Total running time: " + ((float)(endTime - startTime) / 1000) + " sec");

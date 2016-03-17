@@ -347,4 +347,5 @@ public class JCryptTransformer extends InferenceTransformer {
     public String getName() {
         return "jcrypt";
     }
+    
 }

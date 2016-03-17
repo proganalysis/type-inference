@@ -5,11 +5,11 @@ package edu.rpi;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import edu.rpi.ConstraintSolver.FailureStatus;
-
+import edu.rpi.AnnotatedValue.MethodAdaptValue;
 import static com.esotericsoftware.minlog.Log.*;
 
 /**
@@ -36,26 +36,68 @@ public abstract class AbstractTypingExtractor implements TypingExtractor {
 		info(this.getClass().getSimpleName(), "Verifying the concrete typing...");
 		Set<Constraint> constraints = checker.getConstraints();
 		List<Constraint> errors = new ArrayList<Constraint>();
+		Annotation[] sourceAnnotations = checker.getSourceLevelQualifiers().toArray(new Annotation[0]);
+		Arrays.sort(sourceAnnotations, checker.getComparator());
+		
 		for (Constraint c : constraints) {
-			AnnotatedValue left = c.getLeft();
-			AnnotatedValue right = c.getRight();
-			Set<Annotation> leftAnnos = solver.getAnnotations(left);
-			Set<Annotation> rightAnnos = solver.getAnnotations(right);
-			if (leftAnnos.isEmpty() || rightAnnos.isEmpty()) {
-				errors.add(c);
-			} else {
-				Annotation leftAnno = leftAnnos.iterator().next();
-				Annotation rightAnno = rightAnnos.iterator().next();
-				if (!AnnotationUtils.isSubtype(leftAnno, rightAnno)
-						&& checker.getFailureStatus(c) == FailureStatus.ERROR) {
-					errors.add(c);
-				}
-			}
+			if (!isTypeCheck(c)) errors.add(c);
 		}
 		info(this.getClass().getSimpleName(),
 				"Finished verifying the concrete typing. " + errors.size()
 						+ " error(s)");
+		// handle callsite typing
+		info(this.getClass().getSimpleName(), "Choosing the proper callsite typing...");
+		for (Constraint c : errors) {
+			if (isTypeCheck(c)) continue;
+			AnnotatedValue[] annoValues = new AnnotatedValue[] { c.getLeft(), c.getRight() };
+			for (AnnotatedValue annoValue : annoValues) {
+				if (!(annoValue instanceof MethodAdaptValue))
+					continue;
+				Set<Annotation> annos = solver.getAnnotations(annoValue);
+				if (annos.isEmpty())
+					continue;
+				AnnotatedValue callsite = ((MethodAdaptValue) annoValue).getContextValue();
+				Annotation anno = callsite.getAnnotations(checker).iterator().next();
+				if (anno == sourceAnnotations[0]) {
+					setAnnotation(sourceAnnotations[1], callsite);
+					if (!isTypeCheck(c))
+						setAnnotation(sourceAnnotations[2], callsite);
+				} else if (anno == sourceAnnotations[1]) {
+					setAnnotation(sourceAnnotations[2], callsite);
+				}
+			}
+		}
+		
+		// After handling callsite typing, check all constraints again.
+		errors = new ArrayList<Constraint>();
+		for (Constraint c : constraints) {
+			if (!isTypeCheck(c)) errors.add(c);
+		}
+		
+		info(this.getClass().getSimpleName(),
+				"Finished choosing the callsite typing. " + errors.size()
+						+ " error(s)");
 		return errors;
+	}
+
+	private void setAnnotation(Annotation anno, AnnotatedValue callsite) {
+		Set<Annotation> annos = AnnotationUtils.createAnnotationSet();
+		annos.add(anno);
+		callsite.setAnnotations(annos, checker);
+	}
+
+	private boolean isTypeCheck(Constraint c) {
+		AnnotatedValue left = c.getLeft();
+		AnnotatedValue right = c.getRight();
+		Set<Annotation> leftAnnos = solver.getAnnotations(left);
+		Set<Annotation> rightAnnos = solver.getAnnotations(right);
+		if (leftAnnos.isEmpty() || rightAnnos.isEmpty()) return false;
+		else {
+			Annotation leftAnno = leftAnnos.iterator().next();
+			Annotation rightAnno = rightAnnos.iterator().next();
+			if (!AnnotationUtils.isSubtype(leftAnno, rightAnno)) return false;
+		}
+		return true;
 	}
 
 	/* (non-Javadoc)
