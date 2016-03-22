@@ -1,0 +1,1188 @@
+SUB-0: 
+(0)<bisort.BiSort: void <clinit>()>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(1)<bisort.BiSort: int size>: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-1: 
+(2)<bisort.BiSort: void <clinit>()>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(3)<bisort.BiSort: boolean printMsgs>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-2: 
+(4)<bisort.BiSort: void <clinit>()>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(5)<bisort.BiSort: boolean printResults>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-6: 
+(7)<bisort.BiSort: void main(java.lang.String[])>@parameter0: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]  <:
+(6)<bisort.BiSort: void main(java.lang.String[])>@args: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]
+EQU-7: 
+(8)<bisort.BiSort: void main(java.lang.String[])>@parameter0[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]  ==
+(9)<bisort.BiSort: void main(java.lang.String[])>@args[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]
+SUB-8: 
+(6)<bisort.BiSort: void main(java.lang.String[])>@args: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]  <:
+((10)callsite-<bisort.BiSort: void main(java.lang.String[])><601641419>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (11)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@parameter0: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]])
+EQU-9: 
+(9)<bisort.BiSort: void main(java.lang.String[])>@args[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]  ==
+(13)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@parameter0[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]
+SUB-10: 
+(3)<bisort.BiSort: boolean printMsgs>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(14)<bisort.BiSort: void main(java.lang.String[])>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-11: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(15)<bisort.BiSort: void main(java.lang.String[])>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-12: 
+(17)<bisort.BiSort: void main(java.lang.String[])>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((18)callsite-<bisort.BiSort: void main(java.lang.String[])><607176394>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (19)lib-<java.lang.StringBuffer: void <init>()>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-13: 
+(17)<bisort.BiSort: void main(java.lang.String[])>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((21)callsite-<bisort.BiSort: void main(java.lang.String[])><914079174>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (22)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-14: 
+((21)callsite-<bisort.BiSort: void main(java.lang.String[])><914079174>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (27)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(21)callsite-<bisort.BiSort: void main(java.lang.String[])><914079174>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-15: 
+(1)<bisort.BiSort: int size>: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(29)<bisort.BiSort: void main(java.lang.String[])>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-16: 
+(17)<bisort.BiSort: void main(java.lang.String[])>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((30)callsite-<bisort.BiSort: void main(java.lang.String[])><1596820641>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (31)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(int)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-17: 
+(29)<bisort.BiSort: void main(java.lang.String[])>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((30)callsite-<bisort.BiSort: void main(java.lang.String[])><1596820641>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (33)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(int)>@parameter0: {@Poly, @Readonly} [int])
+SUB-18: 
+((30)callsite-<bisort.BiSort: void main(java.lang.String[])><1596820641>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (35)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(int)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(30)callsite-<bisort.BiSort: void main(java.lang.String[])><1596820641>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-19: 
+(17)<bisort.BiSort: void main(java.lang.String[])>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((37)callsite-<bisort.BiSort: void main(java.lang.String[])><383310624>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (22)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-20: 
+((37)callsite-<bisort.BiSort: void main(java.lang.String[])><383310624>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (27)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(37)callsite-<bisort.BiSort: void main(java.lang.String[])><383310624>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-21: 
+(17)<bisort.BiSort: void main(java.lang.String[])>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((42)<bisort.BiSort: void main(java.lang.String[])>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (43)lib-<java.lang.StringBuffer: java.lang.String toString()>@this: {@Poly, @Readonly} [java.lang.StringBuffer])
+SUB-22: 
+((42)<bisort.BiSort: void main(java.lang.String[])>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (45)lib-<java.lang.StringBuffer: java.lang.String toString()>@return: {@Poly, @Readonly} [java.lang.String])  <:
+(42)<bisort.BiSort: void main(java.lang.String[])>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-23: 
+(15)<bisort.BiSort: void main(java.lang.String[])>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((47)callsite-<bisort.BiSort: void main(java.lang.String[])><569640796>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-24: 
+(42)<bisort.BiSort: void main(java.lang.String[])>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((47)callsite-<bisort.BiSort: void main(java.lang.String[])><569640796>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (50)lib-<java.io.PrintStream: void println(java.lang.String)>@parameter0: {@Poly, @Readonly} [java.lang.String])
+SUB-25: 
+((52)<bisort.BiSort: void main(java.lang.String[])>@temp$5: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(52)<bisort.BiSort: void main(java.lang.String[])>@temp$5: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-26: 
+(52)<bisort.BiSort: void main(java.lang.String[])>@temp$5: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(55)<bisort.BiSort: void main(java.lang.String[])>@start2: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-27: 
+(1)<bisort.BiSort: int size>: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(56)<bisort.BiSort: void main(java.lang.String[])>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-28: 
+(56)<bisort.BiSort: void main(java.lang.String[])>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((57)<bisort.BiSort: void main(java.lang.String[])>@temp$7: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =m=> (58)<bisort.Value: bisort.Value createTree(int,int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-29: 
+((57)<bisort.BiSort: void main(java.lang.String[])>@temp$7: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =m=> (63)<bisort.Value: bisort.Value createTree(int,int)>@return: {@Clear, @Mutable, @Poly, @Polyread, @Sensitive} [bisort.Value])  <:
+(57)<bisort.BiSort: void main(java.lang.String[])>@temp$7: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-30: 
+(57)<bisort.BiSort: void main(java.lang.String[])>@temp$7: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(65)<bisort.BiSort: void main(java.lang.String[])>@tree: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-31: 
+((66)<bisort.BiSort: void main(java.lang.String[])>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (70)<bisort.Value: int random(int)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(66)<bisort.BiSort: void main(java.lang.String[])>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-32: 
+(72)<bisort.BiSort: void main(java.lang.String[])>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(73)<bisort.BiSort: void main(java.lang.String[])>@sval: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-33: 
+((74)<bisort.BiSort: void main(java.lang.String[])>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(74)<bisort.BiSort: void main(java.lang.String[])>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-34: 
+(74)<bisort.BiSort: void main(java.lang.String[])>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(76)<bisort.BiSort: void main(java.lang.String[])>@end2: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-35: 
+(5)<bisort.BiSort: boolean printResults>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(77)<bisort.BiSort: void main(java.lang.String[])>@temp$11: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-36: 
+(65)<bisort.BiSort: void main(java.lang.String[])>@tree: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((78)callsite-<bisort.BiSort: void main(java.lang.String[])><474242952>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value])
+SUB-37: 
+(3)<bisort.BiSort: boolean printMsgs>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(81)<bisort.BiSort: void main(java.lang.String[])>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-38: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(82)<bisort.BiSort: void main(java.lang.String[])>@temp$13: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-39: 
+(82)<bisort.BiSort: void main(java.lang.String[])>@temp$13: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((83)callsite-<bisort.BiSort: void main(java.lang.String[])><702063301>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-40: 
+((87)<bisort.BiSort: void main(java.lang.String[])>@temp$14: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(87)<bisort.BiSort: void main(java.lang.String[])>@temp$14: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-41: 
+(87)<bisort.BiSort: void main(java.lang.String[])>@temp$14: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(89)<bisort.BiSort: void main(java.lang.String[])>@start0: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-42: 
+(65)<bisort.BiSort: void main(java.lang.String[])>@tree: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((90)<bisort.BiSort: void main(java.lang.String[])>@temp$15: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-43: 
+(73)<bisort.BiSort: void main(java.lang.String[])>@sval: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((90)<bisort.BiSort: void main(java.lang.String[])>@temp$15: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (93)<bisort.Value: int bisort(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-44: 
+((90)<bisort.BiSort: void main(java.lang.String[])>@temp$15: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (98)<bisort.Value: int bisort(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(90)<bisort.BiSort: void main(java.lang.String[])>@temp$15: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-45: 
+(90)<bisort.BiSort: void main(java.lang.String[])>@temp$15: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(73)<bisort.BiSort: void main(java.lang.String[])>@sval: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-46: 
+((100)<bisort.BiSort: void main(java.lang.String[])>@temp$16: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(100)<bisort.BiSort: void main(java.lang.String[])>@temp$16: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-47: 
+(100)<bisort.BiSort: void main(java.lang.String[])>@temp$16: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(102)<bisort.BiSort: void main(java.lang.String[])>@end0: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-48: 
+(5)<bisort.BiSort: boolean printResults>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(103)<bisort.BiSort: void main(java.lang.String[])>@temp$17: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-49: 
+(65)<bisort.BiSort: void main(java.lang.String[])>@tree: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((104)callsite-<bisort.BiSort: void main(java.lang.String[])><49630171>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value])
+SUB-50: 
+((106)<bisort.BiSort: void main(java.lang.String[])>@temp$18: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(106)<bisort.BiSort: void main(java.lang.String[])>@temp$18: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-51: 
+(106)<bisort.BiSort: void main(java.lang.String[])>@temp$18: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(108)<bisort.BiSort: void main(java.lang.String[])>@start1: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-52: 
+(65)<bisort.BiSort: void main(java.lang.String[])>@tree: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((109)<bisort.BiSort: void main(java.lang.String[])>@temp$19: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-53: 
+(73)<bisort.BiSort: void main(java.lang.String[])>@sval: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((109)<bisort.BiSort: void main(java.lang.String[])>@temp$19: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (93)<bisort.Value: int bisort(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-54: 
+((109)<bisort.BiSort: void main(java.lang.String[])>@temp$19: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (98)<bisort.Value: int bisort(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(109)<bisort.BiSort: void main(java.lang.String[])>@temp$19: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-55: 
+(109)<bisort.BiSort: void main(java.lang.String[])>@temp$19: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(73)<bisort.BiSort: void main(java.lang.String[])>@sval: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-56: 
+((115)<bisort.BiSort: void main(java.lang.String[])>@temp$20: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(115)<bisort.BiSort: void main(java.lang.String[])>@temp$20: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-57: 
+(115)<bisort.BiSort: void main(java.lang.String[])>@temp$20: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(117)<bisort.BiSort: void main(java.lang.String[])>@end1: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-58: 
+(5)<bisort.BiSort: boolean printResults>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(118)<bisort.BiSort: void main(java.lang.String[])>@temp$21: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-59: 
+(65)<bisort.BiSort: void main(java.lang.String[])>@tree: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((119)callsite-<bisort.BiSort: void main(java.lang.String[])><640055545>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value])
+SUB-60: 
+(3)<bisort.BiSort: boolean printMsgs>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(121)<bisort.BiSort: void main(java.lang.String[])>@temp$22: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-61: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(122)<bisort.BiSort: void main(java.lang.String[])>@temp$23: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-62: 
+(123)<bisort.BiSort: void main(java.lang.String[])>@temp$24: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((124)callsite-<bisort.BiSort: void main(java.lang.String[])><1035224021>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (19)lib-<java.lang.StringBuffer: void <init>()>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-63: 
+(123)<bisort.BiSort: void main(java.lang.String[])>@temp$24: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((126)callsite-<bisort.BiSort: void main(java.lang.String[])><2050878410>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (22)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-64: 
+((126)callsite-<bisort.BiSort: void main(java.lang.String[])><2050878410>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (27)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(126)callsite-<bisort.BiSort: void main(java.lang.String[])><2050878410>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-65: 
+(76)<bisort.BiSort: void main(java.lang.String[])>@end2: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(131)<bisort.BiSort: void main(java.lang.String[])>@temp$25: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-66: 
+(55)<bisort.BiSort: void main(java.lang.String[])>@start2: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(131)<bisort.BiSort: void main(java.lang.String[])>@temp$25: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-67: 
+(131)<bisort.BiSort: void main(java.lang.String[])>@temp$25: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(132)<bisort.BiSort: void main(java.lang.String[])>@temp$26: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-68: 
+(132)<bisort.BiSort: void main(java.lang.String[])>@temp$26: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+(133)<bisort.BiSort: void main(java.lang.String[])>@temp$27: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-69: 
+(123)<bisort.BiSort: void main(java.lang.String[])>@temp$24: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((135)callsite-<bisort.BiSort: void main(java.lang.String[])><590031384>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (136)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-70: 
+(133)<bisort.BiSort: void main(java.lang.String[])>@temp$27: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+((135)callsite-<bisort.BiSort: void main(java.lang.String[])><590031384>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (138)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@parameter0: {@Poly, @Readonly} [double])
+SUB-71: 
+((135)callsite-<bisort.BiSort: void main(java.lang.String[])><590031384>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (140)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(135)callsite-<bisort.BiSort: void main(java.lang.String[])><590031384>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-72: 
+(123)<bisort.BiSort: void main(java.lang.String[])>@temp$24: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((142)<bisort.BiSort: void main(java.lang.String[])>@temp$28: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (43)lib-<java.lang.StringBuffer: java.lang.String toString()>@this: {@Poly, @Readonly} [java.lang.StringBuffer])
+SUB-73: 
+((142)<bisort.BiSort: void main(java.lang.String[])>@temp$28: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (45)lib-<java.lang.StringBuffer: java.lang.String toString()>@return: {@Poly, @Readonly} [java.lang.String])  <:
+(142)<bisort.BiSort: void main(java.lang.String[])>@temp$28: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-74: 
+(122)<bisort.BiSort: void main(java.lang.String[])>@temp$23: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((145)callsite-<bisort.BiSort: void main(java.lang.String[])><237458788>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-75: 
+(142)<bisort.BiSort: void main(java.lang.String[])>@temp$28: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((145)callsite-<bisort.BiSort: void main(java.lang.String[])><237458788>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (50)lib-<java.io.PrintStream: void println(java.lang.String)>@parameter0: {@Poly, @Readonly} [java.lang.String])
+SUB-76: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(148)<bisort.BiSort: void main(java.lang.String[])>@temp$29: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-77: 
+(149)<bisort.BiSort: void main(java.lang.String[])>@temp$30: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((150)callsite-<bisort.BiSort: void main(java.lang.String[])><14891735>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (19)lib-<java.lang.StringBuffer: void <init>()>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-78: 
+(149)<bisort.BiSort: void main(java.lang.String[])>@temp$30: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((152)callsite-<bisort.BiSort: void main(java.lang.String[])><1897332240>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (22)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-79: 
+((152)callsite-<bisort.BiSort: void main(java.lang.String[])><1897332240>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (27)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(152)callsite-<bisort.BiSort: void main(java.lang.String[])><1897332240>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-80: 
+(102)<bisort.BiSort: void main(java.lang.String[])>@end0: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(157)<bisort.BiSort: void main(java.lang.String[])>@temp$31: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-81: 
+(89)<bisort.BiSort: void main(java.lang.String[])>@start0: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(157)<bisort.BiSort: void main(java.lang.String[])>@temp$31: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-82: 
+(157)<bisort.BiSort: void main(java.lang.String[])>@temp$31: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(158)<bisort.BiSort: void main(java.lang.String[])>@temp$32: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-83: 
+(158)<bisort.BiSort: void main(java.lang.String[])>@temp$32: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+(159)<bisort.BiSort: void main(java.lang.String[])>@temp$33: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-84: 
+(149)<bisort.BiSort: void main(java.lang.String[])>@temp$30: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((161)callsite-<bisort.BiSort: void main(java.lang.String[])><1960080009>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (136)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-85: 
+(159)<bisort.BiSort: void main(java.lang.String[])>@temp$33: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+((161)callsite-<bisort.BiSort: void main(java.lang.String[])><1960080009>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (138)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@parameter0: {@Poly, @Readonly} [double])
+SUB-86: 
+((161)callsite-<bisort.BiSort: void main(java.lang.String[])><1960080009>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (140)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(161)callsite-<bisort.BiSort: void main(java.lang.String[])><1960080009>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-87: 
+(149)<bisort.BiSort: void main(java.lang.String[])>@temp$30: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((165)<bisort.BiSort: void main(java.lang.String[])>@temp$34: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (43)lib-<java.lang.StringBuffer: java.lang.String toString()>@this: {@Poly, @Readonly} [java.lang.StringBuffer])
+SUB-88: 
+((165)<bisort.BiSort: void main(java.lang.String[])>@temp$34: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (45)lib-<java.lang.StringBuffer: java.lang.String toString()>@return: {@Poly, @Readonly} [java.lang.String])  <:
+(165)<bisort.BiSort: void main(java.lang.String[])>@temp$34: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-89: 
+(148)<bisort.BiSort: void main(java.lang.String[])>@temp$29: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((168)callsite-<bisort.BiSort: void main(java.lang.String[])><1521203684>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-90: 
+(165)<bisort.BiSort: void main(java.lang.String[])>@temp$34: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((168)callsite-<bisort.BiSort: void main(java.lang.String[])><1521203684>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (50)lib-<java.io.PrintStream: void println(java.lang.String)>@parameter0: {@Poly, @Readonly} [java.lang.String])
+SUB-91: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(171)<bisort.BiSort: void main(java.lang.String[])>@temp$35: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-92: 
+(172)<bisort.BiSort: void main(java.lang.String[])>@temp$36: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((173)callsite-<bisort.BiSort: void main(java.lang.String[])><1906822608>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (19)lib-<java.lang.StringBuffer: void <init>()>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-93: 
+(172)<bisort.BiSort: void main(java.lang.String[])>@temp$36: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((175)callsite-<bisort.BiSort: void main(java.lang.String[])><510464876>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (22)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-94: 
+((175)callsite-<bisort.BiSort: void main(java.lang.String[])><510464876>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (27)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(175)callsite-<bisort.BiSort: void main(java.lang.String[])><510464876>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-95: 
+(117)<bisort.BiSort: void main(java.lang.String[])>@end1: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(180)<bisort.BiSort: void main(java.lang.String[])>@temp$37: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-96: 
+(108)<bisort.BiSort: void main(java.lang.String[])>@start1: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(180)<bisort.BiSort: void main(java.lang.String[])>@temp$37: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-97: 
+(180)<bisort.BiSort: void main(java.lang.String[])>@temp$37: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(181)<bisort.BiSort: void main(java.lang.String[])>@temp$38: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-98: 
+(181)<bisort.BiSort: void main(java.lang.String[])>@temp$38: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+(182)<bisort.BiSort: void main(java.lang.String[])>@temp$39: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-99: 
+(172)<bisort.BiSort: void main(java.lang.String[])>@temp$36: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((184)callsite-<bisort.BiSort: void main(java.lang.String[])><1110166457>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (136)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-100: 
+(182)<bisort.BiSort: void main(java.lang.String[])>@temp$39: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+((184)callsite-<bisort.BiSort: void main(java.lang.String[])><1110166457>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (138)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@parameter0: {@Poly, @Readonly} [double])
+SUB-101: 
+((184)callsite-<bisort.BiSort: void main(java.lang.String[])><1110166457>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (140)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(184)callsite-<bisort.BiSort: void main(java.lang.String[])><1110166457>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-102: 
+(172)<bisort.BiSort: void main(java.lang.String[])>@temp$36: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((188)<bisort.BiSort: void main(java.lang.String[])>@temp$40: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (43)lib-<java.lang.StringBuffer: java.lang.String toString()>@this: {@Poly, @Readonly} [java.lang.StringBuffer])
+SUB-103: 
+((188)<bisort.BiSort: void main(java.lang.String[])>@temp$40: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (45)lib-<java.lang.StringBuffer: java.lang.String toString()>@return: {@Poly, @Readonly} [java.lang.String])  <:
+(188)<bisort.BiSort: void main(java.lang.String[])>@temp$40: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-104: 
+(171)<bisort.BiSort: void main(java.lang.String[])>@temp$35: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((191)callsite-<bisort.BiSort: void main(java.lang.String[])><2061666529>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-105: 
+(188)<bisort.BiSort: void main(java.lang.String[])>@temp$40: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((191)callsite-<bisort.BiSort: void main(java.lang.String[])><2061666529>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (50)lib-<java.io.PrintStream: void println(java.lang.String)>@parameter0: {@Poly, @Readonly} [java.lang.String])
+SUB-106: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(194)<bisort.BiSort: void main(java.lang.String[])>@temp$41: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-107: 
+(195)<bisort.BiSort: void main(java.lang.String[])>@temp$42: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((196)callsite-<bisort.BiSort: void main(java.lang.String[])><1438166113>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (19)lib-<java.lang.StringBuffer: void <init>()>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-108: 
+(195)<bisort.BiSort: void main(java.lang.String[])>@temp$42: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((198)callsite-<bisort.BiSort: void main(java.lang.String[])><1044696854>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (22)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-109: 
+((198)callsite-<bisort.BiSort: void main(java.lang.String[])><1044696854>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (27)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(198)callsite-<bisort.BiSort: void main(java.lang.String[])><1044696854>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-110: 
+((203)<bisort.BiSort: void main(java.lang.String[])>@temp$43: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(203)<bisort.BiSort: void main(java.lang.String[])>@temp$43: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-111: 
+(203)<bisort.BiSort: void main(java.lang.String[])>@temp$43: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(205)<bisort.BiSort: void main(java.lang.String[])>@temp$44: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-112: 
+(55)<bisort.BiSort: void main(java.lang.String[])>@start2: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(205)<bisort.BiSort: void main(java.lang.String[])>@temp$44: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-113: 
+(205)<bisort.BiSort: void main(java.lang.String[])>@temp$44: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(206)<bisort.BiSort: void main(java.lang.String[])>@temp$45: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-114: 
+(206)<bisort.BiSort: void main(java.lang.String[])>@temp$45: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+(207)<bisort.BiSort: void main(java.lang.String[])>@temp$46: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-115: 
+(195)<bisort.BiSort: void main(java.lang.String[])>@temp$42: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((209)callsite-<bisort.BiSort: void main(java.lang.String[])><1815766117>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (136)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-116: 
+(207)<bisort.BiSort: void main(java.lang.String[])>@temp$46: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+((209)callsite-<bisort.BiSort: void main(java.lang.String[])><1815766117>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (138)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@parameter0: {@Poly, @Readonly} [double])
+SUB-117: 
+((209)callsite-<bisort.BiSort: void main(java.lang.String[])><1815766117>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (140)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(209)callsite-<bisort.BiSort: void main(java.lang.String[])><1815766117>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-118: 
+(195)<bisort.BiSort: void main(java.lang.String[])>@temp$42: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((213)<bisort.BiSort: void main(java.lang.String[])>@temp$47: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (43)lib-<java.lang.StringBuffer: java.lang.String toString()>@this: {@Poly, @Readonly} [java.lang.StringBuffer])
+SUB-119: 
+((213)<bisort.BiSort: void main(java.lang.String[])>@temp$47: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (45)lib-<java.lang.StringBuffer: java.lang.String toString()>@return: {@Poly, @Readonly} [java.lang.String])  <:
+(213)<bisort.BiSort: void main(java.lang.String[])>@temp$47: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-120: 
+(194)<bisort.BiSort: void main(java.lang.String[])>@temp$41: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((216)callsite-<bisort.BiSort: void main(java.lang.String[])><223723243>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-121: 
+(213)<bisort.BiSort: void main(java.lang.String[])>@temp$47: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((216)callsite-<bisort.BiSort: void main(java.lang.String[])><223723243>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (50)lib-<java.io.PrintStream: void println(java.lang.String)>@parameter0: {@Poly, @Readonly} [java.lang.String])
+SUB-122: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(219)<bisort.BiSort: void main(java.lang.String[])>@temp$48: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-123: 
+(220)<bisort.BiSort: void main(java.lang.String[])>@temp$49: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((221)callsite-<bisort.BiSort: void main(java.lang.String[])><536788523>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (19)lib-<java.lang.StringBuffer: void <init>()>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-124: 
+(220)<bisort.BiSort: void main(java.lang.String[])>@temp$49: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((223)callsite-<bisort.BiSort: void main(java.lang.String[])><34482402>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (22)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-125: 
+((223)callsite-<bisort.BiSort: void main(java.lang.String[])><34482402>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (27)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(223)callsite-<bisort.BiSort: void main(java.lang.String[])><34482402>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-126: 
+((228)<bisort.BiSort: void main(java.lang.String[])>@temp$50: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(228)<bisort.BiSort: void main(java.lang.String[])>@temp$50: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-127: 
+(228)<bisort.BiSort: void main(java.lang.String[])>@temp$50: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(230)<bisort.BiSort: void main(java.lang.String[])>@temp$51: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-128: 
+(76)<bisort.BiSort: void main(java.lang.String[])>@end2: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(230)<bisort.BiSort: void main(java.lang.String[])>@temp$51: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-129: 
+(232)<bisort.Value: long initialTime>: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(231)<bisort.BiSort: void main(java.lang.String[])>@temp$52: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-130: 
+(230)<bisort.BiSort: void main(java.lang.String[])>@temp$51: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(233)<bisort.BiSort: void main(java.lang.String[])>@temp$53: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-131: 
+(231)<bisort.BiSort: void main(java.lang.String[])>@temp$52: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(233)<bisort.BiSort: void main(java.lang.String[])>@temp$53: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-132: 
+(233)<bisort.BiSort: void main(java.lang.String[])>@temp$53: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(234)<bisort.BiSort: void main(java.lang.String[])>@temp$54: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-133: 
+(234)<bisort.BiSort: void main(java.lang.String[])>@temp$54: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+(235)<bisort.BiSort: void main(java.lang.String[])>@temp$55: {@Clear, @Poly, @Readonly, @Sensitive} [double]
+SUB-134: 
+(220)<bisort.BiSort: void main(java.lang.String[])>@temp$49: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((237)callsite-<bisort.BiSort: void main(java.lang.String[])><887332421>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (136)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-135: 
+(235)<bisort.BiSort: void main(java.lang.String[])>@temp$55: {@Clear, @Poly, @Readonly, @Sensitive} [double]  <:
+((237)callsite-<bisort.BiSort: void main(java.lang.String[])><887332421>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (138)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@parameter0: {@Poly, @Readonly} [double])
+SUB-136: 
+((237)callsite-<bisort.BiSort: void main(java.lang.String[])><887332421>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (140)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(double)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(237)callsite-<bisort.BiSort: void main(java.lang.String[])><887332421>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-137: 
+(220)<bisort.BiSort: void main(java.lang.String[])>@temp$49: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((241)<bisort.BiSort: void main(java.lang.String[])>@temp$56: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (43)lib-<java.lang.StringBuffer: java.lang.String toString()>@this: {@Poly, @Readonly} [java.lang.StringBuffer])
+SUB-138: 
+((241)<bisort.BiSort: void main(java.lang.String[])>@temp$56: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (45)lib-<java.lang.StringBuffer: java.lang.String toString()>@return: {@Poly, @Readonly} [java.lang.String])  <:
+(241)<bisort.BiSort: void main(java.lang.String[])>@temp$56: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-139: 
+(219)<bisort.BiSort: void main(java.lang.String[])>@temp$48: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((244)callsite-<bisort.BiSort: void main(java.lang.String[])><2043553261>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-140: 
+(241)<bisort.BiSort: void main(java.lang.String[])>@temp$56: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((244)callsite-<bisort.BiSort: void main(java.lang.String[])><2043553261>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (50)lib-<java.io.PrintStream: void println(java.lang.String)>@parameter0: {@Poly, @Readonly} [java.lang.String])
+SUB-141: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(247)<bisort.BiSort: void main(java.lang.String[])>@temp$57: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-142: 
+(247)<bisort.BiSort: void main(java.lang.String[])>@temp$57: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((248)callsite-<bisort.BiSort: void main(java.lang.String[])><789414155>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-352: 
+(11)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@parameter0: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]  <:
+(386)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]
+EQU-353: 
+(13)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@parameter0[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]  ==
+(387)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]
+SUB-354: 
+(386)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]  <:
+(389)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-355: 
+(386)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]  <:
+(390)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$1: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]
+EQU-356: 
+(387)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]  ==
+(391)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$1[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]
+SUB-357: 
+(388)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@i: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(392)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-358: 
+((390)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$1: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]] =f=> (391)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$1[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String])  <:
+(393)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-359: 
+(393)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((395)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (396)lib-<java.lang.String: boolean startsWith(java.lang.String)>@this: {@Poly, @Readonly} [java.lang.String])
+SUB-360: 
+((395)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (401)lib-<java.lang.String: boolean startsWith(java.lang.String)>@return: {@Poly, @Readonly} [boolean])  <:
+(395)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-361: 
+(386)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]  <:
+(403)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$5: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]
+EQU-362: 
+(387)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]  ==
+(404)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$5[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]
+SUB-363: 
+(388)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@i: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(405)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-364: 
+((403)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$5: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]] =f=> (404)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$5[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String])  <:
+(406)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-365: 
+(406)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+(408)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@arg: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-366: 
+(388)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@i: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(409)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-367: 
+(409)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(410)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-368: 
+(410)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(388)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@i: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-369: 
+(408)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@arg: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((412)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (413)lib-<java.lang.String: boolean equals(java.lang.Object)>@this: {@Poly, @Readonly} [java.lang.String])
+SUB-370: 
+((412)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (418)lib-<java.lang.String: boolean equals(java.lang.Object)>@return: {@Poly, @Readonly} [boolean])  <:
+(412)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-371: 
+(386)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]  <:
+(420)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$11: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-372: 
+(386)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]  <:
+(422)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$13: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]]
+EQU-373: 
+(387)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@args[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]  ==
+(423)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$13[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String]
+SUB-374: 
+(388)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@i: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(424)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$14: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-375: 
+((422)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$13: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [java.lang.String[]] =f=> (423)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$13[]: {@Clear, @Poly, @Polyread, @Readonly} [java.lang.String])  <:
+(425)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$15: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-376: 
+(421)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.Integer]  <:
+((427)callsite-<bisort.BiSort: void parseCmdLine(java.lang.String[])><592147709>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (428)lib-<java.lang.Integer: void <init>(java.lang.String)>@this: {@Mutable, @Poly} [java.lang.Integer])
+SUB-377: 
+(425)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$15: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((427)callsite-<bisort.BiSort: void parseCmdLine(java.lang.String[])><592147709>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (430)lib-<java.lang.Integer: void <init>(java.lang.String)>@parameter0: {@Poly, @Readonly} [java.lang.String])
+SUB-378: 
+(421)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.Integer]  <:
+((432)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$16: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (433)lib-<java.lang.Integer: int intValue()>@this: {@Poly, @Readonly} [java.lang.Integer])
+SUB-379: 
+((432)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$16: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (435)lib-<java.lang.Integer: int intValue()>@return: {@Poly, @Readonly} [int])  <:
+(432)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$16: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-380: 
+(432)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$16: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(1)<bisort.BiSort: int size>: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-381: 
+(388)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@i: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(437)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$17: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-382: 
+(437)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$17: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(438)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$18: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-383: 
+(438)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$18: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(388)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@i: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-384: 
+(440)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$19: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.Error]  <:
+((441)callsite-<bisort.BiSort: void parseCmdLine(java.lang.String[])><2059070253>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (442)lib-<java.lang.Error: void <init>(java.lang.String)>@this: {@Mutable, @Poly} [java.lang.Error])
+SUB-385: 
+(408)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@arg: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((447)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$20: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (413)lib-<java.lang.String: boolean equals(java.lang.Object)>@this: {@Poly, @Readonly} [java.lang.String])
+SUB-386: 
+((447)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$20: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (418)lib-<java.lang.String: boolean equals(java.lang.Object)>@return: {@Poly, @Readonly} [boolean])  <:
+(447)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$20: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-387: 
+(452)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$21: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(3)<bisort.BiSort: boolean printMsgs>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-388: 
+(408)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@arg: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((453)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$22: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (413)lib-<java.lang.String: boolean equals(java.lang.Object)>@this: {@Poly, @Readonly} [java.lang.String])
+SUB-389: 
+((453)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$22: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (418)lib-<java.lang.String: boolean equals(java.lang.Object)>@return: {@Poly, @Readonly} [boolean])  <:
+(453)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$22: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-390: 
+(458)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$23: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(5)<bisort.BiSort: boolean printResults>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-391: 
+(408)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@arg: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((459)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$24: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (413)lib-<java.lang.String: boolean equals(java.lang.Object)>@this: {@Poly, @Readonly} [java.lang.String])
+SUB-392: 
+((459)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$24: {@Clear, @Poly, @Readonly, @Sensitive} [boolean] =m=> (418)lib-<java.lang.String: boolean equals(java.lang.Object)>@return: {@Poly, @Readonly} [boolean])  <:
+(459)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$24: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-393: 
+(1)<bisort.BiSort: int size>: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(465)<bisort.BiSort: void parseCmdLine(java.lang.String[])>@temp$25: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-460: 
+(506)<java.lang.System: java.io.PrintStream err>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(505)<bisort.BiSort: void usage()>@temp$0: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-461: 
+(505)<bisort.BiSort: void usage()>@temp$0: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((507)callsite-<bisort.BiSort: void usage()><1127368150>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-462: 
+(506)<java.lang.System: java.io.PrintStream err>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(511)<bisort.BiSort: void usage()>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-463: 
+(511)<bisort.BiSort: void usage()>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((512)callsite-<bisort.BiSort: void usage()><1554337850>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-464: 
+(506)<java.lang.System: java.io.PrintStream err>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(516)<bisort.BiSort: void usage()>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-465: 
+(516)<bisort.BiSort: void usage()>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((517)callsite-<bisort.BiSort: void usage()><2053231727>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-466: 
+(506)<java.lang.System: java.io.PrintStream err>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(521)<bisort.BiSort: void usage()>@temp$3: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-467: 
+(521)<bisort.BiSort: void usage()>@temp$3: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((522)callsite-<bisort.BiSort: void usage()><983465072>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-468: 
+(506)<java.lang.System: java.io.PrintStream err>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(526)<bisort.BiSort: void usage()>@temp$4: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-469: 
+(526)<bisort.BiSort: void usage()>@temp$4: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((527)callsite-<bisort.BiSort: void usage()><32007281>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-485: 
+(554)<bisort.Value: void <clinit>()>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(555)<bisort.Value: boolean FORWARD>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-486: 
+(556)<bisort.Value: void <clinit>()>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(557)<bisort.Value: boolean BACKWARD>: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-487: 
+(558)<bisort.Value: void <clinit>()>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(559)<bisort.Value: int CONST_m1>: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-488: 
+(560)<bisort.Value: void <clinit>()>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(561)<bisort.Value: int CONST_b>: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-489: 
+(562)<bisort.Value: void <clinit>()>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(563)<bisort.Value: int RANGE>: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-490: 
+(564)<bisort.Value: void <clinit>()>@temp$5: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(232)<bisort.Value: long initialTime>: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-497: 
+(567)<bisort.Value: void <init>(int)>@parameter0: {@Readonly, @Sensitive} [int]  <:
+(566)<bisort.Value: void <init>(int)>@v: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+EQU-498: 
+(565)<bisort.Value: void <init>(int)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  ==
+(570)checkers.inference.reim.quals.Mutable: {@Mutable} [void]
+SUB-499: 
+(566)<bisort.Value: void <init>(int)>@v: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((565)<bisort.Value: void <init>(int)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-501: 
+(572)<bisort.Value: void <init>(int)>@temp$0: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((565)<bisort.Value: void <init>(int)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])
+SUB-503: 
+(575)<bisort.Value: void <init>(int)>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((565)<bisort.Value: void <init>(int)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])
+SUB-508: 
+(58)<bisort.Value: bisort.Value createTree(int,int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(581)<bisort.Value: bisort.Value createTree(int,int)>@size: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-509: 
+(61)<bisort.Value: bisort.Value createTree(int,int)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(582)<bisort.Value: bisort.Value createTree(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-510: 
+(582)<bisort.Value: bisort.Value createTree(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((583)<bisort.Value: bisort.Value createTree(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (68)<bisort.Value: int random(int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-511: 
+((583)<bisort.Value: bisort.Value createTree(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (70)<bisort.Value: int random(int)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(583)<bisort.Value: bisort.Value createTree(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-512: 
+(583)<bisort.Value: bisort.Value createTree(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(582)<bisort.Value: bisort.Value createTree(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-513: 
+(586)<bisort.Value: bisort.Value createTree(int,int)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(587)<bisort.Value: bisort.Value createTree(int,int)>@next_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-514: 
+(588)<bisort.Value: bisort.Value createTree(int,int)>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((589)callsite-<bisort.Value: bisort.Value createTree(int,int)><38012701>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (565)<bisort.Value: void <init>(int)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-515: 
+(587)<bisort.Value: bisort.Value createTree(int,int)>@next_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((589)callsite-<bisort.Value: bisort.Value createTree(int,int)><38012701>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (567)<bisort.Value: void <init>(int)>@parameter0: {@Readonly, @Sensitive} [int])
+SUB-516: 
+(588)<bisort.Value: bisort.Value createTree(int,int)>@temp$2: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(592)<bisort.Value: bisort.Value createTree(int,int)>@retval: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-517: 
+(581)<bisort.Value: bisort.Value createTree(int,int)>@size: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(593)<bisort.Value: bisort.Value createTree(int,int)>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-518: 
+(593)<bisort.Value: bisort.Value createTree(int,int)>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((595)<bisort.Value: bisort.Value createTree(int,int)>@temp$4: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =m=> (58)<bisort.Value: bisort.Value createTree(int,int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-519: 
+(582)<bisort.Value: bisort.Value createTree(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((595)<bisort.Value: bisort.Value createTree(int,int)>@temp$4: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =m=> (61)<bisort.Value: bisort.Value createTree(int,int)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-520: 
+((595)<bisort.Value: bisort.Value createTree(int,int)>@temp$4: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =m=> (63)<bisort.Value: bisort.Value createTree(int,int)>@return: {@Clear, @Mutable, @Poly, @Polyread, @Sensitive} [bisort.Value])  <:
+(595)<bisort.Value: bisort.Value createTree(int,int)>@temp$4: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+EQU-521: 
+(592)<bisort.Value: bisort.Value createTree(int,int)>@retval: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  ==
+(570)checkers.inference.reim.quals.Mutable: {@Mutable} [void]
+SUB-522: 
+(595)<bisort.Value: bisort.Value createTree(int,int)>@temp$4: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((592)<bisort.Value: bisort.Value createTree(int,int)>@retval: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])
+SUB-523: 
+(581)<bisort.Value: bisort.Value createTree(int,int)>@size: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(600)<bisort.Value: bisort.Value createTree(int,int)>@temp$5: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-524: 
+(581)<bisort.Value: bisort.Value createTree(int,int)>@size: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(602)<bisort.Value: bisort.Value createTree(int,int)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-525: 
+(602)<bisort.Value: bisort.Value createTree(int,int)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(603)<bisort.Value: bisort.Value createTree(int,int)>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-526: 
+(582)<bisort.Value: bisort.Value createTree(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((605)<bisort.Value: bisort.Value createTree(int,int)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (606)<bisort.Value: int skiprand(int,int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-527: 
+(603)<bisort.Value: bisort.Value createTree(int,int)>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((605)<bisort.Value: bisort.Value createTree(int,int)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (608)<bisort.Value: int skiprand(int,int)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-528: 
+((605)<bisort.Value: bisort.Value createTree(int,int)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (610)<bisort.Value: int skiprand(int,int)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(605)<bisort.Value: bisort.Value createTree(int,int)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-529: 
+(600)<bisort.Value: bisort.Value createTree(int,int)>@temp$5: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((612)<bisort.Value: bisort.Value createTree(int,int)>@temp$9: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =m=> (58)<bisort.Value: bisort.Value createTree(int,int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-530: 
+(605)<bisort.Value: bisort.Value createTree(int,int)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((612)<bisort.Value: bisort.Value createTree(int,int)>@temp$9: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =m=> (61)<bisort.Value: bisort.Value createTree(int,int)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-531: 
+((612)<bisort.Value: bisort.Value createTree(int,int)>@temp$9: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =m=> (63)<bisort.Value: bisort.Value createTree(int,int)>@return: {@Clear, @Mutable, @Poly, @Polyread, @Sensitive} [bisort.Value])  <:
+(612)<bisort.Value: bisort.Value createTree(int,int)>@temp$9: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-533: 
+(612)<bisort.Value: bisort.Value createTree(int,int)>@temp$9: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((592)<bisort.Value: bisort.Value createTree(int,int)>@retval: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])
+SUB-534: 
+(592)<bisort.Value: bisort.Value createTree(int,int)>@retval: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(63)<bisort.Value: bisort.Value createTree(int,int)>@return: {@Clear, @Mutable, @Poly, @Polyread, @Sensitive} [bisort.Value]
+SUB-535: 
+(617)<bisort.Value: bisort.Value createTree(int,int)>@temp$10: {@Clear, @Mutable, @Poly, @Polyread, @Sensitive} [bisort.Value]  <:
+(63)<bisort.Value: bisort.Value createTree(int,int)>@return: {@Clear, @Mutable, @Poly, @Polyread, @Sensitive} [bisort.Value]
+SUB-562: 
+(93)<bisort.Value: int bisort(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(640)<bisort.Value: int bisort(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-563: 
+(96)<bisort.Value: int bisort(int,boolean)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(641)<bisort.Value: int bisort(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-564: 
+((91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(642)<bisort.Value: int bisort(int,boolean)>@temp$0: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]
+SUB-565: 
+((91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(644)<bisort.Value: int bisort(int,boolean)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-566: 
+(646)<bisort.Value: int bisort(int,boolean)>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(647)<bisort.Value: int bisort(int,boolean)>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-567: 
+(641)<bisort.Value: int bisort(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(647)<bisort.Value: int bisort(int,boolean)>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-568: 
+(640)<bisort.Value: int bisort(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(648)<bisort.Value: int bisort(int,boolean)>@tmpval: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-569: 
+((91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(649)<bisort.Value: int bisort(int,boolean)>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-570: 
+(649)<bisort.Value: int bisort(int,boolean)>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(640)<bisort.Value: int bisort(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+EQU-571: 
+(91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  ==
+(570)checkers.inference.reim.quals.Mutable: {@Mutable} [void]
+SUB-572: 
+(648)<bisort.Value: int bisort(int,boolean)>@tmpval: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-573: 
+((91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(652)<bisort.Value: int bisort(int,boolean)>@val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-574: 
+((91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(654)<bisort.Value: int bisort(int,boolean)>@temp$5: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-575: 
+(654)<bisort.Value: int bisort(int,boolean)>@temp$5: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((656)<bisort.Value: int bisort(int,boolean)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-576: 
+(652)<bisort.Value: int bisort(int,boolean)>@val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((656)<bisort.Value: int bisort(int,boolean)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (93)<bisort.Value: int bisort(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-577: 
+(641)<bisort.Value: int bisort(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+((656)<bisort.Value: int bisort(int,boolean)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (96)<bisort.Value: int bisort(int,boolean)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean])
+SUB-578: 
+((656)<bisort.Value: int bisort(int,boolean)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (98)<bisort.Value: int bisort(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(656)<bisort.Value: int bisort(int,boolean)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-580: 
+(656)<bisort.Value: int bisort(int,boolean)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-581: 
+(662)<bisort.Value: int bisort(int,boolean)>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(663)<bisort.Value: int bisort(int,boolean)>@ndir: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-582: 
+((91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(664)<bisort.Value: int bisort(int,boolean)>@temp$8: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-583: 
+(664)<bisort.Value: int bisort(int,boolean)>@temp$8: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((666)<bisort.Value: int bisort(int,boolean)>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-584: 
+(640)<bisort.Value: int bisort(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((666)<bisort.Value: int bisort(int,boolean)>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (93)<bisort.Value: int bisort(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-585: 
+(663)<bisort.Value: int bisort(int,boolean)>@ndir: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+((666)<bisort.Value: int bisort(int,boolean)>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (96)<bisort.Value: int bisort(int,boolean)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean])
+SUB-586: 
+((666)<bisort.Value: int bisort(int,boolean)>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (98)<bisort.Value: int bisort(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(666)<bisort.Value: int bisort(int,boolean)>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-587: 
+(666)<bisort.Value: int bisort(int,boolean)>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(640)<bisort.Value: int bisort(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-588: 
+(91)<bisort.Value: int bisort(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((671)<bisort.Value: int bisort(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-589: 
+(640)<bisort.Value: int bisort(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((671)<bisort.Value: int bisort(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (674)<bisort.Value: int bimerge(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-590: 
+(641)<bisort.Value: int bisort(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+((671)<bisort.Value: int bisort(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (676)<bisort.Value: int bimerge(int,boolean)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean])
+SUB-591: 
+((671)<bisort.Value: int bisort(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (678)<bisort.Value: int bimerge(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(671)<bisort.Value: int bisort(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-592: 
+(671)<bisort.Value: int bisort(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(640)<bisort.Value: int bisort(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-593: 
+(640)<bisort.Value: int bisort(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(98)<bisort.Value: int bisort(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-624: 
+(674)<bisort.Value: int bimerge(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(703)<bisort.Value: int bimerge(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-625: 
+(676)<bisort.Value: int bimerge(int,boolean)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(704)<bisort.Value: int bimerge(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-626: 
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(705)<bisort.Value: int bimerge(int,boolean)>@rv: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-627: 
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(707)<bisort.Value: int bimerge(int,boolean)>@pl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-628: 
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(709)<bisort.Value: int bimerge(int,boolean)>@pr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-629: 
+(711)<bisort.Value: int bimerge(int,boolean)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(712)<bisort.Value: int bimerge(int,boolean)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-630: 
+(704)<bisort.Value: int bimerge(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(712)<bisort.Value: int bimerge(int,boolean)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-631: 
+(712)<bisort.Value: int bimerge(int,boolean)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(713)<bisort.Value: int bimerge(int,boolean)>@rightexchange: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+EQU-632: 
+(672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  ==
+(570)checkers.inference.reim.quals.Mutable: {@Mutable} [void]
+SUB-633: 
+(703)<bisort.Value: int bimerge(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-634: 
+(705)<bisort.Value: int bimerge(int,boolean)>@rv: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(703)<bisort.Value: int bimerge(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-635: 
+((707)<bisort.Value: int bimerge(int,boolean)>@pl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(715)<bisort.Value: int bimerge(int,boolean)>@lv: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-636: 
+((707)<bisort.Value: int bimerge(int,boolean)>@pl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(717)<bisort.Value: int bimerge(int,boolean)>@pll: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-637: 
+((707)<bisort.Value: int bimerge(int,boolean)>@pl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(719)<bisort.Value: int bimerge(int,boolean)>@plr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-638: 
+((709)<bisort.Value: int bimerge(int,boolean)>@pr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(721)<bisort.Value: int bimerge(int,boolean)>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-639: 
+(721)<bisort.Value: int bimerge(int,boolean)>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(705)<bisort.Value: int bimerge(int,boolean)>@rv: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-640: 
+((709)<bisort.Value: int bimerge(int,boolean)>@pr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(723)<bisort.Value: int bimerge(int,boolean)>@prl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-641: 
+((709)<bisort.Value: int bimerge(int,boolean)>@pr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(725)<bisort.Value: int bimerge(int,boolean)>@prr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-642: 
+(727)<bisort.Value: int bimerge(int,boolean)>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(728)<bisort.Value: int bimerge(int,boolean)>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-643: 
+(704)<bisort.Value: int bimerge(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+(728)<bisort.Value: int bimerge(int,boolean)>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-644: 
+(728)<bisort.Value: int bimerge(int,boolean)>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(729)<bisort.Value: int bimerge(int,boolean)>@elementexchange: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]
+SUB-645: 
+(707)<bisort.Value: int bimerge(int,boolean)>@pl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((730)callsite-<bisort.Value: int bimerge(int,boolean)><862169965>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (731)<bisort.Value: void swapValRight(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-646: 
+(709)<bisort.Value: int bimerge(int,boolean)>@pr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((730)callsite-<bisort.Value: int bimerge(int,boolean)><862169965>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (733)<bisort.Value: void swapValRight(bisort.Value)>@parameter0: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-647: 
+(717)<bisort.Value: int bimerge(int,boolean)>@pll: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(707)<bisort.Value: int bimerge(int,boolean)>@pl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-648: 
+(723)<bisort.Value: int bimerge(int,boolean)>@prl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(709)<bisort.Value: int bimerge(int,boolean)>@pr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-649: 
+(719)<bisort.Value: int bimerge(int,boolean)>@plr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(707)<bisort.Value: int bimerge(int,boolean)>@pl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-650: 
+(725)<bisort.Value: int bimerge(int,boolean)>@prr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(709)<bisort.Value: int bimerge(int,boolean)>@pr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-651: 
+(707)<bisort.Value: int bimerge(int,boolean)>@pl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((735)callsite-<bisort.Value: int bimerge(int,boolean)><32601103>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (736)<bisort.Value: void swapValLeft(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-652: 
+(709)<bisort.Value: int bimerge(int,boolean)>@pr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((735)callsite-<bisort.Value: int bimerge(int,boolean)><32601103>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (738)<bisort.Value: void swapValLeft(bisort.Value)>@parameter0: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-657: 
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(740)<bisort.Value: int bimerge(int,boolean)>@temp$5: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]
+SUB-658: 
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(742)<bisort.Value: int bimerge(int,boolean)>@temp$6: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-659: 
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(744)<bisort.Value: int bimerge(int,boolean)>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-660: 
+(742)<bisort.Value: int bimerge(int,boolean)>@temp$6: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((746)<bisort.Value: int bimerge(int,boolean)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-661: 
+(744)<bisort.Value: int bimerge(int,boolean)>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((746)<bisort.Value: int bimerge(int,boolean)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (674)<bisort.Value: int bimerge(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-662: 
+(704)<bisort.Value: int bimerge(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+((746)<bisort.Value: int bimerge(int,boolean)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (676)<bisort.Value: int bimerge(int,boolean)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean])
+SUB-663: 
+((746)<bisort.Value: int bimerge(int,boolean)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (678)<bisort.Value: int bimerge(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(746)<bisort.Value: int bimerge(int,boolean)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-665: 
+(746)<bisort.Value: int bimerge(int,boolean)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-666: 
+((672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(752)<bisort.Value: int bimerge(int,boolean)>@temp$9: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-667: 
+(752)<bisort.Value: int bimerge(int,boolean)>@temp$9: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((754)<bisort.Value: int bimerge(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (672)<bisort.Value: int bimerge(int,boolean)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value])
+SUB-668: 
+(703)<bisort.Value: int bimerge(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((754)<bisort.Value: int bimerge(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (674)<bisort.Value: int bimerge(int,boolean)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-669: 
+(704)<bisort.Value: int bimerge(int,boolean)>@direction: {@Clear, @Poly, @Readonly, @Sensitive} [boolean]  <:
+((754)<bisort.Value: int bimerge(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (676)<bisort.Value: int bimerge(int,boolean)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [boolean])
+SUB-670: 
+((754)<bisort.Value: int bimerge(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (678)<bisort.Value: int bimerge(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(754)<bisort.Value: int bimerge(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-671: 
+(754)<bisort.Value: int bimerge(int,boolean)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(703)<bisort.Value: int bimerge(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-672: 
+(703)<bisort.Value: int bimerge(int,boolean)>@spr_val: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(678)<bisort.Value: int bimerge(int,boolean)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-720: 
+(733)<bisort.Value: void swapValRight(bisort.Value)>@parameter0: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(788)<bisort.Value: void swapValRight(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-721: 
+((788)<bisort.Value: void swapValRight(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(789)<bisort.Value: void swapValRight(bisort.Value)>@tmpv: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-722: 
+((788)<bisort.Value: void swapValRight(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(791)<bisort.Value: void swapValRight(bisort.Value)>@tmpr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-723: 
+((731)<bisort.Value: void swapValRight(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(793)<bisort.Value: void swapValRight(bisort.Value)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+EQU-724: 
+(788)<bisort.Value: void swapValRight(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  ==
+(570)checkers.inference.reim.quals.Mutable: {@Mutable} [void]
+SUB-725: 
+(793)<bisort.Value: void swapValRight(bisort.Value)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((788)<bisort.Value: void swapValRight(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-726: 
+((731)<bisort.Value: void swapValRight(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(796)<bisort.Value: void swapValRight(bisort.Value)>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-728: 
+(796)<bisort.Value: void swapValRight(bisort.Value)>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((788)<bisort.Value: void swapValRight(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])
+EQU-729: 
+(731)<bisort.Value: void swapValRight(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  ==
+(570)checkers.inference.reim.quals.Mutable: {@Mutable} [void]
+SUB-730: 
+(789)<bisort.Value: void swapValRight(bisort.Value)>@tmpv: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((731)<bisort.Value: void swapValRight(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-732: 
+(791)<bisort.Value: void swapValRight(bisort.Value)>@tmpr: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((731)<bisort.Value: void swapValRight(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])
+SUB-742: 
+(738)<bisort.Value: void swapValLeft(bisort.Value)>@parameter0: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+(809)<bisort.Value: void swapValLeft(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-743: 
+((809)<bisort.Value: void swapValLeft(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(810)<bisort.Value: void swapValLeft(bisort.Value)>@tmpv: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-744: 
+((809)<bisort.Value: void swapValLeft(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(812)<bisort.Value: void swapValLeft(bisort.Value)>@tmpl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-745: 
+((736)<bisort.Value: void swapValLeft(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(814)<bisort.Value: void swapValLeft(bisort.Value)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+EQU-746: 
+(809)<bisort.Value: void swapValLeft(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  ==
+(570)checkers.inference.reim.quals.Mutable: {@Mutable} [void]
+SUB-747: 
+(814)<bisort.Value: void swapValLeft(bisort.Value)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((809)<bisort.Value: void swapValLeft(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-748: 
+((736)<bisort.Value: void swapValLeft(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(817)<bisort.Value: void swapValLeft(bisort.Value)>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]
+SUB-750: 
+(817)<bisort.Value: void swapValLeft(bisort.Value)>@temp$1: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((809)<bisort.Value: void swapValLeft(bisort.Value)>@n: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])
+EQU-751: 
+(736)<bisort.Value: void swapValLeft(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  ==
+(570)checkers.inference.reim.quals.Mutable: {@Mutable} [void]
+SUB-752: 
+(810)<bisort.Value: void swapValLeft(bisort.Value)>@tmpv: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((736)<bisort.Value: void swapValLeft(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])
+SUB-754: 
+(812)<bisort.Value: void swapValLeft(bisort.Value)>@tmpl: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value]  <:
+((736)<bisort.Value: void swapValLeft(bisort.Value)>@this: {@Clear, @Mutable, @Poly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])
+SUB-764: 
+((79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(830)<bisort.Value: void inOrder()>@temp$0: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]
+SUB-765: 
+((79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value] =f=> (576)<bisort.Value: bisort.Value left>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(832)<bisort.Value: void inOrder()>@temp$1: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]
+SUB-766: 
+(832)<bisort.Value: void inOrder()>@temp$1: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]  <:
+((834)callsite-<bisort.Value: void inOrder()><1122175979>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value])
+SUB-767: 
+((836)<bisort.Value: void inOrder()>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(836)<bisort.Value: void inOrder()>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-768: 
+(836)<bisort.Value: void inOrder()>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(838)<bisort.Value: void inOrder()>@start: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-769: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(839)<bisort.Value: void inOrder()>@temp$3: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-770: 
+((79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value] =f=> (569)<bisort.Value: int value>: {@Clear, @Poly, @Readonly} [int])  <:
+(840)<bisort.Value: void inOrder()>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-771: 
+(839)<bisort.Value: void inOrder()>@temp$3: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((842)callsite-<bisort.Value: void inOrder()><1217072106>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (843)lib-<java.io.PrintStream: void print(int)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-772: 
+(840)<bisort.Value: void inOrder()>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((842)callsite-<bisort.Value: void inOrder()><1217072106>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (845)lib-<java.io.PrintStream: void print(int)>@parameter0: {@Poly, @Readonly} [int])
+SUB-773: 
+(16)<java.lang.System: java.io.PrintStream out>: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+(847)<bisort.Value: void inOrder()>@temp$5: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]
+SUB-774: 
+(848)<bisort.Value: void inOrder()>@temp$6: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((849)callsite-<bisort.Value: void inOrder()><69525486>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (19)lib-<java.lang.StringBuffer: void <init>()>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-775: 
+(848)<bisort.Value: void inOrder()>@temp$6: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((851)callsite-<bisort.Value: void inOrder()><1391609498>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (22)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-776: 
+((851)callsite-<bisort.Value: void inOrder()><1391609498>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (27)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(851)callsite-<bisort.Value: void inOrder()><1391609498>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-777: 
+(79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]  <:
+((856)<bisort.Value: void inOrder()>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (857)lib-<java.lang.Object: int hashCode()>@this: {@Poly, @Readonly} [java.lang.Object])
+SUB-778: 
+((856)<bisort.Value: void inOrder()>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (859)lib-<java.lang.Object: int hashCode()>@return: {@Poly, @Readonly} [int])  <:
+(856)<bisort.Value: void inOrder()>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-779: 
+(848)<bisort.Value: void inOrder()>@temp$6: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((861)callsite-<bisort.Value: void inOrder()><1811670971>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (31)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(int)>@this: {@Mutable, @Poly} [java.lang.StringBuffer])
+SUB-780: 
+(856)<bisort.Value: void inOrder()>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((861)callsite-<bisort.Value: void inOrder()><1811670971>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (33)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(int)>@parameter0: {@Poly, @Readonly} [int])
+SUB-781: 
+((861)callsite-<bisort.Value: void inOrder()><1811670971>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (35)lib-<java.lang.StringBuffer: java.lang.StringBuffer append(int)>@return: {@Poly, @Polyread, @Readonly} [java.lang.StringBuffer])  <:
+(861)callsite-<bisort.Value: void inOrder()><1811670971>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void]
+SUB-782: 
+(848)<bisort.Value: void inOrder()>@temp$6: {@Clear, @Mutable, @Poly, @Sensitive} [java.lang.StringBuffer]  <:
+((865)<bisort.Value: void inOrder()>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (43)lib-<java.lang.StringBuffer: java.lang.String toString()>@this: {@Poly, @Readonly} [java.lang.StringBuffer])
+SUB-783: 
+((865)<bisort.Value: void inOrder()>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String] =m=> (45)lib-<java.lang.StringBuffer: java.lang.String toString()>@return: {@Poly, @Readonly} [java.lang.String])  <:
+(865)<bisort.Value: void inOrder()>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]
+SUB-784: 
+(847)<bisort.Value: void inOrder()>@temp$5: {@Clear, @Mutable, @Poly, @Sensitive} [java.io.PrintStream]  <:
+((868)callsite-<bisort.Value: void inOrder()><1827580455>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (48)lib-<java.io.PrintStream: void println(java.lang.String)>@this: {@Mutable, @Poly} [java.io.PrintStream])
+SUB-785: 
+(865)<bisort.Value: void inOrder()>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [java.lang.String]  <:
+((868)callsite-<bisort.Value: void inOrder()><1827580455>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (50)lib-<java.io.PrintStream: void println(java.lang.String)>@parameter0: {@Poly, @Readonly} [java.lang.String])
+SUB-786: 
+(232)<bisort.Value: long initialTime>: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(871)<bisort.Value: void inOrder()>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-787: 
+((872)<bisort.Value: void inOrder()>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [long] =m=> (53)lib-<java.lang.System: long currentTimeMillis()>@return: {@Poly, @Readonly} [long])  <:
+(872)<bisort.Value: void inOrder()>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-788: 
+(872)<bisort.Value: void inOrder()>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(874)<bisort.Value: void inOrder()>@temp$11: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-789: 
+(838)<bisort.Value: void inOrder()>@start: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(874)<bisort.Value: void inOrder()>@temp$11: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-790: 
+(871)<bisort.Value: void inOrder()>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(875)<bisort.Value: void inOrder()>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-791: 
+(874)<bisort.Value: void inOrder()>@temp$11: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(875)<bisort.Value: void inOrder()>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-792: 
+(875)<bisort.Value: void inOrder()>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [long]  <:
+(232)<bisort.Value: long initialTime>: {@Clear, @Poly, @Readonly, @Sensitive} [long]
+SUB-793: 
+((79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(876)<bisort.Value: void inOrder()>@temp$13: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]
+SUB-794: 
+((79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value] =f=> (573)<bisort.Value: bisort.Value right>: {@Clear, @Poly, @Polyread} [bisort.Value])  <:
+(878)<bisort.Value: void inOrder()>@temp$14: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]
+SUB-795: 
+(878)<bisort.Value: void inOrder()>@temp$14: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value]  <:
+((880)callsite-<bisort.Value: void inOrder()><1841231258>: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [void] =m=> (79)<bisort.Value: void inOrder()>@this: {@Clear, @Mutable, @Poly, @Polyread, @Readonly, @Sensitive} [bisort.Value])
+SUB-842: 
+(912)<bisort.Value: int mult(int,int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(911)<bisort.Value: int mult(int,int)>@p: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-843: 
+(914)<bisort.Value: int mult(int,int)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(913)<bisort.Value: int mult(int,int)>@q: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-844: 
+(911)<bisort.Value: int mult(int,int)>@p: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(915)<bisort.Value: int mult(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-845: 
+(915)<bisort.Value: int mult(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(917)<bisort.Value: int mult(int,int)>@p1: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-846: 
+(918)<bisort.Value: int mult(int,int)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(919)<bisort.Value: int mult(int,int)>@p0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-847: 
+(913)<bisort.Value: int mult(int,int)>@q: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(920)<bisort.Value: int mult(int,int)>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-848: 
+(920)<bisort.Value: int mult(int,int)>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(922)<bisort.Value: int mult(int,int)>@q1: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-849: 
+(923)<bisort.Value: int mult(int,int)>@temp$3: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(924)<bisort.Value: int mult(int,int)>@q0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-850: 
+(919)<bisort.Value: int mult(int,int)>@p0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(925)<bisort.Value: int mult(int,int)>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-851: 
+(922)<bisort.Value: int mult(int,int)>@q1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(925)<bisort.Value: int mult(int,int)>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-852: 
+(925)<bisort.Value: int mult(int,int)>@temp$4: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(926)<bisort.Value: int mult(int,int)>@temp$5: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-853: 
+(917)<bisort.Value: int mult(int,int)>@p1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(927)<bisort.Value: int mult(int,int)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-854: 
+(924)<bisort.Value: int mult(int,int)>@q0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(927)<bisort.Value: int mult(int,int)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-855: 
+(926)<bisort.Value: int mult(int,int)>@temp$5: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(928)<bisort.Value: int mult(int,int)>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-856: 
+(927)<bisort.Value: int mult(int,int)>@temp$6: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(928)<bisort.Value: int mult(int,int)>@temp$7: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-857: 
+(929)<bisort.Value: int mult(int,int)>@temp$8: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(930)<bisort.Value: int mult(int,int)>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-858: 
+(930)<bisort.Value: int mult(int,int)>@temp$9: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(932)<bisort.Value: int mult(int,int)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-859: 
+(919)<bisort.Value: int mult(int,int)>@p0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(933)<bisort.Value: int mult(int,int)>@temp$11: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-860: 
+(924)<bisort.Value: int mult(int,int)>@q0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(933)<bisort.Value: int mult(int,int)>@temp$11: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-861: 
+(932)<bisort.Value: int mult(int,int)>@temp$10: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(934)<bisort.Value: int mult(int,int)>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-862: 
+(933)<bisort.Value: int mult(int,int)>@temp$11: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(934)<bisort.Value: int mult(int,int)>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-863: 
+(934)<bisort.Value: int mult(int,int)>@temp$12: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(935)<bisort.Value: int mult(int,int)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-886: 
+(606)<bisort.Value: int skiprand(int,int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(939)<bisort.Value: int skiprand(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-887: 
+(608)<bisort.Value: int skiprand(int,int)>@parameter1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(940)<bisort.Value: int skiprand(int,int)>@n: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-888: 
+(939)<bisort.Value: int skiprand(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((941)<bisort.Value: int skiprand(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (68)<bisort.Value: int random(int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-889: 
+((941)<bisort.Value: int skiprand(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (70)<bisort.Value: int random(int)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(941)<bisort.Value: int skiprand(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-890: 
+(941)<bisort.Value: int skiprand(int,int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(939)<bisort.Value: int skiprand(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-891: 
+(940)<bisort.Value: int skiprand(int,int)>@n: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(944)<bisort.Value: int skiprand(int,int)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-892: 
+(944)<bisort.Value: int skiprand(int,int)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(945)<bisort.Value: int skiprand(int,int)>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-893: 
+(945)<bisort.Value: int skiprand(int,int)>@temp$2: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(940)<bisort.Value: int skiprand(int,int)>@n: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-894: 
+(939)<bisort.Value: int skiprand(int,int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(610)<bisort.Value: int skiprand(int,int)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-904: 
+(68)<bisort.Value: int random(int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(951)<bisort.Value: int random(int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-905: 
+(951)<bisort.Value: int random(int)>@seed: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+((952)<bisort.Value: int random(int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (912)<bisort.Value: int mult(int,int)>@parameter0: {@Clear, @Poly, @Readonly, @Sensitive} [int])
+SUB-906: 
+((952)<bisort.Value: int random(int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int] =m=> (935)<bisort.Value: int mult(int,int)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int])  <:
+(952)<bisort.Value: int random(int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-907: 
+(952)<bisort.Value: int random(int)>@temp$0: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(957)<bisort.Value: int random(int)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-908: 
+(957)<bisort.Value: int random(int)>@temp$1: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(958)<bisort.Value: int random(int)>@tmp: {@Clear, @Poly, @Readonly, @Sensitive} [int]
+SUB-909: 
+(958)<bisort.Value: int random(int)>@tmp: {@Clear, @Poly, @Readonly, @Sensitive} [int]  <:
+(70)<bisort.Value: int random(int)>@return: {@Clear, @Poly, @Readonly, @Sensitive} [int]

@@ -55,7 +55,7 @@ public class ObjectInputStream
     public void registerValidation(ObjectInputValidation obj, int prio) throws NotActiveException, InvalidObjectException { throw new RuntimeException("skeleton method"); }
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
     protected Class<?> resolveProxyClass(@Readonly String[] interfaces) throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
-    @ReadonlyThis protected Object resolveObject( Object obj)  throws IOException { throw new RuntimeException("skeleton method"); }
+    @ReadonlyThis protected Object resolveObject(Object obj)  throws IOException { throw new RuntimeException("skeleton method"); }
     protected boolean enableResolveObject(boolean enable) throws SecurityException { throw new RuntimeException("skeleton method"); }
     protected void readStreamHeader() throws IOException, StreamCorruptedException { throw new RuntimeException("skeleton method"); }
     protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException { throw new RuntimeException("skeleton method"); }
@@ -81,22 +81,22 @@ public class ObjectInputStream
     public String readUTF() throws IOException { throw new RuntimeException("skeleton method"); }
     public static abstract class GetField {
         @ReadonlyThis public abstract ObjectStreamClass getObjectStreamClass() ;
-        @ReadonlyThis public abstract boolean defaulted( String name)  throws IOException;
-        @ReadonlyThis public abstract boolean get( String name, boolean val)  throws IOException; 
-        @ReadonlyThis public abstract byte get( String name, byte val)  throws IOException;
-        @ReadonlyThis public abstract char get( String name, char val)  throws IOException;
-        @ReadonlyThis public abstract short get( String name, short val)  throws IOException;
-        @ReadonlyThis public abstract int get( String name, int val)  throws IOException;
-        @ReadonlyThis public abstract long get( String name, long val)  throws IOException;
-        @ReadonlyThis public abstract float get( String name, float val)  throws IOException;
-        @ReadonlyThis public abstract double get( String name, double val)  throws IOException;
-        @ReadonlyThis public abstract @Polyread Object get( String name, @Polyread Object val)  throws IOException;
+        @ReadonlyThis public abstract boolean defaulted(String name)  throws IOException;
+        @ReadonlyThis public abstract boolean get(String name, boolean val)  throws IOException; 
+        @ReadonlyThis public abstract byte get(String name, byte val)  throws IOException;
+        @ReadonlyThis public abstract char get(String name, char val)  throws IOException;
+        @ReadonlyThis public abstract short get(String name, short val)  throws IOException;
+        @ReadonlyThis public abstract int get(String name, int val)  throws IOException;
+        @ReadonlyThis public abstract long get(String name, long val)  throws IOException;
+        @ReadonlyThis public abstract float get(String name, float val)  throws IOException;
+        @ReadonlyThis public abstract double get(String name, double val)  throws IOException;
+        @ReadonlyThis public abstract @Polyread Object get(String name, @Polyread Object val)  throws IOException;
     }
     @ReadonlyThis private void verifySubclass()  { throw new RuntimeException("skeleton method"); }
     private static boolean auditSubclass(final @Readonly Class<?> subcl) { throw new RuntimeException("skeleton method"); }
     private void clear() { throw new RuntimeException("skeleton method"); }
     private Object readObject0(boolean unshared) throws IOException { throw new RuntimeException("skeleton method"); }
-    @ReadonlyThis private Object checkResolve( Object obj)  throws IOException { throw new RuntimeException("skeleton method"); }
+    @ReadonlyThis private Object checkResolve(Object obj)  throws IOException { throw new RuntimeException("skeleton method"); }
     String readTypeString() throws IOException { throw new RuntimeException("skeleton method"); }
     private Object readNull() throws IOException { throw new RuntimeException("skeleton method"); }
     private Object readHandle(boolean unshared) throws IOException { throw new RuntimeException("skeleton method"); }
@@ -131,18 +131,18 @@ public class ObjectInputStream
         private final int[] objHandles;
         GetFieldImpl(ObjectStreamClass desc) { throw new RuntimeException("skeleton method"); }
         @ReadonlyThis public ObjectStreamClass getObjectStreamClass()  { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public boolean defaulted( String name)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public boolean get( String name, boolean val)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public byte get( String name, byte val)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public char get( String name, char val)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public short get( String name, short val)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public int get( String name, int val)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public float get( String name, float val)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public long get( String name, long val)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public double get( String name, double val)  throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis public Object get( String name, @Readonly Object val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public boolean defaulted(String name)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public boolean get(String name, boolean val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public byte get(String name, byte val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public char get(String name, char val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public short get(String name, short val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public int get(String name, int val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public float get(String name, float val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public long get(String name, long val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public double get(String name, double val)  throws IOException { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis public Object get(String name, @Readonly Object val)  throws IOException { throw new RuntimeException("skeleton method"); }
         void readFields() throws IOException { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis private int getFieldOffset( String name, Class type)  { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis private int getFieldOffset(String name, Class type)  { throw new RuntimeException("skeleton method"); }
     }
     private static class ValidationList {
         private static class Callback {
@@ -247,8 +247,8 @@ public class ObjectInputStream
         void markException(int handle, ClassNotFoundException ex) { throw new RuntimeException("skeleton method"); }
         void finish(int handle) { throw new RuntimeException("skeleton method"); }
         void setObject(int handle, Object obj) { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis Object lookupObject( int handle)  { throw new RuntimeException("skeleton method"); }
-        @ReadonlyThis ClassNotFoundException lookupException( int handle)  { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis Object lookupObject(int handle)  { throw new RuntimeException("skeleton method"); }
+        @ReadonlyThis ClassNotFoundException lookupException(int handle)  { throw new RuntimeException("skeleton method"); }
         void clear() { throw new RuntimeException("skeleton method"); }
         @ReadonlyThis int size()  { throw new RuntimeException("skeleton method"); }
         private void grow() { throw new RuntimeException("skeleton method"); }
@@ -257,7 +257,7 @@ public class ObjectInputStream
             private int size = 0;
             public HandleList() { throw new RuntimeException("skeleton method"); }
             public void add(int handle) { throw new RuntimeException("skeleton method"); }
-            @ReadonlyThis public int get( int index)  { throw new RuntimeException("skeleton method"); }
+            @ReadonlyThis public int get(int index)  { throw new RuntimeException("skeleton method"); }
             @ReadonlyThis public int size()  { throw new RuntimeException("skeleton method"); }
         }
     }

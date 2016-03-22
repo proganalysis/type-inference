@@ -47,7 +47,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 
     private PrintStream out;
 
-    private Deque<Object> queue = new LinkedList<Object>();
+    private Deque<Object> queue = new LinkedList<>();
 
     private final String DB_NAME, DB_SCRIPT;
 

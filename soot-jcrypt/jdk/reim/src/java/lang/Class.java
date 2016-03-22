@@ -72,7 +72,7 @@ public final class Class<T> implements java.io.Serializable,
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getName() {
+    public String getName() {
         throw new RuntimeException("skeleton method");
     }
 

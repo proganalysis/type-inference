@@ -28,43 +28,43 @@ public class DataInputStream extends FilterInputStream implements DataInput {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final boolean readBoolean() throws IOException {
+    public final boolean readBoolean() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final byte readByte() throws IOException {
+    public final byte readByte() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final int readUnsignedByte() throws IOException {
+    public final int readUnsignedByte() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final short readShort() throws IOException {
+    public final short readShort() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final int readUnsignedShort() throws IOException {
+    public final int readUnsignedShort() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final char readChar() throws IOException {
+    public final char readChar() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final int readInt() throws IOException {
+    public final int readInt() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final long readLong() throws IOException {
+    public final long readLong() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final float readFloat() throws IOException {
+    public final float readFloat() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final double readDouble() throws IOException {
+    public final double readDouble() throws IOException {
         throw new RuntimeException("skeleton method");
     }
 

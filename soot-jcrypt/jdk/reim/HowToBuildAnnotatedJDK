@@ -1,0 +1,2 @@
+Copy jdk/reim/src/* to trunk/inference-framework/checker-framework/checkers/jdk/reim/src and then make there.
+In the end, copy the jdk.jar back here.

@@ -44,7 +44,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis protected URLConnection( @Readonly URL url)  {
+    @ReadonlyThis protected URLConnection(@Readonly URL url)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -80,7 +80,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getHeaderField( String name)  {
+    @ReadonlyThis public String getHeaderField(String name)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -88,23 +88,23 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public int getHeaderFieldInt( String name, int Default)  {
+    @ReadonlyThis public int getHeaderFieldInt(String name, int Default)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public long getHeaderFieldLong( String name, long Default)  {
+    @ReadonlyThis public long getHeaderFieldLong(String name, long Default)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public long getHeaderFieldDate( String name, long Default)  {
+    @ReadonlyThis public long getHeaderFieldDate(String name, long Default)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getHeaderFieldKey( int n)  {
+    @ReadonlyThis public String getHeaderFieldKey(int n)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getHeaderField( int n)  {
+    @ReadonlyThis public String getHeaderField(int n)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -196,7 +196,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getRequestProperty( String key)  {
+    @ReadonlyThis public String getRequestProperty(String key)  {
         throw new RuntimeException("skeleton method");
     }
 

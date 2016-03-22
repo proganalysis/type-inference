@@ -101,15 +101,15 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        @ReadonlyThis public List<String> getFormats( String baseName)  {
+        @ReadonlyThis public List<String> getFormats(String baseName)  {
             throw new RuntimeException("skeleton method");
         }
 
-        @ReadonlyThis public List<Locale> getCandidateLocales( String baseName, Locale locale)  {
+        @ReadonlyThis public List<Locale> getCandidateLocales(String baseName, Locale locale)  {
             throw new RuntimeException("skeleton method");
         }
 
-        @ReadonlyThis public Locale getFallbackLocale( String baseName, Locale locale)  {
+        @ReadonlyThis public Locale getFallbackLocale(String baseName, Locale locale)  {
             throw new RuntimeException("skeleton method");
         }
 
@@ -118,7 +118,7 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        @ReadonlyThis public long getTimeToLive( String baseName, Locale locale)  {
+        @ReadonlyThis public long getTimeToLive(String baseName, Locale locale)  {
             throw new RuntimeException("skeleton method");
         }
 
@@ -128,11 +128,11 @@ public abstract class ResourceBundle {
             throw new RuntimeException("skeleton method");
         }
 
-        @ReadonlyThis public String toBundleName( String baseName, Locale locale)  {
+        @ReadonlyThis public String toBundleName(String baseName, Locale locale)  {
             throw new RuntimeException("skeleton method");
         }
 
-        @ReadonlyThis public final String toResourceName( String bundleName, String suffix)  {
+        @ReadonlyThis public final String toResourceName(String bundleName, String suffix)  {
             throw new RuntimeException("skeleton method");
         }
     }

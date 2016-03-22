@@ -139,7 +139,7 @@ public final class String
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public byte[] getBytes(  String charsetName) 
+    @ReadonlyThis public byte[] getBytes( String charsetName) 
     throws UnsupportedEncodingException {
         throw new RuntimeException("skeleton method");
     }

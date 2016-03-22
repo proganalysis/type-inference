@@ -43,27 +43,27 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized char charAt( int index)  {
+    @ReadonlyThis public synchronized char charAt(int index)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized int codePointAt( int index)  {
+    @ReadonlyThis public synchronized int codePointAt(int index)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized int codePointBefore( int index)  {
+    @ReadonlyThis public synchronized int codePointBefore(int index)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized int codePointCount( int beginIndex, int endIndex)  {
+    @ReadonlyThis public synchronized int codePointCount(int beginIndex, int endIndex)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized int offsetByCodePoints( int index, int codePointOffset)  {
+    @ReadonlyThis public synchronized int offsetByCodePoints(int index, int codePointOffset)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized void getChars( int srcBegin, int srcEnd, char dst[],
+    @ReadonlyThis public synchronized void getChars(int srcBegin, int srcEnd, char dst[],
                                       int dstBegin) {
         throw new RuntimeException("skeleton method");
     }
@@ -140,15 +140,15 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized String substring( int start)  {
+    @ReadonlyThis public synchronized String substring(int start)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized @Readonly CharSequence subSequence( int start, int end)  {
+    @ReadonlyThis public synchronized @Readonly CharSequence subSequence(int start, int end)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized String substring( int start, int end)  {
+    @ReadonlyThis public synchronized String substring(int start, int end)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -200,19 +200,19 @@ public final class StringBuffer
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public int indexOf( String str)  {
+    @ReadonlyThis public int indexOf(String str)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized int indexOf( String str, int fromIndex)  {
+    @ReadonlyThis public synchronized int indexOf(String str, int fromIndex)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public int lastIndexOf(  String str)  {
+    @ReadonlyThis public int lastIndexOf( String str)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized int lastIndexOf( String str, int fromIndex)  {
+    @ReadonlyThis public synchronized int lastIndexOf(String str, int fromIndex)  {
         throw new RuntimeException("skeleton method");
     }
 

@@ -35,15 +35,15 @@ public class Properties extends Hashtable<Object,Object> {
     }
 
     @Deprecated
-    @ReadonlyThis public synchronized void save( OutputStream out, String comments)  {
+    @ReadonlyThis public synchronized void save(OutputStream out, String comments)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public void store( Writer writer, String comments)  throws IOException {
+    @ReadonlyThis public void store(Writer writer, String comments)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public void store( OutputStream out, String comments)  throws IOException {
+    @ReadonlyThis public void store(OutputStream out, String comments)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -53,21 +53,21 @@ public class Properties extends Hashtable<Object,Object> {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized void storeToXML( OutputStream os, String comment)  throws IOException {
+    @ReadonlyThis public synchronized void storeToXML(OutputStream os, String comment)  throws IOException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public synchronized void storeToXML( OutputStream os, String comment, String encoding) 
+    @ReadonlyThis public synchronized void storeToXML(OutputStream os, String comment, String encoding) 
         throws IOException
     {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getProperty( String key)  {
+    @ReadonlyThis public String getProperty(String key)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getProperty( String key, String defaultValue)  {
+    @ReadonlyThis public String getProperty(String key, String defaultValue)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -79,11 +79,11 @@ public class Properties extends Hashtable<Object,Object> {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public void list( PrintStream out)  {
+    @ReadonlyThis public void list(PrintStream out)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public void list( PrintWriter out)  {
+    @ReadonlyThis public void list(PrintWriter out)  {
         throw new RuntimeException("skeleton method");
     }
 }

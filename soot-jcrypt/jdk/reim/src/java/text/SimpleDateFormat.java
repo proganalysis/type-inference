@@ -75,7 +75,7 @@ public class SimpleDateFormat extends DateFormat {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public boolean equals( @Readonly Object obj)  {
+    @ReadonlyThis public boolean equals(@Readonly Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 }

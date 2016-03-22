@@ -55,7 +55,7 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final StringBuffer format( @Readonly Object[] arguments, StringBuffer result,
+    @ReadonlyThis public final StringBuffer format(@Readonly Object[] arguments, StringBuffer result,
                                      FieldPosition pos) 
     {
         throw new RuntimeException("skeleton method");
@@ -65,25 +65,25 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public final StringBuffer format( @Readonly Object arguments, StringBuffer result,
+    @ReadonlyThis public final StringBuffer format(@Readonly Object arguments, StringBuffer result,
                                      FieldPosition pos) 
     {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public AttributedCharacterIterator formatToCharacterIterator( @Readonly Object arguments)  {
+    @ReadonlyThis public AttributedCharacterIterator formatToCharacterIterator(@Readonly Object arguments)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public Object[] parse( String source, ParsePosition pos)  {
+    @ReadonlyThis public Object[] parse(String source, ParsePosition pos)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public Object[] parse( String source)  throws ParseException {
+    @ReadonlyThis public Object[] parse(String source)  throws ParseException {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public Object parseObject( String source, ParsePosition pos)  {
+    @ReadonlyThis public Object parseObject(String source, ParsePosition pos)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -91,7 +91,7 @@ public class MessageFormat extends Format {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public boolean equals( Object obj)  {
+    @ReadonlyThis public boolean equals(Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 

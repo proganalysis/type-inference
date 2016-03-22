@@ -156,7 +156,7 @@ public class ArrayList<E> extends AbstractList<E>
      *
      * @param   minCapacity   the desired minimum capacity
      */
-    @ReadonlyThis public void ensureCapacity( int minCapacity)  {
+    @ReadonlyThis public void ensureCapacity(int minCapacity)  {
     modCount++;
     int oldCapacity = elementData.length;
     if (minCapacity > oldCapacity) {
@@ -196,7 +196,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @param o element whose presence in this list is to be tested
      * @return <tt>true</tt> if this list contains the specified element
      */
-    @ReadonlyThis public boolean contains( @Readonly Object o)  {
+    @ReadonlyThis public boolean contains(@Readonly Object o)  {
     return indexOf(o) >= 0;
     }
 
@@ -207,7 +207,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    @ReadonlyThis public int indexOf( @Readonly Object o)  {
+    @ReadonlyThis public int indexOf(@Readonly Object o)  {
     if (o == null) {
         for (int i = 0; i < size; i++)
         if (elementData[i]==null)
@@ -227,7 +227,7 @@ public class ArrayList<E> extends AbstractList<E>
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      */
-    @ReadonlyThis public int lastIndexOf( @Readonly Object o)  {
+    @ReadonlyThis public int lastIndexOf(@Readonly Object o)  {
     if (o == null) {
         for (int i = size-1; i >= 0; i--)
         if (elementData[i]==null)
@@ -302,7 +302,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws NullPointerException if the specified array is null
      */
      @SuppressWarnings("unchecked")
-    @ReadonlyThis public <T> T[] toArray( T[] a)  {
+    @ReadonlyThis public <T> T[] toArray(T[] a)  {
         if (a.length < size)
             // Make a new array of a's runtime type, but my contents:
             return (T[]) Arrays.copyOf(elementData, size, a.getClass());
@@ -322,7 +322,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    @PolyreadThis public E get( int index)  { //WEI
+    @PolyreadThis public E get(int index)  { //WEI
     RangeCheck(index);
 
     return (E) elementData[index];

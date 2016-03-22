@@ -16,12 +16,12 @@ public interface Element {
     @ReadonlyThis TypeMirror asType() ;
     @ReadonlyThis ElementKind getKind() ;
     @ReadonlyThis List<? extends AnnotationMirror> getAnnotationMirrors() ;
-    @PolyreadThis @Polyread <A extends Annotation> A getAnnotation( Class<A> annotationType) ;
+    @PolyreadThis <A extends Annotation> @Polyread A getAnnotation(Class<A> annotationType) ;
     @PolyreadThis @Polyread Set<Modifier> getModifiers() ;
     @PolyreadThis @Polyread Name getSimpleName() ;
     @PolyreadThis @Polyread Element getEnclosingElement() ;
     @PolyreadThis @Polyread List<? extends Element> getEnclosedElements() ;
-    @ReadonlyThis boolean equals( @Readonly Object obj) ;
+    @ReadonlyThis boolean equals(@Readonly Object obj) ;
     @ReadonlyThis int hashCode() ;
-    @ReadonlyThis <R, P> R accept( ElementVisitor<R, P> v, P p) ;
+    @ReadonlyThis <R, P> R accept(ElementVisitor<R, P> v, P p) ;
 }

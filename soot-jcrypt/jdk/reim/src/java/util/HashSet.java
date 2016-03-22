@@ -13,7 +13,7 @@ public class HashSet<E>
     @PolyreadThis public @Polyread Iterator<E> iterator()  { throw new RuntimeException("skeleton method"); }
     public int size() { throw new RuntimeException("skeleton method"); }
     public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-    @ReadonlyThis public boolean contains( @Readonly Object o)  { throw new RuntimeException("skeleton method"); }
+    @ReadonlyThis public boolean contains(@Readonly Object o)  { throw new RuntimeException("skeleton method"); }
     public boolean add(E e) { throw new RuntimeException("skeleton method"); }
     public boolean remove(@Readonly Object o) { throw new RuntimeException("skeleton method"); }
     public void clear() { throw new RuntimeException("skeleton method"); }

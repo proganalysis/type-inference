@@ -25,7 +25,7 @@ public interface Deque<E> extends Queue<E> {
   public abstract void push(@Readonly E a1); //WEI
   public abstract E pop();
   public abstract boolean remove(@Readonly Object a1);
-  @ReadonlyThis public abstract boolean contains( @Readonly Object a1) ;
+  @ReadonlyThis public abstract boolean contains(@Readonly Object a1) ;
   @ReadonlyThis public abstract int size() ;
   @PolyreadThis public abstract @Polyread Iterator<E> iterator() ;
   @PolyreadThis public abstract @Polyread Iterator<E> descendingIterator() ;

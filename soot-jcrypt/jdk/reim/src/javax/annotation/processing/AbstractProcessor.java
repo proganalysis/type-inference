@@ -18,7 +18,7 @@ public abstract class AbstractProcessor implements Processor {
     public synchronized void init(ProcessingEnvironment processingEnv) { throw new RuntimeException("skeleton method"); }
     public abstract boolean process(Set<? extends TypeElement> annotations,
                     RoundEnvironment roundEnv);
-    @PolyreadThis public @Polyread Iterable<? extends Completion> getCompletions( Element element,
+    @PolyreadThis public @Polyread Iterable<? extends Completion> getCompletions(Element element,
                              AnnotationMirror annotation,
                              ExecutableElement member,
                              String userText) { throw new RuntimeException("skeleton method"); }

@@ -32,7 +32,7 @@ public final class Field extends AccessibleObject implements Member {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public boolean equals( @Readonly Object obj)  {
+    @ReadonlyThis public boolean equals(@Readonly Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 

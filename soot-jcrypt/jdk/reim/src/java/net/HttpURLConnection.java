@@ -27,7 +27,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getHeaderField( int n)  {
+    @ReadonlyThis public String getHeaderField(int n)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -63,7 +63,7 @@ abstract public class HttpURLConnection extends URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public long getHeaderFieldDate( String name, long Default)  {
+    @ReadonlyThis public long getHeaderFieldDate(String name, long Default)  {
         throw new RuntimeException("skeleton method");
     }
 

@@ -1,0 +1,469 @@
+public class bisort.Value extends java.lang.Object
+{
+    private int value;
+    private bisort.Value left;
+    private bisort.Value right;
+    static final boolean FORWARD;
+    static final boolean BACKWARD;
+    private static final int CONST_m1;
+    private static final int CONST_b;
+    static final int RANGE;
+    public static long initialTime;
+
+    static void <clinit>()
+    {
+        boolean temp$0, temp$1;
+        int temp$2, temp$3, temp$4;
+        long temp$5;
+
+        temp$0 = 0;
+        <bisort.Value: boolean FORWARD> = temp$0;
+        temp$1 = 1;
+        <bisort.Value: boolean BACKWARD> = temp$1;
+        temp$2 = 10000;
+        <bisort.Value: int CONST_m1> = temp$2;
+        temp$3 = 31415821;
+        <bisort.Value: int CONST_b> = temp$3;
+        temp$4 = 100;
+        <bisort.Value: int RANGE> = temp$4;
+        temp$5 = 0L;
+        <bisort.Value: long initialTime> = temp$5;
+        return;
+    }
+
+    public void <init>(int)
+    {
+        bisort.Value this, temp$0, temp$1;
+        int v;
+
+        this := @this: bisort.Value;
+        v := @parameter0: int;
+        specialinvoke this.<java.lang.Object: void <init>()>();
+        this.<bisort.Value: int value> = v;
+        temp$0 = null;
+        this.<bisort.Value: bisort.Value right> = temp$0;
+        temp$1 = null;
+        this.<bisort.Value: bisort.Value left> = temp$1;
+        return;
+    }
+
+    public static bisort.Value createTree(int, int)
+    {
+        int size, seed, temp$0, next_val, temp$1, temp$3, temp$5, temp$6, temp$7, temp$8;
+        bisort.Value retval, temp$2, temp$4, temp$9, temp$10;
+
+        size := @parameter0: int;
+        seed := @parameter1: int;
+        if size > 1 goto label0;
+
+        goto label1;
+
+     label0:
+        nop;
+        temp$0 = staticinvoke <bisort.Value: int random(int)>(seed);
+        seed = temp$0;
+        temp$1 = seed % 100;
+        next_val = temp$1;
+        temp$2 = new bisort.Value;
+        specialinvoke temp$2.<bisort.Value: void <init>(int)>(next_val);
+        retval = temp$2;
+        temp$3 = size / 2;
+        temp$4 = staticinvoke <bisort.Value: bisort.Value createTree(int,int)>(temp$3, seed);
+        retval.<bisort.Value: bisort.Value left> = temp$4;
+        temp$5 = size / 2;
+        temp$6 = size;
+        temp$7 = temp$6 + 1;
+        temp$8 = staticinvoke <bisort.Value: int skiprand(int,int)>(seed, temp$7);
+        temp$9 = staticinvoke <bisort.Value: bisort.Value createTree(int,int)>(temp$5, temp$8);
+        retval.<bisort.Value: bisort.Value right> = temp$9;
+        return retval;
+
+     label1:
+        nop;
+        temp$10 = null;
+        return temp$10;
+    }
+
+    public int bisort(int, boolean)
+    {
+        bisort.Value this, temp$0, temp$5, temp$8;
+        int spr_val, temp$1, temp$3, tmpval, temp$4, val, temp$6, temp$9, temp$10;
+        boolean direction, temp$2, ndir, temp$7;
+
+        this := @this: bisort.Value;
+        spr_val := @parameter0: int;
+        direction := @parameter1: boolean;
+        temp$0 = this.<bisort.Value: bisort.Value left>;
+        if temp$0 == null goto label0;
+
+        goto label6;
+
+     label0:
+        nop;
+        temp$1 = this.<bisort.Value: int value>;
+        if temp$1 > spr_val goto label2;
+
+        goto label1;
+
+     label1:
+        nop;
+        temp$2 = 0;
+        goto label3;
+
+     label2:
+        nop;
+        temp$2 = 1;
+
+     label3:
+        nop;
+        temp$3 = temp$2 ^ direction;
+        if temp$3 == 0 goto label5;
+
+        goto label4;
+
+     label4:
+        nop;
+        tmpval = spr_val;
+        temp$4 = this.<bisort.Value: int value>;
+        spr_val = temp$4;
+        this.<bisort.Value: int value> = tmpval;
+
+     label5:
+        nop;
+        goto label10;
+
+     label6:
+        nop;
+        val = this.<bisort.Value: int value>;
+        temp$5 = this.<bisort.Value: bisort.Value left>;
+        temp$6 = virtualinvoke temp$5.<bisort.Value: int bisort(int,boolean)>(val, direction);
+        this.<bisort.Value: int value> = temp$6;
+        if direction == 0 goto label8;
+
+        goto label7;
+
+     label7:
+        nop;
+        temp$7 = 0;
+        goto label9;
+
+     label8:
+        nop;
+        temp$7 = 1;
+
+     label9:
+        nop;
+        ndir = temp$7;
+        temp$8 = this.<bisort.Value: bisort.Value right>;
+        temp$9 = virtualinvoke temp$8.<bisort.Value: int bisort(int,boolean)>(spr_val, ndir);
+        spr_val = temp$9;
+        temp$10 = virtualinvoke this.<bisort.Value: int bimerge(int,boolean)>(spr_val, direction);
+        spr_val = temp$10;
+
+     label10:
+        nop;
+        return spr_val;
+    }
+
+    public int bimerge(int, boolean)
+    {
+        bisort.Value this, pl, pr, pll, plr, prl, prr, temp$5, temp$6, temp$9;
+        int spr_val, rv, temp$1, lv, temp$2, temp$4, temp$7, temp$8, temp$10;
+        boolean direction, rightexchange, temp$0, elementexchange, temp$3;
+
+        this := @this: bisort.Value;
+        spr_val := @parameter0: int;
+        direction := @parameter1: boolean;
+        rv = this.<bisort.Value: int value>;
+        pl = this.<bisort.Value: bisort.Value left>;
+        pr = this.<bisort.Value: bisort.Value right>;
+        if rv > spr_val goto label1;
+
+        goto label0;
+
+     label0:
+        nop;
+        temp$0 = 0;
+        goto label2;
+
+     label1:
+        nop;
+        temp$0 = 1;
+
+     label2:
+        nop;
+        temp$1 = temp$0 ^ direction;
+        rightexchange = temp$1;
+        if rightexchange == 0 goto label4;
+
+        goto label3;
+
+     label3:
+        nop;
+        this.<bisort.Value: int value> = spr_val;
+        spr_val = rv;
+
+     label4:
+        nop;
+
+     label5:
+        nop;
+        if pl != null goto label6;
+
+        goto label19;
+
+     label6:
+        nop;
+        lv = pl.<bisort.Value: int value>;
+        pll = pl.<bisort.Value: bisort.Value left>;
+        plr = pl.<bisort.Value: bisort.Value right>;
+        temp$2 = pr.<bisort.Value: int value>;
+        rv = temp$2;
+        prl = pr.<bisort.Value: bisort.Value left>;
+        prr = pr.<bisort.Value: bisort.Value right>;
+        if lv > rv goto label8;
+
+        goto label7;
+
+     label7:
+        nop;
+        temp$3 = 0;
+        goto label9;
+
+     label8:
+        nop;
+        temp$3 = 1;
+
+     label9:
+        nop;
+        temp$4 = temp$3 ^ direction;
+        elementexchange = temp$4;
+        if rightexchange == 0 goto label14;
+
+        goto label10;
+
+     label10:
+        nop;
+        if elementexchange == 0 goto label12;
+
+        goto label11;
+
+     label11:
+        nop;
+        virtualinvoke pl.<bisort.Value: void swapValRight(bisort.Value)>(pr);
+        pl = pll;
+        pr = prl;
+        goto label13;
+
+     label12:
+        nop;
+        pl = plr;
+        pr = prr;
+
+     label13:
+        nop;
+        goto label18;
+
+     label14:
+        nop;
+        if elementexchange == 0 goto label16;
+
+        goto label15;
+
+     label15:
+        nop;
+        virtualinvoke pl.<bisort.Value: void swapValLeft(bisort.Value)>(pr);
+        pl = plr;
+        pr = prr;
+        goto label17;
+
+     label16:
+        nop;
+        pl = pll;
+        pr = prl;
+
+     label17:
+        nop;
+
+     label18:
+        nop;
+        goto label5;
+
+     label19:
+        nop;
+        temp$5 = this.<bisort.Value: bisort.Value left>;
+        if temp$5 != null goto label20;
+
+        goto label21;
+
+     label20:
+        nop;
+        temp$6 = this.<bisort.Value: bisort.Value left>;
+        temp$7 = this.<bisort.Value: int value>;
+        temp$8 = virtualinvoke temp$6.<bisort.Value: int bimerge(int,boolean)>(temp$7, direction);
+        this.<bisort.Value: int value> = temp$8;
+        temp$9 = this.<bisort.Value: bisort.Value right>;
+        temp$10 = virtualinvoke temp$9.<bisort.Value: int bimerge(int,boolean)>(spr_val, direction);
+        spr_val = temp$10;
+
+     label21:
+        nop;
+        return spr_val;
+    }
+
+    public void swapValRight(bisort.Value)
+    {
+        bisort.Value this, n, tmpr, temp$1;
+        int tmpv, temp$0;
+
+        this := @this: bisort.Value;
+        n := @parameter0: bisort.Value;
+        tmpv = n.<bisort.Value: int value>;
+        tmpr = n.<bisort.Value: bisort.Value right>;
+        temp$0 = this.<bisort.Value: int value>;
+        n.<bisort.Value: int value> = temp$0;
+        temp$1 = this.<bisort.Value: bisort.Value right>;
+        n.<bisort.Value: bisort.Value right> = temp$1;
+        this.<bisort.Value: int value> = tmpv;
+        this.<bisort.Value: bisort.Value right> = tmpr;
+        return;
+    }
+
+    public void swapValLeft(bisort.Value)
+    {
+        bisort.Value this, n, tmpl, temp$1;
+        int tmpv, temp$0;
+
+        this := @this: bisort.Value;
+        n := @parameter0: bisort.Value;
+        tmpv = n.<bisort.Value: int value>;
+        tmpl = n.<bisort.Value: bisort.Value left>;
+        temp$0 = this.<bisort.Value: int value>;
+        n.<bisort.Value: int value> = temp$0;
+        temp$1 = this.<bisort.Value: bisort.Value left>;
+        n.<bisort.Value: bisort.Value left> = temp$1;
+        this.<bisort.Value: int value> = tmpv;
+        this.<bisort.Value: bisort.Value left> = tmpl;
+        return;
+    }
+
+    public void inOrder()
+    {
+        bisort.Value this, temp$0, temp$1, temp$13, temp$14;
+        long start, temp$2, temp$9, temp$10, temp$11, temp$12;
+        java.io.PrintStream temp$3, temp$5;
+        int temp$4, temp$7;
+        java.lang.StringBuffer temp$6;
+        java.lang.String temp$8;
+
+        this := @this: bisort.Value;
+        temp$0 = this.<bisort.Value: bisort.Value left>;
+        if temp$0 != null goto label0;
+
+        goto label1;
+
+     label0:
+        nop;
+        temp$1 = this.<bisort.Value: bisort.Value left>;
+        virtualinvoke temp$1.<bisort.Value: void inOrder()>();
+
+     label1:
+        nop;
+        temp$2 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+        start = temp$2;
+        temp$3 = <java.lang.System: java.io.PrintStream out>;
+        temp$4 = this.<bisort.Value: int value>;
+        virtualinvoke temp$3.<java.io.PrintStream: void print(int)>(temp$4);
+        temp$5 = <java.lang.System: java.io.PrintStream out>;
+        temp$6 = new java.lang.StringBuffer;
+        specialinvoke temp$6.<java.lang.StringBuffer: void <init>()>();
+        virtualinvoke temp$6.<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.Object)>(" ");
+        temp$7 = virtualinvoke this.<bisort.Value: int hashCode()>();
+        virtualinvoke temp$6.<java.lang.StringBuffer: java.lang.StringBuffer append(int)>(temp$7);
+        temp$8 = virtualinvoke temp$6.<java.lang.StringBuffer: java.lang.String toString()>();
+        virtualinvoke temp$5.<java.io.PrintStream: void println(java.lang.String)>(temp$8);
+        temp$9 = <bisort.Value: long initialTime>;
+        temp$10 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+        temp$11 = temp$10 - start;
+        temp$12 = temp$9 + temp$11;
+        <bisort.Value: long initialTime> = temp$12;
+        temp$13 = this.<bisort.Value: bisort.Value right>;
+        if temp$13 != null goto label2;
+
+        goto label3;
+
+     label2:
+        nop;
+        temp$14 = this.<bisort.Value: bisort.Value right>;
+        virtualinvoke temp$14.<bisort.Value: void inOrder()>();
+
+     label3:
+        nop;
+        return;
+    }
+
+    private static final int mult(int, int)
+    {
+        int p, q, p1, temp$0, p0, temp$1, q1, temp$2, q0, temp$3, temp$4, temp$5, temp$6, temp$7, temp$8, temp$9, temp$10, temp$11, temp$12;
+
+        p := @parameter0: int;
+        q := @parameter1: int;
+        temp$0 = p / 10000;
+        p1 = temp$0;
+        temp$1 = p % 10000;
+        p0 = temp$1;
+        temp$2 = q / 10000;
+        q1 = temp$2;
+        temp$3 = q % 10000;
+        q0 = temp$3;
+        temp$4 = p0 * q1;
+        temp$5 = temp$4;
+        temp$6 = p1 * q0;
+        temp$7 = temp$5 + temp$6;
+        temp$8 = temp$7 % 10000;
+        temp$9 = temp$8 * 10000;
+        temp$10 = temp$9;
+        temp$11 = p0 * q0;
+        temp$12 = temp$10 + temp$11;
+        return temp$12;
+    }
+
+    private static final int skiprand(int, int)
+    {
+        int seed, n, temp$0, temp$1, temp$2;
+
+        seed := @parameter0: int;
+        n := @parameter1: int;
+
+     label0:
+        nop;
+        if n != 0 goto label1;
+
+        goto label2;
+
+     label1:
+        nop;
+        temp$0 = staticinvoke <bisort.Value: int random(int)>(seed);
+        seed = temp$0;
+        nop;
+        temp$1 = n;
+        temp$2 = temp$1 + -1;
+        n = temp$2;
+        goto label0;
+
+     label2:
+        nop;
+        return seed;
+    }
+
+    public static int random(int)
+    {
+        int seed, tmp, temp$0, temp$1;
+
+        seed := @parameter0: int;
+        temp$0 = staticinvoke <bisort.Value: int mult(int,int)>(seed, 31415821);
+        temp$1 = temp$0;
+        tmp = temp$1 + 1;
+        return tmp;
+    }
+}

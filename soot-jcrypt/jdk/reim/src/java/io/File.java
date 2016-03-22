@@ -31,7 +31,7 @@ public class File implements Serializable, Comparable<File> {
     public File(String parent, String child) {
         throw new RuntimeException("skeleton method");
     }
-    @PolyreadThis public File( @Polyread File parent, String child)  {
+    @PolyreadThis public File(@Polyread File parent, String child)  {
       throw new RuntimeException("skeleton method");
     }
     public File(@Readonly URI uri) {
@@ -108,16 +108,16 @@ public class File implements Serializable, Comparable<File> {
     @ReadonlyThis public String[] list()  {
         throw new RuntimeException("skeleton method");
     }
-    @ReadonlyThis public String[] list( FilenameFilter filter)  {
+    @ReadonlyThis public String[] list(FilenameFilter filter)  {
         throw new RuntimeException("skeleton method");
     }
     @PolyreadThis public @Polyread File [] listFiles()  {
         throw new RuntimeException("skeleton method");
     }
-    @PolyreadThis public @Polyread File [] listFiles( FilenameFilter filter)  {
+    @PolyreadThis public @Polyread File [] listFiles(FilenameFilter filter)  {
         throw new RuntimeException("skeleton method");
     }
-    @PolyreadThis public @Polyread File [] listFiles( FileFilter filter)  {
+    @PolyreadThis public @Polyread File [] listFiles(FileFilter filter)  {
         throw new RuntimeException("skeleton method");
     }
     public boolean mkdir() {
@@ -177,10 +177,10 @@ public class File implements Serializable, Comparable<File> {
 //     public static File createTemporaryFile(String prefix, String suffx, @Readonly FileAttribute<?>... attrs) {
 //         throw new RuntimeException("skeleton method");
 //     }
-    @ReadonlyThis public int compareTo( @Readonly File pathname)  {
+    @ReadonlyThis public int compareTo(@Readonly File pathname)  {
         throw new RuntimeException("skeleton method");
     }
-    @ReadonlyThis public boolean equals( @Readonly Object obj)  {
+    @ReadonlyThis public boolean equals(@Readonly Object obj)  {
         throw new RuntimeException("skeleton method");
     }
     @ReadonlyThis public int hashCode()  {
@@ -189,7 +189,7 @@ public class File implements Serializable, Comparable<File> {
     @ReadonlyThis public String toString()  {
         throw new RuntimeException("skeleton method");
     }
-//     public Path toPath()  {
+//@ReadonlyThis //     public Path toPath()  {
 //         throw new RuntimeException("skeleton method");
 //     }
 

@@ -12,8 +12,8 @@ public class LinkedHashMap<K,V>
     public LinkedHashMap() { throw new RuntimeException("skeleton method"); }
     public LinkedHashMap(@Readonly Map<? extends K, ? extends V> m) { throw new RuntimeException("skeleton method"); }
     public LinkedHashMap(int initialCapacity, float loadFactor, boolean accessOrder) { throw new RuntimeException("skeleton method"); }
-    @ReadonlyThis public boolean containsValue( @Readonly Object value)  { throw new RuntimeException("skeleton method"); }
-    @PolyreadThis public V get( @Readonly Object key)  { throw new RuntimeException("skeleton method"); } //WEI
+    @ReadonlyThis public boolean containsValue(@Readonly Object value)  { throw new RuntimeException("skeleton method"); }
+    @PolyreadThis public V get(@Readonly Object key)  { throw new RuntimeException("skeleton method"); } //WEI
     public void clear() { throw new RuntimeException("skeleton method"); }
     protected boolean removeEldestEntry(@Readonly Map.Entry<K,V> eldest) { throw new RuntimeException("skeleton method"); }
 }

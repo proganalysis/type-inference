@@ -18,11 +18,11 @@ public class Throwable implements Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @PolyreadThis public Throwable( String message, @Polyread Throwable cause)  {
+    @PolyreadThis public Throwable(String message, @Polyread Throwable cause)  {
         throw new RuntimeException("skeleton method");
     }
 
-    @PolyreadThis public Throwable( @Polyread Throwable cause)  {
+    @PolyreadThis public Throwable(@Polyread Throwable cause)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -50,7 +50,7 @@ public class Throwable implements Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public void printStackTrace( PrintStream s)  {
+    @ReadonlyThis public void printStackTrace(PrintStream s)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -58,7 +58,7 @@ public class Throwable implements Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public void printStackTrace( PrintWriter s)  {
+    @ReadonlyThis public void printStackTrace(PrintWriter s)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -81,7 +81,7 @@ public class Throwable implements Serializable {
     }
 
     @ReadonlyThis private native int getStackTraceDepth() ;
-    @PolyreadThis private native @Polyread StackTraceElement getStackTraceElement( int index) ;
+    @PolyreadThis private native @Polyread StackTraceElement getStackTraceElement(int index) ;
 
     private synchronized void writeObject(java.io.ObjectOutputStream s)
         throws IOException {

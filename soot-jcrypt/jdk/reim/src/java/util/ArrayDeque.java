@@ -5,7 +5,7 @@ public class ArrayDeque<E> extends AbstractCollection<E> implements Deque<E>, Cl
     private static final long serialVersionUID = 0L;
   public ArrayDeque() { throw new RuntimeException(("skeleton method")); }
   public ArrayDeque(int a1) { throw new RuntimeException(("skeleton method")); }
-  @PolyreadThis public ArrayDeque( @Polyread Collection<? extends E> a1)  { throw new RuntimeException(("skeleton method")); }
+  @PolyreadThis public ArrayDeque(@Polyread Collection<? extends E> a1)  { throw new RuntimeException(("skeleton method")); }
   public void addFirst(@Readonly E a1) { throw new RuntimeException(("skeleton method")); } //WEI
   public void addLast(@Readonly E a1) { throw new RuntimeException(("skeleton method")); } //WEI
   public boolean offerFirst(@Readonly E a1) { throw new RuntimeException(("skeleton method")); } //WEI
@@ -32,7 +32,7 @@ public class ArrayDeque<E> extends AbstractCollection<E> implements Deque<E>, Cl
   @ReadonlyThis public boolean isEmpty()  { throw new RuntimeException(("skeleton method")); }
   @PolyreadThis public @Polyread Iterator<E> iterator()  { throw new RuntimeException(("skeleton method")); }
   @PolyreadThis public @Polyread Iterator<E> descendingIterator()  { throw new RuntimeException(("skeleton method")); }
-  @ReadonlyThis public boolean contains( @Readonly Object a1)  { throw new RuntimeException(("skeleton method")); }
+  @ReadonlyThis public boolean contains(@Readonly Object a1)  { throw new RuntimeException(("skeleton method")); }
   public boolean remove(@Readonly Object a1) { throw new RuntimeException(("skeleton method")); } //WEI remove  @I
   public void clear() { throw new RuntimeException(("skeleton method")); }
   public Object[] toArray() { throw new RuntimeException(("skeleton method")); }

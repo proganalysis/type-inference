@@ -62,7 +62,17 @@ public class SootInferenceJCrypt {
         System.out.println("INFO: Solving JCrypt constraints:  " + jcryptTransformer.getConstraints().size() + " in total...");
         ConstraintSolver jcryptSolver = new JCryptConstraintSolver(jcryptTransformer);
         errors = jcryptSolver.solve();
-		
+        try {
+            PrintStream jcryptOut = new PrintStream(outputDir + File.separator + "jcrypt-constraints.log");
+            for (Constraint c : jcryptTransformer.getConstraints()) {
+                jcryptOut.println(c);
+                jcryptOut.println();
+            }
+            jcryptOut.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         System.out.println();
         for (Constraint c : errors)
             System.out.println(c + "\n");
@@ -74,17 +84,7 @@ public class SootInferenceJCrypt {
 		if (!typeErrors.isEmpty()) {
 			for (Constraint c : typeErrors) System.out.println(c);
 		}
-		try {
-            PrintStream jcryptOut = new PrintStream(outputDir + File.separator + "jcrypt-constraints.log");
-            for (Constraint c : jcryptTransformer.getConstraints()) {
-                jcryptOut.println(c);
-                jcryptOut.println();
-            }
-            jcryptOut.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
+		
         try {
             PrintStream jcryptOut = new PrintStream(outputDir + File.separator + "jcrypt-result.jaif");
             jcryptTransformer.printJaif(jcryptOut);

@@ -72,7 +72,7 @@ public final class URL implements java.io.Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public boolean equals( @Readonly Object obj)  {
+    @ReadonlyThis public boolean equals(@Readonly Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -80,7 +80,7 @@ public final class URL implements java.io.Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public boolean sameFile( @Readonly URL other)  {
+    @ReadonlyThis public boolean sameFile(@Readonly URL other)  {
         throw new RuntimeException("skeleton method");
     }
 

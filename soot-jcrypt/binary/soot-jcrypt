@@ -1,0 +1,33 @@
+#!/bin/bash 
+
+#command:
+#sh soot-jcrypt -cp ../tests -main bisort.BiSort
+
+mydir="`dirname $0`"
+mylib=`find $mydir/../lib -name '*.jar' | xargs |sed 's/ /:/g'`
+jdk=$mydir/../jdk/reim/jdk.jar
+rt=$JAVA_HOME/jre/lib/rt.jar
+
+mainClass="edu.rpi.SootInferenceJCrypt"
+
+sootClasspath="$mylib:$jdk:$rt"
+sootOpts="-f J -src-prec java"
+appMainClass=""
+while [[ $# > 0 ]]
+do
+  key=$1
+  shift
+  case $key in
+    -main ) appMainClass=$appMainClass"`echo $1`"
+    shift
+    ;;
+    -cp ) sootClasspath=$sootClasspath:"`echo $1`"
+    shift
+    ;;
+    * ) sootOpts=$sootOpts" `echo $key`"" "
+  esac
+done
+                                                          
+echo "java -cp $mylib $mainClass -cp $sootClasspath $appMainClass $sootOpts"
+
+time java -cp $mylib $mainClass -cp $sootClasspath $appMainClass $sootOpts

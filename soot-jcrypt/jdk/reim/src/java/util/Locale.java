@@ -94,7 +94,7 @@ public final class Locale implements Cloneable, Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getDisplayLanguage( Locale inLocale)  {
+    @ReadonlyThis public String getDisplayLanguage(Locale inLocale)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -102,7 +102,7 @@ public final class Locale implements Cloneable, Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getDisplayCountry( Locale inLocale)  {
+    @ReadonlyThis public String getDisplayCountry(Locale inLocale)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -110,7 +110,7 @@ public final class Locale implements Cloneable, Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public String getDisplayVariant( Locale inLocale)  {
+    @ReadonlyThis public String getDisplayVariant(Locale inLocale)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -118,7 +118,7 @@ public final class Locale implements Cloneable, Serializable {
         return getDisplayName(getDefault());
     }
 
-    @ReadonlyThis public String getDisplayName( Locale inLocale)  {
+    @ReadonlyThis public String getDisplayName(Locale inLocale)  {
         throw new RuntimeException("skeleton method");
     }
 
@@ -130,7 +130,7 @@ public final class Locale implements Cloneable, Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    @ReadonlyThis public boolean equals( @Readonly Object obj)  {
+    @ReadonlyThis public boolean equals(@Readonly Object obj)  {
         throw new RuntimeException("skeleton method");
     }
 }
