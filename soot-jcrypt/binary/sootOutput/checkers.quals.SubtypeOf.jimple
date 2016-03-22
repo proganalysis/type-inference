@@ -1,5 +1,0 @@
-public annotation interface  checkers.quals.SubtypeOf extends java.lang.Object implements java.lang.annotation.Annotation
-{
-
-    public abstract java.lang.Class[] value();
-}

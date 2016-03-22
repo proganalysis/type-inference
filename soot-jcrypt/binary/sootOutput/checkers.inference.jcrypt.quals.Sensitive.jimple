@@ -1,3 +1,0 @@
-public annotation interface  checkers.inference.jcrypt.quals.Sensitive extends java.lang.Object implements java.lang.annotation.Annotation
-{
-}
