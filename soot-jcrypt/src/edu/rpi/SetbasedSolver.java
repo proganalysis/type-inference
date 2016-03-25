@@ -1,15 +1,15 @@
 package edu.rpi;
 
 import java.util.*;
+
+import static com.esotericsoftware.minlog.Log.info;
+
 import java.lang.annotation.*;
 
-import edu.rpi.ConstraintSolver.FailureStatus;
-import edu.rpi.ConstraintSolver.SolverException;
 import edu.rpi.Constraint.SubtypeConstraint;
 import edu.rpi.Constraint.EqualityConstraint;
 import edu.rpi.Constraint.UnequalityConstraint;
 import edu.rpi.AnnotatedValue.*;
-import edu.rpi.*;
 
 public class SetbasedSolver extends AbstractConstraintSolver {
 
@@ -81,6 +81,7 @@ public class SetbasedSolver extends AbstractConstraintSolver {
     @Override
     protected Set<Constraint> solveImpl() {
         Set<Constraint> constraints = t.getConstraints();
+        info(this.getClass().getSimpleName(), "Solving Reim constraints:  " + constraints.size() + " in total...");
 		Set<Constraint> warnConstraints = new HashSet<Constraint>();
         buildRefToConstraintMapping(constraints);
         worklist.addAll(constraints);
@@ -103,28 +104,9 @@ public class SetbasedSolver extends AbstractConstraintSolver {
                 }
             }
         }
-//        boolean hasUpdate = false;
-//        do {
-//            conflictConstraints = new LinkedHashSet<Constraint>();
-//            hasUpdate = false;
-//            for (Constraint c : constraints) {
-//                try {
-//                    hasUpdate = handleConstraint(c) || hasUpdate;
-//                } catch (SolverException e) {
-//                    FailureStatus fs = t.getFailureStatus(c);
-//                    if (fs == FailureStatus.ERROR) {
-//                        hasUpdate = false;
-//                        conflictConstraints.add(c);
-//                    } else if (fs == FailureStatus.WARN) {
-//                        if (!warnConstraints.contains(c)) {
-//                            System.out.println("WARN: handling constraint " + c + " failed.");
-//                            warnConstraints.add(c);
-//                        }
-//                    }
-//                }
-//            }
-//        } while (hasUpdate);
         refToConstraints.clear();
+        info(this.getClass().getSimpleName(), "Finish solving Reim constraints. " + conflictConstraints.size() + " error(s)");
+
         return conflictConstraints;
     }
 }

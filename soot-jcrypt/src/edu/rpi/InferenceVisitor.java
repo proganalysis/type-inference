@@ -25,7 +25,7 @@ public class InferenceVisitor extends AbstractStmtSwitch {
 
     public void defaultCase(Object obj)
     {
-        System.out.println("Default case (" + obj.getClass() + "): " + obj);
+        //System.out.println("Default case (" + obj.getClass() + "): " + obj);
     }
 
     @Override

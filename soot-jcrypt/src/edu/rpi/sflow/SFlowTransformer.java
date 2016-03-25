@@ -1,37 +1,14 @@
 package edu.rpi.sflow;
 
-import java.util.Iterator;
 import java.util.*;
 import java.lang.annotation.*;
-import java.lang.Thread;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import soot.Body;
-import soot.BodyTransformer;
-import soot.Local;
-import soot.PackManager;
-import soot.PatchingChain;
-import soot.RefType;
-import soot.Type;
+import java.io.PrintStream;
 import soot.VoidType;
-import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.SootField;
-import soot.MethodSource;
-import soot.Transform;
-import soot.Unit;
-import soot.Value;
-import soot.jimple.AbstractStmtSwitch;
 import soot.jimple.InvokeExpr;
-import soot.jimple.InvokeStmt;
-import soot.jimple.*;
-import soot.jimple.Jimple;
-import soot.jimple.StringConstant;
-import soot.options.Options;
 import soot.tagkit.*;
-import edu.rpi.Constraint.SubtypeConstraint;
 import edu.rpi.AnnotatedValue.FieldAdaptValue;
 import edu.rpi.AnnotatedValue.MethodAdaptValue;
 import edu.rpi.AnnotatedValue.Kind;
@@ -40,7 +17,6 @@ import edu.rpi.ConstraintSolver.FailureStatus;
 
 import checkers.inference.sflow.quals.*;
 import checkers.inference.reim.quals.*;
-import soot.util.NumberedString;
 
 
 public class SFlowTransformer extends InferenceTransformer {
@@ -448,4 +424,8 @@ public class SFlowTransformer extends InferenceTransformer {
     public String getName() {
         return "sflow";
     }
+
+	@Override
+	public void printPolyResult(PrintStream out) {}
+
 }

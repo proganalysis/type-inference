@@ -1,6 +1,7 @@
 package edu.rpi.reim;
 
 import java.util.*;
+import java.io.PrintStream;
 import java.lang.annotation.*;
 import java.util.regex.Pattern;
 
@@ -252,4 +253,36 @@ public class ReimTransformer extends InferenceTransformer {
     public String getName() {
         return "reim";
     }
+
+
+	@Override
+	public void printPolyResult(PrintStream out) {	}
+    
+//    @Override
+//    protected void internalTransform(final Body b, String phaseName,
+//            @SuppressWarnings("rawtypes") Map options) {
+//    	String outputDir = SourceLocator.v().getOutputDir();
+//
+//		ConstraintSolver cs = new SetbasedSolver(this, false);
+//		Set<Constraint> errors = cs.solve();
+//		try {
+//			PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-constraints.log");
+//			for (Constraint c : getConstraints()) {
+//				reimOut.println(c);
+//			}
+//			reimOut.close();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		for (Constraint c : errors)
+//			System.out.println(c);
+//
+//		try {
+//			PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-result.jaif");
+//			printJaif(reimOut);
+//			// reimTransformer.clear();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//    }
 }

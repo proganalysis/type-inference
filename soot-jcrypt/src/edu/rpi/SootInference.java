@@ -1,8 +1,5 @@
 package edu.rpi;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
@@ -10,28 +7,10 @@ import java.util.Arrays;
 import java.io.PrintStream;
 import java.io.File;
 
-import soot.Body;
-import soot.BodyTransformer;
-import soot.Local;
 import soot.PackManager;
-import soot.PatchingChain;
-import soot.RefType;
-import soot.Scene;
 import soot.SourceLocator;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.SootResolver;
 import soot.Transform;
-import soot.Unit;
-import soot.Value;
-import soot.jimple.AbstractStmtSwitch;
-import soot.jimple.InvokeExpr;
-import soot.jimple.InvokeStmt;
-import soot.jimple.*;
-import soot.jimple.Jimple;
-import soot.jimple.StringConstant;
 import soot.options.Options;
-import soot.tagkit.*; 
 import edu.rpi.sflow.*;
 import edu.rpi.reim.*;
 import static com.esotericsoftware.minlog.Log.*;
@@ -110,6 +89,7 @@ public class SootInference {
             for (Constraint c : reimTransformer.getConstraints()) {
                 reimOut.println(c);
             }
+            reimOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -133,6 +113,7 @@ public class SootInference {
             for (Constraint c : sflowTransformer.getConstraints()) {
                 sflowOut.println(c);
             }
+            sflowOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

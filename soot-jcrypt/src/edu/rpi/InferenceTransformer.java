@@ -771,4 +771,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
 		}
 		return annoComparator;
 	}
+	
+	public abstract void printPolyResult(PrintStream out);
 }

@@ -2,6 +2,9 @@ package edu.rpi;
 
 import java.util.*;
 import java.lang.annotation.*;
+
+import static com.esotericsoftware.minlog.Log.info;
+
 import java.io.*;
 import java.util.concurrent.*;
 
@@ -9,13 +12,10 @@ import soot.SourceLocator;
 import soot.SootClass;
 import soot.SootMethod;
 
-import edu.rpi.ConstraintSolver.FailureStatus;
-import edu.rpi.ConstraintSolver.SolverException;
 import edu.rpi.Constraint.SubtypeConstraint;
 import edu.rpi.Constraint.EqualityConstraint;
 import edu.rpi.Constraint.UnequalityConstraint;
 import edu.rpi.AnnotatedValue.*;
-import edu.rpi.*;
 
 
 public abstract class AbstractConstraintSolver implements ConstraintSolver {
@@ -53,8 +53,6 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 
     private final String VALUE_TABLE_NAME = "avalues";
 
-    private final String AVALUE_TABLE_NAME = "adaptvalues";
-
     private final String CONSTRAINT_TABLE_NAME = "constraints";
 
     private final String TRACE_TABLE_NAME = "traces";
@@ -71,19 +69,6 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         + "method string" + ");\n"
         + "create index " + VALUE_TABLE_NAME + "_idx "
         + "on " + VALUE_TABLE_NAME + "(id);";
-
-    /**
-     * kind = 0: field adapt
-     * kind = 1: method adapt
-     */
-    private final String CREATE_AVALUE_TABLE = "create table " + AVALUE_TABLE_NAME + "("
-        + "id integer, "
-        + "context string, "
-        + "decl string, "
-        + "context_id integer, "
-        + "decl_id integer, "
-        + "kind string" + ");";
-
 
     /**
      * kind = 0: subkind 
@@ -497,7 +482,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
     }
 
     public Set<Constraint> solve() {
-        Set<Constraint> set;
+    	Set<Constraint> set;
         try {
             if (needTrace)
                 initLog();

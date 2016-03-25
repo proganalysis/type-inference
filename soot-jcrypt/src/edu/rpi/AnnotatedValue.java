@@ -41,7 +41,7 @@ public class AnnotatedValue {
     private SootMethod enclosingMethod;
 
     private String name; 
-
+    
     private int restoreNum = 0;
 
     protected Set<Annotation> annos;
@@ -185,7 +185,7 @@ public class AnnotatedValue {
         return identifier.hashCode();
     }
 
-    public static abstract class AdaptValue extends AnnotatedValue {
+	public static abstract class AdaptValue extends AnnotatedValue {
         protected AnnotatedValue context;
         protected AnnotatedValue decl;
         public AdaptValue(AnnotatedValue context, AnnotatedValue decl, Kind kind) {
