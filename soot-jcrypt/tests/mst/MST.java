@@ -149,7 +149,7 @@ public class MST {
 	 * @param args
 	 *            the command line options.
 	 **/
-	private static final void parseCmdLine(/* @BOT */ String args/* @BOT */ []) {
+	private static final void parseCmdLine(String args[]) {
 		int i = 0;
 		String arg;
 

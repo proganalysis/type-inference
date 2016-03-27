@@ -27,7 +27,7 @@ public class Value {
 	 * @param v
 	 *            the integer value which is the sort key
 	 **/
-	public Value(@Sensitive int v) {
+	public Value(int v) {
 		value = v;
 		left = right = null;
 	}
@@ -46,13 +46,17 @@ public class Value {
 		if (size > 1) {
 			seed = random(seed);
 			int next_val = seed % RANGE;
-			Value retval = new Value(next_val);
+			Value retval = new Value(getSenValue(next_val));
 			retval.left = createTree(size / 2, seed);
 			retval.right = createTree(size / 2, skiprand(seed, size + 1));
 			return retval;
 		} else {
 			return null;
 		}
+	}
+	
+	@Sensitive private static int getSenValue(int v) {
+		return v;
 	}
 
 	/**
@@ -226,4 +230,5 @@ public class Value {
 		int tmp = mult(seed, CONST_b) + 1;
 		return tmp;
 	}
+	
 }

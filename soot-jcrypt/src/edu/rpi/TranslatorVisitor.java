@@ -35,15 +35,15 @@ public class TranslatorVisitor extends AbstractStmtSwitch {
 
 		@Override
 		public void caseInstanceFieldRef(InstanceFieldRef v) {
-			Value base = v.getBase();
-			assert base instanceof Local;
-			SootField field = v.getField();
-			if (field == null) {
-				System.out.println(
-						"WARN: " + base.getType() + " doesn't have field, at" + "\n\t" + t.getVisitorState().getUnit());
-				return;
-			}
-			t.processField(field);
+//			Value base = v.getBase();
+//			assert base instanceof Local;
+//			SootField field = v.getField();
+//			if (field == null) {
+//				System.out.println(
+//						"WARN: " + base.getType() + " doesn't have field, at" + "\n\t" + t.getVisitorState().getUnit());
+//				return;
+//			}
+//			t.processField(field);
 		}
 		
 	}
