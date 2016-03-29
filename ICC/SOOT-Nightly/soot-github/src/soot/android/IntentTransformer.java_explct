@@ -1,0 +1,333 @@
+package soot.android;
+
+import java.util.Iterator;
+import java.util.*;
+import java.lang.annotation.*;
+import java.io.PrintStream;
+
+import soot.Body;
+import soot.BodyTransformer;
+import soot.Local;
+import soot.PackManager;
+import soot.PatchingChain;
+import soot.RefType;
+import soot.Type;
+import soot.ArrayType;
+import soot.VoidType;
+import soot.NullType;
+import soot.Scene;
+import soot.SootClass;
+import soot.SootMethod;
+import soot.SootField;
+import soot.MethodSource;
+import soot.Modifier;
+import soot.Transform;
+import soot.Unit;
+import soot.Value;
+import soot.util.*;
+import soot.jimple.AbstractStmtSwitch;
+import soot.jimple.InvokeExpr;
+import soot.jimple.InvokeStmt;
+import soot.jimple.*;
+import soot.jimple.Jimple;
+import soot.jimple.StringConstant;
+import soot.options.Options;
+import soot.tagkit.*; 
+
+
+public class IntentTransformer extends BodyTransformer {
+
+    private static IntentTransformer instance = new IntentTransformer();
+
+    public static IntentTransformer v() { return instance; }
+
+    private SootClass intentClass;
+
+    private Map<String, SootClass> targetedIntents = new HashMap<String, SootClass>();
+
+    private String prefix = "edu.rpi.content.";
+
+    private SootClass getIntentClass() {
+        if (intentClass == null) 
+            intentClass = Scene.v().getSootClass("android.content.Intent");
+        return intentClass;
+    }
+
+    private String encode(String s) {
+        return prefix + "Intent_" + s.replace('/', '_').replace('.', '_').replace('$', '_');
+    }
+
+
+    private SootClass getTargetedIntent(String target) {
+        String name = encode(target);
+        SootClass sc = targetedIntents.get(name);
+        if (sc == null) {
+            sc = new SootClass(name, Modifier.PUBLIC);
+            sc.setSuperclass(getIntentClass());
+            Scene.v().addClass(sc);
+            sc.setApplicationClass();
+            targetedIntents.put(name, sc);
+        }
+        return sc;
+    }
+
+    public SootField getFieldByName(SootClass sc, String name) {
+        for (SootField field : sc.getFields() ) {
+            if(field.getName().equals(name)) {
+                return field;
+            }
+        }
+        return null;
+    }
+
+    public SootMethod getMethodByName(SootClass sc, String name) 
+    {
+        for (SootMethod method : sc.getMethods()) {
+            if(method.getName().equals(name))
+            {
+                return method;
+            }
+        }
+        return null;
+    }
+
+    private Set<SootClass> getSuperTypes(SootClass sc) {
+        Set<SootClass> supertypes = new LinkedHashSet<SootClass>();
+
+        Deque<SootClass> stack = new ArrayDeque<SootClass>();
+        stack.push(sc);
+
+        while (!stack.isEmpty()) {
+            SootClass current = stack.pop();
+
+            if (current.getName().equals("java.lang.Object"))
+                continue;
+
+            SootClass c = current.hasSuperclass() ? current.getSuperclass() : null;
+            if (c!= null && !supertypes.contains(c)) {
+                stack.push(c);
+                supertypes.add(c);
+            }
+            for (SootClass supertype : current.getInterfaces()) {
+                if (!supertypes.contains(supertype)) {
+                    stack.push(supertype);
+                    supertypes.add(supertype);
+                }
+            }
+        }
+        return supertypes;
+    }
+
+    protected SootMethod getDeclaringMethod(SootMethod method) {
+        if (!method.isPhantom())
+            return method;
+        SootClass sc = method.getDeclaringClass();
+        Set<SootClass> superTypes = getSuperTypes(sc);
+        for (SootClass superClass : superTypes) {
+            if (superClass.declaresMethod(method.getSubSignature())) {
+                SootMethod m = superClass.getMethod(method.getSubSignature());
+                if (!m.isPhantom())
+                    return m;
+            }
+        }
+        return method;
+    }
+
+    @Deprecated
+    private SootMethod createPutExtrMethod(String name, SootField field) {
+        // create method
+        SootMethod m = new SootMethod(name, 
+                Arrays.asList(new Type[] { RefType.v("java.lang.Object") }),
+                VoidType.v(), 
+                Modifier.PUBLIC | Modifier.STATIC);
+
+        JimpleBody body = Jimple.v().newBody(m);
+        m.setActiveBody(body);
+        Chain units = body.getUnits();
+        Local arg;
+        arg = Jimple.v().newLocal("r0", RefType.v("java.lang.Object"));
+        body.getLocals().add(arg);
+        units.add(Jimple.v().newIdentityStmt(arg, 
+                    Jimple.v().newParameterRef(RefType.v("java.lang.Object"), 0)));
+        units.add(Jimple.v().newAssignStmt(
+                Jimple.v().newStaticFieldRef(field.makeRef()), arg));
+        units.add(Jimple.v().newReturnVoidStmt());
+
+        return m;
+    }
+
+    @Deprecated
+    private SootMethod createGetExtraMethod(String name, SootField field) {
+        // create method
+        SootMethod m = new SootMethod(name, 
+                Arrays.asList(new Type[] {  }),
+                RefType.v("java.lang.Object"), 
+                Modifier.PUBLIC | Modifier.STATIC);
+
+        JimpleBody body = Jimple.v().newBody(m);
+        m.setActiveBody(body);
+        Chain units = body.getUnits();
+        Local arg;
+        arg = Jimple.v().newLocal("r0", RefType.v("java.lang.Object"));
+        body.getLocals().add(arg);
+        units.add(Jimple.v().newAssignStmt(arg,
+                Jimple.v().newStaticFieldRef(field.makeRef())));
+        units.add(Jimple.v().newReturnStmt(arg));
+
+        return m;
+    }
+
+    private int containsTargetedIntentArg(InstanceInvokeExpr e) {
+        SootMethod invoke = e.getMethod();
+        if (!invoke.getName().startsWith("start"))
+            return -1;
+        for (int i = 0; i < e.getArgCount(); i++) {
+            Type t = e.getArg(i).getType();
+            if (t instanceof RefType) {
+                String encoded = encode(((RefType) t).getClassName());
+                if (targetedIntents.containsKey(encoded))
+                    return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    protected void internalTransform(final Body b, String phaseName, 
+            @SuppressWarnings("rawtypes") Map options) {
+        SootMethod sm = b.getMethod();
+        SootClass sc = (sm == null ? null : sm.getDeclaringClass());
+
+        getIntentClass();
+
+        final PatchingChain<Unit> units = b.getUnits();
+        for(Iterator<Unit> iter = units.snapshotIterator(); iter.hasNext();) {
+            Stmt stmt = (Stmt) iter.next();
+            if (!stmt.containsInvokeExpr()) 
+                continue;
+
+            InvokeExpr e = (InvokeExpr) stmt.getInvokeExpr();
+            SootMethod invoke = e.getMethod();
+
+            if (stmt instanceof AssignStmt) {
+                // Intent.get*Extra()
+                if (e instanceof InstanceInvokeExpr) {
+                    Value left = ((AssignStmt) stmt).getLeftOp();
+                    InstanceInvokeExpr expr = (InstanceInvokeExpr) e;
+                    Local base = (Local) expr.getBase();
+                    Type baseType = base.getType();
+                    if (baseType instanceof RefType
+                            && (baseType.equals(intentClass.getType())  
+                                || ((RefType) baseType).getSootClass().hasSuperclass()
+                                    &&((RefType) baseType).getSootClass().getSuperclass().getType().equals(intentClass.getType()))
+                            && invoke.getName().startsWith("get")
+                            && invoke.getName().endsWith("Extra")) {
+                        SootClass c = getTargetedIntent(sc.getName());
+                        Value arg0 = expr.getArg(0);
+                        if (arg0 instanceof StringConstant) {
+                            String fieldStr = ((StringConstant) arg0).value;
+                            SootField sf = getFieldByName(c, fieldStr);
+                            if (sf == null) {
+                                // create field
+                                sf = new SootField(fieldStr, RefType.v("java.lang.Object"), 
+                                        Modifier.STATIC | Modifier.PUBLIC);
+                                c.addField(sf);
+                            }
+                            Stmt newAssignStmt = Jimple.v().newAssignStmt(left, 
+                                    Jimple.v().newStaticFieldRef(sf.makeRef()));
+                            units.insertBefore(newAssignStmt, stmt);
+                            units.remove(stmt);
+                        }
+                    }
+                }
+            }
+            else if (e instanceof InstanceInvokeExpr) {
+                InstanceInvokeExpr expr = (InstanceInvokeExpr) e;
+                Local base = (Local) expr.getBase();
+                Type baseType = base.getType();
+                int index;
+                // Intent.<init>
+                if (invoke.isConstructor() && baseType.equals(intentClass.getType())) {
+                    for (int i = 0; i < invoke.getParameterCount(); i++) {
+                        Type t = invoke.getParameterType(i);
+                        if (t instanceof RefType) {
+                            if (((RefType) t).getClassName().equals("java.lang.Class")) {
+                                Value arg = expr.getArg(i);
+                                if (arg instanceof ClassConstant) {
+                                    SootClass c = getTargetedIntent(((ClassConstant) arg).getValue());
+                                    base.setType(c.getType());
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                // Intent.put*Extra
+                else if (baseType instanceof RefType
+                            && ((RefType) baseType).getSootClass().hasSuperclass()
+                            && (((RefType) baseType).getSootClass().getSuperclass().getType().equals(intentClass.getType()))
+                            && invoke.getName().startsWith("put")
+                            && invoke.getName().endsWith("Extra")) {
+                    SootClass c = ((RefType) baseType).getSootClass();
+                    Value arg0 = expr.getArg(0);
+                    Value arg1 = expr.getArg(1);
+                    if (arg0 instanceof StringConstant) {
+                        String fieldStr = ((StringConstant) arg0).value;
+                        SootField sf = getFieldByName(c, fieldStr);
+                        if (sf == null) {
+                            // create field
+                            sf = new SootField(fieldStr, RefType.v("java.lang.Object"), 
+                                    Modifier.STATIC | Modifier.PUBLIC);
+                            c.addField(sf);
+                        }
+                        Stmt assignStmt = Jimple.v().newAssignStmt(Jimple.v().newStaticFieldRef(sf.makeRef()), arg1);
+                        units.insertBefore(assignStmt, stmt);
+                        units.remove(stmt);
+                    }
+                }
+                // Context.startService | Activity.startActivity | and
+                // more. Seems not necessary as we have handled
+                // put*Extra()
+                /*else if ((index = containsTargetedIntentArg(expr)) != -1 ) {
+                    Local arg = (Local) expr.getArg(index);
+                    Local newArg = Jimple.v().newLocal(arg.getName() + "_intent", NullType.v()); 
+                    expr.setArg(index, newArg);
+                }*/
+                // Replace Handler.sendMessage() with Handler.handleMessage()
+                else if ((invoke = getDeclaringMethod(invoke))  != null
+                        && invoke.getDeclaringClass().getName().equals("android.os.Handler")
+                        && invoke.getName().startsWith("sendMessage")) {
+                    Value arg0 = expr.getArg(0);
+                    SootClass baseClass = ((RefType) baseType).getSootClass();
+                    if (baseClass.declaresMethod("handleMessage", 
+                            Arrays.asList(new Type[]{RefType.v("android.os.Message")}))) {
+                        SootMethod handleMethod = baseClass.getMethod("handleMessage", 
+                                Arrays.asList(new Type[]{RefType.v("android.os.Message")}));
+                        Stmt newInvokeStmt = Jimple.v().newInvokeStmt(
+                                Jimple.v().newVirtualInvokeExpr(base, handleMethod.makeRef(), arg0));
+                        units.insertAfter(newInvokeStmt, stmt);
+                    }
+                }
+                // Replace android.os.AsyncTask.execute() with android.os.AsyncTask.doInBackground()
+                else if ((invoke = getDeclaringMethod(invoke))  != null
+                        && invoke.getDeclaringClass().getName().equals("android.os.AsyncTask")
+                        && invoke.getName().equals("execute")) {
+                    Value arg0 = expr.getArg(0);
+                    SootClass baseClass = ((RefType) baseType).getSootClass();
+                    if (baseClass.declaresMethod("doInBackground", 
+                            Arrays.asList(new Type[]{ArrayType.v(RefType.v("java.lang.Object"), 1)}), 
+                            RefType.v("java.lang.Object")
+                            )) {
+                        SootMethod handleMethod = baseClass.getMethod("doInBackground", 
+                                Arrays.asList(new Type[]{ArrayType.v(RefType.v("java.lang.Object"), 1)}),
+                                RefType.v("java.lang.Object")
+                                );
+                        Stmt newInvokeStmt = Jimple.v().newInvokeStmt(
+                                Jimple.v().newVirtualInvokeExpr(base, handleMethod.makeRef(), arg0));
+                        units.insertAfter(newInvokeStmt, stmt);
+                    }
+                }
+            }
+        }
+    }
+}

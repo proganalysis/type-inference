@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename compilation unit &apos;soot.intentResolve.test.java&apos; to &apos;intentFilterArchive.java&apos;&#x0A;- Original project: &apos;soot-github&apos;&#x0A;- Original element: &apos;soot.intentResolve.test.java&apos;&#x0A;- Renamed element: &apos;soot.intentResolve.intentFilterArchive.java&apos;" description="Rename compilation unit &apos;test.java&apos;" flags="2" id="org.eclipse.jdt.ui.rename.compilationunit" input="/src&lt;soot.intentResolve{test.java" name="intentFilterArchive.java" references="false" stamp="1453659510760" version="1.0"/>
+</session>

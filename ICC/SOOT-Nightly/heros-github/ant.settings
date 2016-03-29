@@ -1,0 +1,4 @@
+heros.version=develop
+guava.jar=guava-13.0.1.jar
+slf4j-api.jar=slf4j-api.jar
+slf4j-simple.jar=slf4j-simple.jar

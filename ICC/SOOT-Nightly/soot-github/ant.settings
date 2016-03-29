@@ -1,0 +1,12 @@
+xmlprinter.jar=libs/AXMLPrinter2.jar
+polyglot.jar=libs/polyglot.jar
+baksmali.jar=libs/baksmali-1.3.2.jar
+baksmali2.jar=libs/baksmali-2.0b5.jar
+je-6.4.9.jar=libs/je-6.4.9.jar
+jasmin.jar=/home/alex/intent/SOOT-Nightly/jasmin-github/lib/jasminclasses-develop.jar
+heros.jar=/home/alex/intent/SOOT-Nightly/heros-github/heros-develop.jar
+soot.version=develop
+release.loc=lib
+javaapi.url=http://docs.oracle.com/javase/6/docs/api/
+junit.jar=libs/junit-4.10.jar
+javacup.jar=/home/alex/intent/SOOT-Nightly/jasmin-github/libs/java_cup.jar
