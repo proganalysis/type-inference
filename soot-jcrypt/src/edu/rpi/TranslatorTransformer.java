@@ -7,12 +7,15 @@ import soot.*;
 import soot.jimple.AssignStmt;
 import soot.jimple.FieldRef;
 import soot.jimple.InstanceFieldRef;
+import soot.jimple.InstanceInvokeExpr;
+import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
-import soot.jimple.VirtualInvokeExpr;
-
+import soot.jimple.NullConstant;
+import soot.jimple.SpecialInvokeExpr;
+import soot.jimple.StaticInvokeExpr;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,86 +56,176 @@ public class TranslatorTransformer extends BodyTransformer {
 	protected void internalTransform(Body b, String phase, @SuppressWarnings("rawtypes") Map options) {
 		SootMethod senMethod = copyMethod(b);
 		if (senMethod == null) {
-			processClearMethod(b);
+			processMethod(b, true);
 		} else {
-			processSenMethod(senMethod.getActiveBody());
+			// if (senMethod.isStatic())
+			// processMethod(senMethod.getActiveBody(), true);
+			processMethod(senMethod.getActiveBody(), false);
 		}
 	}
 
-	private void processClearMethod(Body b) {
-		PatchingChain<Unit> units = b.getUnits();
-		for (Iterator<Unit> iter = units.snapshotIterator(); iter.hasNext();) {
-			Unit u = iter.next();
-			if (u instanceof AssignStmt) {
-				AssignStmt as = ( AssignStmt) u;
-				Value right = as.getRightOp();
-				if (right instanceof VirtualInvokeExpr) {
-					processInvokeForClear(right, b.getMethod());
-				}
-			} else if (u instanceof InvokeStmt) {
-				InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
-				if (expr instanceof VirtualInvokeExpr) {
-					processInvokeForClear(expr, b.getMethod());
-				}
-			}
+	// private void processClearMethod(Body b) {
+	// Chain<Unit> units = b.getUnits();
+	// for (Iterator<Unit> iter = units.snapshotIterator(); iter.hasNext();) {
+	// Unit u = iter.next();
+	// InvokeExpr invoke = null;
+	// if (u instanceof AssignStmt) {
+	// AssignStmt as = (AssignStmt) u;
+	// Value right = as.getRightOp();
+	// if (right instanceof InstanceInvokeExpr)
+	// invoke = getInstanceInvokeForClear((InstanceInvokeExpr) right,
+	// b.getMethod());
+	// else if (right instanceof StaticInvokeExpr)
+	// invoke = getStaticInvoke((StaticInvokeExpr) right, b.getMethod());
+	// if (invoke != null)
+	// as.setRightOp(invoke);
+	// } else if (u instanceof InvokeStmt) {
+	// InvokeStmt is = (InvokeStmt) u;
+	// InvokeExpr expr = is.getInvokeExpr();
+	// if (expr instanceof InstanceInvokeExpr)
+	// invoke = getInstanceInvokeForClear((InstanceInvokeExpr) expr,
+	// b.getMethod());
+	// else if (expr instanceof StaticInvokeExpr)
+	// invoke = getStaticInvoke((StaticInvokeExpr) expr, b.getMethod());
+	// if (invoke != null)
+	// is.setInvokeExpr(invoke);
+	// }
+	// }
+	// }
+
+	private FieldRef processField(FieldRef fieldRef, SootMethod sm, boolean isClear) {
+		SootField field = fieldRef.getField();
+		if (field.isStatic())
+			return getStaticFieldRef(field);
+		else if (isClear)
+			return getInstanceFieldForClear(field, fieldRef, sm);
+		else
+			return getInstanceFieldForSen(field, fieldRef);
+	}
+
+	private FieldRef getStaticFieldRef(SootField field) {
+		SootClass sc = field.getDeclaringClass();
+		String newName = field.getName() + "_Sen";
+		if (sc.declaresFieldByName(newName))
+			return Jimple.v().newStaticFieldRef(sc.getFieldByName(newName).makeRef());
+		String kind = polyElements.get(field.getSignature());
+		if (kind == null || kind.equals("@Clear"))
+			return null;
+		else {
+			SootField newfield = new SootField(newName, field.getType(), field.getModifiers());
+			sc.addField(newfield);
+			return Jimple.v().newStaticFieldRef(newfield.makeRef());
 		}
 	}
 
-	private void processSenMethod(Body b) {
+	private FieldRef getInstanceFieldForSen(SootField field, FieldRef fieldRef) {
+		SootClass sc = field.getDeclaringClass();
+		String newName = field.getName() + "_Sen";
+		if (sc.declaresFieldByName(newName))
+			return Jimple.v().newInstanceFieldRef(((InstanceFieldRef) fieldRef).getBase(),
+					sc.getFieldByName(newName).makeRef());
+		String kind = polyElements.get(field.getSignature());
+		if (kind == null || kind.equals("@Clear"))
+			return null;
+		else {
+			SootField newfield = new SootField(newName, field.getType(), field.getModifiers());
+			sc.addField(newfield);
+			return Jimple.v().newInstanceFieldRef(((InstanceFieldRef) fieldRef).getBase(), newfield.makeRef());
+		}
+	}
+
+	private FieldRef getInstanceFieldForClear(SootField field, FieldRef fieldRef, SootMethod sm) {
+		Value base = (( InstanceFieldRef) fieldRef).getBase();
+		String kind = polyElements.get(sm.getSignature() + "@" + base.toString());
+		if (kind == null || kind.equals("@Clear"))
+			return null;
+		else {
+			return getInstanceFieldForSen(field, fieldRef);
+		}
+	}
+
+	private void processMethod(Body b, Boolean isClear) {
 		PatchingChain<Unit> units = b.getUnits();
 		for (Iterator<Unit> iter = units.snapshotIterator(); iter.hasNext();) {
 			Unit u = iter.next();
 			if (u instanceof AssignStmt) {
 				AssignStmt as = ( AssignStmt) u;
 				Value left = as.getLeftOp();
-				if (left instanceof InstanceFieldRef) {
-					SootField newf = processField(((FieldRef) left).getField());
-					if (newf != null) {
-						FieldRef newFieldRef = Jimple.v().newInstanceFieldRef(((InstanceFieldRef) left).getBase(),
-								newf.makeRef());
+				if (left instanceof FieldRef) {
+					FieldRef newFieldRef = processField((FieldRef) left, b.getMethod(), isClear);
+					if (newFieldRef != null)
 						as.setLeftOp(newFieldRef);
-					}
 				}
 				Value right = as.getRightOp();
-				if (right instanceof InstanceFieldRef) {
-					SootField newf = processField(((FieldRef) right).getField());
-					if (newf != null) {
-						FieldRef newFieldRef = Jimple.v().newInstanceFieldRef(((InstanceFieldRef) right).getBase(),
-								newf.makeRef());
+				if (right instanceof FieldRef) {
+					FieldRef newFieldRef = processField((FieldRef) right, b.getMethod(), isClear);
+					if (newFieldRef != null)
 						as.setRightOp(newFieldRef);
-					}
-				} else if (right instanceof VirtualInvokeExpr) {
-					processInvokeForSen(right);
+				} else if (right instanceof InvokeExpr) {
+					InvokeExpr invoke = processInvoke(b, isClear, (InvokeExpr) right);
+					if (invoke != null)
+						as.setRightOp(invoke);
 				}
 			} else if (u instanceof InvokeStmt) {
-				InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
-				if (expr instanceof VirtualInvokeExpr) {
-					processInvokeForSen(expr);
-				}
+				InvokeStmt is = (InvokeStmt) u;
+				InvokeExpr invoke = processInvoke(b, isClear, is.getInvokeExpr());
+				if (invoke != null)
+					is.setInvokeExpr(invoke);
 			}
 		}
 	}
 
-	private void processInvokeForSen(Value v) {
-		VirtualInvokeExpr expr = (VirtualInvokeExpr) v;
-		SootMethod method = expr.getMethod();
-		if (method.isJavaLibraryMethod())
-			return;
-		SootMethod senMethod = generateSenMethod(method);
-		if (senMethod == null)
-			return;
-		expr.setMethodRef(senMethod.makeRef());
+	private InvokeExpr processInvoke(Body b, Boolean isClear, InvokeExpr expr) {
+		InvokeExpr invoke = null;
+		if (expr instanceof InstanceInvokeExpr)
+			invoke = isClear ? getInstanceInvokeForClear((InstanceInvokeExpr) expr, b.getMethod())
+					: getInvokeForSen((InstanceInvokeExpr) expr);
+		else if (expr instanceof StaticInvokeExpr)
+			invoke = getStaticInvoke((StaticInvokeExpr) expr, b.getMethod());
+		return invoke;
 	}
 
-	private void processInvokeForClear(Value v, SootMethod sm) {
-		VirtualInvokeExpr expr = (VirtualInvokeExpr) v;
+	private InvokeExpr getInstanceInvokeForClear(InstanceInvokeExpr expr, SootMethod sm) {
 		Value base = expr.getBase();
 		String kind = polyElements.get(sm.getSignature() + "@" + base.toString());
-		if (kind == null)
-			return;
-		if (!kind.equals("@Clear")) {
-			processInvokeForSen(v);
+		if (kind == null || kind.equals("@Clear"))
+			return null;
+		return getInvokeForSen(expr);
+	}
+
+	private InvokeExpr getStaticInvoke(StaticInvokeExpr expr, SootMethod sm) {
+		for (Value arg : expr.getArgs()) {
+			String kind = polyElements.get(sm.getSignature() + "@" + arg.toString());
+			if (kind == null || kind.equals("@Clear"))
+				continue;
+			return getInvokeForSen(expr);
 		}
+		return null;
+	}
+
+	private InvokeExpr getInvokeForSen(InvokeExpr expr) {
+		SootMethod method = expr.getMethod();
+		if (method.isJavaLibraryMethod())
+			return null;
+		SootMethod senMethod = generateSenMethod(method);
+		if (senMethod == null)
+			return null;
+		if (expr instanceof SpecialInvokeExpr)
+			return getSpecialInvoke((InstanceInvokeExpr) expr, senMethod);
+		else if (expr instanceof InterfaceInvokeExpr)
+			return Jimple.v().newInterfaceInvokeExpr((Local) ((InstanceInvokeExpr) expr).getBase(), senMethod.makeRef(),
+					expr.getArgs());
+		else if (expr instanceof StaticInvokeExpr)
+			return Jimple.v().newStaticInvokeExpr(senMethod.makeRef(), expr.getArgs());
+		else
+			return Jimple.v().newVirtualInvokeExpr((Local) ((InstanceInvokeExpr) expr).getBase(), senMethod.makeRef(),
+					expr.getArgs());
+	}
+
+	private InvokeExpr getSpecialInvoke(InstanceInvokeExpr expr, SootMethod senMethod) {
+		List<Value> args = new ArrayList<>(expr.getArgs());
+		args.add(NullConstant.v());
+		return Jimple.v().newSpecialInvokeExpr((Local) expr.getBase(), senMethod.makeRef(), args);
 	}
 
 	private SootMethod copyMethod(Body b) {
@@ -143,10 +236,14 @@ public class TranslatorTransformer extends BodyTransformer {
 		String kind = polyElements.get(sm.toString());
 		if (kind == null || kind.equals("0"))
 			return null;
-		String senName = sm.getName() + "_Sen";
+		if (sm.isConstructor())
+			return generateSenConstructor(sm);
+		String name = sm.getName();
+		String senName = name + "_Sen";
+		String senSignature = sm.getSubSignature().replace(name, senName);
 		SootClass sc = sm.getDeclaringClass();
-		if (sc.declaresMethodByName(senName))
-			return sc.getMethodByName(senName);
+		if (sc.declaresMethod(senSignature))
+			return sc.getMethod(senSignature);
 		else {
 			SootMethod senMethod = new SootMethod(senName, sm.getParameterTypes(), sm.getReturnType(),
 					sm.getModifiers(), sm.getExceptions());
@@ -158,19 +255,22 @@ public class TranslatorTransformer extends BodyTransformer {
 		}
 	}
 
-	public SootField processField(SootField field) {
-		SootClass sc = field.getDeclaringClass();
-		String newName = field.getName() + "_Sen";
-		if (sc.declaresFieldByName(newName))
-			return sc.getFieldByName(newName);
-		String kind = polyElements.get(field.getSignature());
-		if (kind == null || kind.equals("@Clear"))
-			return null;
-		else if (kind.equals("@Poly")) {
-			SootField newfield = new SootField(newName, field.getType(), field.getModifiers());
-			sc.addField(newfield);
-			return newfield;
+	private SootMethod generateSenConstructor(SootMethod sm) {
+		String name = sm.getName();
+		List<Type> senParameterTypes = new ArrayList<>(sm.getParameterTypes());
+		senParameterTypes.add(RefType.v("java.lang.Object"));
+		SootClass sc = sm.getDeclaringClass();
+		if (sc.declaresMethod(name, senParameterTypes))
+			return sc.getMethod(name, senParameterTypes);
+		else {
+			SootMethod senMethod = new SootMethod(name, senParameterTypes, sm.getReturnType(), sm.getModifiers(),
+					sm.getExceptions());
+			sc.addMethod(senMethod);
+			JimpleBody body = Jimple.v().newBody(senMethod);
+			body.importBodyContentsFrom(sm.retrieveActiveBody());
+			senMethod.setActiveBody(body);
+			return senMethod;
 		}
-		return null;
 	}
+
 }

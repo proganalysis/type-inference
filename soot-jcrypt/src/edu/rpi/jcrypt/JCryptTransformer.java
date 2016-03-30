@@ -342,7 +342,7 @@ public class JCryptTransformer extends InferenceTransformer {
 	public void printPolyResult(PrintStream out) {
 		for (AnnotatedValue av : getAnnotatedValues().values()) {
 			if (av.getIdentifier().startsWith("callsite")) continue;
-			if (av.getKind() == Kind.FIELD || av.getKind() == Kind.LOCAL) {
+			if (av.getKind() == Kind.FIELD || av.getKind() == Kind.LOCAL || av.getKind() == Kind.THIS) {
 				SootClass sc = av.getEnclosingClass();
 				if (sc.isLibraryClass())
 					continue;
@@ -366,8 +366,8 @@ public class JCryptTransformer extends InferenceTransformer {
 				if (decl.getIdentifier().startsWith(InferenceTransformer.LIB_PREFIX))
 					continue;
 				String methodName = decl.getEnclosingMethod().toString();
-				if (methodName.contains("<init>()"))
-					continue;
+//				if (methodName.contains("<init>()"))
+//					continue;
 				boolean[] status = map.get(methodName);
 				AnnotatedValue callsite = ((MethodAdaptValue) annoValue).getContextValue();
 				Annotation anno = callsite.getAnnotations(this).iterator().next();
