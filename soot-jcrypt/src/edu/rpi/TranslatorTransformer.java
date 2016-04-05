@@ -16,6 +16,8 @@ import soot.jimple.JimpleBody;
 import soot.jimple.NullConstant;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StaticInvokeExpr;
+import soot.util.Chain;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -224,7 +226,7 @@ public class TranslatorTransformer extends BodyTransformer {
 
 	private InvokeExpr getSpecialInvoke(InstanceInvokeExpr expr, SootMethod senMethod) {
 		List<Value> args = new ArrayList<>(expr.getArgs());
-		args.add(NullConstant.v());
+		args.add(0, NullConstant.v());
 		return Jimple.v().newSpecialInvokeExpr((Local) expr.getBase(), senMethod.makeRef(), args);
 	}
 
@@ -258,7 +260,8 @@ public class TranslatorTransformer extends BodyTransformer {
 	private SootMethod generateSenConstructor(SootMethod sm) {
 		String name = sm.getName();
 		List<Type> senParameterTypes = new ArrayList<>(sm.getParameterTypes());
-		senParameterTypes.add(RefType.v("java.lang.Object"));
+		RefType refType = RefType.v("java.lang.Object");
+		senParameterTypes.add(0, refType);
 		SootClass sc = sm.getDeclaringClass();
 		if (sc.declaresMethod(name, senParameterTypes))
 			return sc.getMethod(name, senParameterTypes);
@@ -269,6 +272,10 @@ public class TranslatorTransformer extends BodyTransformer {
 			JimpleBody body = Jimple.v().newBody(senMethod);
 			body.importBodyContentsFrom(sm.retrieveActiveBody());
 			senMethod.setActiveBody(body);
+			Chain<Unit> units = body.getUnits();
+			Local arg = Jimple.v().newLocal("l0", refType);
+			body.getLocals().add(arg);
+			units.insertBefore(Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(refType, 0)), units.getFirst());
 			return senMethod;
 		}
 	}
