@@ -17,6 +17,8 @@
  */
 package vasco.soot;
 
+import java.io.File;
+import java.io.PrintStream;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,24 +38,31 @@ import vasco.DataFlowSolution;
 public class JCryptTest extends SceneTransformer {
 	
 	private JCryptAnalysis analysis;
-
+	private String dir = "/Users/yaodong/Documents/Projects/type-inference/trunk/soot-jcrypt/sootOutput";
 	
 	@Override
 	protected void internalTransform(String arg0, @SuppressWarnings("rawtypes") Map arg1) {
 		analysis = new JCryptAnalysis();
 		analysis.doAnalysis();
 		DataFlowSolution<Unit,Map<Object,Set<String>>> solution = analysis.getMeetOverValidPathsSolution();
-		System.out.println("----------------------------------------------------------------");
-		for (SootMethod sootMethod : analysis.getMethods()) {
-			System.out.println(sootMethod);
-			for (Unit unit : sootMethod.getActiveBody().getUnits()) {
-				System.out.println("----------------------------------------------------------------");
-				System.out.println(unit);
-				System.out.println("IN:  " + formatResults(solution.getValueBefore(unit)));
-				System.out.println("OUT: " + formatResults(solution.getValueAfter(unit)));
+		try {
+			PrintStream out = new PrintStream(dir + File.separator + "analysis-result.txt");
+			out.println("================================================================");
+			for (SootMethod sootMethod : analysis.getMethods()) {
+				if (!sootMethod.hasActiveBody()) continue;
+				out.println(sootMethod);
+				for (Unit unit : sootMethod.getActiveBody().getUnits()) {
+					out.println("----------------------------------------------------------------");
+					out.println(unit);
+					out.println("IN:  " + formatResults(solution.getValueBefore(unit)));
+					out.println("OUT: " + formatResults(solution.getValueAfter(unit)));
+				}
+				out.println("================================================================");
 			}
-			System.out.println("----------------------------------------------------------------");
-		}		
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static String formatResults(Map<Object, Set<String>> map) {
@@ -65,11 +74,11 @@ public class JCryptTest extends SceneTransformer {
 			Object local = entry.getKey();
 			Set<String> typeSet = entry.getValue();
 			if (typeSet != null) {
-				sb.append("(").append(local).append("=[");
+				sb.append("(").append(local).append("=[ ");
 				for (String type : typeSet) {
 					sb.append(type).append(" ");
 				}
-				sb.append(") ");
+				sb.append("]) ");
 			}
 		}
 		return sb.toString();
@@ -120,6 +129,7 @@ public class JCryptTest extends SceneTransformer {
 		JCryptTest cgt = new JCryptTest();
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.ccp", cgt));
 		soot.Main.main(sootArgs);
+		System.out.println("Number of conversions: " + JCryptAnalysis.count);
 	}
 	
 }

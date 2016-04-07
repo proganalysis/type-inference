@@ -17,11 +17,6 @@
  */
 package vasco.soot;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,35 +58,36 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 	
 	// An artificial local representing returned value of a procedure (used because a method can have multiple return statements).
 	private static final Local RETURN_LOCAL = new JimpleLocal("@return", null);
-	
-	private Set<String> senElements = new HashSet<>();
-	private String dir = "/Users/yaodong/Documents/Projects/type-inference/trunk/soot-jcrypt/sootOutput";
+	public static int count = 0;
+	//private Set<String> senElements = new HashSet<>();
+	//private Set<Object> visited = new HashSet<>();
+	//private String dir = "/Users/yaodong/Documents/Projects/type-inference/trunk/soot-jcrypt/sootOutput";
 	
 	// Simply constructs a forward flow inter-procedural analysis with the VERBOSE option set.
 	public JCryptAnalysis() {
 		super();
 		verbose = true;
-		readFile(dir + File.separator + "poly-result.txt");
+		//readFile(dir + File.separator + "poly-result.txt");
 	}
 	
-	private void readFile(String fileName) {
-		String line = null;
-		try {
-			BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
-
-			while ((line = bufferedReader.readLine()) != null) {
-				String type = bufferedReader.readLine();
-				if (type.equals("@Sensitive") || type.equals("@Poly"))
-					senElements.add(line);
-			}
-
-			bufferedReader.close();
-		} catch (FileNotFoundException ex) {
-			System.out.println("Unable to open file '" + fileName + "'");
-		} catch (IOException ex) {
-			System.out.println("Error reading file '" + fileName + "'");
-		}
-	}
+//	private void readFile(String fileName) {
+//		String line = null;
+//		try {
+//			BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
+//
+//			while ((line = bufferedReader.readLine()) != null) {
+//				String type = bufferedReader.readLine();
+//				if (type.equals("@Sensitive") || type.equals("@Poly"))
+//					senElements.add(line);
+//			}
+//
+//			bufferedReader.close();
+//		} catch (FileNotFoundException ex) {
+//			System.out.println("Unable to open file '" + fileName + "'");
+//		} catch (IOException ex) {
+//			System.out.println("Error reading file '" + fileName + "'");
+//		}
+//	}
 
 	
 	// Private utility method to assign the constant value of the RHS (if any) from the input map to  the LHS in the output map.
@@ -116,37 +112,56 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 //	}
 	
 	private void checkUsage(Map<Object, Set<String>> inValue, BinopExpr expr, String type) {
+		//if (!sm.getName().endsWith("_Sen") && !sm.isMain()) return;
 		Value leftOp = expr.getOp1();
 		Value rightOp = expr.getOp2();
-		if (!inValue.get(leftOp).contains(type))
+		if (!getTypeSet(inValue, leftOp).contains(type)) {
 			System.out.println("Need Conversion for " + leftOp.toString() + " " + type);
-		if (!inValue.get(rightOp).contains(type))
+			count++;
+		}
+		if (!getTypeSet(inValue, rightOp).contains(type)) {
 			System.out.println("Need Conversion for " + rightOp.toString() + " " + type);
+			count++;
+		}
+	}
+	
+	private Set<String> getTypeSet(Map<Object, Set<String>> fromSet, Object key) {
+		if (fromSet.containsKey(key))
+			return fromSet.get(key);
+		else {
+			Set<String> typeSet = new HashSet<>();
+			typeSet.add("AH");
+			typeSet.add("OPE");
+			typeSet.add("DET");
+			fromSet.put(key, typeSet);
+			return typeSet;
+		}
 	}
 
 	@Override
 	public Map<Object, Set<String>> normalFlowFunction(Context<SootMethod, Unit, Map<Object, Set<String>>> context, Unit unit, Map<Object, Set<String>> inValue) {
 		// Initialize result to input
 		Map<Object, Set<String>> outValue = copy(inValue);
-		String methodSignature = context.getMethod().getSignature();
+		SootMethod sm = context.getMethod();
+		if (!sm.getName().endsWith("_Sen")) return outValue;
 		// Only statements assigning locals matter
 		if (unit instanceof AssignStmt) {
 			// Get operands
 			Value lhsOp = ((AssignStmt) unit).getLeftOp();
 			Value rhsOp = ((AssignStmt) unit).getRightOp();
-			if (!senElements.contains(methodSignature + "@" + lhsOp.toString()))
-				return outValue;
+//			if (!senElements.contains(methodSignature + "@" + lhsOp.toString()))
+//				return outValue;
 			if (lhsOp instanceof FieldRef) { // x.f = y
 				SootField sf = ((FieldRef) lhsOp).getField();
-				if (!senElements.contains(sf.getSignature()))
-					return outValue;
-				Set<String> typeSet = new HashSet<>(inValue.get(sf));
-				typeSet.retainAll(inValue.get(rhsOp));
+//				if (!senElements.contains(sf.getSignature()))
+//					return outValue;
+				Set<String> typeSet = new HashSet<>(getTypeSet(inValue, sf));
+				typeSet.retainAll(getTypeSet(inValue, rhsOp));
 				outValue.put(sf, typeSet);
 			} else if (lhsOp instanceof Local) {
 				if (rhsOp instanceof FieldRef) { // x = y.f
 					SootField sf = ((FieldRef) rhsOp).getField();
-					Set<String> typeSet = new HashSet<>(inValue.get(sf));
+					Set<String> typeSet = new HashSet<>(getTypeSet(inValue, sf));
 					outValue.put(lhsOp, typeSet);
 				} else if (rhsOp instanceof BinopExpr) { // x = y + z
 					String symbol = ((BinopExpr) rhsOp).getSymbol();
@@ -164,9 +179,9 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 					case " << ":
 					case " >> ":
 					case " >>> ":
-					case " ^ ":
-					case " & ":
-					case " | ":
+//					case " ^ ":
+//					case " & ":
+//					case " | ":
 						typeSet = new HashSet<>();
 						typeSet.add("DET");
 						outValue.put(lhsOp, typeSet);
@@ -186,20 +201,19 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 						checkUsage(inValue, (BinopExpr) rhsOp, "OPE");
 					}
 				} else if (rhsOp instanceof Local) { // x = y
-					outValue.put(lhsOp, new HashSet<>(inValue.get(rhsOp)));
+					outValue.put(lhsOp, new HashSet<>(getTypeSet(inValue, rhsOp)));
 				}
 				//assign((Local) lhsOp, rhsOp, inValue, outValue);		
 			}
 		} else if (unit instanceof IfStmt) {
 			Value condition = ((IfStmt) unit).getCondition();
 			if (condition instanceof BinopExpr) {
-				Value lhsOp = ((BinopExpr) condition).getOp1();
-				Value rhsOp = ((BinopExpr) condition).getOp2();
-				if (senElements.contains(methodSignature + "@" + lhsOp.toString())) {
+				//Value lhsOp = ((BinopExpr) condition).getOp1();
+				//if (senElements.contains(methodSignature + "@" + lhsOp.toString())) {
 					switch (((BinopExpr) condition).getSymbol()) {
 					case " == ":
 					case " != ":
-						checkUsage(inValue, (BinopExpr) rhsOp, "DET");
+						checkUsage(inValue, (BinopExpr) condition, "DET");
 						break;
 					case " cmp ":
 					case " cmpg ":
@@ -208,14 +222,14 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 					case " > ":
 					case " >= ":
 					case " <= ":
-						checkUsage(inValue, (BinopExpr) rhsOp, "OPE");
+						checkUsage(inValue, (BinopExpr) condition, "OPE");
 					}
-				}
+				//}
 			}
 		} else if (unit instanceof ReturnStmt) {
 			// Get operand
 			Value rhsOp = ((ReturnStmt) unit).getOp();
-			Set<String> typeSet = new HashSet<>(inValue.get(rhsOp));
+			Set<String> typeSet = new HashSet<>(getTypeSet(inValue, rhsOp));
 			outValue.put(RETURN_LOCAL, typeSet);
 			//assign(RETURN_LOCAL, rhsOp, inValue, outValue);
 		}
@@ -227,6 +241,9 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 	public Map<Object, Set<String>> callEntryFlowFunction(Context<SootMethod, Unit, Map<Object, Set<String>>> context, SootMethod calledMethod, Unit unit, Map<Object, Set<String>> inValue) {
 		// Initialise result to empty map
 		Map<Object, Set<String>> entryValue = topValue();
+		if (!calledMethod.getName().endsWith("_Sen")) return entryValue;
+//		if (calledMethod.isJavaLibraryMethod())
+//			return entryValue;
 		// Map arguments to parameters
 		InvokeExpr ie = ((Stmt) unit).getInvokeExpr();
 //		if (!senElements.contains(ie.getMethod().getSignature()))
@@ -234,8 +251,8 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 		for (int i = 0; i < ie.getArgCount(); i++) {
 			Value arg = ie.getArg(i);
 			Local param = calledMethod.getActiveBody().getParameterLocal(i);
-			Set<String> typeSet = new HashSet<>(inValue.get(param));
-			typeSet.retainAll(inValue.get(arg));
+			Set<String> typeSet = new HashSet<>(getTypeSet(inValue, param));
+			typeSet.retainAll(getTypeSet(inValue, arg));
 			entryValue.put(param, typeSet);
 			//assign(param, arg, inValue, entryValue);
 		}
@@ -253,6 +270,7 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 	public Map<Object, Set<String>> callExitFlowFunction(Context<SootMethod, Unit, Map<Object, Set<String>>> context, SootMethod calledMethod, Unit unit, Map<Object, Set<String>> exitValue) {
 		// Initialise result to an empty value
 		Map<Object, Set<String>> afterCallValue = topValue();
+		if (!calledMethod.getName().endsWith("_Sen")) return afterCallValue;
 		// Only propagate constants for return values
 		if (unit instanceof AssignStmt) {
 			Value lhsOp = ((AssignStmt) unit).getLeftOp();
@@ -268,6 +286,8 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 	public Map<Object, Set<String>> callLocalFlowFunction(Context<SootMethod, Unit, Map<Object, Set<String>>> context, Unit unit, Map<Object, Set<String>> inValue) {
 		// Initialise result to the input
 		Map<Object, Set<String>> afterCallValue = copy(inValue);
+		SootMethod sm = context.getMethod();
+		if (!sm.getName().endsWith("_Sen")) return afterCallValue;
 		// Remove information for return value (as it's value will flow from the call)
 		if (unit instanceof AssignStmt) {
 			Value lhsOp = ((AssignStmt) unit).getLeftOp();

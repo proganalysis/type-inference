@@ -226,7 +226,7 @@ public class TranslatorTransformer extends BodyTransformer {
 
 	private InvokeExpr getSpecialInvoke(InstanceInvokeExpr expr, SootMethod senMethod) {
 		List<Value> args = new ArrayList<>(expr.getArgs());
-		args.add(0, NullConstant.v());
+		args.add(NullConstant.v());
 		return Jimple.v().newSpecialInvokeExpr((Local) expr.getBase(), senMethod.makeRef(), args);
 	}
 
@@ -260,8 +260,9 @@ public class TranslatorTransformer extends BodyTransformer {
 	private SootMethod generateSenConstructor(SootMethod sm) {
 		String name = sm.getName();
 		List<Type> senParameterTypes = new ArrayList<>(sm.getParameterTypes());
+		int numOfPar = senParameterTypes.size();
 		RefType refType = RefType.v("java.lang.Object");
-		senParameterTypes.add(0, refType);
+		senParameterTypes.add(refType);
 		SootClass sc = sm.getDeclaringClass();
 		if (sc.declaresMethod(name, senParameterTypes))
 			return sc.getMethod(name, senParameterTypes);
@@ -275,7 +276,7 @@ public class TranslatorTransformer extends BodyTransformer {
 			Chain<Unit> units = body.getUnits();
 			Local arg = Jimple.v().newLocal("l0", refType);
 			body.getLocals().add(arg);
-			units.insertBefore(Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(refType, 0)), units.getFirst());
+			units.insertBefore(Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(refType, numOfPar)), units.getFirst());
 			return senMethod;
 		}
 	}
