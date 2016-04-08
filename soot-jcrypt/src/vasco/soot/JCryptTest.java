@@ -29,6 +29,7 @@ import soot.SootMethod;
 import soot.Transform;
 import soot.Unit;
 import vasco.DataFlowSolution;
+import vasco.soot.JCryptAnalysis.EnType;
 
 /**
  * A Soot {@link SceneTransformer} for performing {@link JCryptAnalysis}.
@@ -44,7 +45,7 @@ public class JCryptTest extends SceneTransformer {
 	protected void internalTransform(String arg0, @SuppressWarnings("rawtypes") Map arg1) {
 		analysis = new JCryptAnalysis();
 		analysis.doAnalysis();
-		DataFlowSolution<Unit,Map<Object,Set<String>>> solution = analysis.getMeetOverValidPathsSolution();
+		DataFlowSolution<Unit,Map<Object,Set<EnType>>> solution = analysis.getMeetOverValidPathsSolution();
 		try {
 			PrintStream out = new PrintStream(dir + File.separator + "analysis-result.txt");
 			out.println("================================================================");
@@ -65,17 +66,17 @@ public class JCryptTest extends SceneTransformer {
 		}
 	}
 	
-	public static String formatResults(Map<Object, Set<String>> map) {
+	public static String formatResults(Map<Object, Set<EnType>> map) {
 		if (map == null) {
 			return "";
 		}
 		StringBuffer sb = new StringBuffer();
-		for (Entry<Object, Set<String>> entry : map.entrySet()) {
+		for (Entry<Object, Set<EnType>> entry : map.entrySet()) {
 			Object local = entry.getKey();
-			Set<String> typeSet = entry.getValue();
+			Set<EnType> typeSet = entry.getValue();
 			if (typeSet != null) {
 				sb.append("(").append(local).append("=[ ");
-				for (String type : typeSet) {
+				for (EnType type : typeSet) {
 					sb.append(type).append(" ");
 				}
 				sb.append("]) ");
@@ -130,6 +131,7 @@ public class JCryptTest extends SceneTransformer {
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.ccp", cgt));
 		soot.Main.main(sootArgs);
 		System.out.println("Number of conversions: " + JCryptAnalysis.count);
+		//System.out.println("Fields: " + formatResults(JCryptAnalysis.fieldValue));
 	}
 	
 }

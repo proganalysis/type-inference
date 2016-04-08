@@ -5,9 +5,9 @@ public class Sample {
 	public static void main(String[] args) {
 		Data ds = new Data();
 		int s = getInitial();
-		ds.set(s);
+		ds.set(s+1);
+		//ds.set(s);
 		int ss = ds.get();
-		
 		Data dc = new Data();
 		int c = -3;
 		dc.set(c);;
