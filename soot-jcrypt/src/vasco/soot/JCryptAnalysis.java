@@ -120,11 +120,11 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 		Value leftOp = expr.getOp1();
 		Value rightOp = expr.getOp2();
 		if (!getValueSet(outValue, leftOp).contains(type)) {
-			System.out.println("Need Conversion for " + leftOp.toString() + " " + type);
+			System.out.println("Need Conversion for " + leftOp.toString() + " " + type + " at " + expr);
 			count++;
 		}
 		if (!getValueSet(outValue, rightOp).contains(type)) {
-			System.out.println("Need Conversion for " + rightOp.toString() + " " + type);
+			System.out.println("Need Conversion for " + rightOp.toString() + " " + type + " at " + expr);
 			count++;
 		}
 	}
@@ -137,11 +137,11 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 		return typeSet;
 	}
 	
-	private Set<EnType> getFieldSet(SootField sf) {
-		if (!fieldValue.containsKey(sf))
-			fieldValue.put(sf, initialSet());
-		return fieldValue.get(sf);
-	}
+//	private Set<EnType> getFieldSet(SootField sf) {
+//		if (!fieldValue.containsKey(sf))
+//			fieldValue.put(sf, initialSet());
+//		return fieldValue.get(sf);
+//	}
 	
 	public Set<EnType> getValueSet(Map<Object, Set<EnType>> outValue, Object op) {
 		if (!outValue.containsKey(op))
@@ -164,13 +164,14 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 //				return outValue;
 			if (lhsOp instanceof FieldRef) { // x.f = y
 				SootField sf = ((FieldRef) lhsOp).getField();
-				Set<EnType> fieldSet = getFieldSet(sf);
+				Set<EnType> fieldSet = getValueSet(outValue, sf);
 				Set<EnType> rhsSet = getValueSet(outValue, rhsOp);
 				fieldSet.retainAll(rhsSet);
+				outValue.put(sf, new HashSet<>(fieldSet));
 			} else if (lhsOp instanceof Local) {
 				if (rhsOp instanceof FieldRef) { // x = y.f
 					SootField sf = ((FieldRef) rhsOp).getField();
-					Set<EnType> fieldSet = getFieldSet(sf);
+					Set<EnType> fieldSet = getValueSet(outValue, sf);
 					outValue.put(lhsOp, new HashSet<>(fieldSet));
 					//outValue.put(lhsOp, fieldSet);
 				} else if (rhsOp instanceof BinopExpr) { // x = y + z
@@ -211,6 +212,7 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 						checkUsage(outValue, (BinopExpr) rhsOp, EnType.OPE);
 					}
 				} else if (rhsOp instanceof Local) { // x = y
+					//if (outValue.containsKey(rhsOp))
 					outValue.put(lhsOp, new HashSet<>(getValueSet(outValue, rhsOp)));
 				}
 				//assign((Local) lhsOp, rhsOp, inValue, outValue);
@@ -239,7 +241,7 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 		} else if (unit instanceof ReturnStmt) {
 			// Get operand
 			Value rhsOp = ((ReturnStmt) unit).getOp();
-			Set<EnType> typeSet = new HashSet<>(getValueSet(outValue, rhsOp));
+			Set<EnType> typeSet = new HashSet<>(outValue.get(rhsOp));
 			outValue.put(RETURN_LOCAL, typeSet);
 			//assign(RETURN_LOCAL, rhsOp, inValue, outValue);
 		}
@@ -250,9 +252,15 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 	@Override
 	public Map<Object, Set<EnType>> callEntryFlowFunction(Context<SootMethod, Unit, Map<Object, Set<EnType>>> context, SootMethod calledMethod, Unit unit, Map<Object, Set<EnType>> inValue) {
 		// Initialise result to empty map
-		//Map<Object, Set<EnType>> entryValue = topValue();
-		Map<Object, Set<EnType>> entryValue = copy(fieldValue);
-		if (!calledMethod.getName().endsWith("_Sen")) return topValue();
+		Map<Object, Set<EnType>> entryValue = copy(inValue);
+		for (Local local : calledMethod.getActiveBody().getLocals()) {
+			getValueSet(entryValue, local);
+		}
+		if (!calledMethod.getName().endsWith("_Sen")) return entryValue;
+//		for (SootField sf : calledMethod.getDeclaringClass().getFields()) {
+//			if (sf.getName().endsWith("_Sen") && fieldValue.containsKey(sf))
+//				entryValue.put(sf, fieldValue.get(sf));
+//		}
 //		if (calledMethod.isJavaLibraryMethod())
 //			return entryValue;
 		// Map arguments to parameters
@@ -262,9 +270,12 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 		for (int i = 0; i < ie.getArgCount(); i++) {
 			Value arg = ie.getArg(i);
 			Local param = calledMethod.getActiveBody().getParameterLocal(i);
-			//Set<EnType> typeSet = new HashSet<>(getValueSet(inValue, param));
-			//typeSet.retainAll(getValueSet(inValue, arg));
-			entryValue.put(param, new HashSet<>(getValueSet(inValue, arg)));
+			Set<EnType> typeSet = getValueSet(entryValue, param);
+//			System.out.println("Method " + calledMethod);
+//			System.out.println("Arg: " + arg + "\n" + "Param: " + param + "\n");
+//			System.out.println("Set: " + typeSet);
+			typeSet.retainAll(getValueSet(entryValue, arg));
+			entryValue.put(param, new HashSet<>(typeSet));
 			//assign(param, arg, inValue, entryValue);
 		}
 		// And instance of the this local
@@ -273,6 +284,7 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 //			Local thisLocal = calledMethod.getActiveBody().getThisLocal();
 //			assign(thisLocal, instance, inValue, entryValue);
 //		}
+		//System.out.println(entryValue.size());
 		// Return the entry value at the called method
 		return entryValue;
 	}
@@ -280,8 +292,12 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 	@Override
 	public Map<Object, Set<EnType>> callExitFlowFunction(Context<SootMethod, Unit, Map<Object, Set<EnType>>> context, SootMethod calledMethod, Unit unit, Map<Object, Set<EnType>> exitValue) {
 		// Initialise result to an empty value
-		Map<Object, Set<EnType>> afterCallValue = topValue();
+		Map<Object, Set<EnType>> afterCallValue = copy(exitValue);
 		if (!calledMethod.getName().endsWith("_Sen")) return afterCallValue;
+//		for (SootField sf : calledMethod.getDeclaringClass().getFields()) {
+//			if (sf.getName().endsWith("_Sen"))
+//				afterCallValue.put(sf, getFieldSet(sf));
+//		}
 		// Only propagate constants for return values
 		if (unit instanceof AssignStmt) {
 			Value lhsOp = ((AssignStmt) unit).getLeftOp();
@@ -310,7 +326,14 @@ public class JCryptAnalysis extends ForwardInterProceduralAnalysis<SootMethod, U
 	
 	@Override
 	public Map<Object, Set<EnType>> boundaryValue(SootMethod method) {
-		return topValue();
+		Map<Object, Set<EnType>> value = topValue();
+		for (Local local : method.getActiveBody().getLocals()) {
+			value.put(local, initialSet());
+		}
+		for (SootField sf : method.getDeclaringClass().getFields()) {
+			value.put(sf, initialSet());
+		}
+		return value;
 	}
 
 	@Override
