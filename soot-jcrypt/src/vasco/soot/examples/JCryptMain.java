@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package vasco.soot;
+package vasco.soot.examples;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -26,28 +26,29 @@ import java.util.Set;
 import soot.PackManager;
 import soot.SceneTransformer;
 import soot.SootMethod;
+import soot.SourceLocator;
 import soot.Transform;
 import soot.Unit;
 import vasco.DataFlowSolution;
-import vasco.soot.JCryptAnalysis.EnType;
+import vasco.soot.examples.JCryptAnalysis.EnType;
 
 /**
  * A Soot {@link SceneTransformer} for performing {@link JCryptAnalysis}.
  * 
  * @author Rohan Padhye
  */
-public class JCryptTest extends SceneTransformer {
+public class JCryptMain extends SceneTransformer {
 	
 	private JCryptAnalysis analysis;
-	private String dir = "/Users/yaodong/Documents/Projects/type-inference/trunk/soot-jcrypt/sootOutput";
+	private static String outputDir = null;
 	
 	@Override
 	protected void internalTransform(String arg0, @SuppressWarnings("rawtypes") Map arg1) {
-		analysis = new JCryptAnalysis();
+		analysis = new JCryptAnalysis(outputDir);
 		analysis.doAnalysis();
 		DataFlowSolution<Unit,Map<Object,Set<EnType>>> solution = analysis.getMeetOverValidPathsSolution();
 		try {
-			PrintStream out = new PrintStream(dir + File.separator + "analysis-result.txt");
+			PrintStream out = new PrintStream(outputDir + File.separator + "analysis-result.txt");
 			out.println("================================================================");
 			for (SootMethod sootMethod : analysis.getMethods()) {
 				if (!sootMethod.hasActiveBody()) continue;
@@ -92,6 +93,7 @@ public class JCryptTest extends SceneTransformer {
 	public static void main(String args[]) {
 		String classPath = ".";		
 		String mainClass = null;
+		outputDir = SourceLocator.v().getOutputDir();
 		
 		/* ------------------- OPTIONS ---------------------- */
 		try {
@@ -99,6 +101,9 @@ public class JCryptTest extends SceneTransformer {
 			while(true){
 				if (args[i].equals("-cp")) {
 					classPath = args[i+1];
+					i += 2;
+				} else if (args[i].equals("-d")) {
+					outputDir = args[i+1];
 					i += 2;
 				} else {
 					mainClass = args[i];
@@ -109,7 +114,7 @@ public class JCryptTest extends SceneTransformer {
 			if (i != args.length || mainClass == null)
 				throw new Exception();
 		} catch (Exception e) {
-			System.err.println("Usage: java vasco.soot.examples.JCryptTest [-cp CLASSPATH] MAIN_CLASS");
+			System.err.println("Usage: java vasco.soot.examples.JCryptMain [-cp CLASSPATH] [-d OUTPUTDIR] MAIN_CLASS");
 			System.exit(1);
 		}
 		
@@ -125,13 +130,13 @@ public class JCryptTest extends SceneTransformer {
 				"-p", "cg", "safe-forname",
 				"-p", "cg", "safe-newinstance",
 				"-main-class", mainClass,
-				"-f", "none", mainClass 
+				"-f", "none", mainClass,
+				"-d", outputDir
 		};
-		JCryptTest cgt = new JCryptTest();
+		JCryptMain cgt = new JCryptMain();
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.ccp", cgt));
 		soot.Main.main(sootArgs);
 		System.out.println("Number of conversions: " + JCryptAnalysis.count);
-		//System.out.println("Fields: " + formatResults(JCryptAnalysis.fieldValue));
 	}
 	
 }

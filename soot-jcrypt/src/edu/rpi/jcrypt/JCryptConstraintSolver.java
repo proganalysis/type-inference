@@ -567,7 +567,7 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 			} catch (SolverException e) {
 			}
 		}
-		System.out.println("Total restore number: " + restoreCounter);
+		info(this.getClass().getSimpleName(), "Total restore number: " + restoreCounter);
 		info(this.getClass().getSimpleName(), "Finish solving JCrypt constraints. " + conflictConstraints.size() + " error(s)");
 
 		return conflictConstraints;

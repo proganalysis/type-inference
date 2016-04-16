@@ -111,7 +111,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
         DB_NAME = SourceLocator.v().getOutputDir() + File.separator + t.getName() + "-traces.sqlite";
         DB_SCRIPT = SourceLocator.v().getOutputDir() + File.separator + t.getName() + "-traces.sql";
         tFactory =  Executors.defaultThreadFactory();
-        System.out.println("INFO: needTrace = " + needTrace);
+        //System.out.println("INFO: needTrace = " + needTrace);
     }
 
     public Constraint getCurrentConstraint() {
@@ -473,7 +473,7 @@ public abstract class AbstractConstraintSolver implements ConstraintSolver {
 
     private void endLog() {
         try {
-            System.out.println("INFO: Finished solving. Waiting for log worker thread...");
+        	info(this.getClass().getSimpleName(), "Finished solving. Waiting for log worker thread...");
             stop = true;
             worker.join();
             out.close();    

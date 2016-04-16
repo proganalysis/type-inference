@@ -6,7 +6,6 @@ import java.util.Set;
 import java.io.PrintStream;
 import java.io.File;
 
-import soot.Main;
 import soot.PackManager;
 import soot.SourceLocator;
 import soot.Transform;
@@ -23,23 +22,49 @@ public class SootInferenceJCrypt {
 
 		InferenceTransformer reimTransformer = new ReimTransformer();
 		InferenceTransformer jcryptTransformer = new JCryptTransformer();
-		// JCryptTranslator translator = new
-		// JCryptTranslator(jcryptTransformer);
 		PackManager.v().getPack("jtp").add(new Transform("jtp.reim", reimTransformer));
 		PackManager.v().getPack("jtp").add(new Transform("jtp.jcrypt", jcryptTransformer));
-		// PackManager.v().getPack("jtp").add(new Transform("jtp.translator",
-		// translator));
 
-		Main.main(args);
+		String classPath = ".";		
+		String mainClass = null;
+		String outputDir = SourceLocator.v().getOutputDir();
+		
+		/* ------------------- OPTIONS ---------------------- */
+		try {
+			int i=0;
+			while(true){
+				if (args[i].equals("-cp")) {
+					classPath = args[i+1];
+					i += 2;
+				} else if (args[i].equals("-d")) {
+					outputDir = args[i+1];
+					i += 2;
+				} else {
+					mainClass = args[i];
+					i++;
+					break;
+				}
+			}
+			if (i != args.length || mainClass == null)
+				throw new Exception();
+		} catch (Exception e) {
+			System.err.println("Usage: java edu.rpi.SootInferenceJCrypt [-cp CLASSPATH] [-d OUTPUTDIR] MAIN_CLASS");
+			System.exit(1);
+		}
+		
+		String[] sootArgs = {
+				"-cp", classPath,
+				"-app", "-src-prec", "java",
+				"-f", "J", mainClass,
+				"-d", outputDir
+		};
+		
+		soot.Main.main(sootArgs);
 
 		info(String.format("%6s: %14d", "size", AnnotatedValueMap.v().size()));
 		info(String.format("%6s: %14f MB", "free", ((float) Runtime.getRuntime().freeMemory()) / (1024 * 1024)));
 		info(String.format("%6s: %14f MB", "total", ((float) Runtime.getRuntime().totalMemory()) / (1024 * 1024)));
 
-		String outputDir = SourceLocator.v().getOutputDir();
-
-		//System.out.println(
-		//		"INFO: Solving Reim constraints:  " + reimTransformer.getConstraints().size() + " in total...");
 		ConstraintSolver cs = new SetbasedSolver(reimTransformer, false);
 		Set<Constraint> errors = cs.solve();
 		try {
@@ -53,18 +78,14 @@ public class SootInferenceJCrypt {
 		}
 		for (Constraint c : errors)
 			System.out.println(c);
-		//System.out.println("INFO: Finish solving Reim constraints. " + errors.size() + " error(s)");
 
 		try {
 			PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-result.jaif");
 			reimTransformer.printJaif(reimOut);
-			// reimTransformer.clear();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		//System.out.println(
-		//		"INFO: Solving JCrypt constraints:  " + jcryptTransformer.getConstraints().size() + " in total...");
 		ConstraintSolver jcryptSolver = new JCryptConstraintSolver(jcryptTransformer);
 		errors = jcryptSolver.solve();
 		try {
@@ -81,11 +102,8 @@ public class SootInferenceJCrypt {
 		System.out.println();
 		for (Constraint c : errors)
 			System.out.println(c + "\n");
-		//System.out.println("INFO: Finish solving JCrypt constraints. " + errors.size() + " error(s)");
-		info(jcryptTransformer.getName(), "Extracting a concete typing...");
 		TypingExtractor extractor = new MaximalTypingExtractor(jcryptTransformer, jcryptSolver);
 		List<Constraint> typeErrors = extractor.extract();
-		info(jcryptTransformer.getName(), "Finish extracting typing.");
 		if (!typeErrors.isEmpty()) {
 			for (Constraint c : typeErrors)
 				System.out.println(c);
@@ -105,42 +123,7 @@ public class SootInferenceJCrypt {
 			e.printStackTrace();
 		}
 
-		// JCryptTranslator translator = new
-		// JCryptTranslator((JCryptTransformer) jcryptTransformer);
-		// translator.processFields();
-		// for (SootClass sClass : translator.getTranslatedClasses().values()) {
-		// String fileName = SourceLocator.v().getFileNameFor(sClass,
-		// Options.output_format_jimple);
-		// OutputStream streamOut;
-		// try {
-		// streamOut = new FileOutputStream(fileName);
-		// PrintWriter writerOut = new PrintWriter(new
-		// OutputStreamWriter(streamOut));
-		// Printer.v().printTo(sClass, writerOut);
-		// writerOut.flush();
-		// streamOut.close();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// }
-
 		System.out.println("INFO: Annotated value size: " + AnnotatedValueMap.v().size());
-//		JCryptTranslator translator = new JCryptTranslator(jcryptTransformer);
-//		PackManager.v().getPack("jtp").add(new Transform("jtp.translator", translator));
-//		int len = args.length;
-//		String[] newargs = new String[len - 2];
-//		int j = 0;
-//		for (int i = 0; i < len; i++) {
-//			if (args[i].equals("-cp")) {
-//				i++;
-//			} else {
-//				newargs[j++] = args[i];
-//			}
-//		}
-//		soot.Main.main(newargs);
-		
-		//main = new G().soot_Main();
-		//main.run(newargs);
 
 		long endTime = System.currentTimeMillis();
 		System.out.println("INFO: Total running time: " + ((float) (endTime - startTime) / 1000) + " sec");

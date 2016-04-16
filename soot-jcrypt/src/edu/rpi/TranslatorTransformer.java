@@ -66,35 +66,6 @@ public class TranslatorTransformer extends BodyTransformer {
 		}
 	}
 
-	// private void processClearMethod(Body b) {
-	// Chain<Unit> units = b.getUnits();
-	// for (Iterator<Unit> iter = units.snapshotIterator(); iter.hasNext();) {
-	// Unit u = iter.next();
-	// InvokeExpr invoke = null;
-	// if (u instanceof AssignStmt) {
-	// AssignStmt as = (AssignStmt) u;
-	// Value right = as.getRightOp();
-	// if (right instanceof InstanceInvokeExpr)
-	// invoke = getInstanceInvokeForClear((InstanceInvokeExpr) right,
-	// b.getMethod());
-	// else if (right instanceof StaticInvokeExpr)
-	// invoke = getStaticInvoke((StaticInvokeExpr) right, b.getMethod());
-	// if (invoke != null)
-	// as.setRightOp(invoke);
-	// } else if (u instanceof InvokeStmt) {
-	// InvokeStmt is = (InvokeStmt) u;
-	// InvokeExpr expr = is.getInvokeExpr();
-	// if (expr instanceof InstanceInvokeExpr)
-	// invoke = getInstanceInvokeForClear((InstanceInvokeExpr) expr,
-	// b.getMethod());
-	// else if (expr instanceof StaticInvokeExpr)
-	// invoke = getStaticInvoke((StaticInvokeExpr) expr, b.getMethod());
-	// if (invoke != null)
-	// is.setInvokeExpr(invoke);
-	// }
-	// }
-	// }
-
 	private FieldRef processField(FieldRef fieldRef, SootMethod sm, boolean isClear) {
 		SootField field = fieldRef.getField();
 		if (field.isStatic())
@@ -250,6 +221,7 @@ public class TranslatorTransformer extends BodyTransformer {
 			SootMethod senMethod = new SootMethod(senName, sm.getParameterTypes(), sm.getReturnType(),
 					sm.getModifiers(), sm.getExceptions());
 			sc.addMethod(senMethod);
+			if (sm.isAbstract()) return senMethod;
 			JimpleBody body = Jimple.v().newBody(senMethod);
 			body.importBodyContentsFrom(sm.retrieveActiveBody());
 			senMethod.setActiveBody(body);
