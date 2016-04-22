@@ -1,7 +1,9 @@
 #!/bin/bash 
 
 #command:
-#sh soot-jcrypt -cp ../tests -main sample.Sample -d ../sootOutput/sample
+#sh soot-jcrypt -cp ../tests -main sample.Sample -d ../output/sample
+
+start=`date +%s`
 
 mydir="`dirname $0`"
 mylib=`find $mydir/../lib -name '*.jar' | xargs |sed 's/ /:/g'`
@@ -24,10 +26,35 @@ do
     -cp ) sootClasspath=$sootClasspath:"`echo $1`"
     shift
     ;;
-    -d ) outputDir=$outputDir" `echo $1`"" "
+    -d ) outputDir=$outputDir"`echo $1`"
   esac
 done
-                                                          
-echo "java -cp $mylib $mainClass -cp $sootClasspath $outputDir $appMainClass"
+
+echo
+echo "-------- Phase 1: Type Inference --------"
+echo
+echo "java -cp $mylib $mainClass -cp $sootClasspath -d $outputDir $appMainClass"
 
 java -cp $mylib $mainClass -cp $sootClasspath -d $outputDir $appMainClass
+
+mainClass="edu.rpi.TranslatorMain"
+
+echo
+echo "-------- Code Generation --------"
+echo
+echo "java -cp $mylib $mainClass -cp $sootClasspath -d $outputDir $appMainClass"
+
+java -cp $mylib $mainClass -cp $sootClasspath -d $outputDir $appMainClass
+
+mainClass="vasco.soot.examples.JCryptMain"
+
+echo
+echo "-------- Phase 2: AE Analysis --------"
+echo
+echo "java -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass"
+
+java -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass > $outputDir/conversion-result.txt
+
+end=`date +%s`
+
+echo "Total Time is $((end-start)) s."

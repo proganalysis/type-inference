@@ -68,7 +68,7 @@ public class JCryptAnalysis
 	// An artificial local representing returned value of a procedure (used
 	// because a method can have multiple return statements).
 	private static final Local RETURN_LOCAL = new JimpleLocal("@return", null);
-	public static int count = 0;
+	protected static Set<String> conversions = new HashSet<>();
 	public static Map<Object, Set<EnType>> fieldValue = new HashMap<>();
 	private Set<String> senElements = new HashSet<>();
 
@@ -101,16 +101,14 @@ public class JCryptAnalysis
 		}
 	}
 
-	private void checkUsage(Map<Object, Set<EnType>> outValue, BinopExpr expr, EnType type) {
+	private void checkUsage(Map<Object, Set<EnType>> outValue, BinopExpr expr, EnType type, String method) {
 		Value leftOp = expr.getOp1();
 		Value rightOp = expr.getOp2();
 		if (!getValueSet(outValue, leftOp).contains(type)) {
-			System.out.println("Need Conversion for " + leftOp.toString() + " " + type + " at " + expr);
-			count++;
+			conversions.add(leftOp + ": " + expr + " at " + method);
 		}
 		if (!getValueSet(outValue, rightOp).contains(type)) {
-			System.out.println("Need Conversion for " + rightOp.toString() + " " + type + " at " + expr);
-			count++;
+			conversions.add(rightOp + ": " + expr + " at " + method);
 		}
 	}
 
@@ -149,8 +147,15 @@ public class JCryptAnalysis
 				fieldSet.retainAll(rhsSet);
 				outValue.put(sf, new HashSet<>(fieldSet));
 			} else if (lhsOp instanceof Local) {
-				if (!senElements.contains(smOriginalSig + "@" + lhsOp.toString()))
-					return outValue;
+				if (!senElements.contains(smOriginalSig + "@" + lhsOp.toString())) {
+					// x = a < b, if a is sensitive, we have to check if OPE is available
+					if (rhsOp instanceof BinopExpr) {
+						Value lhs = ((BinopExpr) rhsOp).getOp1();
+						if (!senElements.contains(smOriginalSig + "@" + lhs.toString()))
+							return outValue;
+						checkUsageForCondition(outValue, sm, rhsOp);
+					} else return outValue;
+				}
 				if (rhsOp instanceof FieldRef) { // x = y.f
 					SootField sf = ((FieldRef) rhsOp).getField();
 					Set<EnType> fieldSet = getValueSet(outValue, sf);
@@ -163,7 +168,7 @@ public class JCryptAnalysis
 						Set<EnType> typeSet = new HashSet<>();
 						typeSet.add(EnType.AH);
 						outValue.put(lhsOp, typeSet);
-						checkUsage(outValue, (BinopExpr) rhsOp, EnType.AH);
+						checkUsage(outValue, (BinopExpr) rhsOp, EnType.AH, sm.getSignature());
 						break;
 					case " * ":
 					case " / ":
@@ -174,11 +179,11 @@ public class JCryptAnalysis
 						typeSet = new HashSet<>();
 						typeSet.add(EnType.DET);
 						outValue.put(lhsOp, typeSet);
-						checkUsage(outValue, (BinopExpr) rhsOp, EnType.DET);
+						checkUsage(outValue, (BinopExpr) rhsOp, EnType.DET, sm.getSignature());
 						break;
 					case " == ":
 					case " != ":
-						checkUsage(outValue, (BinopExpr) rhsOp, EnType.DET);
+						checkUsage(outValue, (BinopExpr) rhsOp, EnType.DET, sm.getSignature());
 						break;
 					case " cmp ":
 					case " cmpg ":
@@ -187,7 +192,7 @@ public class JCryptAnalysis
 					case " > ":
 					case " >= ":
 					case " <= ":
-						checkUsage(outValue, (BinopExpr) rhsOp, EnType.OPE);
+						checkUsage(outValue, (BinopExpr) rhsOp, EnType.OPE, sm.getSignature());
 					}
 				} else if (rhsOp instanceof Local) { // x = y
 					outValue.put(lhsOp, new HashSet<>(getValueSet(outValue, rhsOp)));
@@ -199,20 +204,7 @@ public class JCryptAnalysis
 				Value lhsOp = ((BinopExpr) condition).getOp1();
 				if (!senElements.contains(smOriginalSig + "@" + lhsOp.toString()))
 					return outValue;
-				switch (((BinopExpr) condition).getSymbol()) {
-				case " == ":
-				case " != ":
-					checkUsage(outValue, (BinopExpr) condition, EnType.DET);
-					break;
-				case " cmp ":
-				case " cmpg ":
-				case " cmpl ":
-				case " < ":
-				case " > ":
-				case " >= ":
-				case " <= ":
-					checkUsage(outValue, (BinopExpr) condition, EnType.OPE);
-				}
+				checkUsageForCondition(outValue, sm, condition);
 			}
 		} else if (unit instanceof ReturnStmt) {
 			// Get operand
@@ -222,6 +214,23 @@ public class JCryptAnalysis
 		}
 		// Return the data flow value at the OUT of the statement
 		return outValue;
+	}
+
+	private void checkUsageForCondition(Map<Object, Set<EnType>> outValue, SootMethod sm, Value condition) {
+		switch (((BinopExpr) condition).getSymbol()) {
+		case " == ":
+		case " != ":
+			checkUsage(outValue, (BinopExpr) condition, EnType.DET, sm.getSignature());
+			break;
+		case " cmp ":
+		case " cmpg ":
+		case " cmpl ":
+		case " < ":
+		case " > ":
+		case " >= ":
+		case " <= ":
+			checkUsage(outValue, (BinopExpr) condition, EnType.OPE, sm.getSignature());
+		}
 	}
 
 	@Override

@@ -213,7 +213,7 @@ public class TranslatorTransformer extends BodyTransformer {
 			return generateSenConstructor(sm);
 		String name = sm.getName();
 		String senName = name + "_Sen";
-		String senSignature = sm.getSubSignature().replace(name, senName);
+		String senSignature = sm.getSubSignature().replace(name + "(", senName + "(");
 		SootClass sc = sm.getDeclaringClass();
 		if (sc.declaresMethod(senSignature))
 			return sc.getMethod(senSignature);

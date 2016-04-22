@@ -232,8 +232,11 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 
 	private boolean isParamOrRetValue(AnnotatedValue av) {
 		Kind kind = av.getKind();
-		return (kind == Kind.PARAMETER || kind == Kind.THIS || kind == Kind.RETURN
-				|| (kind == Kind.LOCAL && av.getName().equals("this")));
+		return kind == Kind.PARAMETER || kind == Kind.THIS || kind == Kind.RETURN;
+	}
+	
+	private boolean isLocalThis(AnnotatedValue av) {
+		return av.getKind() == Kind.LOCAL && av.getName().equals("this");
 	}
 
 	private Set<Constraint> addLinearConstraints(Constraint con, Set<Constraint> existingCons) {
@@ -295,14 +298,14 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 					&& canConnectVia(left, right)) {
 				for (Constraint lc : getLessConstraints(left)) {
 					AnnotatedValue r = lc.getLeft();
-					if (!r.equals(right) && isParamOrRetValue(r) && !(r instanceof MethodAdaptValue)) {
+					if (!r.equals(right) && (isParamOrRetValue(r) || isLocalThis(r)) && !(r instanceof MethodAdaptValue)) {
 						Constraint linear = new SubtypeConstraint(r, right);
 						linear.addCause(lc);
 						linear.addCause(c);
 						tmplist.add(linear);
 					}
 				}
-				if (isParamOrRetValue(left)) {
+				if ((isParamOrRetValue(left) || isLocalThis(left))) {
 					for (Constraint gc : getGreaterConstraints(right)) {
 						AnnotatedValue r = gc.getRight();
 						if (!left.equals(r) && !(r instanceof MethodAdaptValue)) {
@@ -316,7 +319,8 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 				// step 4: z <: (y |> par) |> (y |> ret) |> x
 				// if c is a new linear constraint between parameters
 				// and returns, look for method adapt constraints
-				if (isParamOrRetValue(left) && isParamOrRetValue(right)) {
+				if ((isParamOrRetValue(left) || isLocalThis(left))
+						&& (isParamOrRetValue(right) || isLocalThis(right))) {
 					// /return/param/this -> return/param/this
 					Set<AdaptValue> adaptSetLeft = declRefToAdaptValue.get(left.getIdentifier());
 					Set<AdaptValue> adaptSetRight = declRefToAdaptValue.get(right.getIdentifier());

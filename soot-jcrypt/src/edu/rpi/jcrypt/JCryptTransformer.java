@@ -340,6 +340,7 @@ public class JCryptTransformer extends InferenceTransformer {
 
 	@Override
 	public void printPolyResult(PrintStream out) {
+//		Set<String> polyStaticMethods = new HashSet<>();
 		for (AnnotatedValue av : getAnnotatedValues().values()) {
 			if (av.getIdentifier().startsWith("callsite")) continue;
 			if (av.getKind() == Kind.FIELD || av.getKind() == Kind.LOCAL || av.getKind() == Kind.THIS) {
@@ -349,7 +350,18 @@ public class JCryptTransformer extends InferenceTransformer {
 				out.println(av.getIdentifier());
 				out.println(av.getAnnotations(this).iterator().next());
 			}
+//			else if (av.getKind() == Kind.PARAMETER) {
+//				Annotation anno = av.getAnnotations(this).iterator().next();
+//				if (anno == CLEAR) continue;
+//				SootMethod sm = av.getEnclosingMethod();
+//				if (!sm.isStatic()) continue;
+//				polyStaticMethods.add(sm.getSignature());
+//			}
 		}
+//		for (String s : polyStaticMethods) {
+//			out.println(s);
+//			out.println("1");
+//		}
 		printPolyMethods(out);
 	}
 
@@ -366,8 +378,6 @@ public class JCryptTransformer extends InferenceTransformer {
 				if (decl.getIdentifier().startsWith(InferenceTransformer.LIB_PREFIX))
 					continue;
 				String methodName = decl.getEnclosingMethod().toString();
-//				if (methodName.contains("<init>()"))
-//					continue;
 				boolean[] status = map.get(methodName);
 				AnnotatedValue callsite = ((MethodAdaptValue) annoValue).getContextValue();
 				Annotation anno = callsite.getAnnotations(this).iterator().next();
@@ -397,47 +407,5 @@ public class JCryptTransformer extends InferenceTransformer {
 				out.println(1);
 		}
 	}
-
-	// @Override
-	// protected void internalTransform(final Body b, String phaseName,
-	// @SuppressWarnings("rawtypes") Map options) {
-	// super.internalTransform(b, phaseName, options);
-	// String outputDir = SourceLocator.v().getOutputDir();
-	//
-	// ConstraintSolver jcryptSolver = new JCryptConstraintSolver(this);
-	// Set<Constraint> errors = jcryptSolver.solve();
-	// try {
-	// PrintStream jcryptOut = new PrintStream(outputDir + File.separator +
-	// "jcrypt-constraints.log");
-	// for (Constraint c : getConstraints()) {
-	// jcryptOut.println(c);
-	// jcryptOut.println();
-	// }
-	// jcryptOut.close();
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	//
-	// System.out.println();
-	// for (Constraint c : errors)
-	// System.out.println(c + "\n");
-	// info(getName(), "Extracting a concete typing...");
-	// TypingExtractor extractor = new MaximalTypingExtractor(this,
-	// jcryptSolver);
-	// List<Constraint> typeErrors = extractor.extract();
-	// info(getName(), "Finish extracting typing.");
-	// if (!typeErrors.isEmpty()) {
-	// for (Constraint c : typeErrors)
-	// System.out.println(c);
-	// }
-	//
-	// try {
-	// PrintStream jcryptOut = new PrintStream(outputDir + File.separator +
-	// "jcrypt-result.jaif");
-	// printJaif(jcryptOut);
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-	// }
 
 }

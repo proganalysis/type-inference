@@ -136,7 +136,11 @@ public class JCryptMain extends SceneTransformer {
 		JCryptMain cgt = new JCryptMain();
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.ccp", cgt));
 		soot.Main.main(sootArgs);
-		System.out.println("Number of conversions: " + JCryptAnalysis.count);
+		Set<String> conversions = JCryptAnalysis.conversions;
+		System.out.println("Number of conversions: " + conversions.size());
+		for (String s : conversions) {
+			System.out.println(s);
+		}
 	}
 	
 }
