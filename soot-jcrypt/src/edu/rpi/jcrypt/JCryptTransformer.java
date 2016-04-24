@@ -340,72 +340,87 @@ public class JCryptTransformer extends InferenceTransformer {
 
 	@Override
 	public void printPolyResult(PrintStream out) {
-//		Set<String> polyStaticMethods = new HashSet<>();
+		Set<String> polyMethods = new HashSet<>();
 		for (AnnotatedValue av : getAnnotatedValues().values()) {
-			if (av.getIdentifier().startsWith("callsite")) continue;
-			if (av.getKind() == Kind.FIELD || av.getKind() == Kind.LOCAL || av.getKind() == Kind.THIS) {
+			if (av.getIdentifier().startsWith("callsite"))
+				continue;
+			Kind kind = av.getKind();
+			if (kind == Kind.FIELD || kind == Kind.LOCAL || kind == Kind.THIS) {
+				Annotation anno = av.getAnnotations(this).iterator().next();
+				if (anno == CLEAR)
+					continue;
 				SootClass sc = av.getEnclosingClass();
 				if (sc.isLibraryClass())
 					continue;
 				out.println(av.getIdentifier());
-				out.println(av.getAnnotations(this).iterator().next());
 			}
-//			else if (av.getKind() == Kind.PARAMETER) {
-//				Annotation anno = av.getAnnotations(this).iterator().next();
-//				if (anno == CLEAR) continue;
-//				SootMethod sm = av.getEnclosingMethod();
-//				if (!sm.isStatic()) continue;
-//				polyStaticMethods.add(sm.getSignature());
-//			}
+			// find poly methods
+			if (kind == Kind.PARAMETER || kind == Kind.THIS
+					|| (kind == Kind.LOCAL && av.getName().equals("this"))) {
+				Annotation anno = av.getAnnotations(this).iterator().next();
+				if (anno == CLEAR)
+					continue;
+				SootMethod sm = av.getEnclosingMethod();
+				if (sm.isJavaLibraryMethod())
+					continue;
+				polyMethods.add(sm.getSignature());
+			}
 		}
-//		for (String s : polyStaticMethods) {
-//			out.println(s);
-//			out.println("1");
-//		}
-		printPolyMethods(out);
+		for (String s : polyMethods)
+			out.println(s);
+		//System.out.println("Poly Methods based on parameters: " + polyMethods.size());
+		//printPolyMethods(out, polyMethods);
 	}
 
-	private void printPolyMethods(PrintStream out) {
-		Annotation[] sourceAnnotations = getSourceLevelQualifiers().toArray(new Annotation[0]);
-		Arrays.sort(sourceAnnotations, getComparator());
-		Map<String, boolean[]> map = new HashMap<>();
-		for (Constraint c : getConstraints()) {
-			AnnotatedValue[] annoValues = new AnnotatedValue[] { c.getLeft(), c.getRight() };
-			for (AnnotatedValue annoValue : annoValues) {
-				if (!(annoValue instanceof MethodAdaptValue))
-					continue;
-				AnnotatedValue decl = ((MethodAdaptValue) annoValue).getDeclValue();
-				if (decl.getIdentifier().startsWith(InferenceTransformer.LIB_PREFIX))
-					continue;
-				String methodName = decl.getEnclosingMethod().toString();
-				boolean[] status = map.get(methodName);
-				AnnotatedValue callsite = ((MethodAdaptValue) annoValue).getContextValue();
-				Annotation anno = callsite.getAnnotations(this).iterator().next();
-				if (status == null) {
-					status = new boolean[3];
-				}
-				for (int i = 0; i < 3; i++) {
-					if (anno == sourceAnnotations[i]) {
-						status[i] = true;
-						break;
-					}
-				}
-				map.put(methodName, status);
-			}
-		}
-		for (String key : map.keySet()) {
-			out.println(key);
-			boolean[] st = map.get(key);
-			if (st[1])
-				out.println(2);
-			else if (st[0])
-				if (st[2])
-					out.println(2);
-				else
-					out.println(0);
-			else
-				out.println(1);
-		}
-	}
+//	private void printPolyMethods(PrintStream out, Set<String> polyMethods) {
+//		Annotation[] sourceAnnotations = getSourceLevelQualifiers().toArray(new Annotation[0]);
+//		Arrays.sort(sourceAnnotations, getComparator());
+//		Map<String, boolean[]> map = new HashMap<>();
+//		for (Constraint c : getConstraints()) {
+//			AnnotatedValue[] annoValues = new AnnotatedValue[] { c.getLeft(), c.getRight() };
+//			for (AnnotatedValue annoValue : annoValues) {
+//				if (!(annoValue instanceof MethodAdaptValue))
+//					continue;
+//				AnnotatedValue decl = ((MethodAdaptValue) annoValue).getDeclValue();
+//				if (decl.getIdentifier().startsWith(InferenceTransformer.LIB_PREFIX))
+//					continue;
+//				String methodName = decl.getEnclosingMethod().toString();
+//				boolean[] status = map.get(methodName);
+//				AnnotatedValue callsite = ((MethodAdaptValue) annoValue).getContextValue();
+//				Annotation anno = callsite.getAnnotations(this).iterator().next();
+//				if (status == null) {
+//					status = new boolean[3];
+//				}
+//				for (int i = 0; i < 3; i++) {
+//					if (anno == sourceAnnotations[i]) {
+//						status[i] = true;
+//						break;
+//					}
+//				}
+//				map.put(methodName, status);
+//			}
+//		}
+//		int count = 0;
+//		for (String key : map.keySet()) {
+//			boolean[] st = map.get(key);
+//			if (st[1] || st[2]) {
+//				count++;
+//				if (!polyMethods.contains(key)) {
+//					out.println(key);
+//					System.out.println(key);
+//				}
+//			}
+//			// if (st[1])
+//			// out.println(2);
+//			// else if (st[0])
+//			// if (st[2])
+//			// out.println(2);
+//			// else
+//			// out.println(0);
+//			// else
+//			// out.println(1);
+//		}
+//		System.out.println("Poly Methods based on callsite: " + count);
+//	}
 
 }

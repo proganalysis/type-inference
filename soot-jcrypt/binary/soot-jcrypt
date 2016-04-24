@@ -53,7 +53,7 @@ echo "-------- Phase 2: AE Analysis --------"
 echo
 echo "java -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass"
 
-java -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass > $outputDir/conversion-result.txt
+java -Xss50m -Xmx2g -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass > $outputDir/conversion-result.txt
 
 end=`date +%s`
 

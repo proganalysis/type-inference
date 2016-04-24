@@ -88,11 +88,8 @@ public class JCryptAnalysis
 		String line = null;
 		try {
 			BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
-			while ((line = bufferedReader.readLine()) != null) {
-				String type = bufferedReader.readLine();
-				if (type.equals("@Sensitive") || type.equals("@Poly"))
-					senElements.add(line);
-			}
+			while ((line = bufferedReader.readLine()) != null)
+				senElements.add(line);
 			bufferedReader.close();
 		} catch (FileNotFoundException ex) {
 			System.out.println("Unable to open file '" + fileName + "'");

@@ -27,9 +27,9 @@ import java.util.*;
 
 public class TranslatorTransformer extends BodyTransformer {
 
-	private Map<String, String> polyElements = new HashMap<>();
+	private Set<String> polyElements = new HashSet<>();
 
-	public Map<String, String> getPolyElements() {
+	public Set<String> getPolyElements() {
 		return polyElements;
 	}
 
@@ -43,7 +43,7 @@ public class TranslatorTransformer extends BodyTransformer {
 			BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
 
 			while ((line = bufferedReader.readLine()) != null) {
-				polyElements.put(line, bufferedReader.readLine());
+				polyElements.add(line);
 			}
 
 			bufferedReader.close();
@@ -81,14 +81,11 @@ public class TranslatorTransformer extends BodyTransformer {
 		String newName = field.getName() + "_Sen";
 		if (sc.declaresFieldByName(newName))
 			return Jimple.v().newStaticFieldRef(sc.getFieldByName(newName).makeRef());
-		String kind = polyElements.get(field.getSignature());
-		if (kind == null || kind.equals("@Clear"))
-			return null;
-		else {
+		if (polyElements.contains(field.getSignature())) {
 			SootField newfield = new SootField(newName, field.getType(), field.getModifiers());
 			sc.addField(newfield);
 			return Jimple.v().newStaticFieldRef(newfield.makeRef());
-		}
+		} else return null;
 	}
 
 	private FieldRef getInstanceFieldForSen(SootField field, FieldRef fieldRef) {
@@ -97,24 +94,18 @@ public class TranslatorTransformer extends BodyTransformer {
 		if (sc.declaresFieldByName(newName))
 			return Jimple.v().newInstanceFieldRef(((InstanceFieldRef) fieldRef).getBase(),
 					sc.getFieldByName(newName).makeRef());
-		String kind = polyElements.get(field.getSignature());
-		if (kind == null || kind.equals("@Clear"))
-			return null;
-		else {
+		if (polyElements.contains(field.getSignature())) {
 			SootField newfield = new SootField(newName, field.getType(), field.getModifiers());
 			sc.addField(newfield);
 			return Jimple.v().newInstanceFieldRef(((InstanceFieldRef) fieldRef).getBase(), newfield.makeRef());
-		}
+		} else return null;
 	}
 
 	private FieldRef getInstanceFieldForClear(SootField field, FieldRef fieldRef, SootMethod sm) {
 		Value base = (( InstanceFieldRef) fieldRef).getBase();
-		String kind = polyElements.get(sm.getSignature() + "@" + base.toString());
-		if (kind == null || kind.equals("@Clear"))
-			return null;
-		else {
+		if (polyElements.contains(sm.getSignature() + "@" + base.toString()))
 			return getInstanceFieldForSen(field, fieldRef);
-		}
+		else return null;
 	}
 
 	private void processMethod(Body b, Boolean isClear) {
@@ -160,18 +151,15 @@ public class TranslatorTransformer extends BodyTransformer {
 
 	private InvokeExpr getInstanceInvokeForClear(InstanceInvokeExpr expr, SootMethod sm) {
 		Value base = expr.getBase();
-		String kind = polyElements.get(sm.getSignature() + "@" + base.toString());
-		if (kind == null || kind.equals("@Clear"))
-			return null;
-		return getInvokeForSen(expr);
+		if (polyElements.contains(sm.getSignature() + "@" + base.toString()))
+			return getInvokeForSen(expr);
+		else return null;
 	}
 
 	private InvokeExpr getStaticInvoke(StaticInvokeExpr expr, SootMethod sm) {
 		for (Value arg : expr.getArgs()) {
-			String kind = polyElements.get(sm.getSignature() + "@" + arg.toString());
-			if (kind == null || kind.equals("@Clear"))
-				continue;
-			return getInvokeForSen(expr);
+			if (polyElements.contains(sm.getSignature() + "@" + arg.toString()))
+				return getInvokeForSen(expr);
 		}
 		return null;
 	}
@@ -206,9 +194,7 @@ public class TranslatorTransformer extends BodyTransformer {
 	}
 
 	private SootMethod generateSenMethod(SootMethod sm) {
-		String kind = polyElements.get(sm.toString());
-		if (kind == null || kind.equals("0"))
-			return null;
+		if (!polyElements.contains(sm.getSignature())) return null;
 		if (sm.isConstructor())
 			return generateSenConstructor(sm);
 		String name = sm.getName();

@@ -200,8 +200,9 @@ public class InferenceVisitor extends AbstractStmtSwitch {
 
         @Override
         public void caseLengthExpr(LengthExpr v) {
-            AnnotatedValue av = t.getAnnotatedValue(v.getOp());
-            add(av);
+        	// Yao: consider array length not sensitive for now
+            //AnnotatedValue av = t.getAnnotatedValue(v.getOp());
+            //add(av);
         }
 
         @Override
