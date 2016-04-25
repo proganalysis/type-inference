@@ -184,9 +184,12 @@ public class TranslatorTransformer extends BodyTransformer {
 	}
 
 	private InvokeExpr getSpecialInvoke(InstanceInvokeExpr expr, SootMethod senMethod) {
-		List<Value> args = new ArrayList<>(expr.getArgs());
-		args.add(NullConstant.v());
-		return Jimple.v().newSpecialInvokeExpr((Local) expr.getBase(), senMethod.makeRef(), args);
+		if (senMethod.isConstructor()) {
+			List<Value> args = new ArrayList<>(expr.getArgs());
+			args.add(NullConstant.v());
+			return Jimple.v().newSpecialInvokeExpr((Local) expr.getBase(), senMethod.makeRef(), args);
+		} else
+			return Jimple.v().newSpecialInvokeExpr((Local) expr.getBase(), senMethod.makeRef(), expr.getArgs());
 	}
 
 	private SootMethod copyMethod(Body b) {
