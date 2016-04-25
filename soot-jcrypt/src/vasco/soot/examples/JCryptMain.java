@@ -30,7 +30,6 @@ import soot.SourceLocator;
 import soot.Transform;
 import soot.Unit;
 import vasco.DataFlowSolution;
-import vasco.soot.examples.JCryptAnalysis.EnType;
 
 /**
  * A Soot {@link SceneTransformer} for performing {@link JCryptAnalysis}.
@@ -46,7 +45,7 @@ public class JCryptMain extends SceneTransformer {
 	protected void internalTransform(String arg0, @SuppressWarnings("rawtypes") Map arg1) {
 		analysis = new JCryptAnalysis(outputDir);
 		analysis.doAnalysis();
-		DataFlowSolution<Unit,Map<Object,Set<EnType>>> solution = analysis.getMeetOverValidPathsSolution();
+		DataFlowSolution<Unit,Map<Object,Byte>> solution = analysis.getMeetOverValidPathsSolution();
 		try {
 			PrintStream out = new PrintStream(outputDir + File.separator + "analysis-result.txt");
 			out.println("================================================================");
@@ -67,21 +66,19 @@ public class JCryptMain extends SceneTransformer {
 		}
 	}
 	
-	public static String formatResults(Map<Object, Set<EnType>> map) {
+	public static String formatResults(Map<Object, Byte> map) {
 		if (map == null) {
 			return "";
 		}
 		StringBuffer sb = new StringBuffer();
-		for (Entry<Object, Set<EnType>> entry : map.entrySet()) {
+		for (Entry<Object, Byte> entry : map.entrySet()) {
 			Object local = entry.getKey();
-			Set<EnType> typeSet = entry.getValue();
-			if (typeSet != null) {
-				sb.append("(").append(local).append("=[ ");
-				for (EnType type : typeSet) {
-					sb.append(type).append(" ");
-				}
-				sb.append("]) ");
-			}
+			byte typeSet = entry.getValue();
+			sb.append("(").append(local).append("=[ ");
+			if ((0b100 & typeSet) != 0) sb.append("AH").append(" ");
+			if ((0b10 & typeSet) != 0) sb.append("DET").append(" ");
+			if ((0b1 & typeSet) != 0) sb.append("OPE").append(" ");
+			sb.append("]) ");
 		}
 		return sb.toString();
 	}

@@ -51,9 +51,9 @@ mainClass="vasco.soot.examples.JCryptMain"
 echo
 echo "-------- Phase 2: AE Analysis --------"
 echo
-echo "java -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass"
+echo "java -Xss50m -Xmx2048m -XX:-UseConcMarkSweepGC -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass"
 
-java -Xss50m -Xmx2g -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass > $outputDir/conversion-result.txt
+java -Xss50m -Xmx2048m -XX:-UseConcMarkSweepGC -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass > $outputDir/conversion-result.txt
 
 end=`date +%s`
 
