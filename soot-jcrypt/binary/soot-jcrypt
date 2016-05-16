@@ -9,6 +9,7 @@ mydir="`dirname $0`"
 mylib=`find $mydir/../lib -name '*.jar' | xargs |sed 's/ /:/g'`
 jdk=$mydir/../jdk/reim/jdk.jar
 rt=$JAVA_HOME/jre/lib/rt.jar
+#rt6=/Users/yaodong/Software/jdk1.6.0_27/jre/lib/rt.jar
 
 mainClass="edu.rpi.SootInferenceJCrypt"
 
@@ -44,7 +45,7 @@ echo "-------- Code Generation --------"
 echo
 echo "java -cp $mylib $mainClass -cp $sootClasspath -d $outputDir $appMainClass"
 
-java -cp $mylib $mainClass -cp $sootClasspath -d $outputDir $appMainClass
+#java -cp $mylib $mainClass -cp $sootClasspath -d $outputDir $appMainClass
 
 mainClass="vasco.soot.examples.JCryptMain"
 
@@ -53,7 +54,7 @@ echo "-------- Phase 2: AE Analysis --------"
 echo
 echo "java -Xss50m -Xmx2048m -XX:-UseConcMarkSweepGC -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass"
 
-java -Xss50m -Xmx2048m -XX:-UseConcMarkSweepGC -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass > $outputDir/conversion-result.txt
+#java -Xss50m -Xmx2048m -XX:-UseConcMarkSweepGC -cp $mylib $mainClass -cp $outputDir -d $outputDir $appMainClass > $outputDir/conversion-result.txt
 
 end=`date +%s`
 

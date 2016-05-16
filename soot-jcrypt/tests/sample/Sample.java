@@ -12,7 +12,7 @@ public class Sample {
 		ss = ds.get();
 		Data dc = new Data();
 		int c = -3;
-		dc.set(c);;
+		dc.set(c);
 		int cc = dc.get();
 		
 		int ans = ss + cc;

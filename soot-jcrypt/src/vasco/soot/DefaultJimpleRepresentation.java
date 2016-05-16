@@ -17,7 +17,6 @@
  */
 package vasco.soot;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -60,7 +59,9 @@ public class DefaultJimpleRepresentation implements ProgramRepresentation<SootMe
 	 */
 	@Override
 	public List<SootMethod> getEntryPoints() {
-		return Collections.singletonList(Scene.v().getMainMethod());
+		//return Collections.singletonList(Scene.v().getMainMethod());
+		// Yao: custom entry point
+		return Scene.v().getEntryPoints();
 	}
 
 	/**

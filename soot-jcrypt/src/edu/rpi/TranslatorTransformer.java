@@ -237,7 +237,7 @@ public class TranslatorTransformer extends BodyTransformer {
 			Chain<Unit> units = body.getUnits();
 			Local arg = Jimple.v().newLocal("l0", refType);
 			body.getLocals().add(arg);
-			units.insertBefore(Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(refType, numOfPar)), units.getFirst());
+			units.insertAfter(Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(refType, numOfPar)), units.getFirst());
 			return senMethod;
 		}
 	}

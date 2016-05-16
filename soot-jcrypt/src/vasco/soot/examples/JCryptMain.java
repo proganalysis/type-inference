@@ -19,16 +19,21 @@ package vasco.soot.examples;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import soot.PackManager;
+import soot.Scene;
 import soot.SceneTransformer;
+import soot.SootClass;
 import soot.SootMethod;
 import soot.SourceLocator;
 import soot.Transform;
 import soot.Unit;
+import soot.options.Options;
 import vasco.DataFlowSolution;
 
 /**
@@ -40,6 +45,7 @@ public class JCryptMain extends SceneTransformer {
 	
 	private JCryptAnalysis analysis;
 	private static String outputDir = null;
+	private static String mrExt = "";
 	
 	@Override
 	protected void internalTransform(String arg0, @SuppressWarnings("rawtypes") Map arg1) {
@@ -47,7 +53,7 @@ public class JCryptMain extends SceneTransformer {
 		analysis.doAnalysis();
 		DataFlowSolution<Unit,Map<Object,Byte>> solution = analysis.getMeetOverValidPathsSolution();
 		try {
-			PrintStream out = new PrintStream(outputDir + File.separator + "analysis-result.txt");
+			PrintStream out = new PrintStream(outputDir + File.separator + "analysis-result" + mrExt + ".txt");
 			out.println("================================================================");
 			for (SootMethod sootMethod : analysis.getMethods()) {
 				if (!sootMethod.hasActiveBody()) continue;
@@ -117,7 +123,10 @@ public class JCryptMain extends SceneTransformer {
 		
 		String[] sootArgs = {
 				"-cp", classPath, "-pp", 
-				"-w", "-app", 
+				"-w",
+				//"-app", 
+				"-src-prec", "J",
+				"-allow-phantom-refs",
 				"-keep-line-number",
 				"-keep-bytecode-offset",
 				"-p", "jb", "use-original-names",
@@ -127,12 +136,34 @@ public class JCryptMain extends SceneTransformer {
 				"-p", "cg", "safe-forname",
 				"-p", "cg", "safe-newinstance",
 				"-main-class", mainClass,
-				"-f", "none", mainClass,
+				"-f", "none",
+				mainClass,
 				"-d", outputDir
 		};
 		JCryptMain cgt = new JCryptMain();
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.ccp", cgt));
-		soot.Main.main(sootArgs);
+		//soot.Main.main(sootArgs);
+		
+		Options.v().parse(sootArgs);
+		SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
+		c.setApplicationClass();
+		Scene.v().loadNecessaryClasses();
+		List<SootMethod> entryPoints = new ArrayList<>();
+		for (SootMethod sm : c.getMethods()) {
+			if (sm.getName().equals("reduce")) {
+				entryPoints.add(c.getMethod("void reduce_Sen(org.apache.hadoop.io.Text,java.lang.Iterable,org.apache.hadoop.mapreduce.Reducer$Context)"));
+				mrExt = "-reduce";
+				break;
+			}
+			if (sm.getName().equals("map")) {
+				entryPoints.add(c.getMethod("void map_Sen(java.lang.Object,org.apache.hadoop.io.Text,org.apache.hadoop.mapreduce.Mapper$Context)"));
+				mrExt = "-map";
+				break;
+			}
+		}
+		Scene.v().setEntryPoints(entryPoints);
+		PackManager.v().runPacks();
+		
 		Set<String> conversions = JCryptAnalysis.conversions;
 		System.out.println("Number of conversions: " + conversions.size());
 		for (String s : conversions) {

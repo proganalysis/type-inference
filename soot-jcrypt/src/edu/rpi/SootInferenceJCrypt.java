@@ -54,8 +54,14 @@ public class SootInferenceJCrypt {
 		
 		String[] sootArgs = {
 				"-cp", classPath,
-				"-app", "-src-prec", "java",
-				"-f", "J", mainClass,
+				//"-app",
+				//"-p" , "jop.cpf", "enabled:false",
+				"-allow-phantom-refs",
+				//"-src-prec", "java",
+				"-pp",
+				//"-f", "J", 
+				"-f", "none", 
+				mainClass,
 				"-d", outputDir
 		};
 		

@@ -35,6 +35,7 @@ import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
+import soot.jimple.CastExpr;
 import soot.jimple.FieldRef;
 import soot.jimple.IfStmt;
 import soot.jimple.InvokeExpr;
@@ -179,6 +180,8 @@ public class JCryptAnalysis
 					}
 				} else if (rhsOp instanceof Local) { // x = y
 					outValue.put(lhsOp, getValueSet(outValue, rhsOp));
+				} else if (rhsOp instanceof CastExpr) { // x = (int) y
+					outValue.put(lhsOp, getValueSet(outValue, ((CastExpr) rhsOp).getOp()));
 				}
 			}
 		} else if (unit instanceof IfStmt) {

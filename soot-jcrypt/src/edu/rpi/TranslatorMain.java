@@ -41,8 +41,12 @@ public class TranslatorMain {
 		
 		String[] sootArgs = {
 				"-cp", classPath,
-				"-app", "-src-prec", "java",
-				"-f", "J", mainClass,
+				//"-app",
+				"-allow-phantom-refs",
+				"-pp",
+				//"-src-prec", "java",
+				"-f", "J",
+				mainClass,
 				"-d", outputDir
 		};
 		

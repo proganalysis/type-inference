@@ -106,7 +106,9 @@ public abstract class ForwardInterProceduralAnalysis<M,N,A> extends InterProcedu
 				// Handle flow functions depending on whether this is a call statement or not
 				if (programRepresentation().isCall(node)) {
 					
-					out = topValue();
+					//out = topValue();
+					// Yao: edit here.
+					out = copy(in);
 					
 					boolean hit = false;
 					
