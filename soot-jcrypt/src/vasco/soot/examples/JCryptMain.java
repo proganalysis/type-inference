@@ -125,7 +125,7 @@ public class JCryptMain extends SceneTransformer {
 				"-cp", classPath, "-pp", 
 				"-w",
 				//"-app", 
-				"-src-prec", "J",
+				//"-src-prec", "c",
 				"-allow-phantom-refs",
 				"-keep-line-number",
 				"-keep-bytecode-offset",
@@ -150,14 +150,14 @@ public class JCryptMain extends SceneTransformer {
 		Scene.v().loadNecessaryClasses();
 		List<SootMethod> entryPoints = new ArrayList<>();
 		for (SootMethod sm : c.getMethods()) {
-			if (sm.getName().equals("reduce")) {
-				entryPoints.add(c.getMethod("void reduce_Sen(org.apache.hadoop.io.Text,java.lang.Iterable,org.apache.hadoop.mapreduce.Reducer$Context)"));
-				mrExt = "-reduce";
-				break;
-			}
 			if (sm.getName().equals("map")) {
 				entryPoints.add(c.getMethod("void map_Sen(java.lang.Object,org.apache.hadoop.io.Text,org.apache.hadoop.mapreduce.Mapper$Context)"));
 				mrExt = "-map";
+				break;
+			}
+			if (sm.getName().equals("reduce")) {
+				entryPoints.add(c.getMethod("void reduce_Sen(org.apache.hadoop.io.Text,java.lang.Iterable,org.apache.hadoop.mapreduce.Reducer$Context)"));
+				mrExt = "-reduce";
 				break;
 			}
 		}

@@ -25,47 +25,17 @@ public class SootInferenceJCrypt {
 		PackManager.v().getPack("jtp").add(new Transform("jtp.reim", reimTransformer));
 		PackManager.v().getPack("jtp").add(new Transform("jtp.jcrypt", jcryptTransformer));
 
-		String classPath = ".";		
-		String mainClass = null;
 		String outputDir = SourceLocator.v().getOutputDir();
-		
+
 		/* ------------------- OPTIONS ---------------------- */
-		try {
-			int i=0;
-			while(true){
-				if (args[i].equals("-cp")) {
-					classPath = args[i+1];
-					i += 2;
-				} else if (args[i].equals("-d")) {
-					outputDir = args[i+1];
-					i += 2;
-				} else {
-					mainClass = args[i];
-					i++;
-					break;
-				}
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("-d")) {
+				outputDir = args[i + 1];
+				break;
 			}
-			if (i != args.length || mainClass == null)
-				throw new Exception();
-		} catch (Exception e) {
-			System.err.println("Usage: java edu.rpi.SootInferenceJCrypt [-cp CLASSPATH] [-d OUTPUTDIR] MAIN_CLASS");
-			System.exit(1);
 		}
-		
-		String[] sootArgs = {
-				"-cp", classPath,
-				//"-app",
-				//"-p" , "jop.cpf", "enabled:false",
-				"-allow-phantom-refs",
-				//"-src-prec", "java",
-				"-pp",
-				//"-f", "J", 
-				"-f", "none", 
-				mainClass,
-				"-d", outputDir
-		};
-		
-		soot.Main.main(sootArgs);
+
+		soot.Main.main(args);
 
 		info(String.format("%6s: %14d", "size", AnnotatedValueMap.v().size()));
 		info(String.format("%6s: %14f MB", "free", ((float) Runtime.getRuntime().freeMemory()) / (1024 * 1024)));
@@ -121,7 +91,7 @@ public class SootInferenceJCrypt {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		try {
 			PrintStream jcryptOut = new PrintStream(outputDir + File.separator + "poly-result.txt");
 			jcryptTransformer.printPolyResult(jcryptOut);

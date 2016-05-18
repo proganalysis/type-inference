@@ -1,0 +1,67 @@
+#!/bin/bash 
+
+#command:
+#sh mapreduce -cp ../tests -main sample.Sample -d ../output/sample
+
+start=`date +%s`
+
+mydir="`dirname $0`"
+mrlib=`find $mydir/../lib/mapreduce -name '*.jar' | xargs | sed 's/ /:/g'`
+soot=$mydir/../lib/soot-develop.jar
+inference=$mydir/../lib/soot-inference.jar
+jdk=$mydir/../jdk/reim/jdk.jar
+
+classpath="$mrlib:$inference"
+outputDir=""
+appMainClass=""
+while [[ $# > 0 ]]
+do
+  key=$1
+  shift
+  case $key in
+    -main ) appMainClass=$appMainClass"`echo $1`"
+    shift
+    ;;
+    -cp ) classpath="`echo $1`":$classpath
+    shift
+    ;;
+    -d ) outputDir=$outputDir"`echo $1`"
+  esac
+done
+
+mainClass="edu.rpi.SootInferenceJCrypt"
+
+echo
+echo "-------- Phase 1: Type Inference --------"
+echo
+echo "java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $classpath -pp $appMainClass -f none -d $outputDir"
+
+java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $classpath -pp $appMainClass -f none -d $outputDir
+
+mainClass="edu.rpi.TranslatorMain"
+
+echo
+echo "-------- Code Generation --------"
+echo
+echo "java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $classpath -pp $appMainClass -f J -d $outputDir"
+
+java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $classpath -pp $appMainClass -f J -d $outputDir
+
+mainClass="vasco.soot.examples.JCryptMain"
+
+echo
+echo "-------- Phase 2: AE Analysis --------"
+echo
+classname=$outputDir/$appMainClass"\$*"
+for class in $classname
+do
+appMainClass=$(basename $class .jimple)
+echo "  java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMainClass"
+java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMainClass
+echo
+done
+# > $outputDir/conversion-result.txt
+
+end=`date +%s`
+
+echo "Total Time is $((end-start)) s."
