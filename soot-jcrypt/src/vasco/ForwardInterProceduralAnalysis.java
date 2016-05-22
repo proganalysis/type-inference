@@ -113,7 +113,9 @@ public abstract class ForwardInterProceduralAnalysis<M,N,A> extends InterProcedu
 					boolean hit = false;
 					
 					for (M targetMethod : programRepresentation().resolveTargets(currentContext.getMethod(), node)) {
-						if (((soot.SootMethod) targetMethod).isJavaLibraryMethod()) continue; // Yao: ignore library method
+						// Yao: ignore libaray method and phantom method
+						if (isLibMethod(targetMethod, node, in)) continue;
+						
 						A entryValue = callEntryFlowFunction(currentContext, targetMethod, node, in);
 						
 						CallSite<M,N,A> callSite = new CallSite<M,N,A>(currentContext, node);
@@ -340,7 +342,13 @@ public abstract class ForwardInterProceduralAnalysis<M,N,A> extends InterProcedu
 	 */
 	public abstract A callLocalFlowFunction(Context<M,N,A> context, N node, A inValue);
 	
+	/**
+	 * Process library method.
+	 * 
+	 * @param targetMethod	
+	 * @param in 
+	 * @return
+	 */
+	public abstract boolean isLibMethod(M targetMethod, N node, A inValue);
 
-
-	
 }

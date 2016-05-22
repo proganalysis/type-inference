@@ -209,6 +209,7 @@ public class TranslatorTransformer extends BodyTransformer {
 		else {
 			SootMethod senMethod = new SootMethod(senName, sm.getParameterTypes(), sm.getReturnType(),
 					sm.getModifiers(), sm.getExceptions());
+			senMethod.addAllTagsOf(sm);
 			sc.addMethod(senMethod);
 			if (sm.isAbstract()) return senMethod;
 			JimpleBody body = Jimple.v().newBody(senMethod);

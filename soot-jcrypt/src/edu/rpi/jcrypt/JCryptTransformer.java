@@ -42,6 +42,8 @@ public class JCryptTransformer extends InferenceTransformer {
 	private final Annotation POLYTHIS;
 	private final Annotation CLEARTHIS;
 
+	private Set<String> clearLibMethods;
+	
 	public JCryptTransformer() {
 		// isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
 		isPolyLibrary = true;
@@ -65,6 +67,11 @@ public class JCryptTransformer extends InferenceTransformer {
 		thisAnnos.add(SENSITIVETHIS);
 		thisAnnos.add(POLYTHIS);
 		thisAnnos.add(CLEARTHIS);
+		
+		clearLibMethods = new HashSet<>();
+		clearLibMethods.add("lastIndexOf");
+		clearLibMethods.add("length");
+		clearLibMethods.add("indexOf");
 	}
 
 	public boolean isPolyLibrary() {
@@ -110,7 +117,7 @@ public class JCryptTransformer extends InferenceTransformer {
 	protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
 		// Add default annotations/constraints for library methods
 		SootMethod invokeMethod = v.getMethod();
-		if (isPolyLibrary() && isLibraryMethod(invokeMethod)) {
+		if (isPolyLibrary() && isLibraryMethod(invokeMethod) && !clearLibMethods.contains(invokeMethod.getName())) {
 			// Add constraints PARAM -> RET for library methods if
 			// there are no sources or sinks. Otherwise, it may
 			// lead to unnecessary propagations...
@@ -230,7 +237,10 @@ public class JCryptTransformer extends InferenceTransformer {
 	protected void annotateThis(AnnotatedValue v, SootMethod method) {
 		if (!isAnnotated(v) && !method.isStatic()) {
 			if (isPolyLibrary() && isLibraryMethod(method)) {
-				v.addAnnotation(POLY);
+//				if (clearLibMethods.contains(method.getName()))
+//					v.setAnnotations(sourceAnnos, this);
+//				else
+					v.addAnnotation(POLY);
 			} else
 				v.setAnnotations(sourceAnnos, this);
 		}
@@ -250,7 +260,10 @@ public class JCryptTransformer extends InferenceTransformer {
 	protected void annotateReturn(AnnotatedValue v, SootMethod method) {
 		if (!isAnnotated(v) && method.getReturnType() != VoidType.v()) {
 			if (isPolyLibrary() && isLibraryMethod(method)) {
-				v.addAnnotation(POLY);
+				if (clearLibMethods.contains(method.getName()))
+					v.addAnnotation(CLEAR);
+				else
+					v.addAnnotation(POLY);
 			} else
 				v.setAnnotations(sourceAnnos, this);
 		}

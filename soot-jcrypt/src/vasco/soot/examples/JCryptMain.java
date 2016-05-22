@@ -125,11 +125,11 @@ public class JCryptMain extends SceneTransformer {
 				"-cp", classPath, "-pp", 
 				"-w",
 				//"-app", 
-				//"-src-prec", "c",
+				//"-src-prec", "java",
 				"-allow-phantom-refs",
 				"-keep-line-number",
 				"-keep-bytecode-offset",
-				"-p", "jb", "use-original-names",
+				//"-p", "jb", "use-original-names",
 				"-p", "cg", "implicit-entry:false",
 				"-p", "cg.spark", "enabled",
 				"-p", "cg.spark", "simulate-natives",
@@ -144,22 +144,30 @@ public class JCryptMain extends SceneTransformer {
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.ccp", cgt));
 		//soot.Main.main(sootArgs);
 		
+		List<SootMethod> entryPoints = new ArrayList<>();
 		Options.v().parse(sootArgs);
 		SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
 		c.setApplicationClass();
 		Scene.v().loadNecessaryClasses();
-		List<SootMethod> entryPoints = new ArrayList<>();
 		for (SootMethod sm : c.getMethods()) {
-			if (sm.getName().equals("map")) {
-				entryPoints.add(c.getMethod("void map_Sen(java.lang.Object,org.apache.hadoop.io.Text,org.apache.hadoop.mapreduce.Mapper$Context)"));
+			if (sm.getModifiers() == soot.Modifier.VOLATILE)
+				continue;
+			if (sm.getName().equals("map_Sen")) {
+				entryPoints.add(sm);
 				mrExt = "-map";
 				break;
 			}
-			if (sm.getName().equals("reduce")) {
-				entryPoints.add(c.getMethod("void reduce_Sen(org.apache.hadoop.io.Text,java.lang.Iterable,org.apache.hadoop.mapreduce.Reducer$Context)"));
-				mrExt = "-reduce";
+			if (sm.getName().equals("reduce_Sen")) {
+				entryPoints.add(sm);
+				int beginIndex = mainClass.indexOf('$');
+				mrExt = "-" + mainClass.substring(beginIndex+1);
 				break;
 			}
+		}
+
+		if (entryPoints.isEmpty()) {
+			System.out.println("No Entry Point");
+			System.exit(1);
 		}
 		Scene.v().setEntryPoints(entryPoints);
 		PackManager.v().runPacks();

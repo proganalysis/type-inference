@@ -38,6 +38,7 @@ import soot.jimple.BinopExpr;
 import soot.jimple.CastExpr;
 import soot.jimple.FieldRef;
 import soot.jimple.IfStmt;
+import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
@@ -69,11 +70,27 @@ public class JCryptAnalysis
 	protected static Set<String> conversions = new HashSet<>();
 	//public static Map<Object, Byte> fieldValue = new HashMap<>();
 	private Set<String> senElements = new HashSet<>();
+	private Map<String, Set<String>> detContainers = new HashMap<>();
+	private Map<String, Set<String>> opeContainers = new HashMap<>();
 
 	// Simply constructs a forward flow inter-procedural analysis with the
 	// VERBOSE option set.
 	public JCryptAnalysis(String dir) {
 		super();
+		Set<String> methods = new HashSet<>();
+		methods.add("contains");
+		detContainers.put("java.util.ArrayList", methods);
+		methods = new HashSet<>();
+		methods.add("containsKey");
+		methods.add("put");
+		detContainers.put("java.util.HashMap", methods);
+		detContainers.put("java.util.LinkedHashMap", methods);
+		methods = new HashSet<>();
+		methods.add("equals");
+		detContainers.put("java.lang.String", methods);
+		methods = new HashSet<>();
+		methods.add("sort");
+		opeContainers.put("java.util.Collections", methods);
 		verbose = true;
 		readFile(dir + File.separator + "poly-result.txt");
 	}
@@ -327,6 +344,46 @@ public class JCryptAnalysis
 	@Override
 	public ProgramRepresentation<SootMethod, Unit> programRepresentation() {
 		return DefaultJimpleRepresentation.v();
+	}
+	
+	@Override
+	public boolean isLibMethod(SootMethod sm, Unit unit, Map<Object, Byte> inValue) {
+		if (sm.isPhantom()) return true;
+		if (sm.isJavaLibraryMethod()) {
+			// check implicit equality
+			String className = sm.getDeclaringClass().toString();
+			if (detContainers.containsKey(className)) {
+				if (detContainers.get(className).contains(sm.getName())) {
+					InvokeExpr ie = ((Stmt) unit).getInvokeExpr();
+					if (ie instanceof InstanceInvokeExpr) {
+			            // receiver
+			            InstanceInvokeExpr iv = (InstanceInvokeExpr) ie;
+			            Value base = iv.getBase();
+			            System.out.println("Equality Check: " + base + " at " + unit + "(" + className + ")");
+			            if ((inValue.get(base) & 0b10) == 0) {
+							conversions.add(base + ": " + unit);
+						}
+					}
+					Value arg = ie.getArg(0);
+					System.out.println("Equality Check: " + arg + " at " + unit + "(" + className + ")");
+					if (inValue.containsKey(arg) && (inValue.get(arg) & 0b10) == 0) {
+						conversions.add(arg + ": " + unit);
+					}
+				}
+			}
+			if (opeContainers.containsKey(className)) {
+				if (opeContainers.get(className).contains(sm.getName())) {
+					InvokeExpr ie = ((Stmt) unit).getInvokeExpr();
+					Value arg = ie.getArg(0);
+					System.out.println("Comparison Check: " + arg + " at " + unit + "(" + className + ")");
+					if ((inValue.get(arg) & 0b1) == 0) {
+						conversions.add(arg + ": " + unit);
+					}
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 }

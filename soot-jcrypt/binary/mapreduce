@@ -6,14 +6,16 @@
 start=`date +%s`
 
 mydir="`dirname $0`"
-mrlib=`find $mydir/../lib/mapreduce -name '*.jar' | xargs | sed 's/ /:/g'`
+mrlib=`find /Users/yaodong/Documents/Projects/hadoop-2.6.4/share/hadoop -name '*.jar' | xargs | sed 's/ /:/g'`
 soot=$mydir/../lib/soot-develop.jar
 inference=$mydir/../lib/soot-inference.jar
 jdk=$mydir/../jdk/reim/jdk.jar
+rt6=/Users/yaodong/Software/jdk1.6.0_27/jre/lib/rt.jar
 
-classpath="$mrlib:$inference"
+classpath="$jdk:$mrlib:$inference:$rt6"
 outputDir=""
 appMainClass=""
+appClassPath=""
 while [[ $# > 0 ]]
 do
   key=$1
@@ -22,42 +24,53 @@ do
     -main ) appMainClass=$appMainClass"`echo $1`"
     shift
     ;;
-    -cp ) classpath="`echo $1`":$classpath
+    -cp ) appClassPath="`echo $1`":$appClassPath
     shift
     ;;
     -d ) outputDir=$outputDir"`echo $1`"
   esac
 done
 
+echo
+echo "-------- Phase 0: Build Source --------"
+echo
+#echo "java -cp $soot soot.Main -cp $appClassPath:$classpath -pp $appMainClass -d $outputDir"
+
+java -cp $soot soot.Main -cp $appClassPath:$classpath -pp $appMainClass -d $outputDir
+
 mainClass="edu.rpi.SootInferenceJCrypt"
 
 echo
 echo "-------- Phase 1: Type Inference --------"
 echo
-echo "java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $classpath -pp $appMainClass -f none -d $outputDir"
+#echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir"
 
-java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $classpath -pp $appMainClass -f none -d $outputDir
+java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir
 
 mainClass="edu.rpi.TranslatorMain"
 
 echo
 echo "-------- Code Generation --------"
 echo
-echo "java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $classpath -pp $appMainClass -f J -d $outputDir"
+#echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir"
 
-java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $classpath -pp $appMainClass -f J -d $outputDir
+#java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir
 
 mainClass="vasco.soot.examples.JCryptMain"
 
 echo
 echo "-------- Phase 2: AE Analysis --------"
 echo
-classname=$outputDir/$appMainClass"\$*"
+classname=`find $outputDir -name '*\$*.class'`
 for class in $classname
 do
-appMainClass=$(basename $class .jimple)
-echo "  java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMainClass"
-java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMainClass
+class=${class#*\$}
+class=${class/\.class/}
+appMC=$appMainClass"\$"$class
+echo "Analyzing $appMC ..."
+echo
+#echo "  java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMainClass"
+#java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMC
 echo
 done
 # > $outputDir/conversion-result.txt

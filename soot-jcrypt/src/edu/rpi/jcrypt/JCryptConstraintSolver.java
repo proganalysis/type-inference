@@ -1,6 +1,5 @@
 package edu.rpi.jcrypt;
 
-import java.util.Iterator;
 import java.util.*;
 
 import static com.esotericsoftware.minlog.Log.info;
@@ -52,6 +51,7 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 	private final byte SENSITIVE_MASK = 0x01;
 	private final byte POLY_MASK = 0x02;
 	private final byte CLEAR_MASK = 0x04;
+	//private Set<String> clearLibMethods;
 
 	public JCryptConstraintSolver(InferenceTransformer t) {
 		this(t, false);
@@ -68,6 +68,14 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		if (preferSink && preferSource) {
 			throw new RuntimeException("Can only have one of {preferSource, preferSource}!");
 		}
+		
+//		clearLibMethods = new HashSet<>();
+//		clearLibMethods.add("lib-<java.lang.String: int lastIndexOf(java.lang.String)>@return");
+//		clearLibMethods.add("lib-<java.lang.String: int length()>@return");
+//		clearLibMethods.add("lib-<java.lang.String: int indexOf(java.lang.String)>@return");
+//		clearLibMethods.add("lib-<java.lang.String: int lastIndexOf(java.lang.String)>@this");
+//		clearLibMethods.add("lib-<java.lang.String: int length()>@this");
+//		clearLibMethods.add("lib-<java.lang.String: int indexOf(java.lang.String)>@this");
 	}
 
 	private byte toBits(Set<Annotation> annos) {
@@ -326,7 +334,9 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 					Set<AdaptValue> adaptSetRight = declRefToAdaptValue.get(right.getIdentifier());
 					if (adaptSetLeft != null && adaptSetRight != null) {
 						for (AdaptValue yPar : adaptSetLeft) {
+							//if (clearLibMethods.contains(yPar.getIdentifier())) continue;
 							for (AdaptValue yRet : adaptSetRight) {
+								//if (clearLibMethods.contains(yRet.getIdentifier())) continue;
 								if (yPar.getContextValue().getId() == yRet.getContextValue().getId()) {
 									for (Constraint lc : getLessConstraints(yPar)) {
 										for (Constraint gc : getGreaterConstraints(yRet)) {
