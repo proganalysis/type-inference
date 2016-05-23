@@ -54,7 +54,16 @@ echo "-------- Code Generation --------"
 echo
 #echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir"
 
-#java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir
+java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir
+
+mainClass="edu.rpi.SootInferenceJCrypt"
+
+echo
+echo "-------- Type Inference 2 --------"
+echo
+#echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir"
+
+java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir
 
 mainClass="vasco.soot.examples.JCryptMain"
 
@@ -70,7 +79,7 @@ appMC=$appMainClass"\$"$class
 echo "Analyzing $appMC ..."
 echo
 #echo "  java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMainClass"
-#java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMC
+java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMC
 echo
 done
 # > $outputDir/conversion-result.txt

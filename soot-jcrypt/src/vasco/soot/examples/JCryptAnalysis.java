@@ -33,6 +33,7 @@ import soot.SootField;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
+import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
 import soot.jimple.CastExpr;
@@ -151,6 +152,11 @@ public class JCryptAnalysis
 				byte fieldSet = getValueSet(outValue, sf);
 				byte rhsSet = getValueSet(outValue, rhsOp);
 				outValue.put(sf, (byte) (fieldSet & rhsSet));
+			} else if (lhsOp instanceof ArrayRef) { // x[y] = z
+				Value base = ((ArrayRef) lhsOp).getBase();
+				byte baseSet = getValueSet(outValue, base);
+				byte rhsSet = getValueSet(outValue, rhsOp);
+				outValue.put(base, (byte) (baseSet & rhsSet));
 			} else if (lhsOp instanceof Local) {
 				if (!senElements.contains(smOriginalSig + "@" + lhsOp.toString())) {
 					// x = a < b, if a is sensitive, we have to check if OPE is available
@@ -165,6 +171,10 @@ public class JCryptAnalysis
 					SootField sf = ((FieldRef) rhsOp).getField();
 					byte fieldSet = getValueSet(outValue, sf);
 					outValue.put(lhsOp, fieldSet);
+				} else if (rhsOp instanceof ArrayRef) { // x = y[z]
+					Value base = ((ArrayRef) rhsOp).getBase();
+					byte baseSet = getValueSet(outValue, base);
+					outValue.put(lhsOp, baseSet);
 				} else if (rhsOp instanceof BinopExpr) { // x = y + z
 					String symbol = ((BinopExpr) rhsOp).getSymbol();
 					switch (symbol) {
