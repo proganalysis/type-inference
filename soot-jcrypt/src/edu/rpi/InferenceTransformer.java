@@ -672,7 +672,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
                 for (Map.Entry<Integer, String> entry : threadFixClassConnector.entrySet()) {
                     int key = entry.getKey();
                     String value = entry.getValue();
-                    if(key == invokeMethod.getDeclaringClass().hashCode()) {
+                    if(key == invokeMethod.getDeclaringClass().hashCode() && threadFixRunnables != null) {
                         for(Map.Entry <String, InvokeExpr> innerEntry : threadFixRunnables.entrySet()) {
                             String innerKey = innerEntry.getKey();
                             InvokeExpr innerValue = innerEntry.getValue();

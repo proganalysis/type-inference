@@ -82,6 +82,11 @@ public class JCryptAnalysis
 		methods.add("contains");
 		detContainers.put("java.util.ArrayList", methods);
 		methods = new HashSet<>();
+		methods.add("contains");
+		methods.add("add");
+		detContainers.put("java.util.HashSet", methods);
+		detContainers.put("java.util.TreeSet", methods);
+		methods = new HashSet<>();
 		methods.add("containsKey");
 		methods.add("put");
 		detContainers.put("java.util.HashMap", methods);
@@ -92,6 +97,7 @@ public class JCryptAnalysis
 		methods = new HashSet<>();
 		methods.add("sort");
 		opeContainers.put("java.util.Collections", methods);
+		opeContainers.put("java.util.Arrays", methods);
 		verbose = true;
 		readFile(dir + File.separator + "poly-result.txt");
 	}

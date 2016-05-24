@@ -16,6 +16,7 @@ classpath="$jdk:$mrlib:$inference:$rt6"
 outputDir=""
 appMainClass=""
 appClassPath=""
+phase=""
 while [[ $# > 0 ]]
 do
   key=$1
@@ -28,47 +29,66 @@ do
     shift
     ;;
     -d ) outputDir=$outputDir"`echo $1`"
+    ;;
+    -phase ) phase=$phase"`echo $1`"
   esac
 done
 
+if [[ $phase == *"1"* ]]
+then
 echo
-echo "-------- Phase 0: Build Source --------"
+echo "-------- Phase 1: Build Source --------"
 echo
 #echo "java -cp $soot soot.Main -cp $appClassPath:$classpath -pp $appMainClass -d $outputDir"
 
 java -cp $soot soot.Main -cp $appClassPath:$classpath -pp $appMainClass -d $outputDir
+fi
 
+if [[ $phase == *"2"* ]]
+then
 mainClass="edu.rpi.SootInferenceJCrypt"
 
 echo
-echo "-------- Phase 1: Type Inference --------"
+echo "-------- Phase 2: Type Inference --------"
 echo
 #echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir"
 
 java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir
+fi
+
+if [[ $phase == *"3"* ]]
+then
 
 mainClass="edu.rpi.TranslatorMain"
 
 echo
-echo "-------- Code Generation --------"
+echo "-------- Phase 3: Code Generation --------"
 echo
 #echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir"
 
 java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir
+fi
+
+if [[ $phase == *"4"* ]]
+then
 
 mainClass="edu.rpi.SootInferenceJCrypt"
 
 echo
-echo "-------- Type Inference 2 --------"
+echo "-------- Phase 4: Type Inference 2 --------"
 echo
 #echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir"
 
 java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir
+fi
+
+if [[ $phase == *"5"* ]]
+then
 
 mainClass="vasco.soot.examples.JCryptMain"
 
 echo
-echo "-------- Phase 2: AE Analysis --------"
+echo "-------- Phase 5: AE Analysis --------"
 echo
 classname=`find $outputDir -name '*\$*.class'`
 for class in $classname
@@ -83,6 +103,7 @@ java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMC
 echo
 done
 # > $outputDir/conversion-result.txt
+fi
 
 end=`date +%s`
 

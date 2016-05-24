@@ -152,15 +152,18 @@ public class JCryptMain extends SceneTransformer {
 		for (SootMethod sm : c.getMethods()) {
 			if (sm.getModifiers() == soot.Modifier.VOLATILE)
 				continue;
+			int beginIndex = mainClass.indexOf('$');
+			mrExt = "-" + mainClass.substring(beginIndex+1);
 			if (sm.getName().equals("map_Sen")) {
 				entryPoints.add(sm);
-				mrExt = "-map";
 				break;
 			}
 			if (sm.getName().equals("reduce_Sen")) {
 				entryPoints.add(sm);
-				int beginIndex = mainClass.indexOf('$');
-				mrExt = "-" + mainClass.substring(beginIndex+1);
+				break;
+			}
+			if (sm.getName().equals("getPartition_Sen")) {
+				entryPoints.add(sm);
 				break;
 			}
 		}

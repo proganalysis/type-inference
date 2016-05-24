@@ -72,6 +72,7 @@ public class JCryptTransformer extends InferenceTransformer {
 		clearLibMethods.add("lastIndexOf");
 		clearLibMethods.add("length");
 		clearLibMethods.add("indexOf");
+		clearLibMethods.add("size");
 	}
 
 	public boolean isPolyLibrary() {

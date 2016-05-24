@@ -158,7 +158,7 @@ public class TranslatorTransformer extends BodyTransformer {
 
 	private InvokeExpr getStaticInvoke(StaticInvokeExpr expr, SootMethod sm) {
 		for (Value arg : expr.getArgs()) {
-			if (polyElements.contains(sm.getSignature() + "@" + arg.toString()))
+			if (polyElements.contains(sm.getSignature().replace("_Sen", "") + "@" + arg.toString()))
 				return getInvokeForSen(expr);
 		}
 		return null;
