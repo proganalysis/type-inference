@@ -16,6 +16,7 @@ import soot.jimple.JimpleBody;
 import soot.jimple.NullConstant;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StaticInvokeExpr;
+import soot.jimple.VirtualInvokeExpr;
 import soot.util.Chain;
 
 import java.io.BufferedReader;
@@ -166,20 +167,20 @@ public class TranslatorTransformer extends BodyTransformer {
 
 	private InvokeExpr getInvokeForSen(InvokeExpr expr) {
 		SootMethod method = expr.getMethod();
-		if (method.isJavaLibraryMethod())
+		if (method.isJavaLibraryMethod() || method.getDeclaringClass() != expr.getMethodRef().declaringClass())
 			return null;
 		SootMethod senMethod = generateSenMethod(method);
 		if (senMethod == null)
 			return null;
 		if (expr instanceof SpecialInvokeExpr)
-			return getSpecialInvoke((InstanceInvokeExpr) expr, senMethod);
+			return getSpecialInvoke((SpecialInvokeExpr) expr, senMethod);
 		else if (expr instanceof InterfaceInvokeExpr)
-			return Jimple.v().newInterfaceInvokeExpr((Local) ((InstanceInvokeExpr) expr).getBase(), senMethod.makeRef(),
+			return Jimple.v().newInterfaceInvokeExpr((Local) ((InterfaceInvokeExpr) expr).getBase(), senMethod.makeRef(),
 					expr.getArgs());
 		else if (expr instanceof StaticInvokeExpr)
 			return Jimple.v().newStaticInvokeExpr(senMethod.makeRef(), expr.getArgs());
 		else
-			return Jimple.v().newVirtualInvokeExpr((Local) ((InstanceInvokeExpr) expr).getBase(), senMethod.makeRef(),
+			return Jimple.v().newVirtualInvokeExpr((Local) ((VirtualInvokeExpr) expr).getBase(), senMethod.makeRef(),
 					expr.getArgs());
 	}
 
