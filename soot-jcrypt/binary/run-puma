@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for class in `ls ../benchmarks/mapreduce/puma`
+do
+    
+sh mapreduce -cp ../benchmarks/mapreduce/puma/$class -main $class -d ../output/mapreduce/puma/$class -phase 12345 > results.log; mv results.log ../output/mapreduce/puma/$class
+
+done

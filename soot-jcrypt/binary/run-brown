@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for i in `seq 1 4`
+do 
+sh mapreduce -cp ../benchmarks/mapreduce/brown/benchmark$i -main edu.brown.cs.mapreduce.benchmarks.Benchmark$i -d ../output/mapreduce/brown/benchmark$i -phase 12345 > results.log; mv results.log ../output/mapreduce/brown/benchmark$i
+done
+
+sh mapreduce -cp ../benchmarks/mapreduce/brown/grep -main edu.brown.cs.mapreduce.benchmarks.Grep -d ../output/mapreduce/brown/grep -phase 12345 > results.log; mv results.log ../output/mapreduce/brown/grep

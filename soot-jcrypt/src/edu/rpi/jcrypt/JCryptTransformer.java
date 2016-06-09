@@ -382,59 +382,6 @@ public class JCryptTransformer extends InferenceTransformer {
 		}
 		for (String s : polyMethods)
 			out.println(s);
-		//System.out.println("Poly Methods based on parameters: " + polyMethods.size());
-		//printPolyMethods(out, polyMethods);
 	}
-
-//	private void printPolyMethods(PrintStream out, Set<String> polyMethods) {
-//		Annotation[] sourceAnnotations = getSourceLevelQualifiers().toArray(new Annotation[0]);
-//		Arrays.sort(sourceAnnotations, getComparator());
-//		Map<String, boolean[]> map = new HashMap<>();
-//		for (Constraint c : getConstraints()) {
-//			AnnotatedValue[] annoValues = new AnnotatedValue[] { c.getLeft(), c.getRight() };
-//			for (AnnotatedValue annoValue : annoValues) {
-//				if (!(annoValue instanceof MethodAdaptValue))
-//					continue;
-//				AnnotatedValue decl = ((MethodAdaptValue) annoValue).getDeclValue();
-//				if (decl.getIdentifier().startsWith(InferenceTransformer.LIB_PREFIX))
-//					continue;
-//				String methodName = decl.getEnclosingMethod().toString();
-//				boolean[] status = map.get(methodName);
-//				AnnotatedValue callsite = ((MethodAdaptValue) annoValue).getContextValue();
-//				Annotation anno = callsite.getAnnotations(this).iterator().next();
-//				if (status == null) {
-//					status = new boolean[3];
-//				}
-//				for (int i = 0; i < 3; i++) {
-//					if (anno == sourceAnnotations[i]) {
-//						status[i] = true;
-//						break;
-//					}
-//				}
-//				map.put(methodName, status);
-//			}
-//		}
-//		int count = 0;
-//		for (String key : map.keySet()) {
-//			boolean[] st = map.get(key);
-//			if (st[1] || st[2]) {
-//				count++;
-//				if (!polyMethods.contains(key)) {
-//					out.println(key);
-//					System.out.println(key);
-//				}
-//			}
-//			// if (st[1])
-//			// out.println(2);
-//			// else if (st[0])
-//			// if (st[2])
-//			// out.println(2);
-//			// else
-//			// out.println(0);
-//			// else
-//			// out.println(1);
-//		}
-//		System.out.println("Poly Methods based on callsite: " + count);
-//	}
 
 }

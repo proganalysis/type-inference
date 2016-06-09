@@ -46,6 +46,7 @@ public class JCryptMain extends SceneTransformer {
 	private JCryptAnalysis analysis;
 	private static String outputDir = null;
 	private static String mrExt = "";
+	private static boolean isMapReduce;
 	
 	@Override
 	protected void internalTransform(String arg0, @SuppressWarnings("rawtypes") Map arg1) {
@@ -108,6 +109,9 @@ public class JCryptMain extends SceneTransformer {
 				} else if (args[i].equals("-d")) {
 					outputDir = args[i+1];
 					i += 2;
+				} else if (args[i].equals("-MR")) {
+					isMapReduce = true;
+					i++;
 				} else {
 					mainClass = args[i];
 					i++;
@@ -117,7 +121,7 @@ public class JCryptMain extends SceneTransformer {
 			if (i != args.length || mainClass == null)
 				throw new Exception();
 		} catch (Exception e) {
-			System.err.println("Usage: java vasco.soot.examples.JCryptMain [-cp CLASSPATH] [-d OUTPUTDIR] MAIN_CLASS");
+			System.err.println("Usage: java vasco.soot.examples.JCryptMain [-cp CLASSPATH] [-d OUTPUTDIR] [-MR] MAIN_CLASS");
 			System.exit(1);
 		}
 		
@@ -142,44 +146,46 @@ public class JCryptMain extends SceneTransformer {
 		};
 		JCryptMain cgt = new JCryptMain();
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.ccp", cgt));
-		//soot.Main.main(sootArgs);
-		
-		List<SootMethod> entryPoints = new ArrayList<>();
-		Options.v().parse(sootArgs);
-		SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
-		c.setApplicationClass();
-		Scene.v().loadNecessaryClasses();
-		for (SootMethod sm : c.getMethods()) {
-			if (sm.getModifiers() == soot.Modifier.VOLATILE)
-				continue;
-			int beginIndex = mainClass.indexOf('$');
-			mrExt = "-" + mainClass.substring(beginIndex+1);
-			if (sm.getName().equals("map_Sen")) {
-				entryPoints.add(sm);
-				break;
+		if (!isMapReduce)
+			soot.Main.main(sootArgs);
+		else {
+			List<SootMethod> entryPoints = new ArrayList<>();
+			Options.v().parse(sootArgs);
+			SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
+			c.setApplicationClass();
+			Scene.v().loadNecessaryClasses();
+			for (SootMethod sm : c.getMethods()) {
+				if (sm.getModifiers() == soot.Modifier.VOLATILE)
+					continue;
+				int beginIndex = mainClass.lastIndexOf('.');
+				mrExt = "-" + mainClass.substring(beginIndex+1);
+				if (sm.getName().equals("map_Sen")) {
+					entryPoints.add(sm);
+					break;
+				}
+				if (sm.getName().equals("reduce_Sen")) {
+					entryPoints.add(sm);
+					break;
+				}
+				if (sm.getName().equals("getPartition_Sen")) {
+					entryPoints.add(sm);
+					break;
+				}
 			}
-			if (sm.getName().equals("reduce_Sen")) {
-				entryPoints.add(sm);
-				break;
+	
+			if (entryPoints.isEmpty()) {
+				System.out.println("No Entry Point");
+				System.exit(1);
 			}
-			if (sm.getName().equals("getPartition_Sen")) {
-				entryPoints.add(sm);
-				break;
-			}
+			Scene.v().setEntryPoints(entryPoints);
+			PackManager.v().runPacks();
 		}
-
-		if (entryPoints.isEmpty()) {
-			System.out.println("No Entry Point");
-			System.exit(1);
-		}
-		Scene.v().setEntryPoints(entryPoints);
-		PackManager.v().runPacks();
 		
 		Set<String> conversions = JCryptAnalysis.conversions;
-		System.out.println("Number of conversions: " + conversions.size());
 		for (String s : conversions) {
 			System.out.println(s);
 		}
+		System.out.println("Number of conversions: " + conversions.size());
 	}
 	
 }

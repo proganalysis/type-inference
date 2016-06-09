@@ -6,7 +6,7 @@
 start=`date +%s`
 
 mydir="`dirname $0`"
-mrlib=`find /Users/yaodong/Documents/Projects/hadoop-2.6.4/share/hadoop -name '*.jar' | xargs | sed 's/ /:/g'`
+mrlib=`find $mydir/../benchmarks/mapreduce/lib -name '*.jar' | xargs | sed 's/ /:/g'`
 soot=$mydir/../lib/soot-develop.jar
 inference=$mydir/../lib/soot-inference.jar
 jdk=$mydir/../jdk/reim/jdk.jar
@@ -25,7 +25,7 @@ do
     -main ) appMainClass=$appMainClass"`echo $1`"
     shift
     ;;
-    -cp ) appClassPath="`echo $1`":$appClassPath
+    -cp ) appClassPath=$appClassPath"`echo $1`"
     shift
     ;;
     -d ) outputDir=$outputDir"`echo $1`"
@@ -34,14 +34,14 @@ do
   esac
 done
 
+mkdir -p $outputDir
+
 if [[ $phase == *"1"* ]]
 then
 echo
 echo "-------- Phase 1: Build Source --------"
 echo
-#echo "java -cp $soot soot.Main -cp $appClassPath:$classpath -pp $appMainClass -d $outputDir"
-
-java -cp $soot soot.Main -cp $appClassPath:$classpath -pp $appMainClass -d $outputDir
+find $appClassPath -name '*.java' | xargs javac -cp $mrlib:$appClassPath:$inference -d $outputDir
 fi
 
 if [[ $phase == *"2"* ]]
@@ -51,8 +51,6 @@ mainClass="edu.rpi.SootInferenceJCrypt"
 echo
 echo "-------- Phase 2: Type Inference --------"
 echo
-#echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir"
-
 java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir
 fi
 
@@ -64,8 +62,6 @@ mainClass="edu.rpi.TranslatorMain"
 echo
 echo "-------- Phase 3: Code Generation --------"
 echo
-#echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir"
-
 java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -d $outputDir
 fi
 
@@ -77,8 +73,6 @@ mainClass="edu.rpi.SootInferenceJCrypt"
 echo
 echo "-------- Phase 4: Type Inference 2 --------"
 echo
-#echo "java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir"
-
 java -cp $inference:$soot $mainClass -allow-phantom-refs -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir
 fi
 
@@ -90,19 +84,14 @@ mainClass="vasco.soot.examples.JCryptMain"
 echo
 echo "-------- Phase 5: AE Analysis --------"
 echo
-classname=`find $outputDir -name '*\$*.class'`
-for class in $classname
+for className in `find $outputDir -name '*.class'`
 do
-class=${class#*\$}
-class=${class/\.class/}
-appMC=$appMainClass"\$"$class
-echo "Analyzing $appMC ..."
-echo
-#echo "  java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMainClass"
-java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir $appMC
-echo
+    className=${className#$outputDir/}
+    className=${className%.*}
+    appMC=${className//\//\.}
+    echo "Analyzing $appMC ..."
+    java -cp $inference:$soot $mainClass -cp $outputDir -d $outputDir -MR $appMC
 done
-# > $outputDir/conversion-result.txt
 fi
 
 end=`date +%s`

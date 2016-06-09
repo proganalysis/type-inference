@@ -98,7 +98,7 @@ public class JCryptAnalysis
 		methods.add("sort");
 		opeContainers.put("java.util.Collections", methods);
 		opeContainers.put("java.util.Arrays", methods);
-		verbose = true;
+		verbose = false;
 		readFile(dir + File.separator + "poly-result.txt");
 	}
 
@@ -145,8 +145,8 @@ public class JCryptAnalysis
 		// Initialize result to input
 		Map<Object, Byte> outValue = copy(inValue);
 		SootMethod sm = context.getMethod();
-		if (!sm.getName().endsWith("_Sen") && !sm.isMain())
-			return outValue;
+//		if (!sm.getName().endsWith("_Sen") && !sm.isMain())
+//			return outValue;
 		String smOriginalSig = sm.getSignature().replace("_Sen", "");
 		// Only statements assigning locals matter
 		if (unit instanceof AssignStmt) {
@@ -186,8 +186,8 @@ public class JCryptAnalysis
 					switch (symbol) {
 					case " + ":
 					case " - ":
-						outValue.put(lhsOp, (byte) 0b100);
 						checkUsage(outValue, (BinopExpr) rhsOp, (byte) 0b100, sm.getSignature());
+						outValue.put(lhsOp, (byte) 0b100);
 						break;
 					case " * ":
 					case " / ":
@@ -195,8 +195,8 @@ public class JCryptAnalysis
 					case " << ":
 					case " >> ":
 					case " >>> ":
-						outValue.put(lhsOp, (byte) 0b10);
 						checkUsage(outValue, (BinopExpr) rhsOp, (byte) 0b10, sm.getSignature());
+						outValue.put(lhsOp, (byte) 0b10);
 						break;
 					case " == ":
 					case " != ":
@@ -375,13 +375,13 @@ public class JCryptAnalysis
 			            // receiver
 			            InstanceInvokeExpr iv = (InstanceInvokeExpr) ie;
 			            Value base = iv.getBase();
-			            System.out.println("Equality Check: " + base + " at " + unit + "(" + className + ")");
+			            //System.out.println("Equality Check: " + base + " at " + unit + "(" + className + ")");
 			            if ((inValue.get(base) & 0b10) == 0) {
 							conversions.add(base + ": " + unit);
 						}
 					}
 					Value arg = ie.getArg(0);
-					System.out.println("Equality Check: " + arg + " at " + unit + "(" + className + ")");
+					//System.out.println("Equality Check: " + arg + " at " + unit + "(" + className + ")");
 					if (inValue.containsKey(arg) && (inValue.get(arg) & 0b10) == 0) {
 						conversions.add(arg + ": " + unit);
 					}
@@ -391,7 +391,7 @@ public class JCryptAnalysis
 				if (opeContainers.get(className).contains(sm.getName())) {
 					InvokeExpr ie = ((Stmt) unit).getInvokeExpr();
 					Value arg = ie.getArg(0);
-					System.out.println("Comparison Check: " + arg + " at " + unit + "(" + className + ")");
+					//System.out.println("Comparison Check: " + arg + " at " + unit + "(" + className + ")");
 					if ((inValue.get(arg) & 0b1) == 0) {
 						conversions.add(arg + ": " + unit);
 					}

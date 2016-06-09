@@ -1,6 +1,5 @@
 package edu.rpi;
 
-import java.util.List;
 import java.util.Set;
 
 import java.io.PrintStream;
@@ -79,11 +78,12 @@ public class SootInferenceJCrypt {
 		for (Constraint c : errors)
 			System.out.println(c + "\n");
 		TypingExtractor extractor = new MaximalTypingExtractor(jcryptTransformer, jcryptSolver);
-		List<Constraint> typeErrors = extractor.extract();
-		if (!typeErrors.isEmpty()) {
-			for (Constraint c : typeErrors)
-				System.out.println(c);
-		}
+		extractor.extract();
+//		List<Constraint> typeErrors = extractor.extract();
+//		if (!typeErrors.isEmpty()) {
+//			for (Constraint c : typeErrors)
+//				System.out.println(c);
+//		}
 
 		try {
 			PrintStream jcryptOut = new PrintStream(outputDir + File.separator + "jcrypt-result.jaif");

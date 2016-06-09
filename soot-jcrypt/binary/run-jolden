@@ -1,0 +1,11 @@
+#!/bin/bash
+
+sh soot-jcrypt -cp ../benchmarks/jolden/bh -main jolden.bh.BH -d ../output/jolden/bh -phase 12345 > results.log; mv results.log ../output/jolden/bh
+sh soot-jcrypt -cp ../benchmarks/jolden/bisort -main jolden.bisort.BiSort -d ../output/jolden/bisort -phase 12345 > results.log; mv results.log ../output/jolden/bisort
+sh soot-jcrypt -cp ../benchmarks/jolden/em3d -main jolden.em3d.Em3d -d ../output/jolden/em3d -phase 12345 > results.log; mv results.log ../output/jolden/em3d
+sh soot-jcrypt -cp ../benchmarks/jolden/health -main jolden.health.Health -d ../output/jolden/health -phase 12345 > results.log; mv results.log ../output/jolden/health
+sh soot-jcrypt -cp ../benchmarks/jolden/mst -main jolden.mst.MST -d ../output/jolden/mst -phase 12345 > results.log; mv results.log ../output/jolden/mst
+sh soot-jcrypt -cp ../benchmarks/jolden/power -main jolden.power.Power -d ../output/jolden/power -phase 12345 > results.log; mv results.log ../output/jolden/power
+sh soot-jcrypt -cp ../benchmarks/jolden/treeadd -main jolden.treeadd.TreeAdd -d ../output/jolden/treeadd -phase 12345 > results.log; mv results.log ../output/jolden/treeadd
+sh soot-jcrypt -cp ../benchmarks/jolden/tsp -main jolden.tsp.TSP -d ../output/jolden/tsp -phase 12345 > results.log; mv results.log ../output/jolden/tsp
+sh soot-jcrypt -cp ../benchmarks/jolden/voronoi -main jolden.voronoi.Voronoi -d ../output/jolden/voronoi -phase 12345 > results.log; mv results.log ../output/jolden/voronoi

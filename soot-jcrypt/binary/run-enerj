@@ -1,0 +1,7 @@
+#!/bin/bash
+
+sh soot-jcrypt -cp ../benchmarks/enerj/imagefill -main FFTest -d ../output/enerj/imagefill -phase 12345 > results.log; mv results.log ../output/enerj/imagefill
+sh soot-jcrypt -cp ../benchmarks/enerj/jmeint -main JMEIntTest -d ../output/enerj/jmeint -phase 12345 > results.log; mv results.log ../output/enerj/jmeint
+sh soot-jcrypt -cp ../benchmarks/enerj/scimark2 -main jnt.scimark2.commandline -d ../output/enerj/scimark2 -phase 12345 > results.log; mv results.log ../output/enerj/scimark2
+sh soot-jcrypt -cp ../benchmarks/enerj/simpleRaytracer -main Plane -d ../output/enerj/simpleRaytracer -phase 12345 > results.log; mv results.log ../output/enerj/simpleRaytracer
+sh soot-jcrypt -cp ../benchmarks/enerj/zxing -main com.google.zxing.client.j2se.CommandLineRunner -d ../output/enerj/zxing -phase 12345 > results.log; mv results.log ../output/enerj/zxing
