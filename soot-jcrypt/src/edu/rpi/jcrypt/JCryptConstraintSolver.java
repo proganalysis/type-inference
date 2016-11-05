@@ -51,7 +51,7 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 	private final byte SENSITIVE_MASK = 0x01;
 	private final byte POLY_MASK = 0x02;
 	private final byte CLEAR_MASK = 0x04;
-	//private Set<String> clearLibMethods;
+	// private Set<String> clearLibMethods;
 
 	public JCryptConstraintSolver(InferenceTransformer t) {
 		this(t, false);
@@ -68,14 +68,18 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		if (preferSink && preferSource) {
 			throw new RuntimeException("Can only have one of {preferSource, preferSource}!");
 		}
-		
-//		clearLibMethods = new HashSet<>();
-//		clearLibMethods.add("lib-<java.lang.String: int lastIndexOf(java.lang.String)>@return");
-//		clearLibMethods.add("lib-<java.lang.String: int length()>@return");
-//		clearLibMethods.add("lib-<java.lang.String: int indexOf(java.lang.String)>@return");
-//		clearLibMethods.add("lib-<java.lang.String: int lastIndexOf(java.lang.String)>@this");
-//		clearLibMethods.add("lib-<java.lang.String: int length()>@this");
-//		clearLibMethods.add("lib-<java.lang.String: int indexOf(java.lang.String)>@this");
+
+		// clearLibMethods = new HashSet<>();
+		// clearLibMethods.add("lib-<java.lang.String: int
+		// lastIndexOf(java.lang.String)>@return");
+		// clearLibMethods.add("lib-<java.lang.String: int length()>@return");
+		// clearLibMethods.add("lib-<java.lang.String: int
+		// indexOf(java.lang.String)>@return");
+		// clearLibMethods.add("lib-<java.lang.String: int
+		// lastIndexOf(java.lang.String)>@this");
+		// clearLibMethods.add("lib-<java.lang.String: int length()>@this");
+		// clearLibMethods.add("lib-<java.lang.String: int
+		// indexOf(java.lang.String)>@this");
 	}
 
 	private byte toBits(Set<Annotation> annos) {
@@ -242,7 +246,7 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		Kind kind = av.getKind();
 		return kind == Kind.PARAMETER || kind == Kind.THIS || kind == Kind.RETURN;
 	}
-	
+
 	private boolean isLocalThis(AnnotatedValue av) {
 		return av.getKind() == Kind.LOCAL && av.getName().equals("this");
 	}
@@ -306,7 +310,8 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 					&& canConnectVia(left, right)) {
 				for (Constraint lc : getLessConstraints(left)) {
 					AnnotatedValue r = lc.getLeft();
-					if (!r.equals(right) && (isParamOrRetValue(r) || isLocalThis(r)) && !(r instanceof MethodAdaptValue)) {
+					if (!r.equals(right) && (isParamOrRetValue(r) || isLocalThis(r))
+							&& !(r instanceof MethodAdaptValue)) {
 						Constraint linear = new SubtypeConstraint(r, right);
 						linear.addCause(lc);
 						linear.addCause(c);
@@ -334,9 +339,13 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 					Set<AdaptValue> adaptSetRight = declRefToAdaptValue.get(right.getIdentifier());
 					if (adaptSetLeft != null && adaptSetRight != null) {
 						for (AdaptValue yPar : adaptSetLeft) {
-							//if (clearLibMethods.contains(yPar.getIdentifier())) continue;
+							// if
+							// (clearLibMethods.contains(yPar.getIdentifier()))
+							// continue;
 							for (AdaptValue yRet : adaptSetRight) {
-								//if (clearLibMethods.contains(yRet.getIdentifier())) continue;
+								// if
+								// (clearLibMethods.contains(yRet.getIdentifier()))
+								// continue;
 								if (yPar.getContextValue().getId() == yRet.getContextValue().getId()) {
 									for (Constraint lc : getLessConstraints(yPar)) {
 										for (Constraint gc : getGreaterConstraints(yRet)) {
@@ -538,6 +547,9 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		// try using reim
 		updateConstraintsWithReim(constraints);
 
+		// add constrains between map output and reduce input
+		addMapReduceConstraints(constraints);
+
 		buildRefToConstraintMapping(constraints);
 
 		worklist.addAll(constraints);
@@ -582,8 +594,37 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 			}
 		}
 		info(this.getClass().getSimpleName(), "Total restore number: " + restoreCounter);
-		info(this.getClass().getSimpleName(), "Finish solving JCrypt constraints. " + conflictConstraints.size() + " error(s)");
+		info(this.getClass().getSimpleName(),
+				"Finish solving JCrypt constraints. " + conflictConstraints.size() + " error(s)");
 
 		return conflictConstraints;
 	}
+
+	private void addMapReduceConstraints(Set<Constraint> constraints) {
+		Map<String, AnnotatedValue> annotatedValues = t.getAnnotatedValues();
+		if (InferenceTransformer.mapKey == null)
+			return;
+		Set<AnnotatedValue> reduceKeys = getReduceKey(annotatedValues);
+		if (reduceKeys.isEmpty())
+			return;
+		for (AnnotatedValue reduceKey : reduceKeys) {
+			Constraint c = new SubtypeConstraint(InferenceTransformer.mapKey, reduceKey);
+			constraints.add(c);
+			String reduceKeyId = reduceKey.getIdentifier();
+			AnnotatedValue reduceValue = annotatedValues.get(reduceKeyId.substring(0, reduceKeyId.length() - 1) + "1");
+			c = new SubtypeConstraint(InferenceTransformer.mapValue, reduceValue);
+			constraints.add(c);
+		}
+	}
+
+	private Set<AnnotatedValue> getReduceKey(Map<String, AnnotatedValue> annotatedValues) {
+		Set<AnnotatedValue> set = new HashSet<>(2);
+		for (String identifier : annotatedValues.keySet()) {
+			if (identifier.matches("<.*: void reduce(.*)>@parameter0")) {
+				set.add(annotatedValues.get(identifier));
+			}
+		}
+		return set;
+	}
+
 }

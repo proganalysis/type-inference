@@ -36,6 +36,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     private static Map<SootMethod, Map<String, AnnotatedValue>> locals = new HashMap<SootMethod, Map<String, AnnotatedValue>>();
 
     private static Map<String, AnnotatedValue> adaptValues = new HashMap<String, AnnotatedValue>();
+    
+    public static AnnotatedValue mapKey, mapValue;
 
     /**
      * This is actually static, because AnnotatedValueMap.v() always
@@ -688,6 +690,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         }
         // End Lindsey
         AnnotatedValue aBase = null;
+        boolean isMapOutput = false;
         if (v instanceof InstanceInvokeExpr) {
             // receiver
             InstanceInvokeExpr iv = (InstanceInvokeExpr) v;
@@ -695,6 +698,9 @@ public abstract class InferenceTransformer extends BodyTransformer {
             aBase = getAnnotatedValue(base);
             AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
             addSubtypeConstraint(aBase, getMethodAdaptValue(aBase, aThis, assignTo));
+            // check if it is the key-value pair of map output
+            isMapOutput = visitorState.getSootMethod().getName().equals("map")
+            		&& isMapOutputMethod(className, methodName);
         }
         // parameters
         if(!runReplace) {
@@ -718,6 +724,12 @@ public abstract class InferenceTransformer extends BodyTransformer {
                 }
                 // End Lindsey
                 addSubtypeConstraint(aArg, getMethodAdaptValue(aBase, aParam, assignTo));
+                // record the output key-value pair of map
+                if (isMapOutput)
+                	if (mapKey == null)
+                		mapKey = aArg;
+                	else
+                		mapValue = aArg;
             }
         }
         // return
@@ -729,8 +741,15 @@ public abstract class InferenceTransformer extends BodyTransformer {
         }
     }
 
+    private boolean isMapOutputMethod(String decClass, String methodName) {
+    	if (decClass.equals("org.apache.hadoop.mapreduce.Mapper$Context") && methodName.equals("write"))
+    		return true;
+    	if (decClass.equals("org.apache.hadoop.mapred.OutputCollector") && methodName.equals("collect"))
+    		return true;
+    	return false;
+    }
 
-    @Override
+	@Override
     protected void internalTransform(final Body b, String phaseName,
                                      @SuppressWarnings("rawtypes") Map options) {
         SootMethod sm = b.getMethod();
