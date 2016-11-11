@@ -51,7 +51,7 @@ mainClass="edu.rpi.SootInferenceJCrypt"
 echo
 echo "-------- Phase 2: Type Inference --------"
 echo
-java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f jimple -d $outputDir
+java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir
 fi
 
 if [[ $phase == *"3"* ]]

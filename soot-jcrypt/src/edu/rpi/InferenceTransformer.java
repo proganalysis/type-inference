@@ -196,7 +196,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         return ret;
     }
 
-    protected AnnotatedValue getAnnotatedValue(Value v) {
+    public AnnotatedValue getAnnotatedValue(Value v) {
         if (v instanceof Local)
             return getAnnotatedValue((Local) v);
         else if (v instanceof Constant)
@@ -205,7 +205,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
             throw new RuntimeException("Not implemented for " + v.getClass());
     }
 
-    protected AnnotatedValue getAnnotatedField(SootField field) {
+    public AnnotatedValue getAnnotatedField(SootField field) {
         field = getDeclaringField(field);
         String identifier = field.getSignature();
         AnnotatedValue ret = annotatedValues.get(identifier);
@@ -741,7 +741,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
         }
     }
 
-    private boolean isMapOutputMethod(String decClass, String methodName) {
+    public boolean isMapOutputMethod(String decClass, String methodName) {
     	if (decClass.equals("org.apache.hadoop.mapreduce.Mapper$Context") && methodName.equals("write"))
     		return true;
     	if (decClass.equals("org.apache.hadoop.mapred.OutputCollector") && methodName.equals("collect"))

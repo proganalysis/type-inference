@@ -98,6 +98,9 @@ public class JCryptAnalysis
 		methods.add("sort");
 		opeContainers.put("java.util.Collections", methods);
 		opeContainers.put("java.util.Arrays", methods);
+		methods = new HashSet<>();
+		methods.add("write");
+		detContainers.put("org.apache.hadoop.mapreduce.Mapper$Context", methods);
 		verbose = false;
 		readFile(dir + File.separator + "poly-result.txt");
 	}
@@ -362,8 +365,7 @@ public class JCryptAnalysis
 		return DefaultJimpleRepresentation.v();
 	}
 	
-	@Override
-	public boolean isLibMethod(SootMethod sm, Unit unit, Map<Object, Byte> inValue) {
+	public boolean isLibMethod(SootMethod sm, Unit unit, Map<Object, Byte> inValue, SootMethod enclosingMethod) {
 		if (sm.isPhantom()) return true;
 		if (sm.isJavaLibraryMethod()) {
 			// check implicit equality
@@ -399,6 +401,12 @@ public class JCryptAnalysis
 			}
 			return true;
 		}
+		return false;
+	}
+
+	@Override
+	public boolean isLibMethod(SootMethod targetMethod) {
+		// TODO Auto-generated method stub
 		return false;
 	}
 

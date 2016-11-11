@@ -82,6 +82,7 @@ public class JCryptMain extends SceneTransformer {
 			Object local = entry.getKey();
 			byte typeSet = entry.getValue();
 			sb.append("(").append(local).append("=[ ");
+			if ((0b1000 & typeSet) != 0) sb.append("MH").append(" ");
 			if ((0b100 & typeSet) != 0) sb.append("AH").append(" ");
 			if ((0b10 & typeSet) != 0) sb.append("DET").append(" ");
 			if ((0b1 & typeSet) != 0) sb.append("OPE").append(" ");
