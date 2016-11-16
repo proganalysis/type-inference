@@ -351,6 +351,25 @@ public class JCryptTransformer extends InferenceTransformer {
 	public String getName() {
 		return "jcrypt";
 	}
+	
+	public Set<String> getPolyValues() {
+		Set<String> polyValues = new HashSet<>();
+		for (AnnotatedValue av : getAnnotatedValues().values()) {
+			if (av.getIdentifier().startsWith("callsite"))
+				continue;
+			Kind kind = av.getKind();
+			if (kind == Kind.FIELD || kind == Kind.LOCAL) {
+				Annotation anno = av.getAnnotations(this).iterator().next();
+				if (anno == CLEAR)
+					continue;
+				SootClass sc = av.getEnclosingClass();
+				if (sc.isLibraryClass())
+					continue;
+				polyValues.add(av.getIdentifier());
+			}
+		}
+		return polyValues;
+	}
 
 	@Override
 	public void printPolyResult(PrintStream out) {

@@ -7,12 +7,12 @@ start=`date +%s`
 
 mydir="`dirname $0`"
 mrlib=`find $mydir/../benchmarks/mapreduce/lib -name '*.jar' | xargs | sed 's/ /:/g'`
-soot=$mydir/../lib/soot-develop.jar
+soot=$mydir/../lib/soot-trunk.jar
 inference=$mydir/../lib/soot-inference.jar
 jdk=$mydir/../jdk/reim/jdk.jar
-rt6=/Users/yaodong/Software/jdk1.6.0_27/jre/lib/rt.jar
+rt8=$JAVA_HOME/jre/lib/rt.jar
 
-classpath="$jdk:$mrlib:$inference:$rt6"
+classpath="$jdk:$mrlib:$inference:$rt8"
 outputDir=""
 appMainClass=""
 appClassPath=""

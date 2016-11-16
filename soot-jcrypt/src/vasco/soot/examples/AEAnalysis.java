@@ -68,7 +68,7 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 	// Initially, all of the three types are available.
 	// The byte is 00001111
 	private byte initialSet() {
-		return 0b11111;
+		return 0b1111;
 	}
 
 	@Override
@@ -86,7 +86,8 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 				set = initialSet();
 			if (lhsOp instanceof FieldRef) { // x.f = y
 				SootField sf = ((FieldRef) lhsOp).getField();
-				outValue.put(sf, (byte) (outValue.get(sf) & set));
+				Byte b = outValue.get(sf);
+				outValue.put(sf, b == null ? initialSet() : (byte) (b & set));
 			} else if (lhsOp instanceof ArrayRef) { // x[y] = z
 				Value base = (( ArrayRef) lhsOp).getBase();
 				outValue.put(base, (byte) (outValue.get(base) & set));
@@ -100,30 +101,14 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 					outValue.put(lhsOp, outValue.get(base));
 				} else if (rhsOp instanceof BinopExpr) { // x = y + z
 					String symbol = ((BinopExpr) rhsOp).getSymbol();
-					Value op1 = ((BinopExpr) rhsOp).getOp1();
-					Value op2 = ((BinopExpr) rhsOp).getOp2();
 					switch (symbol) {
 					case " + ":
 					case " - ":
 						outValue.put(lhsOp, (byte) 0b100);
-						outValue.put(op1, (byte) 0b100);
-						outValue.put(op2, (byte) 0b100);
 						break;
 					case " * ":
 					case " << ":
-						outValue.put(lhsOp, (byte) 0b1000);
-						outValue.put(op1, (byte) 0b1000);
-						outValue.put(op2, (byte) 0b1000);
-						break;
-					case " / ":
-					case " % ":
-					case " >> ":
-					case " >>> ":
-						// no encryption schemes for these operations currently,
-						// so need conversions
-						outValue.put(lhsOp, (byte) 0);
-						outValue.put(op1, (byte) 0);
-						outValue.put(op2, (byte) 0);
+						outValue.put(lhsOp, (byte) 0b10);
 					}
 				} else if (rhsOp instanceof Local) { // x = y
 					outValue.put(lhsOp, set);
@@ -246,7 +231,7 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 
 	@Override
 	public boolean isLibMethod(SootMethod sm) {
-		if (sm.isPhantom() || sm.isJavaLibraryMethod())
+		if (sm.isPhantom() || sm.isJavaLibraryMethod() || !sm.hasActiveBody())
 			return true;
 		return false;
 	}
