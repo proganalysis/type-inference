@@ -9,6 +9,7 @@ import java.util.Set;
 
 import soot.Body;
 import soot.BodyTransformer;
+import soot.BooleanType;
 import soot.Local;
 import soot.SootField;
 import soot.SootMethod;
@@ -61,9 +62,9 @@ public class AECheckerTransformer extends BodyTransformer {
 		methods = new HashSet<>();
 		methods.add("write");
 		detContainers.put("org.apache.hadoop.mapreduce.Mapper$Context", methods);
-		methods = new HashSet<>();
-		methods.add("collect");
-		detContainers.put("org.apache.hadoop.mapred.OutputCollector", methods);
+//		methods = new HashSet<>();
+//		methods.add("collect");
+//		detContainers.put("org.apache.hadoop.mapred.OutputCollector", methods);
 	}
 
 	public Set<String> getConversions() {
@@ -136,9 +137,12 @@ public class AECheckerTransformer extends BodyTransformer {
 					checkConversion(arg0, (byte) 0b10, unit, sm);
 				}
 			}
+			if (sm.getName().equals("map") && method.getName().equals("collect")
+					&& className.equals("org.apache.hadoop.mapred.OutputCollector"))
+				checkConversion(arg0, (byte) 0b10, unit, sm);
 		}
 	}
-
+	
 	private void checkConversion(Value v, Unit unit, SootMethod sm) {
 		String id = getIdenfication(v, sm);
 		if (polyValues.contains(id))
@@ -167,6 +171,8 @@ public class AECheckerTransformer extends BodyTransformer {
 	}
 
 	private void checkConversion(Value v, byte type, Unit unit, SootMethod sm) {
+		if (v.getType() instanceof BooleanType) 
+			return;
 		String id = getIdenfication(v, sm);
 		if (polyValues.contains(id)) {
 			if ((aeResults.get(id) & type) == 0)

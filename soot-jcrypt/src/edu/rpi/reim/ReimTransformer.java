@@ -54,20 +54,20 @@ public class ReimTransformer extends InferenceTransformer {
         defaultPurePatterns.add(Pattern.compile("[^ \t]* compareTo\\(.*\\)$"));
 
         defaultReadonlyRefTypes = new HashSet<String>();
-        defaultReadonlyRefTypes.add("java.lang.String");
-        defaultReadonlyRefTypes.add("java.lang.Boolean");
-        defaultReadonlyRefTypes.add("java.lang.Byte");
-        defaultReadonlyRefTypes.add("java.lang.Character");
-        defaultReadonlyRefTypes.add("java.lang.Double");
-        defaultReadonlyRefTypes.add("java.lang.Float");
-        defaultReadonlyRefTypes.add("java.lang.Integer");
-        defaultReadonlyRefTypes.add("java.lang.Long");
-        defaultReadonlyRefTypes.add("java.lang.Number");
-        defaultReadonlyRefTypes.add("java.lang.Short");
-        defaultReadonlyRefTypes.add("java.util.concurrent.atomic.AtomicInteger");
-        defaultReadonlyRefTypes.add("java.util.concurrent.atomic.AtomicLong");
-        defaultReadonlyRefTypes.add("java.math.BigDecimal");
-        defaultReadonlyRefTypes.add("java.math.BigInteger");
+//        defaultReadonlyRefTypes.add("java.lang.String");
+//        defaultReadonlyRefTypes.add("java.lang.Boolean");
+//        defaultReadonlyRefTypes.add("java.lang.Byte");
+//        defaultReadonlyRefTypes.add("java.lang.Character");
+//        defaultReadonlyRefTypes.add("java.lang.Double");
+//        defaultReadonlyRefTypes.add("java.lang.Float");
+//        defaultReadonlyRefTypes.add("java.lang.Integer");
+//        defaultReadonlyRefTypes.add("java.lang.Long");
+//        defaultReadonlyRefTypes.add("java.lang.Number");
+//        defaultReadonlyRefTypes.add("java.lang.Short");
+//        defaultReadonlyRefTypes.add("java.util.concurrent.atomic.AtomicInteger");
+//        defaultReadonlyRefTypes.add("java.util.concurrent.atomic.AtomicLong");
+//        defaultReadonlyRefTypes.add("java.math.BigDecimal");
+//        defaultReadonlyRefTypes.add("java.math.BigInteger");
     }
 
 

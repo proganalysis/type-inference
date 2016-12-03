@@ -397,6 +397,9 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 						newCons.add(reverse);
 					}
 				}
+				// special case: x = new String(y);
+				// jimple: specialinvoke x.<java.lang.String: void <init>(java.lang.String)>(y);
+				// if y is sensitive, x should be sensitive too
 			}
 		}
 		cons.clear();

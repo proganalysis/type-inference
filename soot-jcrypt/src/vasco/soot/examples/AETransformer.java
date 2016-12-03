@@ -33,6 +33,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
 import soot.jimple.FieldRef;
 import soot.jimple.IfStmt;
+import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import vasco.DataFlowSolution;
@@ -118,6 +119,12 @@ public class AETransformer extends SceneTransformer {
 			}
 		} else if (unit instanceof InvokeStmt) {
 			InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
+			if (ie instanceof InstanceInvokeExpr) {
+				// receiver
+				InstanceInvokeExpr iv = (InstanceInvokeExpr) ie;
+				Value base = iv.getBase();
+				addResult(base, sm, map.get(base));
+			}
 			if (ie.getArgCount() == 0) return;
 			Value arg0 = ie.getArg(0);
 			addResult(arg0, sm, map.get(arg0));
