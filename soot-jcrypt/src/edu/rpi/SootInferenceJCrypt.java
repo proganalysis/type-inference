@@ -43,7 +43,7 @@ public class SootInferenceJCrypt {
 			}
 		}
 
-		soot.Main.main(args);
+		//soot.Main.main(args);
 
 		ConstraintSolver cs = new SetbasedSolver(reimTransformer, false);
 		Set<Constraint> errors = cs.solve();
@@ -148,13 +148,19 @@ public class SootInferenceJCrypt {
 			AECheckerTransformer aect = new AECheckerTransformer(aet.getAeResults(), polyValues);
 			PackManager.v().getPack("jtp").add(new Transform("jtp.aect", aect));
 			String[] sootargs = { "-cp", classPath, "-pp", mainClass, "-f", "none", "-d", outputDir };
-			soot.Main.main(sootargs);
+			//soot.Main.main(sootargs);
 			Set<String> conversions = aect.getConversions();
 			System.out.println("There are " + conversions.size() + " conversions.");
 			for (String con : conversions)
 				System.out.println(mainClass + ": " + con);
 			if (conversions.isEmpty()) {
 				System.out.println(aet.formatResults(aect.getEncryptions()));
+				// transform
+				soot.G.reset();
+				TransformerTransformer trans = new TransformerTransformer();
+				PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
+				sootargs = new String[]{ "-cp", classPath, "-pp", mainClass, "-f", "class", "-d", outputDir };
+				soot.Main.main(sootargs);
 			}
 		}
 
