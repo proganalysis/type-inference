@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.rpi.InferenceTransformer;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.BooleanType;
@@ -35,14 +36,16 @@ public class AECheckerTransformer extends BodyTransformer {
 	private Set<String> conversions = new HashSet<>();
 	private SimpleLocalDefs defs;
 	private UnitGraph cfg;
+	private InferenceTransformer it;
 
 	public Map<Object, Byte> getEncryptions() {
 		return encryptions;
 	}
 
-	public AECheckerTransformer(Map<String, Byte> map, Set<String> polyValues) {
+	public AECheckerTransformer(Map<String, Byte> map, Set<String> polyValues, InferenceTransformer jcryptTransformer) {
 		this.aeResults = map;
 		this.polyValues = polyValues;
+		this.it = jcryptTransformer;
 		Set<String> methods = new HashSet<>();
 		methods.add("contains");
 		detContainers.put("java.util.ArrayList", methods);
@@ -59,9 +62,9 @@ public class AECheckerTransformer extends BodyTransformer {
 		methods = new HashSet<>();
 		methods.add("equals");
 		detContainers.put("java.lang.String", methods);
-		methods = new HashSet<>();
-		methods.add("write");
-		detContainers.put("org.apache.hadoop.mapreduce.Mapper$Context", methods);
+//		methods = new HashSet<>();
+//		methods.add("write");
+//		detContainers.put("org.apache.hadoop.mapreduce.Mapper$Context", methods);
 //		methods = new HashSet<>();
 //		methods.add("collect");
 //		detContainers.put("org.apache.hadoop.mapred.OutputCollector", methods);
@@ -137,8 +140,7 @@ public class AECheckerTransformer extends BodyTransformer {
 					checkConversion(arg0, (byte) 0b10, unit, sm);
 				}
 			}
-			if (sm.getName().equals("map") && method.getName().equals("collect")
-					&& className.equals("org.apache.hadoop.mapred.OutputCollector"))
+			if (sm.getName().equals("map") && it.isMapOutputMethod(className, method.getName()))
 				checkConversion(arg0, (byte) 0b10, unit, sm);
 		}
 	}

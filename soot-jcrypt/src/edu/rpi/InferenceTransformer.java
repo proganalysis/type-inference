@@ -37,7 +37,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
 	private static Map<String, AnnotatedValue> adaptValues = new HashMap<String, AnnotatedValue>();
 
-	public static AnnotatedValue mapKey, mapValue;
+	public AnnotatedValue mapKey, mapValue, reduceKey, reduceValue;
 
 	/**
 	 * This is actually static, because AnnotatedValueMap.v() always return the
@@ -686,7 +686,7 @@ public abstract class InferenceTransformer extends BodyTransformer {
 		}
 		// End Lindsey
 		AnnotatedValue aBase = null;
-		boolean isMapOutput = false;
+		boolean isMapOutput = false, isReduceOutput = false;
 		if (v instanceof InstanceInvokeExpr) {
 			// receiver
 			InstanceInvokeExpr iv = (InstanceInvokeExpr) v;
@@ -697,6 +697,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
 			// check if it is the key-value pair of map output
 			isMapOutput = visitorState.getSootMethod().getName().equals("map")
 					&& isMapOutputMethod(className, methodName);
+			isReduceOutput = visitorState.getSootMethod().getName().equals("reduce")
+					&& isReduceOutputMethod(className, methodName);
 		}
 		// parameters
 		if (!runReplace) {
@@ -729,6 +731,11 @@ public abstract class InferenceTransformer extends BodyTransformer {
 						mapKey = aArg;
 					else
 						mapValue = aArg;
+				if (isReduceOutput)
+					if (reduceKey == null)
+						reduceKey = aArg;
+					else
+						reduceValue = aArg;
 			}
 		}
 		// return
@@ -738,6 +745,14 @@ public abstract class InferenceTransformer extends BodyTransformer {
 			AnnotatedValue aReturn = getAnnotatedReturn(invokeMethod);
 			addSubtypeConstraint(getMethodAdaptValue(aBase, aReturn, assignTo), assignTo);
 		}
+	}
+
+	private boolean isReduceOutputMethod(String decClass, String methodName) {
+		if (decClass.equals("org.apache.hadoop.mapreduce.Reducer$Context") && methodName.equals("write"))
+			return true;
+		if (decClass.equals("org.apache.hadoop.mapred.OutputCollector") && methodName.equals("collect"))
+			return true;
+		return false;
 	}
 
 	public boolean isMapOutputMethod(String decClass, String methodName) {
