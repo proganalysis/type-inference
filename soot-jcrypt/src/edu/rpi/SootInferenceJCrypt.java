@@ -157,9 +157,9 @@ public class SootInferenceJCrypt {
 				System.out.println(aet.formatResults(aect.getEncryptions()));
 				// transform
 				soot.G.reset();
-				TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer);
+				TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues);
 				PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
-				sootargs = new String[]{ "-cp", classPath, "-pp", mainClass, "-f", "class", "-d", outputDir };
+				sootargs = new String[]{ "-cp", classPath, "-pp", mainClass, "-f", "jimple", "-d", outputDir };
 				soot.Main.main(sootargs);
 			}
 		}

@@ -12,13 +12,11 @@ import soot.Body;
 import soot.BodyTransformer;
 import soot.BooleanType;
 import soot.Local;
-import soot.SootField;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
-import soot.jimple.FieldRef;
 import soot.jimple.IfStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
@@ -146,7 +144,7 @@ public class AECheckerTransformer extends BodyTransformer {
 	}
 	
 	private void checkConversion(Value v, Unit unit, SootMethod sm) {
-		String id = getIdenfication(v, sm);
+		String id = TransUtils.getIdenfication(v, sm);
 		if (polyValues.contains(id))
 			conversions.add(unit.toString());
 	}
@@ -175,7 +173,7 @@ public class AECheckerTransformer extends BodyTransformer {
 	private void checkConversion(Value v, byte type, Unit unit, SootMethod sm) {
 		if (v.getType() instanceof BooleanType) 
 			return;
-		String id = getIdenfication(v, sm);
+		String id = TransUtils.getIdenfication(v, sm);
 		if (polyValues.contains(id)) {
 			if ((aeResults.get(id) & type) == 0)
 				conversions.add(unit.toString());
@@ -189,17 +187,6 @@ public class AECheckerTransformer extends BodyTransformer {
 				}
 			}
 		}
-	}
-
-	private String getIdenfication(Value v, SootMethod sm) {
-		String id = "";
-		if (v instanceof FieldRef) {
-			SootField sf = ((FieldRef) v).getField();
-			id = sf.getSignature();
-		} else if (v instanceof Local) {
-			id = sm.getSignature() + "@" + v.toString();
-		}
-		return id;
 	}
 
 	public List<Unit> getDefsOfLocal(Unit u, Local l) {
