@@ -20,6 +20,8 @@ import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
+import soot.jimple.CastExpr;
+import soot.jimple.ClassConstant;
 import soot.jimple.IdentityStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
@@ -27,6 +29,7 @@ import soot.jimple.NewExpr;
 import soot.jimple.ParameterRef;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StaticInvokeExpr;
+import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.internal.JIdentityStmt;
 import soot.tagkit.AbstractHost;
 import soot.tagkit.SignatureTag;
@@ -36,6 +39,8 @@ public class TransformerTransformer extends BodyTransformer {
 	private static Set<SootClass> visited = new HashSet<>();
 	private JCryptTransformer jt;
 	private Set<String> polyValues;
+	private static SootMethod modifiedReduceMethod;
+
 	public TransformerTransformer(JCryptTransformer jcryptTransformer, Set<String> polyValues) {
 		jt = jcryptTransformer;
 		this.polyValues = polyValues;
@@ -44,33 +49,58 @@ public class TransformerTransformer extends BodyTransformer {
 	@Override
 	protected void internalTransform(Body body, String arg1, Map<String, String> arg2) {
 		SootMethod sm = body.getMethod();
-		if (soot.Modifier.isVolatile(sm.getModifiers()))
-			return;
+//		if (soot.Modifier.isVolatile(sm.getModifiers()))
+//			return;
 		String methodName = sm.getName();
 		if (methodName.equals("map")) {
 			modifyClass(true);
 			modifyMapMethod(sm);
-			modifyMethodStmts(body, sm, true);
+			modifyMethodStmts(body, sm);
 			modifyMethodLocals(body, sm);
 		} else if (methodName.equals("reduce")) {
 			modifyClass(false);
 			modifyReduceMethod(sm);
 			modifyMethodSignatures(sm);
-			modifyMethodStmts(body, sm, false);
 			modifyMethodLocals(body, sm);
+			modifyMethodStmts(body, sm);
+		} else if (methodName.equals("run")) {
+			modifyRunMethod(body);
 		}
-
 	}
-	
+
+	private void modifyRunMethod(Body body) {
+		for (Unit unit : body.getUnits()) {
+			if (unit instanceof InvokeStmt) {
+				InvokeExpr invoke = ((InvokeStmt) unit).getInvokeExpr();
+				if (invoke instanceof VirtualInvokeExpr) {
+					if ((invoke.getMethod().getName().equals("setOutputKeyClass") && shouldModify(jt.reduceKey))
+							|| (invoke.getMethod().getName().equals("setOutputValueClass")
+									&& shouldModify(jt.reduceValue))) {
+						invoke.setArg(0, ClassConstant.v("org/apache/hadoop/io/Text"));
+					}
+				}
+			}
+		}
+	}
+
 	private void modifyMethodSignatures(SootMethod sm) {
-		if (shouldModify(jt.mapKey)) {
+		if (shouldModify(jt.mapKey) && shouldModify(sm)) {
 			List<Type> list = new ArrayList<>(sm.getParameterTypes());
-			if (list.isEmpty()) return;
 			list.remove(0);
 			list.add(0, RefType.v("org.apache.hadoop.io.Text"));
 			sm.setParameterTypes(list);
 			Local para = sm.getActiveBody().getParameterLocal(0);
 			para.setType(RefType.v("org.apache.hadoop.io.Text"));
+
+			SignatureTag sigTag = (SignatureTag) sm.getTag("SignatureTag");
+			if (sigTag == null)
+				return;
+			sm.removeTag("SignatureTag");
+			String signature = sigTag.getSignature();
+			int index = signature.indexOf(';');
+			SignatureTag tag = new SignatureTag("(Lorg/apache/hadoop/io/Text" + signature.substring(index));
+			sm.addTag(tag);
+			modifiedReduceMethod = sm;
 		}
 	}
 
@@ -79,15 +109,14 @@ public class TransformerTransformer extends BodyTransformer {
 			if (shouldModify(local, sm)) {
 				local.setType(RefType.v("org.apache.hadoop.io.Text"));
 			}
-			if (polyValues.contains(TransUtils.getIdenfication(local, sm))
-					&& local.getType() instanceof PrimType
+			if (polyValues.contains(TransUtils.getIdenfication(local, sm)) && local.getType() instanceof PrimType
 					&& !(local.getType() instanceof BooleanType)) {
 				local.setType(RefType.v("java.lang.String"));
 			}
 		}
 	}
 
-	private void modifyMethodStmts(Body body, SootMethod sm, boolean isMap) {
+	private void modifyMethodStmts(Body body, SootMethod sm) {
 		for (Unit unit : body.getUnits()) {
 			if (unit instanceof AssignStmt) {
 				Value rightOp = ((AssignStmt) unit).getRightOp();
@@ -99,16 +128,25 @@ public class TransformerTransformer extends BodyTransformer {
 						((NewExpr) rightOp).setBaseType(RefType.v("org.apache.hadoop.io.Text"));
 					}
 				} else if (rightOp instanceof StaticInvokeExpr) {
-					// $i3 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>($r8);
+					// $i3 = staticinvoke <java.lang.Integer: int
+					// parseInt(java.lang.String)>($r8);
 					// -> $i3 = $r8;
 					if (((StaticInvokeExpr) rightOp).getMethod().getName().equals("parseInt")
 							&& polyValues.contains(TransUtils.getIdenfication(leftOp, sm))) {
 						((AssignStmt) unit).setRightOp(((StaticInvokeExpr) rightOp).getArg(0));
 					}
+				} else if (rightOp instanceof CastExpr) {
+					// $r5 = (org.apache.hadoop.io.IntWritable) r1;
+					Type leftType = leftOp.getType();
+					if (!leftType.equals(((CastExpr) rightOp).getCastType())) {
+						((CastExpr) rightOp).setCastType(leftType);
+					}
 				}
 			} else if (unit instanceof InvokeStmt) {
-				// specialinvoke $r6.<org.apache.hadoop.io.IntWritable: void <init>(int)>($i3);
-				// -> specialinvoke $r6.<org.apache.hadoop.io.Text: void <init>(java.lang.String)>($i3);
+				// specialinvoke $r6.<org.apache.hadoop.io.IntWritable: void
+				// <init>(int)>($i3);
+				// -> specialinvoke $r6.<org.apache.hadoop.io.Text: void
+				// <init>(java.lang.String)>($i3);
 				InvokeExpr invoke = ((InvokeStmt) unit).getInvokeExpr();
 				if (invoke instanceof SpecialInvokeExpr) {
 					Value receiver = ((SpecialInvokeExpr) invoke).getBase();
@@ -117,10 +155,15 @@ public class TransformerTransformer extends BodyTransformer {
 								.getMethod("<org.apache.hadoop.io.Text: void <init>(java.lang.String)>");
 						invoke.setMethodRef(toCall.makeRef());
 					}
+				} else if (invoke instanceof VirtualInvokeExpr && soot.Modifier.isVolatile(sm.getModifiers())) {
+					if (modifiedReduceMethod != null) {
+						invoke.setMethodRef(modifiedReduceMethod.makeRef());
+					}
 				}
-			} else if (!isMap && unit instanceof IdentityStmt) {
+			} else if (unit instanceof IdentityStmt) {
+				// r1 := @parameter0: org.apache.hadoop.io.IntWritable;
 				Value rightOp = ((IdentityStmt) unit).getRightOp();
-				if (shouldModify(jt.mapKey) && rightOp instanceof ParameterRef) {
+				if (shouldModify(((IdentityStmt) unit).getLeftOp(), sm) && rightOp instanceof ParameterRef) {
 					int index = ((ParameterRef) rightOp).getIndex();
 					if (index == 0)
 						((JIdentityStmt) unit).setRightOp(new ParameterRef(RefType.v("org.apache.hadoop.io.Text"), 0));
@@ -133,6 +176,14 @@ public class TransformerTransformer extends BodyTransformer {
 		if (!polyValues.contains(TransUtils.getIdenfication(value, sm)))
 			return false;
 		String type = value.getType().toString();
+		return type.startsWith("org.apache.hadoop.io.") && !type.equals("org.apache.hadoop.io.Text");
+	}
+	
+	private boolean shouldModify(SootMethod sm) {
+		List<Type> list = new ArrayList<>(sm.getParameterTypes());
+		if (list.isEmpty())
+			return false;
+		String type = sm.getParameterType(0).toString();
 		return type.startsWith("org.apache.hadoop.io.") && !type.equals("org.apache.hadoop.io.Text");
 	}
 
