@@ -78,12 +78,12 @@ public class InferenceMainSFlow extends InferenceMain {
     	inferenceMain = null;
     }
 
-	public InferenceChecker getInferenceChcker() {
+	public InferenceChecker getInferenceChecker() {
 		return checker;
 	}
 
-	public void setInferenceChcker(InferenceChecker inferenceChcker) {
-		this.checker = inferenceChcker;
+	public void setInferenceChecker(InferenceChecker inferenceChecker) {
+		this.checker = inferenceChecker;
 	}
 	
 	private enum InferType {
@@ -96,7 +96,7 @@ public class InferenceMainSFlow extends InferenceMain {
         if (main.compile(argList.toArray(new String[0])) != Main.Result.OK)
         	return false;
 
-		if (checker.getConstraints().isEmpty()) {
+		if (getInferenceChecker().getConstraints().isEmpty()) {
 			warn(checker.getName(), "No constraints generated.");
 			return false;
 		}
@@ -166,7 +166,7 @@ public class InferenceMainSFlow extends InferenceMain {
 				jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
 		
 		List<String> argList = new ArrayList<String>(args.length + 10);
-        String reimCheckerPath = "checkers.inference.reim.ReimChecker";
+        String reimCheckerPath = "checkers.inference2.reim.ReimChecker";
         String reimFlowCheckerPath = "";
         int processorIndex = -1;
         for (int i = 0; i < args.length; i++) {
@@ -187,8 +187,8 @@ public class InferenceMainSFlow extends InferenceMain {
 		argList.add("-Ainfer");
 		argList.add("-Awarns");
         
-        for (String arg : args) 
-        	argList.add(arg);
+//        for (String arg : args) 
+//        	argList.add(arg);
         
         info("Reim", "Generating constraints...");
         if (!inferImpl(argList, out, InferType.REIM)) {
@@ -342,6 +342,7 @@ public class InferenceMainSFlow extends InferenceMain {
         dest.flush();
         dest.close();
         is.close();
+        zip.close();
     }
 
     /**

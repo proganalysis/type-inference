@@ -148,7 +148,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				.getContext());
 		this.positions = Trees.instance(getProcessingEnvironment())
 				.getSourcePositions();
-		InferenceMain.getInstance().setInferenceChcker(this);
+		InferenceMain.getInstance().setInferenceChecker(this);
 		Log.set(LEVEL_DEBUG);
 		types = processingEnv.getTypeUtils();
 		
@@ -757,7 +757,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 
 	protected void setAnnotation(String identifier, RefKind kind, Tree tree,
 			Element element, Set<AnnotationMirror> annos, Reference ret) {
-		if (!isAnnotated(ret)) {
+		//if (!isAnnotated(ret)) {
 			// add default annotations
 			switch (kind) {
 			case FIELD:
@@ -785,7 +785,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 				annotateDefault(ret, kind, element, tree);
 			}
 			annotatedReferences.put(identifier, ret);
-		}
+		//}
 	}
 
 	public Set<Constraint> getConstraints() {
@@ -803,11 +803,27 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 	protected Reference getFieldAdaptReference(Reference context,
 			Reference decl, Reference assignTo) {
 		return createFieldAdaptReference(context, decl, assignTo);
+//		Reference av = createFieldAdaptReference(context, decl, assignTo);
+//        String identifier = av.getIdentifier();
+//        Reference ret = annotatedReferences.get(identifier);
+//        if (ret == null) {
+//            ret = av;
+//            annotatedReferences.put(identifier, ret);
+//        }
+//        return ret;
 	}
-
-	protected Reference getMethodAdaptReference(Reference context,
-			Reference decl, Reference assignTo) {
-		return createMethodAdaptReference(context, decl, assignTo);
+    
+    protected Reference getMethodAdaptReference(Reference context, Reference decl,
+			Reference assignTo) {
+    	return createMethodAdaptReference(context, decl, assignTo);
+//        Reference av = createMethodAdaptReference(context, decl, assignTo);
+//        String identifier = av.getIdentifier();
+//        Reference ret = annotatedReferences.get(identifier);
+//        if (ret == null) {
+//            ret = av;
+//            annotatedReferences.put(identifier, ret);
+//        }
+//        return ret;
 	}
 
 	public void addSubtypeConstraint(Reference sub, Reference sup, int pos) {
@@ -882,7 +898,7 @@ public abstract class InferenceChecker extends BaseTypeChecker {
 		ExecutableReference overriderRef = (ExecutableReference) getAnnotatedReference(overrider);
 		ExecutableReference overriddenRef = (ExecutableReference) getAnnotatedReference(overridden);
 
-		int pos = ((JCTree) overrider).getStartPosition();
+		int pos = overrider instanceof JCTree ? ((JCTree) overrider).getStartPosition() : 0;
 		// THIS: overridden <: overrider
 		if (!ElementUtils.isStatic(overrider)) {
 			Reference overriderThisRef = overriderRef.getThisRef();

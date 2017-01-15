@@ -76,12 +76,12 @@ public class InferenceMainJcrypt extends InferenceMain {
     	inferenceMain = null;
     }
 
-	public InferenceChecker getInferenceChcker() {
+	public InferenceChecker getInferenceChecker() {
 		return checker;
 	}
 
-	public void setInferenceChcker(InferenceChecker inferenceChcker) {
-		this.checker = inferenceChcker;
+	public void setInferenceChecker(InferenceChecker inferenceChecker) {
+		this.checker = inferenceChecker;
 	}
 	
 	private enum InferType {
@@ -94,7 +94,7 @@ public class InferenceMainJcrypt extends InferenceMain {
         if (main.compile(argList.toArray(new String[0])) != Main.Result.OK)
         	return false;
 
-		if (getInferenceChcker().getConstraints().isEmpty()) {
+		if (getInferenceChecker().getConstraints().isEmpty()) {
 			warn(checker.getName(), "No constraints generated.");
 			return false;
 		}

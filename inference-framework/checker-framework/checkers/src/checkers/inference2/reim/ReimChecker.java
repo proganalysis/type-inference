@@ -177,7 +177,7 @@ public class ReimChecker extends InferenceChecker {
 	@Override
 	protected void annotateDefault(Reference r, RefKind kind, Element elt,
 			Tree t) {
-		if (!isAnnotated(r)) {
+		if (!isAnnotated(r) || !r.getIdentifier().startsWith(LIB_PREFIX)) {
 			if (r.getType().getKind() == TypeKind.NULL) {
 				r.addAnnotation(MUTABLE);
 			} else if (kind == RefKind.LITERAL || isDefaultReadonlyType(r.getType())) {

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package checkers.inference2.typeCast;
+package checkers.inference2.enerj;
 
 import static com.esotericsoftware.minlog.Log.DEBUG;
 import static com.esotericsoftware.minlog.Log.info;
@@ -28,50 +28,43 @@ import checkers.inference2.InferenceMain;
 import checkers.inference2.MaximalTypingExtractor;
 import checkers.inference2.SetbasedSolver;
 import checkers.inference2.TypingExtractor;
-import checkers.inference2.jcrypt.JcryptConstraintSolver;
-import checkers.inference2.jcrypt.JcryptChecker;
-import checkers.inference2.jcrypt.JcryptTypingExtractor;
 import checkers.util.CheckerMain;
 
 import com.sun.tools.javac.main.Main;
 
 /**
  * Those helper methods are from {@link CheckerMain}
- * @author dongy6
+ * @author huangw5
  *
  */
-public class TypeCastMain extends InferenceMain {
+public class InferenceMainEnerj extends InferenceMain {
 
     private static final String VERSION = "1";
     
     public static final String outputDir = "infer-output";
     
-    public static String outputDirTrans = "/Users/yaodong/Documents/Projects/temp/src/";
-    
-    public static String packageName;
-    
-    private static TypeCastMain inferenceMain = null;
+    private static InferenceMainEnerj inferenceMain = null;
 
     public InferenceChecker checker; 
     
-    public TypeCastMain() {
+    public InferenceMainEnerj() {
     	checker = null;
     }
     
-    public static TypeCastMain getInstance() {
-        synchronized (TypeCastMain.class) {
+    public static InferenceMainEnerj getInstance() {
+        synchronized (InferenceMainEnerj.class) {
             if (inferenceMain == null) {
                 String mainClass = System.getProperty("mainClass");
                 if (mainClass != null) {
                     try {
-                        inferenceMain = (TypeCastMain) Class.forName(mainClass).newInstance();
+                        inferenceMain = (InferenceMainEnerj) Class.forName(mainClass).newInstance();
                     } catch (Exception e) {
                         e.printStackTrace();
                         System.exit(1);
                     }
                 }
                 else {
-                    inferenceMain = new TypeCastMain();
+                    inferenceMain = new InferenceMainEnerj();
                 }
                 inferenceMain.needCheck = (System.getProperty("noCheck") == null);
             }
@@ -93,8 +86,7 @@ public class TypeCastMain extends InferenceMain {
 	
 	private enum InferType {
 		REIM,
-		JCRYPT,
-		//JCRYPT2
+		JCRYPT
 	}
 	
 	private boolean inferImpl(List<String> argList, PrintWriter out, InferType itype) {
@@ -106,26 +98,9 @@ public class TypeCastMain extends InferenceMain {
 			warn(checker.getName(), "No constraints generated.");
 			return false;
 		}
-		// output constraints
-		if (DEBUG) {
-			try {
-				PrintWriter pw = new PrintWriter(TypeCastMain.outputDir
-						+ File.separator + checker.getName() + "-constraints.log");
-                for (Constraint c : checker.getConstraints()) {
-                    pw.println(c.toString());
-                }
-				pw.close();
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 		ConstraintSolver solver;
-//		if (itype == InferType.JCRYPT2) {
-//			solver = new Jcrypt2ConstraintSolver((Jcrypt2Checker) checker);
-//		} else 
 		if (itype == InferType.JCRYPT) {
-			solver = new JcryptConstraintSolver((JcryptChecker) checker);
+			solver = new EnerjConstraintSolver((EnerjChecker) checker);
 		} else {
 			solver = new SetbasedSolver(checker);
 		}
@@ -139,18 +114,15 @@ public class TypeCastMain extends InferenceMain {
 		}
 		info(checker.getName(), "Extracting a concete typing...");
 		TypingExtractor extractor;
-//		if (itype == InferType.JCRYPT2) {
-//			extractor = new Jcrypt2TypingExtractor(checker);
-//		} else 
 		if (itype == InferType.JCRYPT) {
-			extractor = new JcryptTypingExtractor(checker);
+			extractor = new EnerjTypingExtractor(checker);
 		} else {
 			extractor = new MaximalTypingExtractor(checker);
 		}
 		List<Constraint> typeErrors = extractor.extract();
 		info(checker.getName(), "Finish extracting typing.");
 		try {
-			PrintWriter pw = new PrintWriter(TypeCastMain.outputDir
+			PrintWriter pw = new PrintWriter(InferenceMainEnerj.outputDir
 					+ File.separator + checker.getName() + "-result.csv");
 			checker.printResult(pw);
 			pw.close();
@@ -158,8 +130,25 @@ public class TypeCastMain extends InferenceMain {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// output constraints
+		if (DEBUG) {
+			try {
+				PrintWriter pw = new PrintWriter(InferenceMainEnerj.outputDir
+						+ File.separator + checker.getName() + "-constraints.log");
+                for (Constraint c : checker.getConstraints()) {
+                    pw.println(c.toString());
+                }
+				pw.close();
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		if (!typeErrors.isEmpty()) {
 			for (Constraint c : typeErrors)  {
+//				if (c.getLeft() instanceof MethodAdaptReference
+//						|| c.getRight() instanceof MethodAdaptReference)
+//					continue;
 				System.out.println(c);
 			}
 			info(checker.getName(), typeErrors.size() + " error(s) in the concrete typing.");
@@ -179,9 +168,7 @@ public class TypeCastMain extends InferenceMain {
 		
 		List<String> argList = new ArrayList<String>(args.length + 10);
         String reimCheckerPath = "checkers.inference2.reim.ReimChecker";
-        String jcryptCheckerPath = "checkers.inference2.jcrypt.JcryptChecker";
-        //String jcrypt2CheckerPath = "checkers.inference2.jcrypt2.Jcrypt2Checker";
-        String transformCheckerPath = "";
+        String reimFlowCheckerPath = "";
         int processorIndex = -1;
         for (int i = 0; i < args.length; i++) {
         	String arg = args[i];
@@ -190,7 +177,7 @@ public class TypeCastMain extends InferenceMain {
         		argList.add(arg);
         		argList.add(reimCheckerPath);	
 				processorIndex = ++i;
-				transformCheckerPath = args[processorIndex];
+				reimFlowCheckerPath = args[processorIndex];
         	}
         	else
 	        	argList.add(arg);
@@ -201,59 +188,41 @@ public class TypeCastMain extends InferenceMain {
 		argList.add("-proc:only");
 		argList.add("-Ainfer");
 		argList.add("-Awarns");
-		if (!fullEncrypt) {
-			info("Reim", "Generating constraints...");
-			if (!inferImpl(argList, out, InferType.REIM)) {
-				return false;
-			}
-			info("Jcrypt", "Generating constraints...");
-			// JcryptChecker
-			argList.set(processorIndex, jcryptCheckerPath);
-			inferImpl(argList, out, InferType.JCRYPT);
-		}
-		// Jcrypt2Checker
-//		info("Jcrypt2", "Generating constraints...");
-//		argList.set(processorIndex, jcrypt2CheckerPath);
-//		inferImpl(argList, out, InferType.JCRYPT2);
-		// transform
-		info("Transforming...");
-		argList.set(processorIndex, transformCheckerPath);
-		return transform(argList, out);
-	}
-	
-	private boolean transform(List<String> args, PrintWriter out) {
-		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
-        if (main.compile(args.toArray(new String[0])) != Main.Result.OK)
+       
+        info("Reim", "Generating constraints...");
+        if (!inferImpl(argList, out, InferType.REIM)) {
         	return false;
-        ((TypeCastChecker) checker).printResult();
-        return true;
+        }
+        info("Jcrypt", "Generating constraints...");
+		// First we need to revert the processor
+		argList.set(processorIndex, reimFlowCheckerPath);
+		return inferImpl(argList, out, InferType.JCRYPT);
 	}
 	
-	public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
-		System.setProperty("sun.boot.class.path",
-				jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
-		List<String> argList = new ArrayList<String>(args.length + 10);
-		argList = new ArrayList<String>(args.length + 10);
-		for (String arg : args)
-			argList.add(arg);
+  public boolean check(String[] args, String jdkBootPaths, PrintWriter out) {
+      System.setProperty("sun.boot.class.path",
+          jdkBootPaths + ":" + System.getProperty("sun.boot.class.path"));
+      List<String> argList = new ArrayList<String>(args.length + 10);
+      argList = new ArrayList<String>(args.length + 10);
+      for (String arg : args) 
+        argList.add(arg);
 
-		argList.add("-Xbootclasspath/p:" + jdkBootPaths);
-		argList.add("-Awarns");
-		argList.add("-proc:only");
-		com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main(
-				"javac", out);
-		if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
-			return false;
-		}
-		return true;
-	}
+      argList.add("-Xbootclasspath/p:" + jdkBootPaths);
+      argList.add("-Awarns");
+      argList.add("-proc:only");
+      com.sun.tools.javac.main.Main main = new com.sun.tools.javac.main.Main("javac", out);
+      if (main.compile(argList.toArray(new String[0])) != Main.Result.OK) {
+        return false;
+      }
+      return true;
+  }
 	
     
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String jdkBootPaths = findPathJar(TypeCastMain.class);
+		String jdkBootPaths = findPathJar(InferenceMainEnerj.class);
 		if (jdkBootPaths == "" || !jdkBootPaths.contains("jdk.jar")) {
 			String customJDK = System.getProperty("jdk");
 			if (customJDK != null)
@@ -277,7 +246,7 @@ public class TypeCastMain extends InferenceMain {
 			}
 		}
 
-		TypeCastMain inferenceMain = TypeCastMain.getInstance();
+		InferenceMainEnerj inferenceMain = InferenceMainEnerj.getInstance();
 		long startTime = System.currentTimeMillis();
 		if (!inferenceMain.infer(args, jdkBootPaths, new PrintWriter(
 				System.err, true))) {
@@ -317,7 +286,7 @@ public class TypeCastMain extends InferenceMain {
 	/** returns the path to annotated JDK */
     protected static String jdkJar() {
         // case 1: running from binary
-        String thisJar = findPathJar(TypeCastMain.class);
+        String thisJar = findPathJar(InferenceMainEnerj.class);
         File potential = new File(new File(thisJar).getParentFile(), "jdk.jar");
         if (potential.exists()) {
             return potential.getPath();
