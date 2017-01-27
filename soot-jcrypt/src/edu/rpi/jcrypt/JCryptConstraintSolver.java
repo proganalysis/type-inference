@@ -605,21 +605,27 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 
 	private void addMapReduceConstraints(Set<Constraint> constraints) {
 		Map<String, AnnotatedValue> annotatedValues = t.getAnnotatedValues();
-		if (st.mapKey == null)
+		if (st.mapKeys.isEmpty())
 			return;
 		Set<AnnotatedValue> reduceKeys = getReduceKey(annotatedValues);
 		if (reduceKeys.isEmpty())
 			return;
 		for (AnnotatedValue reduceKey : reduceKeys) {
-			Constraint c = new SubtypeConstraint(st.mapKey, reduceKey);
-			constraints.add(c);
+			for (AnnotatedValue mapKey : st.mapKeys) {
+				Constraint c = new SubtypeConstraint(mapKey, reduceKey);
+				constraints.add(c);
+			}
 			String reduceKeyId = reduceKey.getIdentifier();
 			AnnotatedValue reduceValue = annotatedValues.get(reduceKeyId.substring(0, reduceKeyId.length() - 1) + "1");
-			c = new SubtypeConstraint(st.mapValue, reduceValue);
-			constraints.add(c);
+			for (AnnotatedValue mapValue : st.mapValues) {
+				Constraint c = new SubtypeConstraint(mapValue, reduceValue);
+				constraints.add(c);
+			}
 		}
 	}
 
+	// get the first parameter of reduce method, that is, reduce input key before reduce phase
+	// or map output key after map phase
 	private Set<AnnotatedValue> getReduceKey(Map<String, AnnotatedValue> annotatedValues) {
 		Set<AnnotatedValue> set = new HashSet<>(2);
 		for (String identifier : annotatedValues.keySet()) {

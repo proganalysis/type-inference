@@ -37,7 +37,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
 	private static Map<String, AnnotatedValue> adaptValues = new HashMap<String, AnnotatedValue>();
 
-	public AnnotatedValue mapKey, mapValue, reduceKey, reduceValue;
+	// record map and reduce output key-value pairs for generic type modification
+	public AnnotatedValue reduceKey, reduceValue;
+	public List<AnnotatedValue> mapKeys = new ArrayList<>();
+	public List<AnnotatedValue> mapValues = new ArrayList<>();
 
 	/**
 	 * This is actually static, because AnnotatedValueMap.v() always return the
@@ -461,24 +464,29 @@ public abstract class InferenceTransformer extends BodyTransformer {
 		out.println(indent + "package " + sc.getPackageName() + ":");
 		out.println();
 		out.println(indent + "class " + sc.getShortName() + ":");
+		int numOfLocations = 0;
 		for (SootField sf : sc.getFields()) {
 			printJaifField(sf, indent + "\t", out);
 			out.println();
 		}
 		for (SootMethod sm : sc.getMethods()) {
-			printJaifMethod(sm, indent + "\t", out);
+			numOfLocations += printJaifMethod(sm, indent + "\t", out);
 			out.println();
 		}
+		out.println("Number of Locations: " + numOfLocations);
 		out.println();
 	}
 
-	protected void printJaifMethod(SootMethod sm, String indent, PrintStream out) {
+	protected int printJaifMethod(SootMethod sm, String indent, PrintStream out) {
+		int numOfLocations = 0;
 		out.println(indent + "method " + sm.getSubSignature() + ":");
 		if (sm.getReturnType() != VoidType.v()) {
 			printAnnotatedValue(getAnnotatedReturn(sm), "return", indent + "\t", out);
+			numOfLocations++;
 		}
 		if (!sm.isStatic()) {
 			printAnnotatedValue(getAnnotatedThis(sm), "receiver", indent + "\t", out);
+			numOfLocations++;
 		}
 		indent += "\t";
 		for (int i = 0; i < sm.getParameterCount(); i++) {
@@ -492,15 +500,19 @@ public abstract class InferenceTransformer extends BodyTransformer {
 			try {
 				Map<String, AnnotatedValue> map = locals.get(sm);
 				if (map == null)
-					return;
+					return numOfLocations;
 				for (AnnotatedValue l : map.values()) {
 					out.println(indent + "local " + l.getName() + ":");
 					printAnnotatedValue(l, "type", indent + "\t", out);
+					String id = l.getIdentifier();
+					if (!id.startsWith(CALLSITE_PREFIX) && !id.startsWith(FAKE_PREFIX) && !id.startsWith(LIB_PREFIX))
+						numOfLocations++;
 				}
 			} finally {
 				visitorState.setSootMethod(prev);
 			}
 		}
+		return numOfLocations;
 	}
 
 	protected void printJaifField(SootField sf, String indent, PrintStream out) {
@@ -727,10 +739,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
 				addSubtypeConstraint(aArg, getMethodAdaptValue(aBase, aParam, assignTo));
 				// record the output key-value pair of map
 				if (isMapOutput)
-					if (mapKey == null)
-						mapKey = aArg;
+					if (i == 0)
+						mapKeys.add(aArg);
 					else
-						mapValue = aArg;
+						mapValues.add(aArg);
 				if (isReduceOutput)
 					if (reduceKey == null)
 						reduceKey = aArg;

@@ -95,8 +95,10 @@ public class SootInferenceJCrypt {
 		Set<String> polyValues = ((JCryptTransformer) jcryptTransformer).getPolyValues();
 		String runClass = null;
 
-		for (String clazz : getClasses(outputDir)) {
-			String mainClass = clazz.substring(0, clazz.length() - 6);
+		List<String> classes = new ArrayList<>();
+		getClasses(outputDir, classes);
+		for (String clazz : classes) {
+			String mainClass = clazz.substring(0, clazz.length() - 6).replace(outputDir + File.separator, "").replace(File.separatorChar, '.');
 			soot.G.reset();
 			info(SootInferenceJCrypt.class.getSimpleName(), "(AETransformer) Analyzing " + mainClass + "...");
 			String[] sootArgs = { "-cp", classPath,
@@ -165,8 +167,7 @@ public class SootInferenceJCrypt {
 				PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
 				//sootargs = new String[] { "-cp", classPath, "-pp", "-allow-phantom-refs", mainClass, "-f", "class",
 				//		"-d", outputDir };
-				sootargs = new String[] { "-cp", classPath, "-pp", mainClass, "-f", "class",
-						"-d", outputDir + "/transformed" };
+				sootargs = new String[] { "-cp", classPath, "-pp", mainClass, "-f", "jimple", "-d", outputDir + "/transformed" };
 				soot.Main.main(sootargs);
 			}
 		}
@@ -178,7 +179,7 @@ public class SootInferenceJCrypt {
 			TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer,
 					polyValues);
 			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
-			String[] sootargs = new String[] { "-cp", classPath, runClass, "-f", "class", "-d", outputDir + "/transformed" };
+			String[] sootargs = new String[] { "-cp", classPath, runClass, "-f", "jimple", "-d", outputDir + "/transformed" };
 			soot.Main.main(sootargs);
 		}
 
@@ -186,13 +187,14 @@ public class SootInferenceJCrypt {
 		info("Total running time: " + ((float) (endTime - startTime) / 1000) + " sec");
 	}
 
-	private static List<String> getClasses(String outputDir) {
-		List<String> list = new ArrayList<>();
+	private static void getClasses(String outputDir, List<String> list) {
 		for (File file : new File(outputDir).listFiles()) {
-			if (file.getName().endsWith(".class"))
-				list.add(file.getName());
+			if (file.isDirectory()) {
+				getClasses(file.getPath(), list);
+			} else if (file.isFile() && file.getName().endsWith(".class")) {
+				list.add(file.getPath());
+			}
 		}
-		return list;
 	}
 
 }

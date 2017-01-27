@@ -100,7 +100,7 @@ public class SootInference {
         try {
             PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-result.jaif");
             reimTransformer.printJaif(reimOut);
-            reimTransformer.clear();
+            //reimTransformer.clear();
         } catch (Exception e) {
             e.printStackTrace();
         }

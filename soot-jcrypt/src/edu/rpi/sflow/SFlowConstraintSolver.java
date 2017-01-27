@@ -2,48 +2,21 @@ package edu.rpi.sflow;
 
 import java.util.Iterator;
 import java.util.*;
-import java.io.*;
 import java.lang.annotation.*;
 
-import soot.Body;
-import soot.BodyTransformer;
-import soot.Local;
-import soot.PackManager;
-import soot.PatchingChain;
-import soot.RefType;
-import soot.Type;
 import soot.ArrayType;
-import soot.VoidType;
 import soot.NullType;
-import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
-import soot.SootField;
-import soot.MethodSource;
-import soot.Transform;
-import soot.Unit;
-import soot.Value;
-import soot.jimple.AbstractStmtSwitch;
-import soot.jimple.InvokeExpr;
-import soot.jimple.InvokeStmt;
-import soot.jimple.*;
-import soot.jimple.Jimple;
-import soot.jimple.StringConstant;
-import soot.options.Options;
-import soot.tagkit.*; 
-
 import edu.rpi.AnnotatedValue.FieldAdaptValue;
 import edu.rpi.AnnotatedValue.MethodAdaptValue;
 import edu.rpi.AnnotatedValue.AdaptValue;
 import edu.rpi.AnnotatedValue.Kind;
 import edu.rpi.*;
-import edu.rpi.ConstraintSolver.FailureStatus;
-import edu.rpi.ConstraintSolver.SolverException;
 import edu.rpi.Constraint.SubtypeConstraint;
 import edu.rpi.Constraint.EqualityConstraint;
 import edu.rpi.Constraint.UnequalityConstraint;
  
-import checkers.inference.sflow.quals.*;
 import checkers.inference.reim.quals.*;
 
 
@@ -69,8 +42,6 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
 
     private boolean preferSink = false;
 
-    private boolean isInteractive = false;
-
     private BitSet updated = new BitSet(AnnotatedValue.maxId());
 //    private BitSet restored = new BitSet(AnnotatedValue.maxId());
 
@@ -92,7 +63,6 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
         this.st = (SFlowTransformer) t;
         this.preferSource = (System.getProperty("preferSource") != null);
         this.preferSink = (System.getProperty("preferSink") != null);
-        this.isInteractive = (System.getProperty("interactive") != null);
 
         if (preferSink && preferSource) {
             throw new RuntimeException("Can only have one of {preferSource, preferSource}!");
@@ -149,12 +119,6 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
                     /*|| reimValue.containsAnno(POLYREAD)*/))
             return true;
         return false;
-    }
-
-    private void updateConstraintsWithReim(Map<SootMethod, Set<Constraint>> consByMethod) {
-        for (Map.Entry<SootMethod, Set<Constraint>> entry : consByMethod.entrySet()) {
-            updateConstraintsWithReim(entry.getValue());
-        }
     }
 
     private Set<Constraint> getLessConstraints(AnnotatedValue av) {
@@ -269,25 +233,6 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
                     return true;
             }
         }
-        return false;
-    }
-
-    private boolean canConnectViaOld(AnnotatedValue left, AnnotatedValue right) {
-
-        SootClass leftSc = left.getEnclosingClass();
-        SootClass rightSc = right.getEnclosingClass();
-
-        if (leftSc.equals(rightSc))
-            return true;
-
-        Set<SootClass> leftSuper = InferenceUtils.getSuperTypes(leftSc);
-        if (leftSuper.contains(right))
-            return true;
-
-        Set<SootClass> rightSuper = InferenceUtils.getSuperTypes(rightSc);
-        if (rightSuper.contains(right))
-            return true;
-
         return false;
     }
 
@@ -419,7 +364,6 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
         for (Constraint c : cons) {
             newCons.add(c);
             if (c instanceof SubtypeConstraint) {
-                AnnotatedValue av = null;
                 AnnotatedValue sub = c.getLeft();
                 AnnotatedValue sup = c.getRight();
                 if (!containsReadonly(sub) && !containsReadonly(sup)) {
@@ -512,7 +456,7 @@ public class SFlowConstraintSolver extends AbstractConstraintSolver {
                 av.setAnnotations(st.getSourceLevelQualifiers(), st);
                 // here we need to restore all constraints?
                 for (AnnotatedValue v : AnnotatedValueMap.v().values()) {
-                    int vid = v.getId();
+                    v.getId();
                     if (updated.get(id)) {
                         Set<Annotation> initAnnos = getInitAnnos(id);
                         v.setAnnotations(initAnnos, st);
