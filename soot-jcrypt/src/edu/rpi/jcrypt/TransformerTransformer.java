@@ -11,6 +11,7 @@ import edu.rpi.AnnotatedValue;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.BooleanType;
+import soot.CharType;
 import soot.Local;
 import soot.PrimType;
 import soot.RefType;
@@ -21,6 +22,7 @@ import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.javaToJimple.LocalGenerator;
+import soot.jimple.AddExpr;
 import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
 import soot.jimple.CastExpr;
@@ -32,6 +34,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.NewExpr;
+import soot.jimple.NumericConstant;
 import soot.jimple.ParameterRef;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.StaticInvokeExpr;
@@ -47,12 +50,15 @@ public class TransformerTransformer extends BodyTransformer {
 	private JCryptTransformer jt;
 	private Set<String> polyValues;
 	private static SootMethod modifiedReduceMethod;
-	static SootClass encryptionClass;
+	private static SootClass encryptionClass;
 	private Set<String> mapreducePrimTypes;
+	private Set<String> parseMethods;
+	private Map<String, Byte> encryptions;
 	
-	public TransformerTransformer(JCryptTransformer jcryptTransformer, Set<String> polyValues) {
+	public TransformerTransformer(JCryptTransformer jcryptTransformer, Set<String> polyValues, Map<String, Byte> map) {
 		jt = jcryptTransformer;
 		this.polyValues = polyValues;
+		encryptions = map;
 		Scene.v().addBasicClass("encryptUtil.EncryptUtil", SootClass.SIGNATURES);
 		mapreducePrimTypes = new HashSet<>();
 		mapreducePrimTypes.add("org.apache.hadoop.io.IntWritable");
@@ -62,6 +68,13 @@ public class TransformerTransformer extends BodyTransformer {
 		mapreducePrimTypes.add("org.apache.hadoop.io.ByteWritable");
 		mapreducePrimTypes.add("org.apache.hadoop.io.BytesWritable");
 		mapreducePrimTypes.add("org.apache.hadoop.io.FloatWritable");
+		parseMethods = new HashSet<>();
+		parseMethods.add("parseInt");
+		parseMethods.add("parseDouble");
+		parseMethods.add("parseLong");
+		parseMethods.add("parseShort");
+		parseMethods.add("parseByte");
+		parseMethods.add("parseFloat");
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -80,7 +93,7 @@ public class TransformerTransformer extends BodyTransformer {
 			modifyMethodStmts(body, sm);
 			modifyMethodLocals(body, sm);
 			modifyMethodSignatures(sm);
-		} else if (methodName.equals("run")) {
+		} else if (methodName.equals("run") || methodName.equals("main")) {
 			modifyRunMethod(body);
 		}
 	}
@@ -164,23 +177,23 @@ public class TransformerTransformer extends BodyTransformer {
 			if (leftType == null) leftType = leftOp.getType().toString();
 			else if (rightType == null) rightType = rightOp.getType().toString();
 			
-			// add a local $z0
-			Body body = sm.getActiveBody();
-			LocalGenerator lg = new LocalGenerator(body);
-			Local tmpLocal = lg.generateLocal(BooleanType.v());
-			//body.getLocals().add(tmpLocal);
-			
 			// make a new invoke statement and insert it into the chain
 			String op = ((BinopExpr) condition).getSymbol();
 			String libMethodName = "";
 			switch (op) {
 			case " <= ": libMethodName = "isGt";
 			}
+			if (libMethodName.isEmpty()) return;
 			encryptionClass = Scene.v().getSootClass("encryptUtil.EncryptUtil");
-			//encryptionClass.setApplicationClass();
 			SootMethod libMethod = encryptionClass.getMethod("boolean "
 					+ libMethodName + "(" + leftType + "," + rightType + ")");
 			InvokeExpr comExpr = Jimple.v().newStaticInvokeExpr(libMethod.makeRef(), leftOp, rightOp);
+			
+			// add a local $z0
+			Body body = sm.getActiveBody();
+			LocalGenerator lg = new LocalGenerator(body);
+			Local tmpLocal = lg.generateLocal(BooleanType.v());
+						
 			AssignStmt toAdd = Jimple.v().newAssignStmt(tmpLocal, comExpr);
 			body.getUnits().insertBefore(toAdd, unit);
 			
@@ -213,7 +226,7 @@ public class TransformerTransformer extends BodyTransformer {
 
 	private void modifyAssignStmt(SootMethod sm, AssignStmt unit) {
 		Value leftOp = unit.getLeftOp();
-		String type = modifyTo(leftOp, sm);
+ 		String type = modifyTo(leftOp, sm);
 		if (type == null) return;
 		Value rightOp = unit.getRightOp();
 		if (rightOp instanceof NewExpr) {
@@ -224,7 +237,10 @@ public class TransformerTransformer extends BodyTransformer {
 			// $i3 = staticinvoke <java.lang.Integer: int
 			// parseInt(java.lang.String)>($r8);
 			// -> $i3 = $r8;
-			if (((StaticInvokeExpr) rightOp).getMethod().getName().equals("parseInt")) {
+			// $r24 = staticinvoke <java.lang.Double: java.lang.Double valueOf(java.lang.String)>(r9)
+			// -> $r24 = r9;
+			String parseMethod = ((StaticInvokeExpr) rightOp).getMethod().getName();
+			if (parseMethods.contains(parseMethod)) { // || parseMethod.equals("valueOf")) {
 				unit.setRightOp(((StaticInvokeExpr) rightOp).getArg(0));
 			}
 		} else if (rightOp instanceof VirtualInvokeExpr) {
@@ -232,7 +248,7 @@ public class TransformerTransformer extends BodyTransformer {
 			// -> $i0 = virtualinvoke r5.<org.apache.hadoop.io.Text: String toString()>();
 			SootMethod invokeMethod = ((VirtualInvokeExpr) rightOp).getMethod();
 			SootClass sc = invokeMethod.getDeclaringClass();
-			if (sc.getName().equals("org.apache.hadoop.io.IntWritable")
+			if (mapreducePrimTypes.contains(sc.getName())
 					&& invokeMethod.getName().equals("get")) {
 				SootMethod toCall = Scene.v()
 						.getMethod("<org.apache.hadoop.io.Text: java.lang.String toString()>");
@@ -241,7 +257,38 @@ public class TransformerTransformer extends BodyTransformer {
 		} else if (rightOp instanceof CastExpr) {
 			// $r5 = (org.apache.hadoop.io.IntWritable) r1;
 			((CastExpr) rightOp).setCastType(RefType.v(type));
+		} else if (rightOp instanceof AddExpr) {
+			modifyAddExpr(sm, unit, rightOp);
+		} else if (rightOp instanceof NumericConstant) {
+			// d1 = 0.0 -> 
+			// d1 = staticinvoke <encryptUtil.EncryptUtil: java.lang.String getAH(double)>(0.0);
+			String libMethodName = "";
+			byte typeSet = encryptions.get(TransUtils.getIdenfication(leftOp, sm));
+			if ((0b100 & typeSet) != 0) {
+				libMethodName = "getAH";
+			}
+			encryptionClass = Scene.v().getSootClass("encryptUtil.EncryptUtil");
+			SootMethod libMethod = encryptionClass.getMethod("java.lang.String "
+					+ libMethodName + "(" + rightOp.getType() + ")");
+			InvokeExpr getExpr = Jimple.v().newStaticInvokeExpr(libMethod.makeRef(), rightOp);
+			unit.setRightOp(getExpr);
 		}
+	}
+
+	private void modifyAddExpr(SootMethod sm, AssignStmt unit, Value rightOp) {
+		// $d1 + $d2 -> staticinvoke <encryption.EncryptUtil: java.lang.String add(java.lang.String, int)>($d1, $d2);
+		Value op1 = ((AddExpr) rightOp).getOp1();
+		Value op2 = ((AddExpr) rightOp).getOp2();
+		String op1Type = modifyTo(op1, sm);
+		String op2Type = modifyTo(op2, sm);
+		if (op1Type == null && op2Type == null) return;
+		if (op1Type == null) op1Type = op1.getType().toString();
+		else if (op2Type == null) op2Type = op2.getType().toString();
+		
+		encryptionClass = Scene.v().getSootClass("encryptUtil.EncryptUtil");
+		SootMethod libMethod = encryptionClass.getMethod("java.lang.String add(" + op1Type + "," + op2Type + ")");
+		InvokeExpr addExpr = Jimple.v().newStaticInvokeExpr(libMethod.makeRef(), op1, op2);
+		unit.setRightOp(addExpr);
 	}
 
 	private void modifyMapMethod(SootMethod sm) {
@@ -329,46 +376,24 @@ public class TransformerTransformer extends BodyTransformer {
 			String type = modifyTo(local, sm);
 			if (type != null)
 				local.setType(RefType.v(type));
-//			if (shouldModify(local, sm)) {
-//				local.setType(RefType.v("org.apache.hadoop.io.Text"));
-//			}
-//			if (polyValues.contains(TransUtils.getIdenfication(local, sm)) && local.getType() instanceof PrimType
-//					&& !(local.getType() instanceof BooleanType)) {
-//				local.setType(RefType.v("java.lang.String"));
-//			}
 		}
 	}
 
-//	private boolean isNotTextType(String type) {
-//		return type.startsWith("org.apache.hadoop.io.") && !type.equals("org.apache.hadoop.io.Text");
-//	}
-	
-	private boolean isNotPrimitive(Type type) {
-		return type instanceof PrimType && !(type instanceof BooleanType);
+	private boolean isPrimitive(Type type) {
+		return type instanceof PrimType && !(type instanceof BooleanType) && !(type instanceof CharType);
 	}
 
-//	private boolean shouldModify(Value value, SootMethod sm) {
-//		if (!polyValues.contains(TransUtils.getIdenfication(value, sm)))
-//			return false;
-//		String type = value.getType().toString();
-//		return type.startsWith("org.apache.hadoop.io.") && !type.equals("org.apache.hadoop.io.Text")
-//				|| type.equals("int");
-//	}
-	
 	private String modifyTo(Value value, SootMethod sm) {
 		if (!polyValues.contains(TransUtils.getIdenfication(value, sm)))
 			return null;
 		Type type = value.getType();
 		if (mapreducePrimTypes.contains(type.toString())) return "org.apache.hadoop.io.Text";
-		if (isNotPrimitive(type)) return "java.lang.String";
+		if (isPrimitive(type)) return "java.lang.String";
 		return null;
 	}
 	
 	// only for reduce method
 	private boolean shouldModify(SootMethod sm) {
-//		List<Type> list = new ArrayList<>(sm.getParameterTypes());
-//		if (list.isEmpty())
-//			return false;
 		String type = sm.getParameterType(0).toString();
 		return mapreducePrimTypes.contains(type);
 	}

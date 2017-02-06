@@ -131,12 +131,12 @@ public class AETransformer extends SceneTransformer {
 		}
 	}
 
-	public String formatResults(Map<Object, Byte> map) {
+	public String formatResults(Map<? extends Object, Byte> map) {
 		if (map == null) {
 			return "";
 		}
 		StringBuffer sb = new StringBuffer();
-		for (Entry<Object, Byte> entry : map.entrySet()) {
+		for (Entry<? extends Object, Byte> entry : map.entrySet()) {
 			Object local = entry.getKey();
 			byte typeSet = entry.getValue();
 			sb.append("(").append(local).append("=[ ");

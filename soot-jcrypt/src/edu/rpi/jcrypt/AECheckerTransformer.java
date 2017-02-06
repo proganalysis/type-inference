@@ -21,22 +21,22 @@ import soot.jimple.IfStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.StaticInvokeExpr;
+import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.UnitGraph;
-import soot.toolkits.graph.pdg.EnhancedUnitGraph;
 import soot.toolkits.scalar.SimpleLocalDefs;
 
 public class AECheckerTransformer extends BodyTransformer {
 
 	private Set<String> polyValues;
 	private Map<String, Set<String>> detContainers = new HashMap<>();
-	private Map<Object, Byte> encryptions = new HashMap<>();
+	private Map<String, Byte> encryptions = new HashMap<>();
 	private Map<String, Byte> aeResults;
 	private Set<String> conversions = new HashSet<>();
 	private SimpleLocalDefs defs;
 	private UnitGraph cfg;
 	private InferenceTransformer it;
 
-	public Map<Object, Byte> getEncryptions() {
+	public Map<String, Byte> getEncryptions() {
 		return encryptions;
 	}
 
@@ -74,7 +74,7 @@ public class AECheckerTransformer extends BodyTransformer {
 
 	@Override
 	protected void internalTransform(Body body, String phaseName, @SuppressWarnings("rawtypes") Map options) {
-		cfg = new EnhancedUnitGraph(body);
+		cfg = new BriefUnitGraph(body);
 		defs = new SimpleLocalDefs(cfg);
 		for (Unit unit : body.getUnits()) {
 			if (unit instanceof AssignStmt) {
@@ -179,11 +179,11 @@ public class AECheckerTransformer extends BodyTransformer {
 				conversions.add(unit.toString());
 			else {
 				List<Unit> definitions = getDefsOfLocal(unit, (Local) v);
-				for (Unit u : definitions) {
-					if (encryptions.containsKey(u))
-						encryptions.put(u, (byte) (type | encryptions.get(u)));
+				if (!definitions.isEmpty()) {
+					if (encryptions.containsKey(id))
+						encryptions.put(id, (byte) (type | encryptions.get(id)));
 					else
-						encryptions.put(u, type);
+						encryptions.put(id, type);
 				}
 			}
 		}
