@@ -232,6 +232,7 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 	@Override
 	public boolean isLibMethod(SootMethod sm) {
 		if (sm.isPhantom() || sm.isJavaLibraryMethod() || !sm.hasActiveBody())
+		//if (sm.isPhantom() || sm.isJavaLibraryMethod())
 			return true;
 		return false;
 	}

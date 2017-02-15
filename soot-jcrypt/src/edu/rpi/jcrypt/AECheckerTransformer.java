@@ -25,6 +25,8 @@ import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.SimpleLocalDefs;
 
+import static com.esotericsoftware.minlog.Log.*;
+
 public class AECheckerTransformer extends BodyTransformer {
 
 	private Set<String> polyValues;
@@ -41,6 +43,7 @@ public class AECheckerTransformer extends BodyTransformer {
 	}
 
 	public AECheckerTransformer(Map<String, Byte> map, Set<String> polyValues, InferenceTransformer jcryptTransformer) {
+		info(this.getClass().getSimpleName(), "Checking conversions ...");
 		this.aeResults = map;
 		this.polyValues = polyValues;
 		this.it = jcryptTransformer;
@@ -146,7 +149,7 @@ public class AECheckerTransformer extends BodyTransformer {
 	private void checkConversion(Value v, Unit unit, SootMethod sm) {
 		String id = TransUtils.getIdenfication(v, sm);
 		if (polyValues.contains(id))
-			conversions.add(unit.toString());
+			conversions.add(sm.getDeclaringClass().getName() + ": " + unit.toString());
 	}
 
 	private void checkCondition(String symbol, Value op1, Value op2, Unit unit, SootMethod sm) {
@@ -176,7 +179,7 @@ public class AECheckerTransformer extends BodyTransformer {
 		String id = TransUtils.getIdenfication(v, sm);
 		if (polyValues.contains(id)) {
 			if ((aeResults.get(id) & type) == 0)
-				conversions.add(unit.toString());
+				conversions.add(sm.getDeclaringClass().getName() + ": " + unit.toString());
 			else {
 				List<Unit> definitions = getDefsOfLocal(unit, (Local) v);
 				if (!definitions.isEmpty()) {

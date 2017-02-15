@@ -7,6 +7,7 @@ import java.util.Set;
 import java.io.PrintStream;
 import java.io.File;
 
+import soot.G;
 import soot.PackManager;
 import soot.Scene;
 import soot.SootClass;
@@ -91,114 +92,67 @@ public class SootInferenceJCrypt {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		Set<String> polyValues = ((JCryptTransformer) jcryptTransformer).getPolyValues();
-		List<String> runClasses = new ArrayList<>();
-
-		List<String> classes = new ArrayList<>();
-		getClasses(outputDir, classes);
-		for (String clazz : classes) {
-			String mainClass = clazz.substring(0, clazz.length() - 6).replace(outputDir + File.separator, "").replace(File.separatorChar, '.');
-			soot.G.reset();
-			info(SootInferenceJCrypt.class.getSimpleName(), "(AETransformer) Analyzing " + mainClass + "...");
-			String[] sootArgs = { "-cp", classPath,
-					// "-app",
-					// "-pp",
-					"-w",
-					// "-allow-phantom-refs",
-					// "-ire",
-					// "-x", "java.", "-x", "org.", "-x", "javax.",
-					// "-src-prec", "J",
-					"-keep-line-number", "-keep-bytecode-offset",
-					// "-p", "jb", "use-original-names",
-					"-p", "cg", "implicit-entry:false", "-p", "cg.cha", "enabled", "-p", "cg.cha", "apponly:true",
-					// "-p", "cg.spark", "enabled",
-					// "-p", "cg.spark", "simulate-natives",
-					"-p", "cg", "safe-forname", "-p", "cg", "safe-newinstance", "-main-class", mainClass, "-f", "none",
-					mainClass, "-d", outputDir };
-			AETransformer aet = new AETransformer(outputDir, mainClass);
-			PackManager.v().getPack("wjtp").add(new Transform("wjtp.aet", aet));
-			List<SootMethod> entryPoints = new ArrayList<>();
-			Options.v().parse(sootArgs);
+		
+		List<SootMethod> entryPoints = new ArrayList<>(JCryptTransformer.entryPoints);
+		G.reset();
+		AETransformer aet = new AETransformer(outputDir);
+		PackManager.v().getPack("wjtp").add(new Transform("wjtp.aet", aet));
+		String[] sootArgs = { 
+				"-cp", classPath, "-w",
+				"-keep-line-number", "-keep-bytecode-offset",
+				"-p", "cg", "implicit-entry:false", "-p", "cg.cha", "enabled",
+				"-p", "cg.cha", "apponly:true",
+				"-p", "cg", "safe-forname", "-p", "cg", "safe-newinstance",
+				"-process-dir", outputDir,
+				"-f", "none", "-d", outputDir };
+		Options.v().parse(sootArgs);
+		List<SootMethod> entry = new ArrayList<>();
+		for (SootMethod sm : entryPoints) {
+			String mainClass = sm.getDeclaringClass().getName();
 			SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
 			c.setApplicationClass();
-			Scene.v().loadNecessaryClasses();
-			for (SootMethod sm : c.getMethods()) {
-//				if (sm.getModifiers() == soot.Modifier.VOLATILE)
-//					continue;
-				String smName = sm.getName();
-				if (smName.equals("map")) {
-					entryPoints.add(sm);
-					break;
-				}
-				if (smName.equals("reduce")) {
-					entryPoints.add(sm);
-					break;
-				}
-				// transform setOutputKeyClass(IntWritable.class)
-				// to setOutputKeyClass(Text.class) in main()/run();
-				// transform customer class containing compareTo()
-				if (smName.equals("run") || smName.equals("main")
-						|| smName.equals("compareTo")) {
-					runClasses.add(mainClass);
-					break;
-				}
-			}
+			entry.add(c.getMethod(sm.getName(), sm.getParameterTypes()));
+		}
+		Scene.v().loadNecessaryClasses();
+		Scene.v().setEntryPoints(entry);
+		PackManager.v().runPacks();
+		
+		Set<String> polyValues = ((JCryptTransformer) jcryptTransformer).getPolyValues();
+//		List<String> runClasses = new ArrayList<>();
 
-			if (entryPoints.isEmpty()) {
-				System.out.println("No Entry Point");
-				continue;
-			}
-			Scene.v().setEntryPoints(entryPoints);
-			PackManager.v().runPacks();
-
-			info(SootInferenceJCrypt.class.getSimpleName(), "(AECheckerTransformer) Analyzing " + mainClass + "...");
-			soot.G.reset();
-			AECheckerTransformer aect = new AECheckerTransformer(aet.getAeResults(), polyValues, jcryptTransformer);
-			PackManager.v().getPack("jtp").add(new Transform("jtp.aect", aect));
-			String[] sootargs = { "-cp", classPath, "-pp", mainClass, "-f", "none", "-d", outputDir };
-			soot.Main.main(sootargs);
-			Set<String> conversions = aect.getConversions();
-			System.out.println("There are " + conversions.size() + " conversions.");
-			for (String con : conversions)
-				System.out.println(mainClass + ": " + con);
-			if (conversions.isEmpty()) {
-				System.out.println(aet.formatResults(aect.getEncryptions()));
-				// transform
-				info(SootInferenceJCrypt.class.getSimpleName(), "(TransformerTransformer) Analyzing " + mainClass + "...");
-				soot.G.reset();
-				TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues,
-						aect.getEncryptions());
-				PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
-				//sootargs = new String[] { "-cp", classPath, "-pp", "-allow-phantom-refs", mainClass, "-f", "class",
-				//		"-d", outputDir };
-				sootargs = new String[] { "-cp", classPath, "-pp", mainClass, "-f", "jimple", "-d", outputDir + "/transformed" };
-				soot.Main.main(sootargs);
-			}
+		G.reset();
+		AECheckerTransformer aect = new AECheckerTransformer(aet.getAeResults(), polyValues, jcryptTransformer);
+		PackManager.v().getPack("jtp").add(new Transform("jtp.aect", aect));
+		sootArgs = new String[]{ "-cp", classPath, "-process-dir", outputDir, "-f", "none", "-d", outputDir };
+		soot.Main.main(sootArgs);
+		Set<String> conversions = aect.getConversions();
+		System.out.println("There are " + conversions.size() + " conversions.");
+		for (String con : conversions)
+			System.out.println(con);
+		if (conversions.isEmpty()) {
+			System.out.println(aet.formatResults(aect.getEncryptions()));
+			// transform
+			G.reset();
+			TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues,
+					aect.getEncryptions());
+			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
+			sootArgs = new String[] { "-cp", classPath, "-process-dir", outputDir, "-f", "jimple", "-d",
+					outputDir + "/transformed" };
+			soot.Main.main(sootArgs);
 		}
 		// transform conf.setOutputKeyClass(Text.class) and
 		// conf.setOutputValueClass(IntWritable.class) in run() method
-		for (String runClass : runClasses) {
-			info(SootInferenceJCrypt.class.getSimpleName(), "(TransformerTransformer) Analyzing " + runClass + "...");
-			soot.G.reset();
-			TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues, null);
-			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
-			String[] sootargs = new String[] { "-cp", classPath, runClass, "-f", "jimple", "-d", outputDir + "/transformed" };
-			soot.Main.main(sootargs);
-		}
+//		for (String runClass : runClasses) {
+//			info(SootInferenceJCrypt.class.getSimpleName(), "(TransformerTransformer) Analyzing " + runClass + "...");
+//			soot.G.reset();
+//			TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues, null);
+//			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
+//			String[] sootargs = new String[] { "-cp", classPath, runClass, "-f", "jimple", "-d", outputDir + "/transformed" };
+//			soot.Main.main(sootargs);
+//		}
 
 		long endTime = System.currentTimeMillis();
 		info("Total running time: " + ((float) (endTime - startTime) / 1000) + " sec");
-	}
-
-	private static void getClasses(String outputDir, List<String> list) {
-		for (File file : new File(outputDir).listFiles()) {
-			if (file.isDirectory()) {
-				getClasses(file.getPath(), list);
-			} else if (file.isFile() && file.getName().endsWith(".class")) {
-				list.add(file.getPath());
-			}
-		}
 	}
 
 }

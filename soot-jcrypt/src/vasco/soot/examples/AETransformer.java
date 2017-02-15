@@ -38,6 +38,8 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import vasco.DataFlowSolution;
 
+import static com.esotericsoftware.minlog.Log.*;
+
 /**
  * A Soot {@link SceneTransformer} for performing {@link JCryptAnalysis}.
  * 
@@ -45,14 +47,13 @@ import vasco.DataFlowSolution;
  */
 public class AETransformer extends SceneTransformer {
 
-	public AETransformer(String outputDir, String mrExt) {
+	public AETransformer(String outputDir) {
 		super();
 		this.outputDir = outputDir;
-		this.mrExt = mrExt;
+		info(this.getClass().getSimpleName(), "Analyzing available encryptions ...");
 	}
-
+	
 	private String outputDir;
-	private String mrExt;
 	public Map<String, Byte> aeResults = new HashMap<>();
 
 	public Map<String, Byte> getAeResults() {
@@ -65,7 +66,7 @@ public class AETransformer extends SceneTransformer {
 		analysis.doAnalysis();
 		DataFlowSolution<Unit, Map<Object, Byte>> solution = analysis.getMeetOverValidPathsSolution();
 		try {
-			PrintStream out = new PrintStream(outputDir + File.separator + "analysis-result-" + mrExt + ".txt");
+			PrintStream out = new PrintStream(outputDir + File.separator + "AE-analysis-result.txt");
 			out.println("================================================================");
 			for (SootMethod sootMethod : analysis.getMethods()) {
 				if (!sootMethod.hasActiveBody())

@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.lang.annotation.*;
 import soot.VoidType;
 import soot.SootMethod;
+import soot.Body;
 import soot.SootClass;
 import soot.SootField;
 import soot.jimple.InvokeExpr;
@@ -44,6 +45,9 @@ public class JCryptTransformer extends InferenceTransformer {
 
 	private Set<String> clearLibMethods;
 	
+	public static Set<SootMethod> entryPoints = new HashSet<>();
+	//public static Set<SootClass> appClasses = new HashSet<>();
+
 	public JCryptTransformer() {
 		// isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
 		isPolyLibrary = true;
@@ -75,6 +79,17 @@ public class JCryptTransformer extends InferenceTransformer {
 		clearLibMethods.add("size");
 	}
 
+	@Override
+	protected void internalTransform(final Body b, String phaseName, @SuppressWarnings("rawtypes") Map options) {
+		SootMethod sm = b.getMethod();
+		//appClasses.add(sm.getDeclaringClass());
+		// 4161 means the modifier is volatile
+		if (sm.getModifiers() != 4161
+				&& (sm.getName().equals("map") || sm.getName().equals("reduce")))
+			entryPoints.add(sm);
+		super.internalTransform(b, phaseName, options);
+	}
+	
 	public boolean isPolyLibrary() {
 		return isPolyLibrary;
 	}
