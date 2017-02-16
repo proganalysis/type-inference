@@ -5,10 +5,14 @@ import java.io.PrintStream;
 import java.lang.annotation.*;
 import soot.VoidType;
 import soot.SootMethod;
+import soot.Value;
+import soot.ValueBox;
 import soot.Body;
 import soot.SootClass;
 import soot.SootField;
+import soot.jimple.ClassConstant;
 import soot.jimple.InvokeExpr;
+import soot.jimple.VirtualInvokeExpr;
 import soot.tagkit.*;
 import edu.rpi.AnnotatedValue.FieldAdaptValue;
 import edu.rpi.AnnotatedValue.MethodAdaptValue;
@@ -46,7 +50,10 @@ public class JCryptTransformer extends InferenceTransformer {
 	private Set<String> clearLibMethods;
 	
 	public static Set<SootMethod> entryPoints = new HashSet<>();
-	//public static Set<SootClass> appClasses = new HashSet<>();
+	public static Set<String> mapperClasses = new HashSet<>();
+	public static Set<String> reducerClasses = new HashSet<>();
+	public static Set<String> combinerClasses = new HashSet<>();
+	public static Set<String> partitionerClasses = new HashSet<>();
 
 	public JCryptTransformer() {
 		// isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
@@ -82,11 +89,30 @@ public class JCryptTransformer extends InferenceTransformer {
 	@Override
 	protected void internalTransform(final Body b, String phaseName, @SuppressWarnings("rawtypes") Map options) {
 		SootMethod sm = b.getMethod();
-		//appClasses.add(sm.getDeclaringClass());
-		// 4161 means the modifier is volatile
+		String methodName = sm.getName();
 		if (sm.getModifiers() != 4161
-				&& (sm.getName().equals("map") || sm.getName().equals("reduce")))
+				&& (methodName.equals("map") || methodName.equals("reduce")))
+			// 4161 means the modifier is volatile
 			entryPoints.add(sm);
+		else if (methodName.equals("run") || methodName.equals("main")) {
+			// classify mapper, reducer, combiner and partitioner classes
+			for (ValueBox vb: b.getUseBoxes()) {
+				Value value = vb.getValue();
+				if (value instanceof VirtualInvokeExpr) {
+					String invokeName = ((VirtualInvokeExpr) value).getMethod().getName();
+					Value arg0 = ((VirtualInvokeExpr) value).getArg(0);
+					if (invokeName.equals("setMapperClass")) {
+						mapperClasses.add(((ClassConstant) arg0).getValue());
+					} else if (invokeName.equals("setReducerClass")) {
+						reducerClasses.add(((ClassConstant) arg0).getValue());
+					} else if (invokeName.equals("setCombinerClass")) {
+						combinerClasses.add(((ClassConstant) arg0).getValue());
+					} else if (invokeName.equals("setPartitionerClass")) {
+						partitionerClasses.add(((ClassConstant) arg0).getValue());
+					}
+				}
+			}
+		}
 		super.internalTransform(b, phaseName, options);
 	}
 	

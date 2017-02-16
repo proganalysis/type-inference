@@ -39,8 +39,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
 	// record map and reduce output key-value pairs for generic type modification
 	public AnnotatedValue reduceKey, reduceValue;
-	public List<AnnotatedValue> mapKeys = new ArrayList<>();
-	public List<AnnotatedValue> mapValues = new ArrayList<>();
+	public List<AnnotatedValue> mapOutKeys = new ArrayList<>();
+	public List<AnnotatedValue> mapOutValues = new ArrayList<>();
 
 	/**
 	 * This is actually static, because AnnotatedValueMap.v() always return the
@@ -740,9 +740,9 @@ public abstract class InferenceTransformer extends BodyTransformer {
 				// record the output key-value pair of map
 				if (isMapOutput)
 					if (i == 0)
-						mapKeys.add(aArg);
+						mapOutKeys.add(aArg);
 					else
-						mapValues.add(aArg);
+						mapOutValues.add(aArg);
 				if (isReduceOutput)
 					if (reduceKey == null)
 						reduceKey = aArg;

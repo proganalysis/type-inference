@@ -605,19 +605,19 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 
 	private void addMapReduceConstraints(Set<Constraint> constraints) {
 		Map<String, AnnotatedValue> annotatedValues = t.getAnnotatedValues();
-		if (st.mapKeys.isEmpty())
+		if (st.mapOutKeys.isEmpty())
 			return;
 		Set<AnnotatedValue> reduceKeys = getReduceKey(annotatedValues);
 		if (reduceKeys.isEmpty())
 			return;
 		for (AnnotatedValue reduceKey : reduceKeys) {
-			for (AnnotatedValue mapKey : st.mapKeys) {
+			for (AnnotatedValue mapKey : st.mapOutKeys) {
 				Constraint c = new SubtypeConstraint(mapKey, reduceKey);
 				constraints.add(c);
 			}
 			String reduceKeyId = reduceKey.getIdentifier();
 			AnnotatedValue reduceValue = annotatedValues.get(reduceKeyId.substring(0, reduceKeyId.length() - 1) + "1");
-			for (AnnotatedValue mapValue : st.mapValues) {
+			for (AnnotatedValue mapValue : st.mapOutValues) {
 				Constraint c = new SubtypeConstraint(mapValue, reduceValue);
 				constraints.add(c);
 			}

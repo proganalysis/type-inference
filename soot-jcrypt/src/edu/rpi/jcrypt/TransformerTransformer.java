@@ -67,7 +67,7 @@ public class TransformerTransformer extends BodyTransformer {
 	private Set<String> parseMethods;
 	private Map<String, Byte> encryptions;
 	private SootMethod sm;
-	private List<Type> paramTypes = new LinkedList<>();
+	private List<Type> paramTypes;
 	
 	public TransformerTransformer(JCryptTransformer jcryptTransformer, Set<String> polyValues, Map<String, Byte> map) {
 		info(this.getClass().getSimpleName(), "Transforming ...");
@@ -96,6 +96,7 @@ public class TransformerTransformer extends BodyTransformer {
 	@Override
 	protected void internalTransform(Body body, String arg1, Map arg2) {
 		sm = body.getMethod();
+		paramTypes = new LinkedList<>();
 		String methodName = sm.getName();
 		if (methodName.equals("map") || methodName.equals("reduce")) {
 			Chain<Unit> units = body.getUnits();
@@ -109,21 +110,23 @@ public class TransformerTransformer extends BodyTransformer {
 				} else if (unit instanceof InvokeStmt) {
 					// only consider two cases here:
 					// specialinvoke and virtualinvoke in volatile methods
-					Value invokeExpr = getInvokeExpr(((InvokeStmt) unit).getInvokeExpr());
+					getInvokeExpr(((InvokeStmt) unit).getInvokeExpr());
 				}
 			}
+			sm.setParameterTypes(paramTypes);
+			modifyMethodLocals(body);
 		}
 		//System.out.println(sm.getName());
 		if (methodName.equals("map")) {
 			modifyClass(true);
 			modifyMapMethod(sm);
 			modifyMethodStmts(body, sm);
-			modifyMethodLocals(body, sm);
+			modifyMethodLocals(body);
 		} else if (methodName.equals("reduce")) {
 			modifyClass(false);
 			modifyReduceMethod(sm);
 			modifyMethodStmts(body, sm);
-			modifyMethodLocals(body, sm);
+			modifyMethodLocals(body);
 			modifyMethodSignatures(sm);
 		} else if (methodName.equals("run") || methodName.equals("main")) {
 			modifyRunMethod(body);
@@ -231,10 +234,10 @@ public class TransformerTransformer extends BodyTransformer {
 				if (invoke instanceof VirtualInvokeExpr) {
 					String methodName = invoke.getMethod().getName();
 					if ( (methodName.equals("setOutputKeyClass") 
-							&& ( (jt.reduceKey == null && shouldModify(jt.mapKeys.get(0)))
+							&& ( (jt.reduceKey == null && shouldModify(jt.mapOutKeys.get(0)))
 									|| shouldModify(jt.reduceKey) ) )
 							|| (methodName.equals("setOutputValueClass")
-									&& ( (jt.reduceValue == null && shouldModify(jt.mapValues.get(0)))
+									&& ( (jt.reduceValue == null && shouldModify(jt.mapOutValues.get(0)))
 											|| shouldModify(jt.reduceValue) ) ) ) {
 						invoke.setArg(0, ClassConstant.v("org/apache/hadoop/io/Text"));
 					}
@@ -245,7 +248,7 @@ public class TransformerTransformer extends BodyTransformer {
 
 	// only used to modify reduce method
 	private void modifyMethodSignatures(SootMethod sm) {
-		if (shouldModify(jt.mapKeys.get(0)) && shouldModify(sm)) {
+		if (shouldModify(jt.mapOutKeys.get(0)) && shouldModify(sm)) {
 			List<Type> list = new ArrayList<>(sm.getParameterTypes());
 			list.remove(0);
 			list.add(0, RefType.v("org.apache.hadoop.io.Text"));
@@ -428,10 +431,10 @@ public class TransformerTransformer extends BodyTransformer {
 
 	private void modifyMapMethod(SootMethod sm) {
 		Set<Integer> index = new HashSet<>();
-		if (shouldModify(jt.mapKeys.get(0))) {
+		if (shouldModify(jt.mapOutKeys.get(0))) {
 			index.add(0);
 		}
-		if (shouldModify(jt.mapValues.get(0))) {
+		if (shouldModify(jt.mapOutValues.get(0))) {
 			index.add(1);
 		}
 		modifyGenericType(sm, index);
@@ -456,11 +459,11 @@ public class TransformerTransformer extends BodyTransformer {
 				visited.add(sc);
 			Set<Integer> mapIndex = new HashSet<>();
 			Set<Integer> reduceIndex = new HashSet<>();
-			if (shouldModify(jt.mapKeys.get(0))) {
+			if (shouldModify(jt.mapOutKeys.get(0))) {
 				mapIndex.add(2);
 				reduceIndex.add(0);
 			}
-			if (shouldModify(jt.mapValues.get(0))) {
+			if (shouldModify(jt.mapOutValues.get(0))) {
 				mapIndex.add(3);
 				reduceIndex.add(1);
 			}
@@ -487,7 +490,7 @@ public class TransformerTransformer extends BodyTransformer {
 		int end = signature.indexOf('>');
 		String[] genericTypes = signature.substring(start, end).split(";");
 		if (genericTypes.length == 1) { // iterator<Text>
-			if (shouldModify(jt.mapValues.get(0))) {
+			if (shouldModify(jt.mapOutValues.get(0))) {
 				signature = signature.substring(0, start) + "Lorg/apache/hadoop/io/Text;" + signature.substring(end);
 			}
 			start = signature.indexOf('<', start) + 1;
@@ -506,7 +509,7 @@ public class TransformerTransformer extends BodyTransformer {
 		sc.addTag(tag);
 	}
 	
-	private void modifyMethodLocals(Body body, SootMethod sm) {
+	private void modifyMethodLocals(Body body) {
 		for (Local local : body.getLocals()) {
 			String type = modifyTo(local);
 			if (type != null)
