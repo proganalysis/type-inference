@@ -68,18 +68,6 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		if (preferSink && preferSource) {
 			throw new RuntimeException("Can only have one of {preferSource, preferSource}!");
 		}
-
-		// clearLibMethods = new HashSet<>();
-		// clearLibMethods.add("lib-<java.lang.String: int
-		// lastIndexOf(java.lang.String)>@return");
-		// clearLibMethods.add("lib-<java.lang.String: int length()>@return");
-		// clearLibMethods.add("lib-<java.lang.String: int
-		// indexOf(java.lang.String)>@return");
-		// clearLibMethods.add("lib-<java.lang.String: int
-		// lastIndexOf(java.lang.String)>@this");
-		// clearLibMethods.add("lib-<java.lang.String: int length()>@this");
-		// clearLibMethods.add("lib-<java.lang.String: int
-		// indexOf(java.lang.String)>@this");
 	}
 
 	private byte toBits(Set<Annotation> annos) {
@@ -604,36 +592,109 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 	}
 
 	private void addMapReduceConstraints(Set<Constraint> constraints) {
+		String out1 = "lib-<org.apache.hadoop.mapreduce.TaskInputOutputContext: void write(java.lang.Object,java.lang.Object)>@parameter";
+		String out2 = "lib-<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>@parameter";
+		String outkey1 = out1 + "0", outkey2 = out2 + "0";
+		String outvalue1 = out1 + "1", outvalue2 = out2 + "1";
+		Set<AnnotatedValue> mapOutKeys = new HashSet<>(), mapOutValues = new HashSet<>();
+		Set<AnnotatedValue> reduceOutKeys = new HashSet<>(), reduceOutValues = new HashSet<>();
+		Set<AnnotatedValue> combineOutKeys = new HashSet<>(), combineOutValues = new HashSet<>();
+		Set<AnnotatedValue> partitionInKeys = new HashSet<>(), partitionInValues = new HashSet<>();
+		Set<AnnotatedValue> reduceInKeys = new HashSet<>(), reduceInValues = new HashSet<>();
+		Set<AnnotatedValue> combineInKeys = new HashSet<>(), combineInValues = new HashSet<>();
+		getOutKeyValues(constraints, outkey1, outkey2, outvalue1, outvalue2, mapOutKeys, mapOutValues, reduceOutKeys,
+				reduceOutValues, combineOutKeys, combineOutValues);
+		getInKeyValues(partitionInKeys, partitionInValues, reduceInKeys, reduceInValues, combineInKeys,
+				combineInValues);
+		// add constraints
+		for (AnnotatedValue mapOutKey : mapOutKeys) {
+			for (AnnotatedValue combineInKey : combineInKeys)
+				constraints.add(new SubtypeConstraint(mapOutKey, combineInKey));
+			for (AnnotatedValue partitionInKey : partitionInKeys)
+				constraints.add(new SubtypeConstraint(mapOutKey, partitionInKey));
+			if (combineInKeys.isEmpty())
+				for (AnnotatedValue reduceInKey : reduceInKeys)
+					constraints.add(new SubtypeConstraint(mapOutKey, reduceInKey));
+		}
+		for (AnnotatedValue combineOutValue : combineOutValues)
+			for (AnnotatedValue reduceInValue : reduceInValues)
+				constraints.add(new SubtypeConstraint(combineOutValue, reduceInValue));
+		for (AnnotatedValue mapOutValue : mapOutValues) {
+			for (AnnotatedValue combineInValue : combineInValues)
+				constraints.add(new SubtypeConstraint(mapOutValue, combineInValue));
+			for (AnnotatedValue partitionInValue : partitionInValues)
+				constraints.add(new SubtypeConstraint(mapOutValue, partitionInValue));
+			if (combineInValues.isEmpty())
+				for (AnnotatedValue reduceInValue : reduceInValues)
+					constraints.add(new SubtypeConstraint(mapOutValue, reduceInValue));
+		}
+		for (AnnotatedValue combineOutValue : combineOutValues)
+			for (AnnotatedValue reduceInValue : reduceInValues)
+				constraints.add(new SubtypeConstraint(combineOutValue, reduceInValue));
+	}
+
+	private void getInKeyValues(Set<AnnotatedValue> partitionInKeys, Set<AnnotatedValue> partitionInValues,
+			Set<AnnotatedValue> reduceInKeys, Set<AnnotatedValue> reduceInValues, Set<AnnotatedValue> combineInKeys,
+			Set<AnnotatedValue> combineInValues) {
+		// get combiner, partitioner and reducer input key and values
 		Map<String, AnnotatedValue> annotatedValues = t.getAnnotatedValues();
-		if (st.mapOutKeys.isEmpty())
-			return;
-		Set<AnnotatedValue> reduceKeys = getReduceKey(annotatedValues);
-		if (reduceKeys.isEmpty())
-			return;
-		for (AnnotatedValue reduceKey : reduceKeys) {
-			for (AnnotatedValue mapKey : st.mapOutKeys) {
-				Constraint c = new SubtypeConstraint(mapKey, reduceKey);
-				constraints.add(c);
+		for (String identifier : annotatedValues.keySet()) {
+			AnnotatedValue av = annotatedValues.get(identifier);
+			String className = av.getEnclosingClass().getName();
+			if (identifier.endsWith("@parameter0")) {
+				if (identifier.contains("void reduce")) {
+					if (JCryptTransformer.reducerClasses.contains(className)) {
+						reduceInKeys.add(av);
+					} else if (JCryptTransformer.combinerClasses.contains(className)) {
+						combineInKeys.add(av);
+					}
+				} else if (identifier.contains("int getPartition")) {
+					partitionInKeys.add(av);
+				}
 			}
-			String reduceKeyId = reduceKey.getIdentifier();
-			AnnotatedValue reduceValue = annotatedValues.get(reduceKeyId.substring(0, reduceKeyId.length() - 1) + "1");
-			for (AnnotatedValue mapValue : st.mapOutValues) {
-				Constraint c = new SubtypeConstraint(mapValue, reduceValue);
-				constraints.add(c);
+			if (identifier.endsWith("@parameter1")) {
+				if (identifier.contains("void reduce")) {
+					if (JCryptTransformer.reducerClasses.contains(className)) {
+						reduceInValues.add(av);
+					} else if (JCryptTransformer.combinerClasses.contains(className)) {
+						combineInValues.add(av);
+					}
+				} else if (identifier.contains("int getPartition")) {
+					partitionInValues.add(av);
+				}
 			}
 		}
 	}
 
-	// get the first parameter of reduce method, that is, reduce input key before reduce phase
-	// or map output key after map phase
-	private Set<AnnotatedValue> getReduceKey(Map<String, AnnotatedValue> annotatedValues) {
-		Set<AnnotatedValue> set = new HashSet<>(2);
-		for (String identifier : annotatedValues.keySet()) {
-			if (identifier.matches("<.*: void reduce(.*)>@parameter0")) {
-				set.add(annotatedValues.get(identifier));
+	private void getOutKeyValues(Set<Constraint> constraints, String outkey1, String outkey2, String outvalue1,
+			String outvalue2, Set<AnnotatedValue> mapOutKeys, Set<AnnotatedValue> mapOutValues,
+			Set<AnnotatedValue> reduceOutKeys, Set<AnnotatedValue> reduceOutValues, Set<AnnotatedValue> combineOutKeys,
+			Set<AnnotatedValue> combineOutValues) {
+		// get mapper, combiner and reducer output key and values
+		for (Constraint c : constraints) {
+			AnnotatedValue left = c.getLeft(), right = c.getRight();
+			if (right.getKind() == Kind.METH_ADAPT) {
+				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
+				String className = left.getEnclosingClass().getName();
+				if (declId.equals(outkey1) || declId.equals(outkey2)) {
+					if (JCryptTransformer.mapperClasses.contains(className)) {
+						mapOutKeys.add(left);
+					} else if (JCryptTransformer.reducerClasses.contains(className)) {
+						reduceOutKeys.add(left);
+					} else if (JCryptTransformer.combinerClasses.contains(className)) {
+						combineOutKeys.add(left);
+					}
+				} else if (declId.equals(outvalue1) || declId.equals(outvalue2)) {
+					if (JCryptTransformer.mapperClasses.contains(className)) {
+						mapOutValues.add(left);
+					} else if (JCryptTransformer.reducerClasses.contains(className)) {
+						reduceOutValues.add(left);
+					} else if (JCryptTransformer.combinerClasses.contains(className)) {
+						combineOutValues.add(left);
+					}
+				}
 			}
 		}
-		return set;
 	}
 
 }

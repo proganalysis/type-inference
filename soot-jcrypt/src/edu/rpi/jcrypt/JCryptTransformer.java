@@ -53,7 +53,7 @@ public class JCryptTransformer extends InferenceTransformer {
 	public static Set<String> mapperClasses = new HashSet<>();
 	public static Set<String> reducerClasses = new HashSet<>();
 	public static Set<String> combinerClasses = new HashSet<>();
-	public static Set<String> partitionerClasses = new HashSet<>();
+	//public static Set<String> partitionerClasses = new HashSet<>();
 
 	public JCryptTransformer() {
 		// isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
@@ -107,8 +107,8 @@ public class JCryptTransformer extends InferenceTransformer {
 						reducerClasses.add(((ClassConstant) arg0).getValue());
 					} else if (invokeName.equals("setCombinerClass")) {
 						combinerClasses.add(((ClassConstant) arg0).getValue());
-					} else if (invokeName.equals("setPartitionerClass")) {
-						partitionerClasses.add(((ClassConstant) arg0).getValue());
+//					} else if (invokeName.equals("setPartitionerClass")) {
+//						partitionerClasses.add(((ClassConstant) arg0).getValue());
 					}
 				}
 			}
