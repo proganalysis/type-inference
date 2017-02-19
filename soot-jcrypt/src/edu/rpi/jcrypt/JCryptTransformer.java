@@ -50,10 +50,8 @@ public class JCryptTransformer extends InferenceTransformer {
 	private Set<String> clearLibMethods;
 	
 	public static Set<SootMethod> entryPoints = new HashSet<>();
-	public static Set<String> mapperClasses = new HashSet<>();
-	public static Set<String> reducerClasses = new HashSet<>();
-	public static Set<String> combinerClasses = new HashSet<>();
-	//public static Set<String> partitionerClasses = new HashSet<>();
+	public static Map<String, Set<String>> mapreduceClasses = new HashMap<>();
+	private String[] expectedNames = new String[] {"setMapperClass", "setReducerClass", "setCombinerClass"};
 
 	public JCryptTransformer() {
 		// isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
@@ -84,6 +82,10 @@ public class JCryptTransformer extends InferenceTransformer {
 		clearLibMethods.add("length");
 		clearLibMethods.add("indexOf");
 		clearLibMethods.add("size");
+		
+		for (String expectedName : expectedNames) {
+			mapreduceClasses.put(expectedName, new HashSet<String>());
+		}
 	}
 
 	@Override
@@ -100,20 +102,20 @@ public class JCryptTransformer extends InferenceTransformer {
 				Value value = vb.getValue();
 				if (value instanceof VirtualInvokeExpr) {
 					String invokeName = ((VirtualInvokeExpr) value).getMethod().getName();
-					Value arg0 = ((VirtualInvokeExpr) value).getArg(0);
-					if (invokeName.equals("setMapperClass")) {
-						mapperClasses.add(((ClassConstant) arg0).getValue());
-					} else if (invokeName.equals("setReducerClass")) {
-						reducerClasses.add(((ClassConstant) arg0).getValue());
-					} else if (invokeName.equals("setCombinerClass")) {
-						combinerClasses.add(((ClassConstant) arg0).getValue());
-//					} else if (invokeName.equals("setPartitionerClass")) {
-//						partitionerClasses.add(((ClassConstant) arg0).getValue());
+					for (String expectedName : expectedNames) {
+						addClassName(invokeName, expectedName, (VirtualInvokeExpr) value);
 					}
 				}
 			}
 		}
 		super.internalTransform(b, phaseName, options);
+	}
+	
+	private void addClassName(String invokeName, String expectedName, VirtualInvokeExpr expr) {
+		if (invokeName.equals(expectedName)) {
+			String className = ((ClassConstant) expr.getArg(0)).getValue().replace('/', '.');
+			mapreduceClasses.get(expectedName).add(className);
+		}
 	}
 	
 	public boolean isPolyLibrary() {

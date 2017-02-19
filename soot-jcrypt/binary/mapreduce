@@ -8,11 +8,11 @@ start=`date +%s`
 mydir="`dirname $0`"
 mrlib=`find $mydir/../benchmarks/mapreduce/lib -name '*.jar' | xargs | sed 's/ /:/g'`
 soot=$mydir/../lib/soot-trunk.jar
-inference=$mydir/../lib/soot-inference.jar
+inference=$mydir/../lib/soot-inference.jar:$mydir/../lib/jars/annotations-2.0.1.jar:$mydir/../lib/encryption.jar:$mydir/../lib/jars/api-all-1.0.0-m20.jar
 jdk=$mydir/../jdk/reim/jdk.jar
-rt8=$JAVA_HOME/jre/lib/rt.jar
+rt8=$JAVA_HOME/jre/lib/rt.jar:$JAVA_HOME/jre/lib/jce.jar
 
-classpath="$jdk:$mrlib:$inference:$rt8"
+classpath="$mrlib:$inference:$rt8"
 outputDir=""
 appMainClass=""
 appClassPath=""
@@ -51,7 +51,7 @@ mainClass="edu.rpi.SootInferenceJCrypt"
 echo
 echo "-------- Phase 2: Type Inference --------"
 echo
-java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -pp -process-dir $outputDir -f none -d $outputDir
+java -cp $inference:$soot $mainClass -cp $outputDir:$classpath -process-dir $outputDir -f jimple -d $outputDir
 fi
 
 if [[ $phase == *"3"* ]]

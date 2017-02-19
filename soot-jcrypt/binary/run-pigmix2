@@ -2,6 +2,6 @@
 
 for i in `seq 1 17`;
 do
-    sh mapreduce -cp ../benchmarks/mapreduce/pigmix2/l$i -main org.apache.pig.test.pigmix.mapreduce.L$i -d ../output/mapreduce/pigmix2/l$i -phase 12345 > results.log
-    mv results.log ../output/mapreduce/pigmix2/l$i
+    sh mapreduce -cp ../benchmarks/mapreduce/pigmix2/l$i -main org.apache.pig.test.pigmix.mapreduce.L$i -d ../output/mapreduce/pigmix2/l$i -phase 12 #> results.log
+#    mv results.log ../output/mapreduce/pigmix2/l$i
 done

@@ -638,14 +638,15 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 			Set<AnnotatedValue> combineInValues) {
 		// get combiner, partitioner and reducer input key and values
 		Map<String, AnnotatedValue> annotatedValues = t.getAnnotatedValues();
+		Map<String, Set<String>> mapreduceClasses = JCryptTransformer.mapreduceClasses;
 		for (String identifier : annotatedValues.keySet()) {
 			AnnotatedValue av = annotatedValues.get(identifier);
 			String className = av.getEnclosingClass().getName();
 			if (identifier.endsWith("@parameter0")) {
 				if (identifier.contains("void reduce")) {
-					if (JCryptTransformer.reducerClasses.contains(className)) {
+					if (mapreduceClasses.get("setReducerClass").contains(className)) {
 						reduceInKeys.add(av);
-					} else if (JCryptTransformer.combinerClasses.contains(className)) {
+					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
 						combineInKeys.add(av);
 					}
 				} else if (identifier.contains("int getPartition")) {
@@ -654,9 +655,9 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 			}
 			if (identifier.endsWith("@parameter1")) {
 				if (identifier.contains("void reduce")) {
-					if (JCryptTransformer.reducerClasses.contains(className)) {
+					if (mapreduceClasses.get("setReducerClass").contains(className)) {
 						reduceInValues.add(av);
-					} else if (JCryptTransformer.combinerClasses.contains(className)) {
+					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
 						combineInValues.add(av);
 					}
 				} else if (identifier.contains("int getPartition")) {
@@ -671,25 +672,26 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 			Set<AnnotatedValue> reduceOutKeys, Set<AnnotatedValue> reduceOutValues, Set<AnnotatedValue> combineOutKeys,
 			Set<AnnotatedValue> combineOutValues) {
 		// get mapper, combiner and reducer output key and values
+		Map<String, Set<String>> mapreduceClasses = JCryptTransformer.mapreduceClasses;
 		for (Constraint c : constraints) {
 			AnnotatedValue left = c.getLeft(), right = c.getRight();
 			if (right.getKind() == Kind.METH_ADAPT) {
 				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
 				String className = left.getEnclosingClass().getName();
 				if (declId.equals(outkey1) || declId.equals(outkey2)) {
-					if (JCryptTransformer.mapperClasses.contains(className)) {
+					if (mapreduceClasses.get("setMapperClass").contains(className)) {
 						mapOutKeys.add(left);
-					} else if (JCryptTransformer.reducerClasses.contains(className)) {
+					} else if (mapreduceClasses.get("setReducerClass").contains(className)) {
 						reduceOutKeys.add(left);
-					} else if (JCryptTransformer.combinerClasses.contains(className)) {
+					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
 						combineOutKeys.add(left);
 					}
 				} else if (declId.equals(outvalue1) || declId.equals(outvalue2)) {
-					if (JCryptTransformer.mapperClasses.contains(className)) {
+					if (mapreduceClasses.get("setMapperClass").contains(className)) {
 						mapOutValues.add(left);
-					} else if (JCryptTransformer.reducerClasses.contains(className)) {
+					} else if (mapreduceClasses.get("setReducerClass").contains(className)) {
 						reduceOutValues.add(left);
-					} else if (JCryptTransformer.combinerClasses.contains(className)) {
+					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
 						combineOutValues.add(left);
 					}
 				}
