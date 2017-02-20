@@ -602,10 +602,9 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		Set<AnnotatedValue> partitionInKeys = new HashSet<>(), partitionInValues = new HashSet<>();
 		Set<AnnotatedValue> reduceInKeys = new HashSet<>(), reduceInValues = new HashSet<>();
 		Set<AnnotatedValue> combineInKeys = new HashSet<>(), combineInValues = new HashSet<>();
-		getOutKeyValues(constraints, outkey1, outkey2, outvalue1, outvalue2, mapOutKeys, mapOutValues, reduceOutKeys,
-				reduceOutValues, combineOutKeys, combineOutValues);
-		getInKeyValues(partitionInKeys, partitionInValues, reduceInKeys, reduceInValues, combineInKeys,
-				combineInValues);
+		getKeyValues(constraints, outkey1, outkey2, outvalue1, outvalue2, mapOutKeys, mapOutValues, reduceOutKeys,
+				reduceOutValues, combineOutKeys, combineOutValues, reduceInKeys, combineInKeys, partitionInKeys, reduceInValues,
+				combineInValues, partitionInValues);
 		// add constraints
 		for (AnnotatedValue mapOutKey : mapOutKeys) {
 			for (AnnotatedValue combineInKey : combineInKeys)
@@ -616,9 +615,9 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 				for (AnnotatedValue reduceInKey : reduceInKeys)
 					constraints.add(new SubtypeConstraint(mapOutKey, reduceInKey));
 		}
-		for (AnnotatedValue combineOutValue : combineOutValues)
-			for (AnnotatedValue reduceInValue : reduceInValues)
-				constraints.add(new SubtypeConstraint(combineOutValue, reduceInValue));
+		for (AnnotatedValue combineOutKey : combineOutKeys)
+			for (AnnotatedValue reduceInKey : reduceInKeys)
+				constraints.add(new SubtypeConstraint(combineOutKey, reduceInKey));
 		for (AnnotatedValue mapOutValue : mapOutValues) {
 			for (AnnotatedValue combineInValue : combineInValues)
 				constraints.add(new SubtypeConstraint(mapOutValue, combineInValue));
@@ -633,51 +632,19 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 				constraints.add(new SubtypeConstraint(combineOutValue, reduceInValue));
 	}
 
-	private void getInKeyValues(Set<AnnotatedValue> partitionInKeys, Set<AnnotatedValue> partitionInValues,
-			Set<AnnotatedValue> reduceInKeys, Set<AnnotatedValue> reduceInValues, Set<AnnotatedValue> combineInKeys,
-			Set<AnnotatedValue> combineInValues) {
-		// get combiner, partitioner and reducer input key and values
-		Map<String, AnnotatedValue> annotatedValues = t.getAnnotatedValues();
-		Map<String, Set<String>> mapreduceClasses = JCryptTransformer.mapreduceClasses;
-		for (String identifier : annotatedValues.keySet()) {
-			AnnotatedValue av = annotatedValues.get(identifier);
-			String className = av.getEnclosingClass().getName();
-			if (identifier.endsWith("@parameter0")) {
-				if (identifier.contains("void reduce")) {
-					if (mapreduceClasses.get("setReducerClass").contains(className)) {
-						reduceInKeys.add(av);
-					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
-						combineInKeys.add(av);
-					}
-				} else if (identifier.contains("int getPartition")) {
-					partitionInKeys.add(av);
-				}
-			}
-			if (identifier.endsWith("@parameter1")) {
-				if (identifier.contains("void reduce")) {
-					if (mapreduceClasses.get("setReducerClass").contains(className)) {
-						reduceInValues.add(av);
-					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
-						combineInValues.add(av);
-					}
-				} else if (identifier.contains("int getPartition")) {
-					partitionInValues.add(av);
-				}
-			}
-		}
-	}
-
-	private void getOutKeyValues(Set<Constraint> constraints, String outkey1, String outkey2, String outvalue1,
+	// get mapper, combiner and reducer input/output keys/values
+	private void getKeyValues(Set<Constraint> constraints, String outkey1, String outkey2, String outvalue1,
 			String outvalue2, Set<AnnotatedValue> mapOutKeys, Set<AnnotatedValue> mapOutValues,
 			Set<AnnotatedValue> reduceOutKeys, Set<AnnotatedValue> reduceOutValues, Set<AnnotatedValue> combineOutKeys,
-			Set<AnnotatedValue> combineOutValues) {
-		// get mapper, combiner and reducer output key and values
+			Set<AnnotatedValue> combineOutValues, Set<AnnotatedValue> reduceInKeys, Set<AnnotatedValue> combineInKeys,
+			Set<AnnotatedValue> partitionInKeys, Set<AnnotatedValue> reduceInValues, Set<AnnotatedValue> combineInValues,
+			Set<AnnotatedValue> partitionInValues) {
 		Map<String, Set<String>> mapreduceClasses = JCryptTransformer.mapreduceClasses;
 		for (Constraint c : constraints) {
 			AnnotatedValue left = c.getLeft(), right = c.getRight();
+			String className = left.getEnclosingClass().getName();
 			if (right.getKind() == Kind.METH_ADAPT) {
 				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
-				String className = left.getEnclosingClass().getName();
 				if (declId.equals(outkey1) || declId.equals(outkey2)) {
 					if (mapreduceClasses.get("setMapperClass").contains(className)) {
 						mapOutKeys.add(left);
@@ -693,6 +660,30 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 						reduceOutValues.add(left);
 					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
 						combineOutValues.add(left);
+					}
+				}
+			} else if (left.getKind() == Kind.PARAMETER) {
+				String leftId = left.getIdentifier();
+				if (leftId.endsWith("@parameter0")) {
+					if (leftId.contains("void reduce")) {
+						if (mapreduceClasses.get("setReducerClass").contains(className)) {
+							reduceInKeys.add(right);
+						} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
+							combineInKeys.add(right);
+						}
+					} else if (leftId.contains("int getPartition")) {
+						partitionInKeys.add(right);
+					}
+				}
+				if (leftId.endsWith("@parameter1")) {
+					if (leftId.contains("void reduce")) {
+						if (mapreduceClasses.get("setReducerClass").contains(className)) {
+							reduceInValues.add(right);
+						} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
+							combineInValues.add(right);
+						}
+					} else if (leftId.contains("int getPartition")) {
+						partitionInValues.add(right);
 					}
 				}
 			}
