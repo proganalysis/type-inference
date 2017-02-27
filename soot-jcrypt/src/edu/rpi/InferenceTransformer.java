@@ -502,13 +502,11 @@ public abstract class InferenceTransformer extends BodyTransformer {
 				if (map == null)
 					return numOfLocations;
 				for (AnnotatedValue l : map.values()) {
-					if (l.getName().equals("r1") || l.getName().equals("r2")) {
 					out.println(indent + "local " + l.getName() + ":");
 					printAnnotatedValue(l, "type", indent + "\t", out);
 					String id = l.getIdentifier();
 					if (!id.startsWith(CALLSITE_PREFIX) && !id.startsWith(FAKE_PREFIX) && !id.startsWith(LIB_PREFIX))
 						numOfLocations++;
-					}
 				}
 			} finally {
 				visitorState.setSootMethod(prev);

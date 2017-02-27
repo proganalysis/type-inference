@@ -2,6 +2,7 @@ package edu.rpi.jcrypt;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -42,6 +43,7 @@ import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
+import soot.jimple.JimpleBody;
 import soot.jimple.NewExpr;
 import soot.jimple.NumericConstant;
 import soot.jimple.ParameterRef;
@@ -61,7 +63,7 @@ public class TransformerTransformer extends BodyTransformer {
 	private static Set<SootClass> visited = new HashSet<>();
 	private JCryptTransformer jt;
 	private Set<String> polyValues;
-	private static SootMethod modifiedReduceMethod, modifiedMapMethod;
+	private Map<SootClass, SootMethod> modifiedMethod = new HashMap<>();
 	private static SootClass encryptionClass;
 	private Set<String> mapreducePrimTypes;
 	private Set<String> parseMethods;
@@ -94,10 +96,11 @@ public class TransformerTransformer extends BodyTransformer {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	protected void internalTransform(Body body, String arg1, Map arg2) {
+	protected synchronized void internalTransform(Body body, String arg1, Map arg2) {
 		sm = body.getMethod();
 		paramTypes = new LinkedList<>();
 		String methodName = sm.getName();
+		//System.out.println("*****" + sm.getSignature());
 		if (methodName.equals("map") || methodName.equals("reduce")) {
 			Chain<Unit> units = body.getUnits();
 			Iterator<Unit> stmtIt = units.snapshotIterator();
@@ -115,22 +118,24 @@ public class TransformerTransformer extends BodyTransformer {
 			}
 			sm.setParameterTypes(paramTypes);
 			modifyMethodLocals(body);
+			modifiedMethod.put(sm.getDeclaringClass(), body.getMethod());
+			//System.out.println("modifiedMethod: " + modifiedMethod.getSignature());
 		}
 		//System.out.println(sm.getName());
-		if (methodName.equals("map")) {
-			modifyClass(true);
-			modifyMapMethod(sm);
-			modifyMethodStmts(body, sm);
-			modifyMethodLocals(body);
-		} else if (methodName.equals("reduce")) {
-			modifyClass(false);
-			modifyReduceMethod(sm);
-			modifyMethodStmts(body, sm);
-			modifyMethodLocals(body);
-			modifyMethodSignatures(sm);
-		} else if (methodName.equals("run") || methodName.equals("main")) {
-			modifyRunMethod(body);
-		}
+//		if (methodName.equals("map")) {
+//			modifyClass(true);
+//			modifyMapMethod(sm);
+//			modifyMethodStmts(body, sm);
+//			modifyMethodLocals(body);
+//		} else if (methodName.equals("reduce")) {
+//			modifyClass(false);
+//			modifyReduceMethod(sm);
+//			modifyMethodStmts(body, sm);
+//			modifyMethodLocals(body);
+//			modifyMethodSignatures(sm);
+//		} else if (methodName.equals("run") || methodName.equals("main")) {
+//			modifyRunMethod(body);
+//		}
 	}
 	
 	private void modifyDefinitionStmt(DefinitionStmt unit) {
@@ -188,12 +193,10 @@ public class TransformerTransformer extends BodyTransformer {
 	}
 
 	private Value getInvokeExpr(InvokeExpr expr) {
-		SootMethod invokeMethod = expr.getMethod();
-		String methodName = invokeMethod.getName();
 		if (expr instanceof StaticInvokeExpr) {
 			// $i3 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>($r8);
 			// -> $i3 = $r8;
-			if (parseMethods.contains(methodName))
+			if (parseMethods.contains(expr.getMethod().getName()))
 				return expr.getArg(0);
 		} else if (expr instanceof SpecialInvokeExpr) {
 			// specialinvoke $r6.<org.apache.hadoop.io.IntWritable: void <init>(int)>($i3);
@@ -207,16 +210,14 @@ public class TransformerTransformer extends BodyTransformer {
 		} else if (expr instanceof VirtualInvokeExpr) {
 			if (Modifier.isVolatile(sm.getModifiers())) {
 				// call map/reduce method in volatile map/reduce
-				// TODO
-				if (modifiedReduceMethod != null)
-					expr.setMethodRef(modifiedReduceMethod.makeRef());
-				if (modifiedMapMethod != null)
-					expr.setMethodRef(modifiedMapMethod.makeRef());
+				expr.setMethodRef(modifiedMethod.get(sm.getDeclaringClass()).makeRef());
+				//System.out.println("Volatile: " + expr);
 			} else {
 				// $i0 = virtualinvoke r5.<org.apache.hadoop.io.IntWritable: int get()>();
 				// -> $i0 = virtualinvoke r5.<org.apache.hadoop.io.Text: String toString()>();
+				SootMethod invokeMethod = expr.getMethod();
 				if (mapreducePrimTypes.contains(invokeMethod.getDeclaringClass().getName())
-						&& methodName.equals("get")) {
+						&& invokeMethod.getName().equals("get")) {
 					SootMethod toCall = Scene.v()
 							.getMethod("<org.apache.hadoop.io.Text: java.lang.String toString()>");
 					expr.setMethodRef(toCall.makeRef());
@@ -247,50 +248,50 @@ public class TransformerTransformer extends BodyTransformer {
 	}
 
 	// only used to modify reduce method
-	private void modifyMethodSignatures(SootMethod sm) {
-		if (shouldModify(jt.mapOutKeys.get(0)) && shouldModify(sm)) {
-			List<Type> list = new ArrayList<>(sm.getParameterTypes());
-			list.remove(0);
-			list.add(0, RefType.v("org.apache.hadoop.io.Text"));
-			sm.setParameterTypes(list);
-			Local para = sm.getActiveBody().getParameterLocal(0);
-			para.setType(RefType.v("org.apache.hadoop.io.Text"));
+//	private void modifyMethodSignatures(SootMethod sm) {
+//		if (shouldModify(jt.mapOutKeys.get(0)) && shouldModify(sm)) {
+//			List<Type> list = new ArrayList<>(sm.getParameterTypes());
+//			list.remove(0);
+//			list.add(0, RefType.v("org.apache.hadoop.io.Text"));
+//			sm.setParameterTypes(list);
+//			Local para = sm.getActiveBody().getParameterLocal(0);
+//			para.setType(RefType.v("org.apache.hadoop.io.Text"));
+//
+//			SignatureTag sigTag = (SignatureTag) sm.getTag("SignatureTag");
+//			if (sigTag == null)
+//				return;
+//			sm.removeTag("SignatureTag");
+//			String signature = sigTag.getSignature();
+//			int index = signature.indexOf(';');
+//			SignatureTag tag = new SignatureTag("(Lorg/apache/hadoop/io/Text" + signature.substring(index));
+//			sm.addTag(tag);
+//			modifiedReduceMethod = sm;
+//		}
+//	}
 
-			SignatureTag sigTag = (SignatureTag) sm.getTag("SignatureTag");
-			if (sigTag == null)
-				return;
-			sm.removeTag("SignatureTag");
-			String signature = sigTag.getSignature();
-			int index = signature.indexOf(';');
-			SignatureTag tag = new SignatureTag("(Lorg/apache/hadoop/io/Text" + signature.substring(index));
-			sm.addTag(tag);
-			modifiedReduceMethod = sm;
-		}
-	}
-
-	private void modifyMethodStmts(Body body, SootMethod sm) {
-		Chain<Unit> units = body.getUnits();
-		Iterator<Unit> stmtIt = units.snapshotIterator();
-		while (stmtIt.hasNext()) {
-			Unit unit = stmtIt.next();
-			if (unit instanceof AssignStmt) {
-				modifyAssignStmt(sm, (AssignStmt) unit);
-			} else if (unit instanceof InvokeStmt) {
-				modifyInvokeStmt(sm, (InvokeStmt) unit);
-			} else if (unit instanceof IdentityStmt) {
-				// r1 := @parameter0: org.apache.hadoop.io.IntWritable;
-				Value rightOp = ((IdentityStmt) unit).getRightOp();
-				String type = modifyTo(((IdentityStmt) unit).getLeftOp());
-				if (type != null && rightOp instanceof ParameterRef) {
-					int index = ((ParameterRef) rightOp).getIndex();
-					if (index == 0)
-						((JIdentityStmt) unit).setRightOp(new ParameterRef(RefType.v(type), 0));
-				}
-			} else if (unit instanceof IfStmt) {
-				modifyIfStmt((IfStmt) unit);
-			}
-		}
-	}
+//	private void modifyMethodStmts(Body body, SootMethod sm) {
+//		Chain<Unit> units = body.getUnits();
+//		Iterator<Unit> stmtIt = units.snapshotIterator();
+//		while (stmtIt.hasNext()) {
+//			Unit unit = stmtIt.next();
+//			if (unit instanceof AssignStmt) {
+//				modifyAssignStmt(sm, (AssignStmt) unit);
+//			} else if (unit instanceof InvokeStmt) {
+//				modifyInvokeStmt(sm, (InvokeStmt) unit);
+//			} else if (unit instanceof IdentityStmt) {
+//				// r1 := @parameter0: org.apache.hadoop.io.IntWritable;
+//				Value rightOp = ((IdentityStmt) unit).getRightOp();
+//				String type = modifyTo(((IdentityStmt) unit).getLeftOp());
+//				if (type != null && rightOp instanceof ParameterRef) {
+//					int index = ((ParameterRef) rightOp).getIndex();
+//					if (index == 0)
+//						((JIdentityStmt) unit).setRightOp(new ParameterRef(RefType.v(type), 0));
+//				}
+//			} else if (unit instanceof IfStmt) {
+//				modifyIfStmt((IfStmt) unit);
+//			}
+//		}
+//	}
 
 	private void modifyIfStmt(IfStmt unit) {
 		// if i0 <= $i1 =>
@@ -332,38 +333,38 @@ public class TransformerTransformer extends BodyTransformer {
 		}
 	}
 
-	private void modifyInvokeStmt(SootMethod sm, InvokeStmt unit) {
-		// specialinvoke $r6.<org.apache.hadoop.io.IntWritable: void
-		// <init>(int)>($i3);
-		// -> specialinvoke $r6.<org.apache.hadoop.io.Text: void
-		// <init>(java.lang.String)>($i3);
-		InvokeExpr invoke = unit.getInvokeExpr();
-		if (invoke instanceof InstanceInvokeExpr) {
-			Value receiver = ((SpecialInvokeExpr) invoke).getBase();
-			String type = modifyTo(receiver);
-			if (type != null) {
-				SootMethod toCall = Scene.v().getMethod("<org.apache.hadoop.io.Text: void <init>(java.lang.String)>");
-				invoke.setMethodRef(toCall.makeRef());
-			} else {
-				SootMethodRef methodRef = invoke.getMethodRef();
-				List<Type> newParameterTypes = new LinkedList<>();
-				for (Value argument : invoke.getArgs()) {
-					String argType = modifyTo(argument);
-					if (argType != null) {
-						modifyCustomerMethod(invoke.getMethod());
-						newParameterTypes.add(RefType.v(argType));
-					} else newParameterTypes.add(argument.getType());
-				}
-				methodRef = Scene.v().makeMethodRef(methodRef.declaringClass(), methodRef.name(),
-						newParameterTypes, methodRef.returnType(), methodRef.isStatic());
-				invoke.setMethodRef(methodRef);
-			}
-		} else if (invoke instanceof VirtualInvokeExpr && soot.Modifier.isVolatile(sm.getModifiers())) {
-			if (modifiedReduceMethod != null) {
-				invoke.setMethodRef(modifiedReduceMethod.makeRef());
-			}
-		}
-	}
+//	private void modifyInvokeStmt(SootMethod sm, InvokeStmt unit) {
+//		// specialinvoke $r6.<org.apache.hadoop.io.IntWritable: void
+//		// <init>(int)>($i3);
+//		// -> specialinvoke $r6.<org.apache.hadoop.io.Text: void
+//		// <init>(java.lang.String)>($i3);
+//		InvokeExpr invoke = unit.getInvokeExpr();
+//		if (invoke instanceof InstanceInvokeExpr) {
+//			Value receiver = ((SpecialInvokeExpr) invoke).getBase();
+//			String type = modifyTo(receiver);
+//			if (type != null) {
+//				SootMethod toCall = Scene.v().getMethod("<org.apache.hadoop.io.Text: void <init>(java.lang.String)>");
+//				invoke.setMethodRef(toCall.makeRef());
+//			} else {
+//				SootMethodRef methodRef = invoke.getMethodRef();
+//				List<Type> newParameterTypes = new LinkedList<>();
+//				for (Value argument : invoke.getArgs()) {
+//					String argType = modifyTo(argument);
+//					if (argType != null) {
+//						modifyCustomerMethod(invoke.getMethod());
+//						newParameterTypes.add(RefType.v(argType));
+//					} else newParameterTypes.add(argument.getType());
+//				}
+//				methodRef = Scene.v().makeMethodRef(methodRef.declaringClass(), methodRef.name(),
+//						newParameterTypes, methodRef.returnType(), methodRef.isStatic());
+//				invoke.setMethodRef(methodRef);
+//			}
+//		} else if (invoke instanceof VirtualInvokeExpr && soot.Modifier.isVolatile(sm.getModifiers())) {
+//			if (modifiedReduceMethod != null) {
+//				invoke.setMethodRef(modifiedReduceMethod.makeRef());
+//			}
+//		}
+//	}
 
 	private void modifyAssignStmt(SootMethod sm, AssignStmt unit) {
 		Value leftOp = unit.getLeftOp();
@@ -522,6 +523,7 @@ public class TransformerTransformer extends BodyTransformer {
 	}
 
 	private String modifyTo(Value value) {
+		//System.out.println(value);
 		if (!polyValues.contains(TransUtils.getIdenfication(value, sm)))
 			return null;
 		Type type = value.getType();

@@ -105,10 +105,14 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 					case " + ":
 					case " - ":
 						outValue.put(lhsOp, (byte) 0b100);
+//						outValue.put(((BinopExpr) rhsOp).getOp1(), (byte) 0b100);
+//						outValue.put(((BinopExpr) rhsOp).getOp2(), (byte) 0b100);
 						break;
 					case " * ":
 					case " << ":
 						outValue.put(lhsOp, (byte) 0b10);
+//						outValue.put(((BinopExpr) rhsOp).getOp1(), (byte) 0b10);
+//						outValue.put(((BinopExpr) rhsOp).getOp2(), (byte) 0b10);
 					}
 				} else if (rhsOp instanceof Local) { // x = y
 					outValue.put(lhsOp, set);
@@ -119,7 +123,7 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 		} else if (unit instanceof ReturnStmt) {
 			// Get operand
 			Value rhsOp = ((ReturnStmt) unit).getOp();
-			outValue.put(RETURN_LOCAL, outValue.get(rhsOp));
+			outValue.put(RETURN_LOCAL, outValue.getOrDefault(rhsOp, initialSet()));
 		}
 		// Return the data flow value at the OUT of the statement
 		return outValue;
@@ -136,7 +140,7 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 			for (int i = 0; i < ie.getArgCount(); i++) {
 				Value arg = ie.getArg(i);
 				Local param = calledMethod.getActiveBody().getParameterLocal(i);
-				entryValue.put(param, inValue.get(arg));
+				entryValue.put(param, inValue.getOrDefault(arg, initialSet()));
 			}
 		}
 		// Return the entry value at the called method
@@ -151,7 +155,7 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 		// Only propagate constants for return values
 		if (unit instanceof AssignStmt) {
 			Value lhsOp = ((AssignStmt) unit).getLeftOp();
-			byte typeSet = exitValue.get(RETURN_LOCAL);
+			byte typeSet = exitValue.getOrDefault(RETURN_LOCAL, initialSet());
 			afterCallValue.put(lhsOp, typeSet);
 		}
 		// Return the map with the returned value's constant
@@ -163,7 +167,18 @@ public class AEAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Unit,
 			Map<Object, Byte> inValue) {
 		// Initialise result to the input
 		Map<Object, Byte> afterCallValue = copy(inValue);
-		
+//		List<ValueBox> valueBoxes = unit.getUseAndDefBoxes();
+//		for (ValueBox valueBox : valueBoxes) {
+//			Value value = valueBox.getValue();
+//			if (value instanceof Local) {
+//				for (ValueBox valueBox2 : valueBoxes) {
+//					Value value2 = valueBox2.getValue();
+//					if (value2 instanceof Local && value != value2) {
+//						afterCallValue.put(value, (byte) (afterCallValue.get(value) & afterCallValue.get(value2)));
+//					}
+//				}
+//			}
+//		}
 		return afterCallValue;
 	}
 

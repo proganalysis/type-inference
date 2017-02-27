@@ -76,7 +76,7 @@ public class AECheckerTransformer extends BodyTransformer {
 	}
 
 	@Override
-	protected void internalTransform(Body body, String phaseName, @SuppressWarnings("rawtypes") Map options) {
+	protected synchronized void internalTransform(Body body, String phaseName, @SuppressWarnings("rawtypes") Map options) {
 		cfg = new BriefUnitGraph(body);
 		defs = new SimpleLocalDefs(cfg);
 		for (Unit unit : body.getUnits()) {
@@ -178,7 +178,7 @@ public class AECheckerTransformer extends BodyTransformer {
 			return;
 		String id = TransUtils.getIdenfication(v, sm);
 		if (polyValues.contains(id)) {
-			if ((aeResults.get(id) & type) == 0)
+			if ((aeResults.getOrDefault(id, (byte) 0b1111) & type) == 0)
 				conversions.add(sm.getDeclaringClass().getName() + ": " + unit.toString());
 			else {
 				List<Unit> definitions = getDefsOfLocal(unit, (Local) v);

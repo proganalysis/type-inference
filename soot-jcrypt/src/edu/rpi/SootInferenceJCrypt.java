@@ -93,51 +93,43 @@ public class SootInferenceJCrypt {
 			e.printStackTrace();
 		}
 		
-		for (String key : JCryptTransformer.mapreduceClasses.keySet()) {
-			System.out.println(key);
-			for (String c : JCryptTransformer.mapreduceClasses.get(key)) {
-				System.out.println(c);
-			}
+		List<SootMethod> entryPoints = new ArrayList<>(JCryptTransformer.entryPoints);
+		G.reset();
+		AETransformer aet = new AETransformer(outputDir);
+		PackManager.v().getPack("wjtp").add(new Transform("wjtp.aet", aet));
+		String[] sootArgs = { 
+				"-cp", classPath, "-w",
+				"-keep-line-number", "-keep-bytecode-offset",
+				"-p", "cg", "implicit-entry:false", "-p", "cg.cha", "enabled",
+				"-p", "cg.cha", "apponly:true",
+				"-p", "cg", "safe-forname", "-p", "cg", "safe-newinstance",
+				"-process-dir", outputDir,
+				"-f", "none", "-d", outputDir };
+		Options.v().parse(sootArgs);
+		List<SootMethod> entry = new ArrayList<>();
+		for (SootMethod sm : entryPoints) {
+			String mainClass = sm.getDeclaringClass().getName();
+			SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
+			c.setApplicationClass();
+			entry.add(c.getMethod(sm.getName(), sm.getParameterTypes()));
 		}
+		Scene.v().loadNecessaryClasses();
+		Scene.v().setEntryPoints(entry);
+		PackManager.v().runPacks();
 		
-//		List<SootMethod> entryPoints = new ArrayList<>(JCryptTransformer.entryPoints);
-//		G.reset();
-//		AETransformer aet = new AETransformer(outputDir);
-//		PackManager.v().getPack("wjtp").add(new Transform("wjtp.aet", aet));
-//		String[] sootArgs = { 
-//				"-cp", classPath, "-w",
-//				"-keep-line-number", "-keep-bytecode-offset",
-//				"-p", "cg", "implicit-entry:false", "-p", "cg.cha", "enabled",
-//				"-p", "cg.cha", "apponly:true",
-//				"-p", "cg", "safe-forname", "-p", "cg", "safe-newinstance",
-//				"-process-dir", outputDir,
-//				"-f", "none", "-d", outputDir };
-//		Options.v().parse(sootArgs);
-//		List<SootMethod> entry = new ArrayList<>();
-//		for (SootMethod sm : entryPoints) {
-//			String mainClass = sm.getDeclaringClass().getName();
-//			SootClass c = Scene.v().forceResolve(mainClass, SootClass.BODIES);
-//			c.setApplicationClass();
-//			entry.add(c.getMethod(sm.getName(), sm.getParameterTypes()));
-//		}
-//		Scene.v().loadNecessaryClasses();
-//		Scene.v().setEntryPoints(entry);
-//		PackManager.v().runPacks();
-//		
-//		Set<String> polyValues = ((JCryptTransformer) jcryptTransformer).getPolyValues();
-////		List<String> runClasses = new ArrayList<>();
-//
-//		G.reset();
-//		AECheckerTransformer aect = new AECheckerTransformer(aet.getAeResults(), polyValues, jcryptTransformer);
-//		PackManager.v().getPack("jtp").add(new Transform("jtp.aect", aect));
-//		sootArgs = new String[]{ "-cp", classPath, "-process-dir", outputDir, "-f", "none", "-d", outputDir };
-//		soot.Main.main(sootArgs);
-//		Set<String> conversions = aect.getConversions();
-//		System.out.println("There are " + conversions.size() + " conversions.");
-//		for (String con : conversions)
-//			System.out.println(con);
-//		if (conversions.isEmpty()) {
-//			System.out.println(aet.formatResults(aect.getEncryptions()));
+		Set<String> polyValues = ((JCryptTransformer) jcryptTransformer).getPolyValues();
+
+		G.reset();
+		AECheckerTransformer aect = new AECheckerTransformer(aet.getAeResults(), polyValues, jcryptTransformer);
+		PackManager.v().getPack("jtp").add(new Transform("jtp.aect", aect));
+		sootArgs = new String[]{ "-cp", classPath, "-process-dir", outputDir, "-f", "none", "-d", outputDir };
+		soot.Main.main(sootArgs);
+		Set<String> conversions = aect.getConversions();
+		System.out.println("There are " + conversions.size() + " conversions.");
+		for (String con : conversions)
+			System.out.println(con);
+		if (conversions.isEmpty()) {
+			System.out.println(aet.formatResults(aect.getEncryptions()));
 //			// transform
 //			G.reset();
 //			TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues,
@@ -146,7 +138,7 @@ public class SootInferenceJCrypt {
 //			sootArgs = new String[] { "-cp", classPath, "-process-dir", outputDir, "-f", "jimple", "-d",
 //					outputDir + "/transformed" };
 //			soot.Main.main(sootArgs);
-//		}
+		}
 
 		long endTime = System.currentTimeMillis();
 		info("Total running time: " + ((float) (endTime - startTime) / 1000) + " sec");
