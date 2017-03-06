@@ -79,6 +79,7 @@ public class TransformerTransformer extends BodyTransformer {
 		encryptions = map;
 		Scene.v().addBasicClass("encryptUtil.EncryptUtil", SootClass.SIGNATURES);
 		Scene.v().addBasicClass("java.util.HashMap", SootClass.SIGNATURES);
+		Scene.v().addBasicClass("java.util.TreeMap", SootClass.SIGNATURES);
 		mapreducePrimTypes = new HashSet<>();
 		mapreducePrimTypes.add("org.apache.hadoop.io.IntWritable");
 		mapreducePrimTypes.add("org.apache.hadoop.io.LongWritable");
@@ -114,10 +115,8 @@ public class TransformerTransformer extends BodyTransformer {
 					modifyIfStmt((IfStmt) unit);
 				} else if (unit instanceof InvokeStmt) {
 					InvokeExpr invokeExpr = ((InvokeStmt) unit).getInvokeExpr();
-					SootMethod method = invokeExpr.getMethod();
-					if (method.getDeclaringClass().getName().equals("java.util.HashSet")
-							&& method.getName().equals("add"))
-						modifyHashSetAdd((VirtualInvokeExpr) invokeExpr, unit);
+					if (unit.toString().contains("Set: boolean add(java.lang.Object)"))
+						modifySetAdd((VirtualInvokeExpr) invokeExpr, unit);
 					else
 						// specialinvoke and virtualinvoke in volatile methods
 						getInvokeExpr(invokeExpr);
@@ -145,7 +144,7 @@ public class TransformerTransformer extends BodyTransformer {
 //		}
 	}
 	
-	private void modifyHashSetAdd(VirtualInvokeExpr invokeExpr, Unit unit) {
+	private void modifySetAdd(VirtualInvokeExpr invokeExpr, Unit unit) {
 		if (!polyValues.contains(TransUtils.getIdenfication(invokeExpr.getBase(), sm)))
 			return;
 		Body body = sm.getActiveBody();
@@ -166,7 +165,7 @@ public class TransformerTransformer extends BodyTransformer {
 		body.getUnits().insertBefore(toAdd, unit);
 		// i2 = virtualinvoke r43.<java.lang.String: int indexOf(int)>(35);
 		Local i2 = lg.generateLocal(IntType.v());
-		virtualExpr = Jimple.v().newVirtualInvokeExpr(r43, 
+		virtualExpr = Jimple.v().newVirtualInvokeExpr(r43,
 				Scene.v().getMethod("<java.lang.String: int indexOf(int)>").makeRef(), IntConstant.v(35));
 		toAdd = Jimple.v().newAssignStmt(i2, virtualExpr);
 		body.getUnits().insertBefore(toAdd, unit);
@@ -204,8 +203,9 @@ public class TransformerTransformer extends BodyTransformer {
 		invokeStmt = Jimple.v().newInvokeStmt(specialExpr);
 		body.getUnits().insertBefore(invokeStmt, unit);
 		// virtualinvoke $r9.<java.util.HashMap: java.lang.Object put(java.lang.Object,java.lang.Object)>($r34, $r36);
+		String invokeClass = invokeExpr.getMethod().getDeclaringClass().getName().replace("Set", "Map");
 		virtualExpr = Jimple.v().newVirtualInvokeExpr((Local) ((VirtualInvokeExpr) invokeExpr).getBase(),
-				Scene.v().getMethod("<java.util.HashMap: java.lang.Object put(java.lang.Object,java.lang.Object)>").makeRef(), r34, r36);
+				Scene.v().getMethod("<" + invokeClass + ": java.lang.Object put(java.lang.Object,java.lang.Object)>").makeRef(), r34, r36);
 		invokeStmt = Jimple.v().newInvokeStmt(virtualExpr);
 		body.getUnits().insertBefore(invokeStmt, unit);
 		body.getUnits().remove(unit);
@@ -221,7 +221,7 @@ public class TransformerTransformer extends BodyTransformer {
 				if (rightOp != null)
 					((AssignStmt) unit).setRightOp(rightOp);
 			} else if (rightValue instanceof VirtualInvokeExpr)
-				modifyHashSetIterator((VirtualInvokeExpr) rightValue, (AssignStmt) unit);
+				modifySetIterator((VirtualInvokeExpr) rightValue, (AssignStmt) unit);
 		} else if (rightValue instanceof ParameterRef) {
 			if (leftType != null) {
 				unit.getRightOpBox().setValue(new ParameterRef(RefType.v(leftType),
@@ -231,16 +231,18 @@ public class TransformerTransformer extends BodyTransformer {
 		}
 	}
 	
-	private void modifyHashSetIterator(VirtualInvokeExpr invokeExpr, AssignStmt unit) {
-		SootMethod method = invokeExpr.getMethod();
-		if (!method.getSignature().equals("<java.util.HashSet: java.util.Iterator iterator()>")) return;
+	private void modifySetIterator(VirtualInvokeExpr invokeExpr, AssignStmt unit) {
+		String methodSignature = invokeExpr.getMethod().getSignature();
+		if (!methodSignature.equals("<java.util.HashSet: java.util.Iterator iterator()>")
+				&& !methodSignature.equals("<java.util.TreeSet: java.util.Iterator iterator()>")) return;
 		Body body = sm.getActiveBody();
 		LocalGenerator lg = new LocalGenerator(body);
 		Value r9 = invokeExpr.getBase();
 		// $r11 = virtualinvoke $r9.<java.util.HashMap: java.util.Collection values()>();
 		Local r11 = lg.generateLocal(RefType.v("java.util.Collection"));
+		String invokeClass = invokeExpr.getMethod().getDeclaringClass().getName().replace("Set", "Map");
 		InvokeExpr virtualExpr = Jimple.v().newVirtualInvokeExpr((Local) r9,
-				Scene.v().getSootClass("java.util.HashMap").getMethodByName("values").makeRef());
+				Scene.v().getSootClass(invokeClass).getMethodByName("values").makeRef());
 		AssignStmt toAdd = Jimple.v().newAssignStmt(r11, virtualExpr);
 		body.getUnits().insertBefore(toAdd, unit);
 		// r45 = interfaceinvoke $r11.<java.util.Collection: java.util.Iterator iterator()>();

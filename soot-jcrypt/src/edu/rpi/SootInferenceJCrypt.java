@@ -44,6 +44,13 @@ public class SootInferenceJCrypt {
 			}
 		}
 
+		// delete transformed folder if it exits
+		File transformedDir = new File(outputDir + "/transformed");
+		if (transformedDir.exists()) {
+			File[] contents = transformedDir.listFiles();
+			for (File f : contents) f.delete();
+		}
+		
 		soot.Main.main(args);
 
 		ConstraintSolver cs = new SetbasedSolver(reimTransformer, false);
