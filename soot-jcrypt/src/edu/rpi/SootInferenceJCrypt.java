@@ -130,14 +130,14 @@ public class SootInferenceJCrypt {
 			System.out.println(con);
 		if (conversions.isEmpty()) {
 			System.out.println(aet.formatResults(aect.getEncryptions()));
-//			// transform
-//			G.reset();
-//			TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues,
-//					aect.getEncryptions());
-//			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
-//			sootArgs = new String[] { "-cp", classPath, "-process-dir", outputDir, "-f", "jimple", "-d",
-//					outputDir + "/transformed" };
-//			soot.Main.main(sootArgs);
+			// transform
+			G.reset();
+			TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues,
+					aect.getEncryptions());
+			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
+			sootArgs = new String[] { "-cp", classPath, "-process-dir", outputDir, "-f", "jimple", "-d",
+					outputDir + "/transformed" };
+			soot.Main.main(sootArgs);
 		}
 
 		long endTime = System.currentTimeMillis();

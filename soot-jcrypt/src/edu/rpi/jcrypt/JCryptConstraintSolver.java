@@ -539,7 +539,7 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		updateConstraintsWithReim(constraints);
 
 		// add constrains between map output and reduce input
-		addMapReduceConstraints(constraints);
+		//addMapReduceConstraints(constraints);
 
 		buildRefToConstraintMapping(constraints);
 
@@ -591,103 +591,103 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		return conflictConstraints;
 	}
 
-	private void addMapReduceConstraints(Set<Constraint> constraints) {
-		String out1 = "lib-<org.apache.hadoop.mapreduce.TaskInputOutputContext: void write(java.lang.Object,java.lang.Object)>@parameter";
-		String out2 = "lib-<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>@parameter";
-		String outkey1 = out1 + "0", outkey2 = out2 + "0";
-		String outvalue1 = out1 + "1", outvalue2 = out2 + "1";
-		Set<AnnotatedValue> mapOutKeys = new HashSet<>(), mapOutValues = new HashSet<>();
-		Set<AnnotatedValue> reduceOutKeys = new HashSet<>(), reduceOutValues = new HashSet<>();
-		Set<AnnotatedValue> combineOutKeys = new HashSet<>(), combineOutValues = new HashSet<>();
-		Set<AnnotatedValue> partitionInKeys = new HashSet<>(), partitionInValues = new HashSet<>();
-		Set<AnnotatedValue> reduceInKeys = new HashSet<>(), reduceInValues = new HashSet<>();
-		Set<AnnotatedValue> combineInKeys = new HashSet<>(), combineInValues = new HashSet<>();
-		getKeyValues(constraints, outkey1, outkey2, outvalue1, outvalue2, mapOutKeys, mapOutValues, reduceOutKeys,
-				reduceOutValues, combineOutKeys, combineOutValues, reduceInKeys, combineInKeys, partitionInKeys, reduceInValues,
-				combineInValues, partitionInValues);
-		// add constraints
-		for (AnnotatedValue mapOutKey : mapOutKeys) {
-			for (AnnotatedValue combineInKey : combineInKeys)
-				constraints.add(new SubtypeConstraint(mapOutKey, combineInKey));
-			for (AnnotatedValue partitionInKey : partitionInKeys)
-				constraints.add(new SubtypeConstraint(mapOutKey, partitionInKey));
-			if (combineInKeys.isEmpty())
-				for (AnnotatedValue reduceInKey : reduceInKeys)
-					constraints.add(new SubtypeConstraint(mapOutKey, reduceInKey));
-		}
-		for (AnnotatedValue combineOutKey : combineOutKeys)
-			for (AnnotatedValue reduceInKey : reduceInKeys)
-				constraints.add(new SubtypeConstraint(combineOutKey, reduceInKey));
-		for (AnnotatedValue mapOutValue : mapOutValues) {
-			for (AnnotatedValue combineInValue : combineInValues)
-				constraints.add(new SubtypeConstraint(mapOutValue, combineInValue));
-			for (AnnotatedValue partitionInValue : partitionInValues)
-				constraints.add(new SubtypeConstraint(mapOutValue, partitionInValue));
-			if (combineInValues.isEmpty())
-				for (AnnotatedValue reduceInValue : reduceInValues)
-					constraints.add(new SubtypeConstraint(mapOutValue, reduceInValue));
-		}
-		for (AnnotatedValue combineOutValue : combineOutValues)
-			for (AnnotatedValue reduceInValue : reduceInValues)
-				constraints.add(new SubtypeConstraint(combineOutValue, reduceInValue));
-	}
-
-	// get mapper, combiner and reducer input/output keys/values
-	private void getKeyValues(Set<Constraint> constraints, String outkey1, String outkey2, String outvalue1,
-			String outvalue2, Set<AnnotatedValue> mapOutKeys, Set<AnnotatedValue> mapOutValues,
-			Set<AnnotatedValue> reduceOutKeys, Set<AnnotatedValue> reduceOutValues, Set<AnnotatedValue> combineOutKeys,
-			Set<AnnotatedValue> combineOutValues, Set<AnnotatedValue> reduceInKeys, Set<AnnotatedValue> combineInKeys,
-			Set<AnnotatedValue> partitionInKeys, Set<AnnotatedValue> reduceInValues, Set<AnnotatedValue> combineInValues,
-			Set<AnnotatedValue> partitionInValues) {
-		Map<String, Set<String>> mapreduceClasses = JCryptTransformer.mapreduceClasses;
-		for (Constraint c : constraints) {
-			AnnotatedValue left = c.getLeft(), right = c.getRight();
-			String className = left.getEnclosingClass().getName();
-			if (right.getKind() == Kind.METH_ADAPT) {
-				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
-				if (declId.equals(outkey1) || declId.equals(outkey2)) {
-					if (mapreduceClasses.get("setMapperClass").contains(className)) {
-						mapOutKeys.add(left);
-					} else if (mapreduceClasses.get("setReducerClass").contains(className)) {
-						reduceOutKeys.add(left);
-					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
-						combineOutKeys.add(left);
-					}
-				} else if (declId.equals(outvalue1) || declId.equals(outvalue2)) {
-					if (mapreduceClasses.get("setMapperClass").contains(className)) {
-						mapOutValues.add(left);
-					} else if (mapreduceClasses.get("setReducerClass").contains(className)) {
-						reduceOutValues.add(left);
-					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
-						combineOutValues.add(left);
-					}
-				}
-			} else if (left.getKind() == Kind.PARAMETER) {
-				String leftId = left.getIdentifier();
-				if (leftId.endsWith("@parameter0")) {
-					if (leftId.contains("void reduce")) {
-						if (mapreduceClasses.get("setReducerClass").contains(className)) {
-							reduceInKeys.add(right);
-						} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
-							combineInKeys.add(right);
-						}
-					} else if (leftId.contains("int getPartition")) {
-						partitionInKeys.add(right);
-					}
-				}
-				if (leftId.endsWith("@parameter1")) {
-					if (leftId.contains("void reduce")) {
-						if (mapreduceClasses.get("setReducerClass").contains(className)) {
-							reduceInValues.add(right);
-						} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
-							combineInValues.add(right);
-						}
-					} else if (leftId.contains("int getPartition")) {
-						partitionInValues.add(right);
-					}
-				}
-			}
-		}
-	}
+//	private void addMapReduceConstraints(Set<Constraint> constraints) {
+//		String out1 = "lib-<org.apache.hadoop.mapreduce.TaskInputOutputContext: void write(java.lang.Object,java.lang.Object)>@parameter";
+//		String out2 = "lib-<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>@parameter";
+//		String outkey1 = out1 + "0", outkey2 = out2 + "0";
+//		String outvalue1 = out1 + "1", outvalue2 = out2 + "1";
+//		Set<AnnotatedValue> mapOutKeys = new HashSet<>(), mapOutValues = new HashSet<>();
+//		Set<AnnotatedValue> reduceOutKeys = new HashSet<>(), reduceOutValues = new HashSet<>();
+//		Set<AnnotatedValue> combineOutKeys = new HashSet<>(), combineOutValues = new HashSet<>();
+//		Set<AnnotatedValue> partitionInKeys = new HashSet<>(), partitionInValues = new HashSet<>();
+//		Set<AnnotatedValue> reduceInKeys = new HashSet<>(), reduceInValues = new HashSet<>();
+//		Set<AnnotatedValue> combineInKeys = new HashSet<>(), combineInValues = new HashSet<>();
+//		getKeyValues(constraints, outkey1, outkey2, outvalue1, outvalue2, mapOutKeys, mapOutValues, reduceOutKeys,
+//				reduceOutValues, combineOutKeys, combineOutValues, reduceInKeys, combineInKeys, partitionInKeys, reduceInValues,
+//				combineInValues, partitionInValues);
+//		// add constraints
+//		for (AnnotatedValue mapOutKey : mapOutKeys) {
+//			for (AnnotatedValue combineInKey : combineInKeys)
+//				constraints.add(new SubtypeConstraint(mapOutKey, combineInKey));
+//			for (AnnotatedValue partitionInKey : partitionInKeys)
+//				constraints.add(new SubtypeConstraint(mapOutKey, partitionInKey));
+//			if (combineInKeys.isEmpty())
+//				for (AnnotatedValue reduceInKey : reduceInKeys)
+//					constraints.add(new SubtypeConstraint(mapOutKey, reduceInKey));
+//		}
+//		for (AnnotatedValue combineOutKey : combineOutKeys)
+//			for (AnnotatedValue reduceInKey : reduceInKeys)
+//				constraints.add(new SubtypeConstraint(combineOutKey, reduceInKey));
+//		for (AnnotatedValue mapOutValue : mapOutValues) {
+//			for (AnnotatedValue combineInValue : combineInValues)
+//				constraints.add(new SubtypeConstraint(mapOutValue, combineInValue));
+//			for (AnnotatedValue partitionInValue : partitionInValues)
+//				constraints.add(new SubtypeConstraint(mapOutValue, partitionInValue));
+//			if (combineInValues.isEmpty())
+//				for (AnnotatedValue reduceInValue : reduceInValues)
+//					constraints.add(new SubtypeConstraint(mapOutValue, reduceInValue));
+//		}
+//		for (AnnotatedValue combineOutValue : combineOutValues)
+//			for (AnnotatedValue reduceInValue : reduceInValues)
+//				constraints.add(new SubtypeConstraint(combineOutValue, reduceInValue));
+//	}
+//
+//	// get mapper, combiner and reducer input/output keys/values
+//	private void getKeyValues(Set<Constraint> constraints, String outkey1, String outkey2, String outvalue1,
+//			String outvalue2, Set<AnnotatedValue> mapOutKeys, Set<AnnotatedValue> mapOutValues,
+//			Set<AnnotatedValue> reduceOutKeys, Set<AnnotatedValue> reduceOutValues, Set<AnnotatedValue> combineOutKeys,
+//			Set<AnnotatedValue> combineOutValues, Set<AnnotatedValue> reduceInKeys, Set<AnnotatedValue> combineInKeys,
+//			Set<AnnotatedValue> partitionInKeys, Set<AnnotatedValue> reduceInValues, Set<AnnotatedValue> combineInValues,
+//			Set<AnnotatedValue> partitionInValues) {
+//		Map<String, Set<String>> mapreduceClasses = JCryptTransformer.mapreduceClasses;
+//		for (Constraint c : constraints) {
+//			AnnotatedValue left = c.getLeft(), right = c.getRight();
+//			String className = left.getEnclosingClass().getName();
+//			if (right.getKind() == Kind.METH_ADAPT) {
+//				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
+//				if (declId.equals(outkey1) || declId.equals(outkey2)) {
+//					if (mapreduceClasses.get("setMapperClass").contains(className)) {
+//						mapOutKeys.add(left);
+//					} else if (mapreduceClasses.get("setReducerClass").contains(className)) {
+//						reduceOutKeys.add(left);
+//					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
+//						combineOutKeys.add(left);
+//					}
+//				} else if (declId.equals(outvalue1) || declId.equals(outvalue2)) {
+//					if (mapreduceClasses.get("setMapperClass").contains(className)) {
+//						mapOutValues.add(left);
+//					} else if (mapreduceClasses.get("setReducerClass").contains(className)) {
+//						reduceOutValues.add(left);
+//					} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
+//						combineOutValues.add(left);
+//					}
+//				}
+//			} else if (left.getKind() == Kind.PARAMETER) {
+//				String leftId = left.getIdentifier();
+//				if (leftId.endsWith("@parameter0")) {
+//					if (leftId.contains("void reduce")) {
+//						if (mapreduceClasses.get("setReducerClass").contains(className)) {
+//							reduceInKeys.add(right);
+//						} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
+//							combineInKeys.add(right);
+//						}
+//					} else if (leftId.contains("int getPartition")) {
+//						partitionInKeys.add(right);
+//					}
+//				}
+//				if (leftId.endsWith("@parameter1")) {
+//					if (leftId.contains("void reduce")) {
+//						if (mapreduceClasses.get("setReducerClass").contains(className)) {
+//							reduceInValues.add(right);
+//						} else if (mapreduceClasses.get("setCombinerClass").contains(className)) {
+//							combineInValues.add(right);
+//						}
+//					} else if (leftId.contains("int getPartition")) {
+//						partitionInValues.add(right);
+//					}
+//				}
+//			}
+//		}
+//	}
 
 }

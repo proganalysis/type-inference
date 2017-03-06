@@ -16,6 +16,7 @@ import soot.Body;
 import soot.BodyTransformer;
 import soot.BooleanType;
 import soot.CharType;
+import soot.IntType;
 import soot.Local;
 import soot.PrimType;
 import soot.RefType;
@@ -77,6 +78,7 @@ public class TransformerTransformer extends BodyTransformer {
 		this.polyValues = polyValues;
 		encryptions = map;
 		Scene.v().addBasicClass("encryptUtil.EncryptUtil", SootClass.SIGNATURES);
+		Scene.v().addBasicClass("java.util.HashMap", SootClass.SIGNATURES);
 		mapreducePrimTypes = new HashSet<>();
 		mapreducePrimTypes.add("org.apache.hadoop.io.IntWritable");
 		mapreducePrimTypes.add("org.apache.hadoop.io.LongWritable");
@@ -111,9 +113,14 @@ public class TransformerTransformer extends BodyTransformer {
 				} else if (unit instanceof IfStmt){
 					modifyIfStmt((IfStmt) unit);
 				} else if (unit instanceof InvokeStmt) {
-					// only consider two cases here:
-					// specialinvoke and virtualinvoke in volatile methods
-					getInvokeExpr(((InvokeStmt) unit).getInvokeExpr());
+					InvokeExpr invokeExpr = ((InvokeStmt) unit).getInvokeExpr();
+					SootMethod method = invokeExpr.getMethod();
+					if (method.getDeclaringClass().getName().equals("java.util.HashSet")
+							&& method.getName().equals("add"))
+						modifyHashSetAdd((VirtualInvokeExpr) invokeExpr, unit);
+					else
+						// specialinvoke and virtualinvoke in volatile methods
+						getInvokeExpr(invokeExpr);
 				}
 			}
 			sm.setParameterTypes(paramTypes);
@@ -138,6 +145,72 @@ public class TransformerTransformer extends BodyTransformer {
 //		}
 	}
 	
+	private void modifyHashSetAdd(VirtualInvokeExpr invokeExpr, Unit unit) {
+		if (!polyValues.contains(TransUtils.getIdenfication(invokeExpr.getBase(), sm)))
+			return;
+		Body body = sm.getActiveBody();
+		LocalGenerator lg = new LocalGenerator(body);
+		String className = "org.apache.hadoop.io.Text";
+		Type textType = RefType.v(className);
+		// $r33 = (org.apache.hadoop.io.Text) $r32;
+		Local r33 = lg.generateLocal(textType);
+		Value r32 = invokeExpr.getArg(0);
+		CastExpr castExpr = Jimple.v().newCastExpr(r32, textType);
+		AssignStmt toAdd = Jimple.v().newAssignStmt(r33, castExpr);
+		body.getUnits().insertBefore(toAdd, unit);
+		// r43 = virtualinvoke $r33.<org.apache.hadoop.io.Text: java.lang.String toString()>();
+		Local r43 = lg.generateLocal(RefType.v("java.lang.String"));
+		InvokeExpr virtualExpr = Jimple.v().newVirtualInvokeExpr(r33,
+				Scene.v().getSootClass(className).getMethodByName("toString").makeRef());
+		toAdd = Jimple.v().newAssignStmt(r43, virtualExpr);
+		body.getUnits().insertBefore(toAdd, unit);
+		// i2 = virtualinvoke r43.<java.lang.String: int indexOf(int)>(35);
+		Local i2 = lg.generateLocal(IntType.v());
+		virtualExpr = Jimple.v().newVirtualInvokeExpr(r43, 
+				Scene.v().getMethod("<java.lang.String: int indexOf(int)>").makeRef(), IntConstant.v(35));
+		toAdd = Jimple.v().newAssignStmt(i2, virtualExpr);
+		body.getUnits().insertBefore(toAdd, unit);
+		// $r34 = new org.apache.hadoop.io.Text;
+		Local r34 = lg.generateLocal(textType);
+		NewExpr newExpr = Jimple.v().newNewExpr(RefType.v(className));
+		toAdd = Jimple.v().newAssignStmt(r34, newExpr);
+		body.getUnits().insertBefore(toAdd, unit);
+		// $r35 = virtualinvoke r43.<java.lang.String: java.lang.String substring(int,int)>(0, i2);
+		Local r35 = lg.generateLocal(RefType.v("java.lang.String"));
+		virtualExpr = Jimple.v().newVirtualInvokeExpr(r43,
+				Scene.v().getMethod("<java.lang.String: java.lang.String substring(int,int)>").makeRef(),
+				IntConstant.v(0), i2);
+		toAdd = Jimple.v().newAssignStmt(r35, virtualExpr);
+		body.getUnits().insertBefore(toAdd, unit);
+		// specialinvoke $r34.<org.apache.hadoop.io.Text: void <init>(java.lang.String)>($r35);
+		InvokeExpr specialExpr = Jimple.v().newSpecialInvokeExpr(r34,
+				Scene.v().getMethod("<org.apache.hadoop.io.Text: void <init>(java.lang.String)>").makeRef(), r35);
+		InvokeStmt invokeStmt = Jimple.v().newInvokeStmt(specialExpr);
+		body.getUnits().insertBefore(invokeStmt, unit);
+		// $r36 = new org.apache.hadoop.io.Text;
+		Local r36 = lg.generateLocal(textType);
+		newExpr = Jimple.v().newNewExpr(RefType.v(className));
+		toAdd = Jimple.v().newAssignStmt(r36, newExpr);
+		body.getUnits().insertBefore(toAdd, unit);
+		// $r37 = virtualinvoke r43.<java.lang.String: java.lang.String substring(int)>(i2);
+		Local r37 = lg.generateLocal(RefType.v("java.lang.String"));
+		virtualExpr = Jimple.v().newVirtualInvokeExpr(r43,
+				Scene.v().getMethod("<java.lang.String: java.lang.String substring(int)>").makeRef(), i2);
+		toAdd = Jimple.v().newAssignStmt(r37, virtualExpr);
+		body.getUnits().insertBefore(toAdd, unit);
+		// specialinvoke $r36.<org.apache.hadoop.io.Text: void <init>(java.lang.String)>($r37);
+		specialExpr = Jimple.v().newSpecialInvokeExpr(r36,
+				Scene.v().getMethod("<org.apache.hadoop.io.Text: void <init>(java.lang.String)>").makeRef(), r37);
+		invokeStmt = Jimple.v().newInvokeStmt(specialExpr);
+		body.getUnits().insertBefore(invokeStmt, unit);
+		// virtualinvoke $r9.<java.util.HashMap: java.lang.Object put(java.lang.Object,java.lang.Object)>($r34, $r36);
+		virtualExpr = Jimple.v().newVirtualInvokeExpr((Local) ((VirtualInvokeExpr) invokeExpr).getBase(),
+				Scene.v().getMethod("<java.util.HashMap: java.lang.Object put(java.lang.Object,java.lang.Object)>").makeRef(), r34, r36);
+		invokeStmt = Jimple.v().newInvokeStmt(virtualExpr);
+		body.getUnits().insertBefore(invokeStmt, unit);
+		body.getUnits().remove(unit);
+	}
+
 	private void modifyDefinitionStmt(DefinitionStmt unit) {
 		Value leftValue = unit.getLeftOp();
 		Value rightValue = unit.getRightOp();
@@ -147,7 +220,8 @@ public class TransformerTransformer extends BodyTransformer {
 				Value rightOp = getRightOpOfAssignStmt(rightValue, leftValue, leftType);
 				if (rightOp != null)
 					((AssignStmt) unit).setRightOp(rightOp);
-			}
+			} else if (rightValue instanceof VirtualInvokeExpr)
+				modifyHashSetIterator((VirtualInvokeExpr) rightValue, (AssignStmt) unit);
 		} else if (rightValue instanceof ParameterRef) {
 			if (leftType != null) {
 				unit.getRightOpBox().setValue(new ParameterRef(RefType.v(leftType),
@@ -156,11 +230,30 @@ public class TransformerTransformer extends BodyTransformer {
 			} else paramTypes.add(rightValue.getType());
 		}
 	}
+	
+	private void modifyHashSetIterator(VirtualInvokeExpr invokeExpr, AssignStmt unit) {
+		SootMethod method = invokeExpr.getMethod();
+		if (!method.getSignature().equals("<java.util.HashSet: java.util.Iterator iterator()>")) return;
+		Body body = sm.getActiveBody();
+		LocalGenerator lg = new LocalGenerator(body);
+		Value r9 = invokeExpr.getBase();
+		// $r11 = virtualinvoke $r9.<java.util.HashMap: java.util.Collection values()>();
+		Local r11 = lg.generateLocal(RefType.v("java.util.Collection"));
+		InvokeExpr virtualExpr = Jimple.v().newVirtualInvokeExpr((Local) r9,
+				Scene.v().getSootClass("java.util.HashMap").getMethodByName("values").makeRef());
+		AssignStmt toAdd = Jimple.v().newAssignStmt(r11, virtualExpr);
+		body.getUnits().insertBefore(toAdd, unit);
+		// r45 = interfaceinvoke $r11.<java.util.Collection: java.util.Iterator iterator()>();
+		InvokeExpr interfaceExpr = Jimple.v().newInterfaceInvokeExpr(r11,
+				Scene.v().getSootClass("java.util.Collection").getMethodByName("iterator").makeRef());
+		unit.setRightOp(interfaceExpr);
+	}
 
 	private Value getRightOpOfAssignStmt(Value rightValue, Value leftValue, String leftType) {
 		if (rightValue instanceof NewExpr) {
 			// $r6 = new org.apache.hadoop.io.IntWritable;
 			// -> $r6 = new org.apache.hadoop.io.Text;
+			// $r9 = new java.util.HashSet; -> $r9 = new java.util.HashMap;
 			((NewExpr) rightValue).setBaseType(RefType.v(leftType));
 			return rightValue;
 		} else if (rightValue instanceof InvokeExpr) {
@@ -196,15 +289,22 @@ public class TransformerTransformer extends BodyTransformer {
 		if (expr instanceof StaticInvokeExpr) {
 			// $i3 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>($r8);
 			// -> $i3 = $r8;
-			if (parseMethods.contains(expr.getMethod().getName()))
-				return expr.getArg(0);
+			if (parseMethods.contains(expr.getMethod().getName())) {
+				Value arg = expr.getArg(0);
+				if (polyValues.contains(TransUtils.getIdenfication(arg, sm)))
+					return expr.getArg(0);
+			}
 		} else if (expr instanceof SpecialInvokeExpr) {
 			// specialinvoke $r6.<org.apache.hadoop.io.IntWritable: void <init>(int)>($i3);
 			// -> specialinvoke $r6.<org.apache.hadoop.io.Text: void <init>(java.lang.String)>($i3);
+			// specialinvoke $r9.<java.util.HashSet: void <init>()>();
+			// -> specialinvoke $r9.<java.util.HashMap: void <init>()>();
 			Value receiver = ((SpecialInvokeExpr) expr).getBase();
 			String type = modifyTo(receiver);
 			if (type != null) {
-				SootMethod toCall = Scene.v().getMethod("<org.apache.hadoop.io.Text: void <init>(java.lang.String)>");
+				String methodSignature = type.startsWith("java") ? "<java.util.HashMap: void <init>()>"
+						: "<org.apache.hadoop.io.Text: void <init>(java.lang.String)>";
+				SootMethod toCall = Scene.v().getMethod(methodSignature);
 				expr.setMethodRef(toCall.makeRef());
 			}
 		} else if (expr instanceof VirtualInvokeExpr) {
@@ -218,10 +318,12 @@ public class TransformerTransformer extends BodyTransformer {
 				SootMethod invokeMethod = expr.getMethod();
 				if (mapreducePrimTypes.contains(invokeMethod.getDeclaringClass().getName())
 						&& invokeMethod.getName().equals("get")) {
-					SootMethod toCall = Scene.v()
-							.getMethod("<org.apache.hadoop.io.Text: java.lang.String toString()>");
-					expr.setMethodRef(toCall.makeRef());
-					return expr;
+					if (polyValues.contains(TransUtils.getIdenfication(((VirtualInvokeExpr) expr).getBase(), sm))) {
+							SootMethod toCall = Scene.v()
+								.getMethod("<org.apache.hadoop.io.Text: java.lang.String toString()>");
+							expr.setMethodRef(toCall.makeRef());
+							return expr;
+					}
 				}
 			}
 		}
@@ -529,6 +631,7 @@ public class TransformerTransformer extends BodyTransformer {
 		Type type = value.getType();
 		if (mapreducePrimTypes.contains(type.toString())) return "org.apache.hadoop.io.Text";
 		if (isPrimitive(type)) return "java.lang.String";
+		if (type.toString().equals("java.util.HashSet")) return "java.util.HashMap";
 		return null;
 	}
 	

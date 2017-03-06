@@ -5,14 +5,10 @@ import java.io.PrintStream;
 import java.lang.annotation.*;
 import soot.VoidType;
 import soot.SootMethod;
-import soot.Value;
-import soot.ValueBox;
 import soot.Body;
 import soot.SootClass;
 import soot.SootField;
-import soot.jimple.ClassConstant;
 import soot.jimple.InvokeExpr;
-import soot.jimple.VirtualInvokeExpr;
 import soot.tagkit.*;
 import edu.rpi.AnnotatedValue.FieldAdaptValue;
 import edu.rpi.AnnotatedValue.MethodAdaptValue;
@@ -50,8 +46,8 @@ public class JCryptTransformer extends InferenceTransformer {
 	private Set<String> clearLibMethods;
 	
 	public static Set<SootMethod> entryPoints = new HashSet<>();
-	public static Map<String, Set<String>> mapreduceClasses = new HashMap<>();
-	private String[] expectedNames = new String[] {"setMapperClass", "setReducerClass", "setCombinerClass"};
+//	public static Map<String, Set<String>> mapreduceClasses = new HashMap<>();
+//	private String[] expectedNames = new String[] {"setMapperClass", "setReducerClass", "setCombinerClass"};
 
 	public JCryptTransformer() {
 		// isPolyLibrary = (System.getProperty(OPTION_POLY_LIBRARY) != null);
@@ -83,9 +79,9 @@ public class JCryptTransformer extends InferenceTransformer {
 		clearLibMethods.add("indexOf");
 		clearLibMethods.add("size");
 		
-		for (String expectedName : expectedNames) {
-			mapreduceClasses.put(expectedName, new HashSet<String>());
-		}
+//		for (String expectedName : expectedNames) {
+//			mapreduceClasses.put(expectedName, new HashSet<String>());
+//		}
 	}
 
 	@Override
@@ -96,27 +92,27 @@ public class JCryptTransformer extends InferenceTransformer {
 				&& (methodName.equals("map") || methodName.equals("reduce")))
 			// 4161 means the modifier is volatile
 			entryPoints.add(sm);
-		else if (methodName.equals("run") || methodName.equals("main")) {
-			// classify mapper, reducer, combiner and partitioner classes
-			for (ValueBox vb: b.getUseBoxes()) {
-				Value value = vb.getValue();
-				if (value instanceof VirtualInvokeExpr) {
-					String invokeName = ((VirtualInvokeExpr) value).getMethod().getName();
-					for (String expectedName : expectedNames) {
-						addClassName(invokeName, expectedName, (VirtualInvokeExpr) value);
-					}
-				}
-			}
-		}
+//		else if (methodName.equals("run") || methodName.equals("main")) {
+//			// classify mapper, reducer, combiner and partitioner classes
+//			for (ValueBox vb: b.getUseBoxes()) {
+//				Value value = vb.getValue();
+//				if (value instanceof VirtualInvokeExpr) {
+//					String invokeName = ((VirtualInvokeExpr) value).getMethod().getName();
+//					for (String expectedName : expectedNames) {
+//						addClassName(invokeName, expectedName, (VirtualInvokeExpr) value);
+//					}
+//				}
+//			}
+//		}
 		super.internalTransform(b, phaseName, options);
 	}
 	
-	private void addClassName(String invokeName, String expectedName, VirtualInvokeExpr expr) {
-		if (invokeName.equals(expectedName)) {
-			String className = ((ClassConstant) expr.getArg(0)).getValue().replace('/', '.');
-			mapreduceClasses.get(expectedName).add(className);
-		}
-	}
+//	private void addClassName(String invokeName, String expectedName, VirtualInvokeExpr expr) {
+//		if (invokeName.equals(expectedName)) {
+//			String className = ((ClassConstant) expr.getArg(0)).getValue().replace('/', '.');
+//			mapreduceClasses.get(expectedName).add(className);
+//		}
+//	}
 	
 	public boolean isPolyLibrary() {
 		return isPolyLibrary;
