@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.rpi.AnnotatedValue;
+import edu.rpi.AnnotatedValue.AdaptValue;
+import edu.rpi.AnnotatedValue.Kind;
+import edu.rpi.Constraint;
 import edu.rpi.InferenceUtils;
 import soot.Body;
 import soot.BodyTransformer;
@@ -103,7 +106,6 @@ public class TransformerTransformer extends BodyTransformer {
 		sm = body.getMethod();
 		paramTypes = new LinkedList<>();
 		String methodName = sm.getName();
-		//System.out.println("*****" + sm.getSignature());
 		if (methodName.equals("map") || methodName.equals("reduce")) {
 			Chain<Unit> units = body.getUnits();
 			Iterator<Unit> stmtIt = units.snapshotIterator();
@@ -125,9 +127,9 @@ public class TransformerTransformer extends BodyTransformer {
 			sm.setParameterTypes(paramTypes);
 			modifyMethodLocals(body);
 			modifiedMethod.put(sm.getDeclaringClass(), body.getMethod());
-			//System.out.println("modifiedMethod: " + modifiedMethod.getSignature());
-		}
-		//System.out.println(sm.getName());
+		} else if (methodName.equals("run") || methodName.equals("main"))
+			modifyRunMethod(body);
+
 //		if (methodName.equals("map")) {
 //			modifyClass(true);
 //			modifyMapMethod(sm);
@@ -139,9 +141,6 @@ public class TransformerTransformer extends BodyTransformer {
 //			modifyMethodStmts(body, sm);
 //			modifyMethodLocals(body);
 //			modifyMethodSignatures(sm);
-//		} else if (methodName.equals("run") || methodName.equals("main")) {
-//			modifyRunMethod(body);
-//		}
 	}
 	
 	private void modifySetAdd(VirtualInvokeExpr invokeExpr, Unit unit) {
@@ -333,21 +332,69 @@ public class TransformerTransformer extends BodyTransformer {
 	}
 
 	private void modifyRunMethod(Body body) {
+		List<String> mapperClasses = new ArrayList<>(), reducerClasses = new ArrayList<>();
+		List<InvokeExpr> outKeyExprs = new ArrayList<>(), outValueExprs = new ArrayList<>(),
+				mapOutKeyExprs = new ArrayList<>(), mapOutValueExprs = new ArrayList<>();
 		for (Unit unit : body.getUnits()) {
 			if (unit instanceof InvokeStmt) {
 				InvokeExpr invoke = ((InvokeStmt) unit).getInvokeExpr();
 				if (invoke instanceof VirtualInvokeExpr) {
 					String methodName = invoke.getMethod().getName();
-					if ( (methodName.equals("setOutputKeyClass") 
-							&& ( (jt.reduceKey == null && shouldModify(jt.mapOutKeys.get(0)))
-									|| shouldModify(jt.reduceKey) ) )
-							|| (methodName.equals("setOutputValueClass")
-									&& ( (jt.reduceValue == null && shouldModify(jt.mapOutValues.get(0)))
-											|| shouldModify(jt.reduceValue) ) ) ) {
-						invoke.setArg(0, ClassConstant.v("org/apache/hadoop/io/Text"));
-					}
+					if (methodName.equals("setMapperClass")) {
+						String className = ((ClassConstant) invoke.getArg(0)).getValue().replace('/', '.');
+						mapperClasses.add(className);
+					} else if (methodName.equals("setReducerClass")) {
+						String className = ((ClassConstant) invoke.getArg(0)).getValue().replace('/', '.');
+						reducerClasses.add(className);
+					} else if (methodName.equals("setOutputKeyClass")) outKeyExprs.add(invoke);
+					else if (methodName.equals("setOutputValueClass")) outValueExprs.add(invoke);
+					else if (methodName.equals("setMapOutputKeyClass")) mapOutKeyExprs.add(invoke);
+					else if (methodName.equals("setMapOutputValueClass")) mapOutValueExprs.add(invoke);
 				}
 			}
+		}
+		String out1 = "lib-<org.apache.hadoop.mapreduce.TaskInputOutputContext: void write(java.lang.Object,java.lang.Object)>@parameter";
+		String out2 = "lib-<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>@parameter";
+		String outkey1 = out1 + "0", outkey2 = out2 + "0";
+		String outvalue1 = out1 + "1", outvalue2 = out2 + "1";
+		Map<String, List<Boolean>> keyType = new HashMap<>(), valueType = new HashMap<>();
+		for (Constraint c : jt.getConstraints()) {
+			AnnotatedValue left = c.getLeft(), right = c.getRight();
+			String className = left.getEnclosingClass().getName();
+			if (right.getKind() == Kind.METH_ADAPT) {
+				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
+				if (declId.equals(outkey1) || declId.equals(outkey2)) {
+					List<Boolean> list = keyType.getOrDefault(className, new ArrayList<>());
+					list.add(polyValues.contains(left.getIdentifier()));
+					keyType.put(className, list);
+				}
+				else if (declId.equals(outvalue1) || declId.equals(outvalue2)) {
+					List<Boolean> list = valueType.getOrDefault(className, new ArrayList<>());
+					list.add(polyValues.contains(left.getIdentifier()));
+					valueType.put(className, list);
+				}
+			}
+		}
+		setOutputKeyValueClass(mapperClasses, mapOutKeyExprs, keyType);
+		setOutputKeyValueClass(mapperClasses, mapOutValueExprs, valueType);
+		if (reducerClasses.isEmpty()) {
+			setOutputKeyValueClass(mapperClasses, outKeyExprs, keyType);
+			setOutputKeyValueClass(mapperClasses, outValueExprs, valueType);
+		} else {
+			setOutputKeyValueClass(reducerClasses, outKeyExprs, keyType);
+			setOutputKeyValueClass(reducerClasses, outValueExprs, valueType);
+		}
+	}
+
+	private void setOutputKeyValueClass(List<String> mapperClasses, List<InvokeExpr> mapOutKeyExprs,
+			Map<String, List<Boolean>> keyType) {
+		int index = 0;
+		for (InvokeExpr invoke : mapOutKeyExprs) {
+			String className = mapperClasses.get(index);
+			String type = ((ClassConstant) invoke.getArg(0)).getValue().replace('/', '.');
+			if (keyType.get(className).get(index) && mapreducePrimTypes.contains(type))
+				invoke.setArg(0, ClassConstant.v("org/apache/hadoop/io/Text"));
+			index++;
 		}
 	}
 
