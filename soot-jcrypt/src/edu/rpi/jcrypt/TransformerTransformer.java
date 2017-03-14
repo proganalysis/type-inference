@@ -342,10 +342,12 @@ public class TransformerTransformer extends BodyTransformer {
 					String methodName = invoke.getMethod().getName();
 					if (methodName.equals("setMapperClass")) {
 						String className = ((ClassConstant) invoke.getArg(0)).getValue().replace('/', '.');
-						mapperClasses.add(className);
+//						if (Scene.v().containsClass(className))
+							mapperClasses.add(className);
 					} else if (methodName.equals("setReducerClass")) {
 						String className = ((ClassConstant) invoke.getArg(0)).getValue().replace('/', '.');
-						reducerClasses.add(className);
+//						if (Scene.v().containsClass(className))
+							reducerClasses.add(className);
 					} else if (methodName.equals("setOutputKeyClass")) outKeyExprs.add(invoke);
 					else if (methodName.equals("setOutputValueClass")) outValueExprs.add(invoke);
 					else if (methodName.equals("setMapOutputKeyClass")) mapOutKeyExprs.add(invoke);
@@ -357,21 +359,21 @@ public class TransformerTransformer extends BodyTransformer {
 		String out2 = "lib-<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>@parameter";
 		String outkey1 = out1 + "0", outkey2 = out2 + "0";
 		String outvalue1 = out1 + "1", outvalue2 = out2 + "1";
-		Map<String, List<Boolean>> keyType = new HashMap<>(), valueType = new HashMap<>();
+		Map<String, Boolean> keyType = new HashMap<>(), valueType = new HashMap<>();
 		for (Constraint c : jt.getConstraints()) {
 			AnnotatedValue left = c.getLeft(), right = c.getRight();
 			String className = left.getEnclosingClass().getName();
 			if (right.getKind() == Kind.METH_ADAPT) {
 				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
 				if (declId.equals(outkey1) || declId.equals(outkey2)) {
-					List<Boolean> list = keyType.getOrDefault(className, new ArrayList<>());
-					list.add(polyValues.contains(left.getIdentifier()));
-					keyType.put(className, list);
+//					List<Boolean> list = keyType.getOrDefault(className, new ArrayList<>());
+//					list.add(polyValues.contains(left.getIdentifier()));
+					keyType.put(className, polyValues.contains(left.getIdentifier()));
 				}
 				else if (declId.equals(outvalue1) || declId.equals(outvalue2)) {
-					List<Boolean> list = valueType.getOrDefault(className, new ArrayList<>());
-					list.add(polyValues.contains(left.getIdentifier()));
-					valueType.put(className, list);
+//					List<Boolean> list = valueType.getOrDefault(className, new ArrayList<>());
+//					list.add(polyValues.contains(left.getIdentifier()));
+					valueType.put(className, polyValues.contains(left.getIdentifier()));
 				}
 			}
 		}
@@ -387,14 +389,13 @@ public class TransformerTransformer extends BodyTransformer {
 	}
 
 	private void setOutputKeyValueClass(List<String> mapperClasses, List<InvokeExpr> mapOutKeyExprs,
-			Map<String, List<Boolean>> keyType) {
+			Map<String, Boolean> keyType) {
 		int index = 0;
 		for (InvokeExpr invoke : mapOutKeyExprs) {
-			String className = mapperClasses.get(index);
+			String className = mapperClasses.get(index++);
 			String type = ((ClassConstant) invoke.getArg(0)).getValue().replace('/', '.');
-			if (keyType.get(className).get(index) && mapreducePrimTypes.contains(type))
+			if (keyType.containsKey(className) && keyType.get(className) && mapreducePrimTypes.contains(type))
 				invoke.setArg(0, ClassConstant.v("org/apache/hadoop/io/Text"));
-			index++;
 		}
 	}
 
@@ -581,85 +582,85 @@ public class TransformerTransformer extends BodyTransformer {
 		return Jimple.v().newStaticInvokeExpr(libMethod.makeRef(), op1, op2);
 	}
 
-	private void modifyMapMethod(SootMethod sm) {
-		Set<Integer> index = new HashSet<>();
-		if (shouldModify(jt.mapOutKeys.get(0))) {
-			index.add(0);
-		}
-		if (shouldModify(jt.mapOutValues.get(0))) {
-			index.add(1);
-		}
-		modifyGenericType(sm, index);
-	}
-
-	private void modifyReduceMethod(SootMethod sm) {
-		Set<Integer> index = new HashSet<>();
-		if (shouldModify(jt.reduceKey)) {
-			index.add(0);
-		}
-		if (shouldModify(jt.reduceValue)) {
-			index.add(1);
-		}
-		modifyGenericType(sm, index);
-	}
-
-	private void modifyClass(boolean isMap) {
-		for (SootClass sc : Scene.v().getApplicationClasses()) {
-			if (visited.contains(sc))
-				continue;
-			else
-				visited.add(sc);
-			Set<Integer> mapIndex = new HashSet<>();
-			Set<Integer> reduceIndex = new HashSet<>();
-			if (shouldModify(jt.mapOutKeys.get(0))) {
-				mapIndex.add(2);
-				reduceIndex.add(0);
-			}
-			if (shouldModify(jt.mapOutValues.get(0))) {
-				mapIndex.add(3);
-				reduceIndex.add(1);
-			}
-			if (shouldModify(jt.reduceKey)) {
-				reduceIndex.add(2);
-			}
-			if (shouldModify(jt.reduceValue)) {
-				reduceIndex.add(3);
-			}
-			if (isMap)
-				modifyGenericType(sc, mapIndex);
-			else
-				modifyGenericType(sc, reduceIndex);
-		}
-	}
-
-	private void modifyGenericType(AbstractHost sc, Set<Integer> index) {
-		SignatureTag sigTag = (SignatureTag) sc.getTag("SignatureTag");
-		if (sigTag == null)
-			return;
-		sc.removeTag("SignatureTag");
-		String signature = sigTag.getSignature();
-		int start = signature.indexOf('<') + 1;
-		int end = signature.indexOf('>');
-		String[] genericTypes = signature.substring(start, end).split(";");
-		if (genericTypes.length == 1) { // iterator<Text>
-			if (shouldModify(jt.mapOutValues.get(0))) {
-				signature = signature.substring(0, start) + "Lorg/apache/hadoop/io/Text;" + signature.substring(end);
-			}
-			start = signature.indexOf('<', start) + 1;
-			end = signature.indexOf('>', start);
-			genericTypes = signature.substring(start, end).split(";");
-		}
-		for (int i : index) {
-			genericTypes[i] = "Lorg/apache/hadoop/io/Text";
-		}
-		StringBuilder builder = new StringBuilder();
-		for (String s : genericTypes) {
-			builder.append(s + ";");
-		}
-		SignatureTag tag = new SignatureTag(
-				signature.substring(0, start) + builder.toString() + signature.substring(end));
-		sc.addTag(tag);
-	}
+//	private void modifyMapMethod(SootMethod sm) {
+//		Set<Integer> index = new HashSet<>();
+//		if (shouldModify(jt.mapOutKeys.get(0))) {
+//			index.add(0);
+//		}
+//		if (shouldModify(jt.mapOutValues.get(0))) {
+//			index.add(1);
+//		}
+//		modifyGenericType(sm, index);
+//	}
+//
+//	private void modifyReduceMethod(SootMethod sm) {
+//		Set<Integer> index = new HashSet<>();
+//		if (shouldModify(jt.reduceKey)) {
+//			index.add(0);
+//		}
+//		if (shouldModify(jt.reduceValue)) {
+//			index.add(1);
+//		}
+//		modifyGenericType(sm, index);
+//	}
+//
+//	private void modifyClass(boolean isMap) {
+//		for (SootClass sc : Scene.v().getApplicationClasses()) {
+//			if (visited.contains(sc))
+//				continue;
+//			else
+//				visited.add(sc);
+//			Set<Integer> mapIndex = new HashSet<>();
+//			Set<Integer> reduceIndex = new HashSet<>();
+//			if (shouldModify(jt.mapOutKeys.get(0))) {
+//				mapIndex.add(2);
+//				reduceIndex.add(0);
+//			}
+//			if (shouldModify(jt.mapOutValues.get(0))) {
+//				mapIndex.add(3);
+//				reduceIndex.add(1);
+//			}
+//			if (shouldModify(jt.reduceKey)) {
+//				reduceIndex.add(2);
+//			}
+//			if (shouldModify(jt.reduceValue)) {
+//				reduceIndex.add(3);
+//			}
+//			if (isMap)
+//				modifyGenericType(sc, mapIndex);
+//			else
+//				modifyGenericType(sc, reduceIndex);
+//		}
+//	}
+//
+//	private void modifyGenericType(AbstractHost sc, Set<Integer> index) {
+//		SignatureTag sigTag = (SignatureTag) sc.getTag("SignatureTag");
+//		if (sigTag == null)
+//			return;
+//		sc.removeTag("SignatureTag");
+//		String signature = sigTag.getSignature();
+//		int start = signature.indexOf('<') + 1;
+//		int end = signature.indexOf('>');
+//		String[] genericTypes = signature.substring(start, end).split(";");
+//		if (genericTypes.length == 1) { // iterator<Text>
+//			if (shouldModify(jt.mapOutValues.get(0))) {
+//				signature = signature.substring(0, start) + "Lorg/apache/hadoop/io/Text;" + signature.substring(end);
+//			}
+//			start = signature.indexOf('<', start) + 1;
+//			end = signature.indexOf('>', start);
+//			genericTypes = signature.substring(start, end).split(";");
+//		}
+//		for (int i : index) {
+//			genericTypes[i] = "Lorg/apache/hadoop/io/Text";
+//		}
+//		StringBuilder builder = new StringBuilder();
+//		for (String s : genericTypes) {
+//			builder.append(s + ";");
+//		}
+//		SignatureTag tag = new SignatureTag(
+//				signature.substring(0, start) + builder.toString() + signature.substring(end));
+//		sc.addTag(tag);
+//	}
 	
 	private void modifyMethodLocals(Body body) {
 		for (Local local : body.getLocals()) {

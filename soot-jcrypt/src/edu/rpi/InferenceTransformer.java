@@ -37,11 +37,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
 	private static Map<String, AnnotatedValue> adaptValues = new HashMap<String, AnnotatedValue>();
 
-	// record map and reduce output key-value pairs for generic type modification
-	public AnnotatedValue reduceKey, reduceValue;
-	public List<AnnotatedValue> mapOutKeys = new ArrayList<>();
-	public List<AnnotatedValue> mapOutValues = new ArrayList<>();
-
 	/**
 	 * This is actually static, because AnnotatedValueMap.v() always return the
 	 * same object.
@@ -698,7 +693,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
 		}
 		// End Lindsey
 		AnnotatedValue aBase = null;
-		boolean isMapOutput = false, isReduceOutput = false;
 		if (v instanceof InstanceInvokeExpr) {
 			// receiver
 			InstanceInvokeExpr iv = (InstanceInvokeExpr) v;
@@ -706,11 +700,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
 			aBase = getAnnotatedValue(base);
 			AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
 			addSubtypeConstraint(aBase, getMethodAdaptValue(aBase, aThis, assignTo));
-			// check if it is the key-value pair of map output
-			isMapOutput = visitorState.getSootMethod().getName().equals("map")
-					&& isMapOutputMethod(className, methodName);
-			isReduceOutput = visitorState.getSootMethod().getName().equals("reduce")
-					&& isReduceOutputMethod(className, methodName);
 		}
 		// parameters
 		if (!runReplace) {
@@ -737,17 +726,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
 				}
 				// End Lindsey
 				addSubtypeConstraint(aArg, getMethodAdaptValue(aBase, aParam, assignTo));
-				// record the output key-value pair of map
-				if (isMapOutput)
-					if (i == 0)
-						mapOutKeys.add(aArg);
-					else
-						mapOutValues.add(aArg);
-				if (isReduceOutput)
-					if (reduceKey == null)
-						reduceKey = aArg;
-					else
-						reduceValue = aArg;
 			}
 		}
 		// return
@@ -757,22 +735,6 @@ public abstract class InferenceTransformer extends BodyTransformer {
 			AnnotatedValue aReturn = getAnnotatedReturn(invokeMethod);
 			addSubtypeConstraint(getMethodAdaptValue(aBase, aReturn, assignTo), assignTo);
 		}
-	}
-
-	private boolean isReduceOutputMethod(String decClass, String methodName) {
-		if (decClass.equals("org.apache.hadoop.mapreduce.Reducer$Context") && methodName.equals("write"))
-			return true;
-		if (decClass.equals("org.apache.hadoop.mapred.OutputCollector") && methodName.equals("collect"))
-			return true;
-		return false;
-	}
-
-	public boolean isMapOutputMethod(String decClass, String methodName) {
-		if (decClass.equals("org.apache.hadoop.mapreduce.Mapper$Context") && methodName.equals("write"))
-			return true;
-		if (decClass.equals("org.apache.hadoop.mapred.OutputCollector") && methodName.equals("collect"))
-			return true;
-		return false;
 	}
 
 	@Override

@@ -539,7 +539,7 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		updateConstraintsWithReim(constraints);
 
 		// add constrains between map output and reduce input
-		//addMapReduceConstraints(constraints);
+		addMapReduceConstraints(constraints);
 
 		buildRefToConstraintMapping(constraints);
 
@@ -589,6 +589,100 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 				"Finish solving JCrypt constraints. " + conflictConstraints.size() + " error(s)");
 
 		return conflictConstraints;
+	}
+	
+	private void addMapReduceConstraints(Set<Constraint> constraints) {
+		Map<String, Job> jobs = getJobs(constraints);
+		for (String key : jobs.keySet()) {
+			Job job = jobs.get(key);
+			List<AnnotatedValue> cik = job.getCik(), rik = job.getRik(), pik = job.getPik();
+			if (!cik.isEmpty()) {
+				for (AnnotatedValue mapperOutKey : job.getMok())
+					for (AnnotatedValue combinerInKey : cik)
+						constraints.add(new SubtypeConstraint(mapperOutKey, combinerInKey));
+				for (AnnotatedValue mapperOutValue : job.getMov())
+					for (AnnotatedValue combinerInValue : job.getCiv())
+						constraints.add(new SubtypeConstraint(mapperOutValue, combinerInValue));
+				if (!rik.isEmpty()) {
+					for (AnnotatedValue combinerOutKey : job.getCok())
+						for (AnnotatedValue reducerInKey : rik)
+							constraints.add(new SubtypeConstraint(combinerOutKey, reducerInKey));
+					for (AnnotatedValue combinerOutValue : job.getCov())
+						for (AnnotatedValue reducerInValue : job.getRiv())
+							constraints.add(new SubtypeConstraint(combinerOutValue, reducerInValue));
+				}
+			} else if (!rik.isEmpty()) {
+				for (AnnotatedValue mapperOutKey : job.getMok())
+					for (AnnotatedValue reducerInKey : rik)
+						constraints.add(new SubtypeConstraint(mapperOutKey, reducerInKey));
+				for (AnnotatedValue mapperOutValue : job.getMov())
+					for (AnnotatedValue reducerInValue : job.getRiv())
+						constraints.add(new SubtypeConstraint(mapperOutValue, reducerInValue));
+			}
+			if (!pik.isEmpty()) {
+				for (AnnotatedValue mapperOutKey : job.getMok())
+					for (AnnotatedValue partitionerInKey : pik)
+						constraints.add(new SubtypeConstraint(mapperOutKey, partitionerInKey));
+				for (AnnotatedValue mapperOutValue : job.getMov())
+					for (AnnotatedValue partitionerInValue : job.getPiv())
+						constraints.add(new SubtypeConstraint(mapperOutValue, partitionerInValue));
+			}
+		}
+	}
+	
+	private Map<String, Job> getJobs(Set<Constraint> constraints) {	
+		String out1 = "lib-<org.apache.hadoop.mapreduce.TaskInputOutputContext: void write(java.lang.Object,java.lang.Object)>@parameter";
+		String out2 = "lib-<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>@parameter";
+		String outkey1 = out1 + "0", outkey2 = out2 + "0";
+		String outvalue1 = out1 + "1", outvalue2 = out2 + "1";
+		Map<String, String[]> mapreduceClasses = JCryptTransformer.mapreduceClasses;
+		Map<String, Job> jobs = st.getJobs();
+		for (Constraint c : constraints) {
+			AnnotatedValue left = c.getLeft(), right = c.getRight();
+			String className = left.getEnclosingClass().getName();
+			if (right.getKind() == Kind.METH_ADAPT) {
+				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
+				if (declId.equals(outkey1) || declId.equals(outkey2)) {
+					String[] info = mapreduceClasses.get(className);
+					Job job = jobs.getOrDefault(info[0], new Job());
+					if (info[1].contains("m")) job.getMok().add(left);
+					if (info[1].contains("r")) job.getRok().add(left);
+					if (info[1].contains("c")) job.getCok().add(left);
+					jobs.put(info[0], job);
+				} else if (declId.equals(outvalue1) || declId.equals(outvalue2)) {
+					String[] info = mapreduceClasses.get(className);
+					Job job = jobs.getOrDefault(info[0], new Job());
+					if (info[1].contains("m")) job.getMov().add(left);
+					if (info[1].contains("r")) job.getRov().add(left);
+					if (info[1].contains("c")) job.getCov().add(left);
+					jobs.put(info[0], job);
+				}
+			} else if (left.getKind() == Kind.PARAMETER) {
+				String leftId = left.getIdentifier();
+				if (leftId.endsWith("@parameter0")) {
+					if (mapreduceClasses.containsKey(className)) {
+						String[] info = mapreduceClasses.get(className);
+						Job job = jobs.getOrDefault(info[0], new Job());
+						if (info[1].contains("m")) job.getMik().add(right);
+						if (info[1].contains("r")) job.getRik().add(right);
+						if (info[1].contains("c")) job.getCik().add(right);
+						if (info[1].contains("p")) job.getPik().add(right);
+						jobs.put(info[0], job);
+					}
+				} else if (leftId.endsWith("@parameter1")) {
+					if (mapreduceClasses.containsKey(className)) {
+						String[] info = mapreduceClasses.get(className);
+						Job job = jobs.getOrDefault(info[0], new Job());
+						if (info[1].contains("m")) job.getMiv().add(right);
+						if (info[1].contains("r")) job.getRiv().add(right);
+						if (info[1].contains("c")) job.getCiv().add(right);
+						if (info[1].contains("0")) job.getPiv().add(right);
+						jobs.put(info[0], job);
+					}
+				}
+			}
+		}
+		return jobs;
 	}
 
 //	private void addMapReduceConstraints(Set<Constraint> constraints) {
