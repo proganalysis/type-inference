@@ -135,7 +135,7 @@ public class JCryptTransformer extends InferenceTransformer {
 	protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
 		// Build connection between class and job
 		if (v instanceof VirtualInvokeExpr && v.getArgCount() > 0)
-			connectClassJob((VirtualInvokeExpr) v, assignTo.getEnclosingClass());
+			connectClassJob((VirtualInvokeExpr) v);
 		// Add default annotations/constraints for library methods
 		SootMethod invokeMethod = v.getMethod();
 		if (isPolyLibrary() && isLibraryMethod(invokeMethod) && !clearLibMethods.contains(invokeMethod.getName())) {
@@ -194,22 +194,22 @@ public class JCryptTransformer extends InferenceTransformer {
 		super.handleMethodCall(v, assignTo);
 	}
 
-	private void connectClassJob(VirtualInvokeExpr expr, SootClass sootClass) {
+	private void connectClassJob(VirtualInvokeExpr expr) {
 		String methodName = expr.getMethod().getName();
 		if (methodName.equals("setMapperClass")) {
-			addClass(expr, "m", sootClass);
+			addClass(expr, "m");
 		} else if (methodName.equals("setReducerClass")) {
-			addClass(expr, "r", sootClass);
+			addClass(expr, "r");
 		} else if (methodName.equals("setCombinerClass")) {
-			addClass(expr, "c", sootClass);
+			addClass(expr, "c");
 		} else if (methodName.equals("setPartitionerClass")) {
-			addClass(expr, "p", sootClass);
+			addClass(expr, "p");
 		}
 	}
 	
-	private void addClass(VirtualInvokeExpr expr, String type, SootClass sootClass) {
+	private void addClass(VirtualInvokeExpr expr, String type) {
 		String className = ((ClassConstant) expr.getArg(0)).getValue().replace('/', '.');
-		String jobId = sootClass.getName() + ":" + expr.getBase().toString();
+		String jobId = expr.getBase().toString();
 		String[] info = mapreduceClasses.getOrDefault(className, new String[] {jobId, type});
 		info[1] += type;
 		mapreduceClasses.put(className, info);

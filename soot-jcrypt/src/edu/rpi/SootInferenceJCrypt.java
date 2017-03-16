@@ -127,7 +127,7 @@ public class SootInferenceJCrypt {
 		Set<String> polyValues = ((JCryptTransformer) jcryptTransformer).getPolyValues();
 
 		G.reset();
-		AECheckerTransformer aect = new AECheckerTransformer(aet.getAeResults(), polyValues, jcryptTransformer);
+		AECheckerTransformer aect = new AECheckerTransformer(aet.getAeResults(), polyValues);
 		PackManager.v().getPack("jtp").add(new Transform("jtp.aect", aect));
 		sootArgs = new String[]{ "-cp", classPath, "-process-dir", outputDir, "-f", "none", "-d", outputDir };
 		soot.Main.main(sootArgs);

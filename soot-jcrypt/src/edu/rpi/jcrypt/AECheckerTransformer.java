@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.rpi.InferenceTransformer;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.BooleanType;
@@ -36,17 +35,16 @@ public class AECheckerTransformer extends BodyTransformer {
 	private Set<String> conversions = new HashSet<>();
 	private SimpleLocalDefs defs;
 	private UnitGraph cfg;
-	private InferenceTransformer it;
+	private Map<String, String[]> mapreduceClasses = JCryptTransformer.mapreduceClasses;
 
 	public Map<String, Byte> getEncryptions() {
 		return encryptions;
 	}
 
-	public AECheckerTransformer(Map<String, Byte> map, Set<String> polyValues, InferenceTransformer jcryptTransformer) {
+	public AECheckerTransformer(Map<String, Byte> map, Set<String> polyValues) {
 		info(this.getClass().getSimpleName(), "Checking conversions ...");
 		this.aeResults = map;
 		this.polyValues = polyValues;
-		this.it = jcryptTransformer;
 		Set<String> methods = new HashSet<>();
 		methods.add("contains");
 		detContainers.put("java.util.ArrayList", methods);
@@ -132,16 +130,14 @@ public class AECheckerTransformer extends BodyTransformer {
 		Value arg0 = ie.getArg(0);
 		if (method.isStatic()) {
 			if ((className.equals("java.util.Collections") || className.equals("java.util.Arrays"))
-					&& method.getName().equals("sort")) {
+					&& method.getName().equals("sort"))
 				checkConversion(arg0, (byte) 0b1, unit, sm);
-			}
 		} else {
-			if (detContainers.containsKey(className)) {
-				if (detContainers.get(className).contains(method.getName())) {
+			if (detContainers.containsKey(className))
+				if (detContainers.get(className).contains(method.getName()))
 					checkConversion(arg0, (byte) 0b10, unit, sm);
-				}
-			}
-			if (sm.getName().equals("map") && it.isMapOutputMethod(className, method.getName()))
+			String[] info = mapreduceClasses.get(className);
+			if (info != null && info[1].contains("m"))
 				checkConversion(arg0, (byte) 0b10, unit, sm);
 		}
 	}
