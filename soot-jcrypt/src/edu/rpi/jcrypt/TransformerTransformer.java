@@ -53,7 +53,7 @@ public class TransformerTransformer extends BodyTransformer {
 	// record classes whose generic types have been modified
 	private JCryptTransformer jt;
 	private Set<String> polyValues;
-	private Map<SootClass, SootMethod> modifiedMethod = new HashMap<>();
+	private Map<String, SootMethod> modifiedMethod = new HashMap<>();
 	private static SootClass encryptionClass;
 	private Set<String> mapreducePrimTypes;
 	private Set<String> parseMethods;
@@ -118,7 +118,7 @@ public class TransformerTransformer extends BodyTransformer {
 			modifyGenericSignatures();
 			modifyMethodLocals(body);
 			sm.setParameterTypes(paramTypes);
-			modifiedMethod.put(sm.getDeclaringClass(), body.getMethod());
+			modifiedMethod.put(sm.getDeclaringClass().toString() + sm.getName(), body.getMethod());
 		} else if (methodName.equals("run") || methodName.equals("main"))
 			modifyRunMethod(body);
 	}
@@ -291,7 +291,7 @@ public class TransformerTransformer extends BodyTransformer {
 		} else if (expr instanceof VirtualInvokeExpr) {
 			if (Modifier.isVolatile(sm.getModifiers())) {
 				// call map/reduce method in volatile map/reduce
-				expr.setMethodRef(modifiedMethod.get(sm.getDeclaringClass()).makeRef());
+				expr.setMethodRef(modifiedMethod.get(sm.getDeclaringClass().toString() + sm.getName()).makeRef());
 				//System.out.println("Volatile: " + expr);
 			} else {
 				// $i0 = virtualinvoke r5.<org.apache.hadoop.io.IntWritable: int get()>();
@@ -366,8 +366,9 @@ public class TransformerTransformer extends BodyTransformer {
 		String signature = sigTag.getSignature();
 		signature = signature.substring(1, signature.lastIndexOf(';'));
 		List<String> genericParts = new ArrayList<>();
+		int start = 0;
 		while (signature.contains(">")) {
-			int start = signature.indexOf('<') + 1;
+			start = signature.indexOf('<', start) + 1;
 			int end = signature.indexOf('>');
 			genericParts.add(signature.substring(start, end));
 			signature = signature.substring(0, start) + signature.substring(end + 1);
@@ -430,7 +431,8 @@ public class TransformerTransformer extends BodyTransformer {
 			String op = ((BinopExpr) condition).getSymbol();
 			String libMethodName = "";
 			switch (op) {
-			case " <= ": libMethodName = "isGt";
+			case " <= ": libMethodName = "isGt"; break;
+			case " >= ": libMethodName = "isLt";
 			}
 			if (libMethodName.isEmpty()) return;
 			encryptionClass = Scene.v().getSootClass("encryptUtil.EncryptUtil");

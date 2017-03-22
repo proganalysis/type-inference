@@ -639,22 +639,24 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 		Map<String, Job> jobs = st.getJobs();
 		for (Constraint c : constraints) {
 			AnnotatedValue left = c.getLeft(), right = c.getRight();
+			String methodName = left.getEnclosingMethod() == null ? "" :
+				left.getEnclosingMethod().getName();
 			String className = left.getEnclosingClass().getName();
 			if (right.getKind() == Kind.METH_ADAPT) {
 				String declId = ((AdaptValue) right).getDeclValue().getIdentifier();
 				if (declId.equals(outkey1) || declId.equals(outkey2)) {
 					String[] info = mapreduceClasses.get(className);
 					Job job = jobs.getOrDefault(info[0], new Job());
-					if (info[1].contains("m")) job.getMok().add(left);
-					if (info[1].contains("r")) job.getRok().add(left);
-					if (info[1].contains("c")) job.getCok().add(left);
+					if (info[1].contains("m") && methodName.equals("map")) job.getMok().add(left);
+					if (info[1].contains("r") && methodName.equals("reduce")) job.getRok().add(left);
+					if (info[1].contains("c") && methodName.equals("reduce")) job.getCok().add(left);
 					jobs.put(info[0], job);
 				} else if (declId.equals(outvalue1) || declId.equals(outvalue2)) {
 					String[] info = mapreduceClasses.get(className);
 					Job job = jobs.getOrDefault(info[0], new Job());
-					if (info[1].contains("m")) job.getMov().add(left);
-					if (info[1].contains("r")) job.getRov().add(left);
-					if (info[1].contains("c")) job.getCov().add(left);
+					if (info[1].contains("m") && methodName.equals("map")) job.getMov().add(left);
+					if (info[1].contains("r") && methodName.equals("reduce")) job.getRov().add(left);
+					if (info[1].contains("c") && methodName.equals("reduce")) job.getCov().add(left);
 					jobs.put(info[0], job);
 				}
 			} else if (left.getKind() == Kind.PARAMETER) {
@@ -663,20 +665,20 @@ public class JCryptConstraintSolver extends AbstractConstraintSolver {
 					if (mapreduceClasses.containsKey(className)) {
 						String[] info = mapreduceClasses.get(className);
 						Job job = jobs.getOrDefault(info[0], new Job());
-						if (info[1].contains("m")) job.getMik().add(right);
-						if (info[1].contains("r")) job.getRik().add(right);
-						if (info[1].contains("c")) job.getCik().add(right);
-						if (info[1].contains("p")) job.getPik().add(right);
+						if (info[1].contains("m") && methodName.equals("map")) job.getMik().add(right);
+						if (info[1].contains("r") && methodName.equals("reduce")) job.getRik().add(right);
+						if (info[1].contains("c") && methodName.equals("reduce")) job.getCik().add(right);
+						if (info[1].contains("p") && methodName.equals("getPartition")) job.getPik().add(right);
 						jobs.put(info[0], job);
 					}
 				} else if (leftId.endsWith("@parameter1")) {
 					if (mapreduceClasses.containsKey(className)) {
 						String[] info = mapreduceClasses.get(className);
 						Job job = jobs.getOrDefault(info[0], new Job());
-						if (info[1].contains("m")) job.getMiv().add(right);
-						if (info[1].contains("r")) job.getRiv().add(right);
-						if (info[1].contains("c")) job.getCiv().add(right);
-						if (info[1].contains("p")) job.getPiv().add(right);
+						if (info[1].contains("m") && methodName.equals("map")) job.getMiv().add(right);
+						if (info[1].contains("r") && methodName.equals("reduce")) job.getRiv().add(right);
+						if (info[1].contains("c") && methodName.equals("reduce")) job.getCiv().add(right);
+						if (info[1].contains("p") && methodName.equals("getPartition")) job.getPiv().add(right);
 						jobs.put(info[0], job);
 					}
 				}
