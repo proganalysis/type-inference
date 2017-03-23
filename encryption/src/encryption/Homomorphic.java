@@ -9,7 +9,7 @@ import thep.paillier.exceptions.BigIntegerClassNotValid;
 
 public class Homomorphic implements Encryption {
 
-	private static final PrivateKey priv = new PrivateKey(1024);
+	private static final PrivateKey priv = new PrivateKey(64);
 	private static final PublicKey pub = priv.getPublicKey();
 	public static EncryptedInteger ei;
 	static {
@@ -18,6 +18,18 @@ public class Homomorphic implements Encryption {
 		} catch (BigIntegerClassNotValid e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public String getPubKeyString() {
+		return pub.getN().toString();
+	}
+	
+	public PublicKey getPubKey() {
+		return pub;
+	}
+	
+	public PrivateKey getPrivKey() {
+		return priv;
 	}
 		
 	@Override

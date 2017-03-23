@@ -1,5 +1,6 @@
 package test;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import encryption.*;
@@ -22,6 +23,13 @@ public class EncryptionTest extends TestCase {
 		cts1 = e.encrypt(pts1);
 		cts2 = e.encrypt(pts2);
 		assertTrue(Arrays.equals((byte[]) cts1, (byte[]) cts2));
+		try {
+			System.out.println(new String((byte[]) cts1, "UTF-16"));
+			System.out.println(new String((byte[]) cts2, "UTF-16"));
+			System.out.println(e.decrypt(new String((byte[]) cts1, "ISO-8859-1").getBytes("ISO-8859-1")));
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
 		e = new Deterministic();
 		assertTrue(pti1 == (int) e.decrypt(cti1));
 		assertTrue(pts1.equals(e.decrypt(cts1)));
@@ -101,6 +109,12 @@ public class EncryptionTest extends TestCase {
 		e = new Random();
 		assertTrue(pti1 == (int) e.decrypt(cti1));
 		assertTrue(pts1.equals(e.decrypt(cts1)));
+	}
+	
+	public void testRegex() {
+		String s = "abg\t14f";
+		System.out.println(s);
+		assertTrue(s.matches(".*\t\\d+$"));
 	}
 
 }
