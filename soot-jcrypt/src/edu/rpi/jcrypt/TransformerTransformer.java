@@ -257,9 +257,8 @@ public class TransformerTransformer extends BodyTransformer {
 		// getAH(double)>(0.0);
 		String libMethodName = "";
 		byte typeSet = encryptions.get(TransUtils.getIdenfication(leftValue, sm));
-		if ((0b100 & typeSet) != 0) {
-			libMethodName = "getAH";
-		}
+		if ((0b100 & typeSet) != 0) libMethodName = "getAH";
+		else if ((0b1 & typeSet) != 0) libMethodName = "getOPE";
 		encryptionClass = Scene.v().getSootClass("encryptUtil.EncryptUtil");
 		SootMethod libMethod = encryptionClass
 				.getMethod("java.lang.String " + libMethodName + "(" + rightValue.getType() + ")");

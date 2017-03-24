@@ -79,6 +79,8 @@ public class JCryptTransformer extends InferenceTransformer {
 		clearLibMethods.add("length");
 		clearLibMethods.add("indexOf");
 		clearLibMethods.add("size");
+		clearLibMethods.add("getLength");
+		clearLibMethods.add("charAt");
 	}
 
 	@Override
