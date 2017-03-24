@@ -35,6 +35,11 @@ public class EncryptUtil {
 		return eclear.getCipherVal().toString();
 	}
 	
+	public static String getAH(long clear) throws BigIntegerClassNotValid {
+		EncryptedInteger eclear = new EncryptedInteger(BigInteger.valueOf(clear), pub);
+		return eclear.getCipherVal().toString();
+	}
+	
 	public static boolean isGt(String a, int b) {
 		return a.compareTo(getOPE(b)) > 0;
 	}
