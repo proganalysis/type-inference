@@ -352,8 +352,10 @@ public class TransformerTransformer extends BodyTransformer {
 	}
 
 	private void modifyGenericSignatures() {
-		keyvalues[0] = modifyTo(sm.getActiveBody().getParameterLocal(0)) != null;
-		keyvalues[1] = modifyTo(sm.getActiveBody().getParameterLocal(1)) != null;
+		for (int i = 0; i < 2; i++) {
+			Value value = sm.getActiveBody().getParameterLocal(i);
+			keyvalues[i] = polyValues.contains(TransUtils.getIdenfication(value, sm));
+		}
 		modifyClassGenerics();
 		modifyMethodGenerics();
 	}
@@ -362,7 +364,7 @@ public class TransformerTransformer extends BodyTransformer {
 		SignatureTag sigTag = (SignatureTag) sm.getTag("SignatureTag");
 		if (sigTag == null) return;
 		sm.removeTag("SignatureTag");
-		String signature = sigTag.getSignature();
+		String signature = sigTag.getSignature().replace('.', ';');
 		signature = signature.substring(1, signature.lastIndexOf(';'));
 		List<String> genericParts = new ArrayList<>();
 		int start = 0;
@@ -375,10 +377,9 @@ public class TransformerTransformer extends BodyTransformer {
 		String[] genericTypes = signature.split(";");
 		String textType = "Lorg/apache/hadoop/io/Text";
 		if (keyvalues[0]) genericTypes[0] = textType;
-		if (keyvalues[1]) {
-			if (genericParts.size() == 1) genericTypes[1] = textType;
-			else genericTypes[1] += textType + ";>";
-		}
+		if (genericParts.size() == 1) {
+			if (keyvalues[1]) genericTypes[1] = textType;
+		} else genericTypes[1] += (keyvalues[1] ? textType + ";" : genericParts.get(0)) + ">";
 		String[] keyValueGeneric = genericParts.get(genericParts.size() - 1).split(";");
 		int size = keyValueGeneric.length;
 		if (size == 2) {
@@ -392,7 +393,7 @@ public class TransformerTransformer extends BodyTransformer {
 		genericTypes[2] += ">";
 		String newSig = "(";
 		for (String sig : genericTypes) newSig += sig + ";";
-		sm.addTag(new SignatureTag(newSig + ")V"));
+		sm.addTag(new SignatureTag(newSig.replace(";Context", ".Context") + ")V"));
 	}
 
 	private void modifyClassGenerics() {

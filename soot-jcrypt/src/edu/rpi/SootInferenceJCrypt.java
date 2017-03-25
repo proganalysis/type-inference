@@ -47,8 +47,7 @@ public class SootInferenceJCrypt {
 		// delete transformed folder if it exits
 		File transformedDir = new File(outputDir + "/transformed");
 		if (transformedDir.exists()) {
-			File[] contents = transformedDir.listFiles();
-			for (File f : contents) f.delete();
+			deleteFiles(transformedDir);
 		}
 		
 		soot.Main.main(args);
@@ -142,13 +141,21 @@ public class SootInferenceJCrypt {
 			TransformerTransformer trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues,
 					aect.getEncryptions());
 			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
-			sootArgs = new String[] { "-cp", classPath, "-process-dir", outputDir, "-f", "jimple", "-d",
+			sootArgs = new String[] { "-cp", classPath, "-process-dir", outputDir, "-f", "class", "-d",
 					outputDir + "/transformed" };
 			soot.Main.main(sootArgs);
 		}
 
 		long endTime = System.currentTimeMillis();
 		info("Total running time: " + ((float) (endTime - startTime) / 1000) + " sec");
+	}
+
+	private static void deleteFiles(File transformedDir) {
+		File[] contents = transformedDir.listFiles();
+		for (File f : contents) 
+			if (f.isDirectory()) deleteFiles(f);
+			else f.delete();
+		transformedDir.delete();
 	}
 
 }
