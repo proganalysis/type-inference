@@ -62,6 +62,7 @@ public class TransformerTransformer extends BodyTransformer {
 	private List<Type> paramTypes;
 	private Map<String, Job> jobs;
 	private boolean[] keyvalues; // shoule input/output or key/value be modified
+	private Set<SootClass> visited = new HashSet<>();
 	
 	public TransformerTransformer(JCryptTransformer jcryptTransformer, Set<String> polyValues, Map<String, Byte> map) {
 		info(this.getClass().getSimpleName(), "Transforming ...");
@@ -199,8 +200,10 @@ public class TransformerTransformer extends BodyTransformer {
 				Value rightOp = getRightOpOfAssignStmt(rightValue, leftValue, leftType);
 				if (rightOp != null)
 					((AssignStmt) unit).setRightOp(rightOp);
-			} else if (rightValue instanceof VirtualInvokeExpr)
+			} else if (rightValue instanceof VirtualInvokeExpr) {
 				modifySetIterator((VirtualInvokeExpr) rightValue, (AssignStmt) unit);
+				modifyAppendMethod((VirtualInvokeExpr) rightValue);
+			}
 		} else if (rightValue instanceof ParameterRef) {
 			if (leftType != null) {
 				unit.getRightOpBox().setValue(new ParameterRef(RefType.v(leftType),
@@ -210,6 +213,19 @@ public class TransformerTransformer extends BodyTransformer {
 		}
 	}
 	
+	private void modifyAppendMethod(VirtualInvokeExpr rightValue) {
+		// $r20 = virtualinvoke $r19.<java.lang.StringBuilder: java.lang.StringBuilder append(double)>(d1);
+		// -> $r20 = virtualinvoke $r19.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(d1);
+		SootMethod invokeMethod = rightValue.getMethod();
+		if (invokeMethod.getName().equals("append")) {
+			String argType = modifyTo(rightValue.getArg(0));
+			if (argType != null) {
+				SootMethod toCall = Scene.v().getMethod("<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>");
+				rightValue.setMethodRef(toCall.makeRef());
+			}
+		}
+	}
+
 	private void modifySetIterator(VirtualInvokeExpr invokeExpr, AssignStmt unit) {
 		String methodSignature = invokeExpr.getMethod().getSignature();
 		if (!methodSignature.equals("<java.util.HashSet: java.util.Iterator iterator()>")
@@ -308,8 +324,8 @@ public class TransformerTransformer extends BodyTransformer {
 			}
 		} else if (expr.getMethod().getName().equals("write")
 				|| expr.getMethod().getName().equals("collect")) {
-			keyvalues[2] = modifyTo(expr.getArg(0)) != null;
-			keyvalues[3] = modifyTo(expr.getArg(1)) != null;
+			keyvalues[2] = polyValues.contains(TransUtils.getIdenfication(expr.getArg(0), sm));
+			keyvalues[3] = polyValues.contains(TransUtils.getIdenfication(expr.getArg(1), sm));
 		}
 		return null;
 	}
@@ -398,6 +414,7 @@ public class TransformerTransformer extends BodyTransformer {
 
 	private void modifyClassGenerics() {
 		SootClass sc = sm.getDeclaringClass();
+		if (!visited.add(sc)) return;
 		SignatureTag sigTag = (SignatureTag) sc.getTag("SignatureTag");
 		if (sigTag == null) return;
 		sc.removeTag("SignatureTag");
