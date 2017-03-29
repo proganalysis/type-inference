@@ -55,14 +55,14 @@ public class TransformerTransformer extends BodyTransformer {
 	private Set<String> polyValues;
 	private Map<String, SootMethod> modifiedMethod = new HashMap<>();
 	private static SootClass encryptionClass;
-	private Set<String> mapreducePrimTypes;
+	private Set<String> mapreducePrimTypes, primWrappers;
 	private Set<String> parseMethods;
 	private Map<String, Byte> encryptions;
 	private SootMethod sm;
 	private List<Type> paramTypes;
 	private Map<String, Job> jobs;
 	private boolean[] keyvalues; // shoule input/output or key/value be modified
-	private Set<SootClass> visited = new HashSet<>();
+	private Set<String> valueMethods;
 	
 	public TransformerTransformer(JCryptTransformer jcryptTransformer, Set<String> polyValues, Map<String, Byte> map) {
 		info(this.getClass().getSimpleName(), "Transforming ...");
@@ -88,6 +88,14 @@ public class TransformerTransformer extends BodyTransformer {
 		parseMethods.add("parseShort");
 		parseMethods.add("parseByte");
 		parseMethods.add("parseFloat");
+		primWrappers = new HashSet<>();
+		primWrappers.add("java.lang.Double");
+		primWrappers.add("java.lang.Integer");
+		primWrappers.add("java.lang.Long");
+		primWrappers.add("java.lang.Short");
+		primWrappers.add("java.lang.Float");
+		valueMethods = new HashSet<>();
+		valueMethods.add("doubleValue");
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -285,7 +293,10 @@ public class TransformerTransformer extends BodyTransformer {
 		if (expr instanceof StaticInvokeExpr) {
 			// $i3 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>($r8);
 			// -> $i3 = $r8;
-			if (parseMethods.contains(expr.getMethod().getName())) {
+			// $r21 = staticinvoke <java.lang.Double: java.lang.Double valueOf(java.lang.String)>($r20);
+			// -> $r21 = $r20;
+			String methodName = expr.getMethod().getName();
+			if (parseMethods.contains(methodName) || methodName.equals("valueOf")) {
 				Value arg = expr.getArg(0);
 				if (polyValues.contains(TransUtils.getIdenfication(arg, sm)))
 					return expr.getArg(0);
@@ -312,15 +323,21 @@ public class TransformerTransformer extends BodyTransformer {
 				// $i0 = virtualinvoke r5.<org.apache.hadoop.io.IntWritable: int get()>();
 				// -> $i0 = virtualinvoke r5.<org.apache.hadoop.io.Text: String toString()>();
 				SootMethod invokeMethod = expr.getMethod();
+				Value base = ((VirtualInvokeExpr) expr).getBase();
+				String baseId = TransUtils.getIdenfication(base, sm);
 				if (mapreducePrimTypes.contains(invokeMethod.getDeclaringClass().getName())
 						&& invokeMethod.getName().equals("get")) {
-					if (polyValues.contains(TransUtils.getIdenfication(((VirtualInvokeExpr) expr).getBase(), sm))) {
-							SootMethod toCall = Scene.v()
-								.getMethod("<org.apache.hadoop.io.Text: java.lang.String toString()>");
-							expr.setMethodRef(toCall.makeRef());
-							return expr;
+					if (polyValues.contains(baseId)) {
+						SootMethod toCall = Scene.v()
+							.getMethod("<org.apache.hadoop.io.Text: java.lang.String toString()>");
+						expr.setMethodRef(toCall.makeRef());
+						return expr;
 					}
-				}
+				} else if (valueMethods.contains(invokeMethod.getName())) {
+					// d0 = virtualinvoke $r15.<java.lang.Double: double doubleValue()>();
+					// -> d0 = $r15;
+					if (polyValues.contains(baseId)) return base;
+				} else modifyAppendMethod((VirtualInvokeExpr) expr);
 			}
 		} else if (expr.getMethod().getName().equals("write")
 				|| expr.getMethod().getName().equals("collect")) {
@@ -414,7 +431,6 @@ public class TransformerTransformer extends BodyTransformer {
 
 	private void modifyClassGenerics() {
 		SootClass sc = sm.getDeclaringClass();
-		if (!visited.add(sc)) return;
 		SignatureTag sigTag = (SignatureTag) sc.getTag("SignatureTag");
 		if (sigTag == null) return;
 		sc.removeTag("SignatureTag");
@@ -501,7 +517,7 @@ public class TransformerTransformer extends BodyTransformer {
 			return null;
 		Type type = value.getType();
 		if (mapreducePrimTypes.contains(type.toString())) return "org.apache.hadoop.io.Text";
-		if (isPrimitive(type)) return "java.lang.String";
+		if (isPrimitive(type) || primWrappers.contains(type.toString())) return "java.lang.String";
 		if (type.toString().equals("java.util.HashSet")) return "java.util.HashMap";
 		return null;
 	}

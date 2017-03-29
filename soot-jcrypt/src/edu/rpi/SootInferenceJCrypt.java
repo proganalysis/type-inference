@@ -46,9 +46,9 @@ public class SootInferenceJCrypt {
 
 		// delete transformed folder if it exits
 		File transformedDir = new File(outputDir + "/transformed");
-		if (transformedDir.exists()) {
-			deleteFiles(transformedDir);
-		}
+		if (transformedDir.exists()) deleteFiles(transformedDir);
+		transformedDir = new File(outputDir + "/../transformedClass");
+		if (transformedDir.exists()) deleteFiles(transformedDir);
 		
 		soot.Main.main(args);
 
@@ -142,6 +142,13 @@ public class SootInferenceJCrypt {
 					aect.getEncryptions());
 			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
 			sootArgs = new String[] { "-cp", classPath, "-process-dir", outputDir, "-f", "class", "-d",
+					outputDir + "/../transformedClass" };
+			soot.Main.main(sootArgs);
+			G.reset();
+			trans = new TransformerTransformer((JCryptTransformer) jcryptTransformer, polyValues,
+					aect.getEncryptions());
+			PackManager.v().getPack("jtp").add(new Transform("jtp.transformer", trans));
+			sootArgs = new String[] { "-cp", classPath, "-process-dir", outputDir, "-f", "jimple", "-d",
 					outputDir + "/transformed" };
 			soot.Main.main(sootArgs);
 		}
