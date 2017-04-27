@@ -2,7 +2,7 @@ package encryption;
 
 public class Conversion {
 	
-	public static Encryption rnd = new Random();
+	//public static Encryption rnd = new Random();
 	public static Encryption ope = new OrderPreserving();
 	public static Encryption ah = new Homomorphic();
 	public static Encryption det = new Deterministic();
@@ -46,7 +46,7 @@ public class Conversion {
 	private static Encryption createEncryption(String type) {
 		switch (type) {
 		case "RND":
-			return rnd;
+//			return rnd;
 		case "OPE":
 			return ope;
 		case "AH":

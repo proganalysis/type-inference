@@ -65,4 +65,10 @@ public class OrderPreserving implements Encryption {
 		return s;
 	}
 
+	@Override
+	public Object encrypt(long ptext) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

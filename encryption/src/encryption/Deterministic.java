@@ -1,97 +1,93 @@
 package encryption;
 
 import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.Cipher;
-import java.math.BigInteger;
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.IvParameterSpec;
+
+import java.nio.ByteBuffer;
 
 public class Deterministic implements Encryption {
 
-	// for int
-	private final static BigInteger one = new BigInteger("1"), p, q;
-	private final static SecureRandom random = new SecureRandom();
-	private final static int N = 100;
-	private BigInteger privateKey, publicKey, modulus;
+	private static final Key keyAES, keyBF; // AES and blowfish
+	private Cipher cipherAES, cipherBF;
+	private static Map<byte[], byte[]> initIVsAES = new HashMap<>();
+	private static Map<byte[], byte[]> initIVsBF = new HashMap<>();
 
-	// for String
-	private static final Key publicKey2, privateKey2;
-	private Cipher cipher; 
-
-	// generate an N-bit (roughly) public and private key
 	static {
-		// for int
-		p = BigInteger.probablePrime(N / 2, random);
-		q = BigInteger.probablePrime(N / 2, random);
-		
-		// for String
-		KeyPairGenerator kpg = null;
+		KeyGenerator generatorAES = null, generatorBF = null;
 		try {
-			kpg = KeyPairGenerator.getInstance("RSA");
-		} catch (NoSuchAlgorithmException e) {
+			generatorAES = KeyGenerator.getInstance("AES");
+			generatorBF = KeyGenerator.getInstance("Blowfish");
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		kpg.initialize(1024);
-		KeyPair kp = kpg.generateKeyPair();
-		publicKey2 = kp.getPublic();
-		privateKey2 = kp.getPrivate();
+		keyAES = generatorAES.generateKey();
+		keyBF = generatorBF.generateKey();
 	}
 
 	public Deterministic() {
-		// for int
-		BigInteger phi = (p.subtract(one)).multiply(q.subtract(one));
-		modulus = p.multiply(q);
-		// common value in practice = 2^16 + 1
-		publicKey = new BigInteger("65537");
-		privateKey = publicKey.modInverse(phi);
-		
-		// for String
 		try {
-			cipher = Cipher.getInstance("RSA/ECB/NoPadding");
+			cipherAES = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipherBF = Cipher.getInstance("Blowfish/CBC/PKCS5PADDING");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Override
-	public BigInteger encrypt(int ptext) {
-		BigInteger message = BigInteger.valueOf(ptext);
-		BigInteger encrypted = message.signum() == 1 ? message.modPow(publicKey, modulus)
-				: message.negate().modPow(publicKey, modulus).negate();
-		return encrypted;
+	public byte[] encrypt(String ptext) {
+		byte[] ctext = null;
+		try {
+			cipherAES.init(Cipher.ENCRYPT_MODE, keyAES);
+			ctext = cipherAES.doFinal(ptext.getBytes());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		initIVsAES.put(ctext, cipherAES.getIV());
+		return ctext;
+	}
+
+	public byte[] encrypt(long ptext) {
+		byte[] ctext = null;
+		try {
+			cipherBF.init(Cipher.ENCRYPT_MODE, keyBF);
+			ctext = cipherBF.doFinal(ByteBuffer.allocate(8).putLong(ptext).array());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		initIVsBF.put(ctext, cipherBF.getIV());
+		return ctext;
 	}
 
 	@Override
 	public Object decrypt(Object ctext) {
-		if (ctext instanceof BigInteger) {
-			BigInteger encrypted = (BigInteger) ctext;
-			return encrypted.signum() == 1 ? encrypted.modPow(privateKey, modulus).intValue()
-					: -encrypted.negate().modPow(privateKey, modulus).intValue();
-		} else {
-			byte[] ptext = null;
+		byte[] plainText = null;
+		byte[] ciphertext = (byte[]) ctext;
+		if (ciphertext.length == 8) { // blowfish: 64-bit block size
 			try {
-				cipher.init(Cipher.DECRYPT_MODE, privateKey2);
-				ptext = cipher.doFinal((byte[]) ctext);
+				cipherBF.init(Cipher.DECRYPT_MODE, keyBF, new IvParameterSpec(initIVsBF.get(ctext)));
+				plainText = cipherBF.doFinal(ciphertext);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return new String(ptext).trim();
+			ByteBuffer wrapped = ByteBuffer.wrap(plainText);
+			return wrapped.getLong();
+		} else { // AES: 128-bit block size
+			try {
+				cipherAES.init(Cipher.DECRYPT_MODE, keyAES, new IvParameterSpec(initIVsAES.get(ctext)));
+				plainText = cipherAES.doFinal(ciphertext);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return new String(plainText);
 		}
 	}
 
 	@Override
-	public byte[] encrypt(String ptext) {
-		byte[] ctext = null;
-		try {
-			cipher.init(Cipher.ENCRYPT_MODE, publicKey2);
-			ctext = cipher.doFinal(ptext.getBytes());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return ctext;
+	public Object encrypt(int ptext) {
+		return encrypt((long) ptext);
 	}
-
 }
