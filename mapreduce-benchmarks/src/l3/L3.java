@@ -18,6 +18,7 @@
 package l3;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +41,12 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.jobcontrol.Job;
 import org.apache.hadoop.mapred.jobcontrol.JobControl;
 import org.apache.hadoop.mapred.lib.IdentityMapper;
+
+import com.n1analytics.paillier.EncryptedNumber;
+import com.n1analytics.paillier.PaillierContext;
+import com.n1analytics.paillier.PaillierPublicKey;
+
+import encryption.Util;
 
 public class L3 {
 
@@ -80,6 +87,18 @@ public class L3 {
     public static class Join extends MapReduceBase
         implements Reducer<Text, Text, Text, Text> {
 
+    	private PaillierContext context;
+		private PaillierPublicKey pub;
+		private EncryptedNumber zero;
+		
+		@Override
+		public void configure(JobConf conf) {
+			String pubKey = conf.get("pubKey");
+			pub = new PaillierPublicKey(new BigInteger(pubKey));
+			context = pub.createSignedContext();
+			zero = context.encrypt(0);
+		}
+		
         public void reduce(
                 Text key,
                 Iterator<Text> iter, 
@@ -103,23 +122,26 @@ public class L3 {
             if (first.size() == 0 || second.size() == 0) return;
 
             // Do the cross product, and calculate the sum
-            Double sum = 0.0;
+            EncryptedNumber sum = zero;
             for (String s1 : first) {
+            	if (s1.isEmpty()) continue;
+            	EncryptedNumber s1en = Util.getAHCipher(s1, context);
                 for (@SuppressWarnings("unused") String s2 : second) {
                     try {
-                        sum += Double.valueOf(s1);
+                        //sum += Double.valueOf(s1);
+                    	sum = context.add(sum, s1en);
                     } catch (NumberFormatException nfe) {
                     }
                 }
             }
-            oc.collect(null, new Text(key.toString() + "" +  sum.toString()));
+            oc.collect(null, new Text(key.toString() + "" +  Util.getAHString(sum)));
         }
     }
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length!=3) {
-            System.out.println("Parameters: inputDir outputDir parallel");
+        if (args.length!=4) {
+            System.out.println("Parameters: inputDir outputDir parallel pubKey");
             System.exit(1);
         }
         String inputDir = args[0];
@@ -135,7 +157,7 @@ public class L3 {
         for (Map.Entry<Object,Object> entry : props.entrySet()) {
             lp.set((String)entry.getKey(), (String)entry.getValue());
         }
-        FileInputFormat.addInputPath(lp, new Path(inputDir + "/page_views"));
+        FileInputFormat.addInputPath(lp, new Path(inputDir + "/page_viewsCipher"));
         FileOutputFormat.setOutputPath(lp, new Path(outputDir + "/indexed_pages_3"));
         lp.setNumReduceTasks(0);
         Job loadPages = new Job(lp);
@@ -150,13 +172,14 @@ public class L3 {
         for (Map.Entry<Object,Object> entry : props.entrySet()) {
             lu.set((String)entry.getKey(), (String)entry.getValue());
         }
-        FileInputFormat.addInputPath(lu, new Path(inputDir + "/users"));
+        FileInputFormat.addInputPath(lu, new Path(inputDir + "/usersCipher"));
         FileOutputFormat.setOutputPath(lu, new Path(outputDir + "/indexed_users_3"));
         lu.setNumReduceTasks(0);
         Job loadUsers = new Job(lu);
 
         JobConf join = new JobConf(L3.class);
         join.setJobName("L3 Join Users and Pages");
+        join.set("pubKey", args[3]);
         join.setInputFormat(KeyValueTextInputFormat.class);
         join.setOutputKeyClass(Text.class);
         join.setOutputValueClass(Text.class);

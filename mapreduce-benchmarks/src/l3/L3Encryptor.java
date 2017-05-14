@@ -51,50 +51,89 @@ public class L3Encryptor {
 		int bufferedSize = 1024 * 1024;
 		for (File file : inputFolder.listFiles()) {
 			System.out.println("Encrypting file " + file.getName() + "...");
-			try {
-				BufferedReader in = new BufferedReader(new FileReader(file), bufferedSize);
-				File outFile = new File(outputFolder.getAbsolutePath() + File.separator + file.getName() + "Cipher");
-				outFile.createNewFile();
-				BufferedWriter out = new BufferedWriter(new FileWriter(outFile), bufferedSize);
-				String line = null;
-				while ((line = in.readLine()) != null) {
-					StringBuffer outline = new StringBuffer();
-					List<String> fields = Library.splitLine(line, '');
-					String user = fields.get(0);
-					outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
-					for (int i = 1; i < 3; i++) {
-						int field = Integer.parseInt(fields.get(i));
-						outline.append(rnd.encrypt(field) + '');
-					}
-					outline.append((user.isEmpty() ? "" : rnd.encrypt(fields.get(3))) + '');
-					for (int i = 4; i < 6; i++) {
-						long field = Long.parseLong(fields.get(i));
-						outline.append(rnd.encrypt(field) + '');
-					}
-					String revStr = fields.get(6);
-					if (!revStr.isEmpty()) {
-						double revenue = Double.parseDouble(revStr);
-						outline.append(ah.encrypt(revenue));
-					}
-					outline.append(''); // ^A
-					outline.append(encryptMap(fields.get(7), rnd));
-					outline.append(''); // ^A
-					String mapBag = fields.get(8);
-					List<String> maps = Library.splitLine(mapBag, ''); // ^B
-					StringJoiner sj = new StringJoiner(""); // ^B
-					for (String map : maps) {
-						StringJoiner enMap = encryptMap(map, rnd);
-						sj.add(enMap.toString());
-					}
-					outline.append(sj);
-					outline.append("\n");
-					out.write(outline.toString());
+			if (file.getName().equals("page_views"))
+				encryptPageViews(file, bufferedSize, outputFolder, det, ah, rnd);
+			else
+				encryptUsers(file, bufferedSize, outputFolder, det, rnd);
+		}
+	}
+
+	private static void encryptUsers(File file, int bufferedSize, File outputFolder, DETEncryptor det,
+			RNDEncryptor rnd) {
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(file), bufferedSize);
+			File outFile = new File(outputFolder.getAbsolutePath() + File.separator + file.getName() + "Cipher");
+			outFile.createNewFile();
+			BufferedWriter out = new BufferedWriter(new FileWriter(outFile), bufferedSize);
+			String line = null;
+			while ((line = in.readLine()) != null) {
+				StringBuffer outline = new StringBuffer();
+				List<String> fields = Library.splitLine(line, '');
+				String user = fields.get(0);
+				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
+				for (int i = 1; i < 4; i++) {
+					String field = fields.get(i);
+					outline.append((field.isEmpty() ? "" : rnd.encrypt(field)) + '');
 				}
-				in.close();
-				out.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+				if (fields.size() > 4) {
+					int zip = Integer.parseInt(fields.get(4));
+					outline.append(rnd.encrypt(zip));
+				}
+				outline.append("\n");
+				out.write(outline.toString());
 			}
+			in.close();
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void encryptPageViews(File file, int bufferedSize, File outputFolder, DETEncryptor det,
+			AHEncryptor ah, RNDEncryptor rnd) {
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(file), bufferedSize);
+			File outFile = new File(outputFolder.getAbsolutePath() + File.separator + file.getName() + "Cipher");
+			outFile.createNewFile();
+			BufferedWriter out = new BufferedWriter(new FileWriter(outFile), bufferedSize);
+			String line = null;
+			while ((line = in.readLine()) != null) {
+				StringBuffer outline = new StringBuffer();
+				List<String> fields = Library.splitLine(line, '');
+				String user = fields.get(0);
+				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
+				for (int i = 1; i < 3; i++) {
+					int field = Integer.parseInt(fields.get(i));
+					outline.append(rnd.encrypt(field) + '');
+				}
+				outline.append((user.isEmpty() ? "" : rnd.encrypt(fields.get(3))) + '');
+				for (int i = 4; i < 6; i++) {
+					long field = Long.parseLong(fields.get(i));
+					outline.append(rnd.encrypt(field) + '');
+				}
+				String revStr = fields.get(6);
+				if (!revStr.isEmpty()) {
+					double revenue = Double.parseDouble(revStr);
+					outline.append(ah.encrypt(revenue));
+				}
+				outline.append(''); // ^A
+				outline.append(encryptMap(fields.get(7), rnd));
+				outline.append(''); // ^A
+				String mapBag = fields.get(8);
+				List<String> maps = Library.splitLine(mapBag, ''); // ^B
+				StringJoiner sj = new StringJoiner(""); // ^B
+				for (String map : maps) {
+					StringJoiner enMap = encryptMap(map, rnd);
+					sj.add(enMap.toString());
+				}
+				outline.append(sj);
+				outline.append("\n");
+				out.write(outline.toString());
+			}
+			in.close();
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
