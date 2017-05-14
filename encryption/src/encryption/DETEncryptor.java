@@ -13,7 +13,8 @@ public class DETEncryptor {
 
 	private Key keyAES, keyBF; // AES and blowfish
 	private Cipher cipherAES, cipherBF;
-	private byte[] iv = new byte[8];
+	private byte[] ivBF = new byte[8];
+	private byte[] ivAES = new byte[16];
 	private Encoder encoder = Base64.getEncoder();
 
 	public DETEncryptor() {
@@ -32,21 +33,21 @@ public class DETEncryptor {
 	}
 
 	public String encrypt(int ptext) {
-		byte[] cipher = encrypt(ByteBuffer.allocate(4).putInt(ptext).array(), cipherBF, keyBF);
+		byte[] cipher = encrypt(ByteBuffer.allocate(4).putInt(ptext).array(), cipherBF, keyBF, ivBF);
 		return encoder.encodeToString(cipher);
 	}
 
 	public String encrypt(long ptext) {
-		byte[] cipher = encrypt(ByteBuffer.allocate(8).putLong(ptext).array(), cipherBF, keyBF);
+		byte[] cipher = encrypt(ByteBuffer.allocate(8).putLong(ptext).array(), cipherBF, keyBF, ivBF);
 		return encoder.encodeToString(cipher);
 	}
 	
 	public String encrypt(String ptext) {
-		byte[] cipher = encrypt(ptext.getBytes(), cipherAES, keyAES);
+		byte[] cipher = encrypt(ptext.getBytes(), cipherAES, keyAES, ivAES);
 		return encoder.encodeToString(cipher);
 	}
 
-	private byte[] encrypt(byte[] ptext, Cipher cipher, Key key) {
+	private byte[] encrypt(byte[] ptext, Cipher cipher, Key key, byte[] iv) {
 		byte[] ctext = null;
 		try {
 			cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));

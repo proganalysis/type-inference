@@ -2,10 +2,10 @@
 #   make all
 # which creates the jdk.jar file.
 
-RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
+RTJAR ?= /Users/yaodong/Software/jdk1.6.0_27/jre/lib/rt.jar
 # RTJAR ?= $(JAVA_HOME)/../Classes/classes.jar
 
-CHECKER_DIRS = reim 
+CHECKER_DIRS = reim
 #CHECKER_DIRS = sflow
 
 JAVAEE_JAR ?= $(CHECKER_DIRS)/javaee-api-6.0.jar

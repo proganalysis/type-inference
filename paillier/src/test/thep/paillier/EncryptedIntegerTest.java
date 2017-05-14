@@ -35,7 +35,7 @@ public class EncryptedIntegerTest extends TestCase {
 	 * properly.
 	 */
 	public void testCreation() throws BigIntegerClassNotValid {
-		BigInteger tmp = new BigInteger(1024, rng);
+		BigInteger tmp = new BigInteger("0");
 		tmp = tmp.mod(pub.getN());
 		EncryptedInteger e_int = new EncryptedInteger(tmp, pub);
 		assertNotNull(e_int);

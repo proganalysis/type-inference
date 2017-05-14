@@ -16,6 +16,12 @@ public class PrivateKey implements Serializable {
 	private BigInteger lambda;
 	private BigInteger mu;
 	
+	public PrivateKey(BigInteger lambda, BigInteger mu, PublicKey pub) {
+		this.lambda = lambda;
+		this.mu = mu;
+		this.pub = pub;
+	}
+	
 	/**
 	 * Constructs a private key with the specified number of bits
 	 * 
@@ -63,7 +69,7 @@ public class PrivateKey implements Serializable {
 	 * The value x is precomputed only for efficient computations, and
 	 * should not be used outside of this package.
 	 */
-	BigInteger getMu() {
+	public BigInteger getMu() {
 		return mu;
 	}
 }

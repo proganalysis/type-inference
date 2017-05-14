@@ -28,6 +28,11 @@ public class RNDEncryptor {
 			e.printStackTrace();
 		}
 	}
+	
+	public String encrypt(String ptext) {
+		byte[] cipher = encrypt(ptext.getBytes(), cipherAES, keyAES);
+		return encoder.encodeToString(cipher);
+	}
 
 	public String encrypt(int ptext) {
 		byte[] cipher = encrypt(ByteBuffer.allocate(4).putInt(ptext).array(), cipherBF, keyBF);
