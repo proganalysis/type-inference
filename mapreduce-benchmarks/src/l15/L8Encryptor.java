@@ -1,4 +1,4 @@
-package l6;
+package l15;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -9,13 +9,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.StringJoiner;
 import encryption.AHEncryptor;
-import encryption.DETEncryptor;
 import encryption.RNDEncryptor;
 
-public class L6Encryptor {
+public class L8Encryptor {
 
 	static void printUsage() {
-		System.out.println("Usage: java L6Encryptor <input folder> <output folder>");
+		System.out.println("Usage: java L8Encryptor <input folder> <output folder>");
 		System.exit(1);
 	}
 
@@ -47,15 +46,14 @@ public class L6Encryptor {
 
 		AHEncryptor ah = new AHEncryptor(args[1]);
 		RNDEncryptor rnd = new RNDEncryptor();
-		DETEncryptor det = new DETEncryptor();
 		int bufferedSize = 1024 * 1024;
 		for (File file : inputFolder.listFiles()) {
 			System.out.println("Encrypting file " + file.getName() + "...");
-			encryptPageViews(file, bufferedSize, outputFolder, det, ah, rnd);
+			encryptPageViews(file, bufferedSize, outputFolder, ah, rnd);
 		}
 	}
 
-	private static void encryptPageViews(File file, int bufferedSize, File outputFolder, DETEncryptor det,
+	private static void encryptPageViews(File file, int bufferedSize, File outputFolder,
 			AHEncryptor ah, RNDEncryptor rnd) {
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(file), bufferedSize);
@@ -67,19 +65,19 @@ public class L6Encryptor {
 				StringBuffer outline = new StringBuffer();
 				List<String> fields = Library.splitLine(line, '');
 				String user = fields.get(0);
-				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
+				outline.append((user.isEmpty() ? "" : rnd.encrypt(user)) + '');
 				outline.append(rnd.encrypt(fields.get(1)) + '');
 				outline.append(ah.encrypt(Integer.parseInt(fields.get(2))) + '');
 				String query = fields.get(3);
-				outline.append((query.isEmpty() ? "" : det.encrypt(query)) + '');
+				outline.append((query.isEmpty() ? "" : rnd.encrypt(query)) + '');
 				for (int i = 4; i < 6; i++) {
 					long field = Long.parseLong(fields.get(i));
-					outline.append(det.encrypt(field) + '');
+					outline.append(rnd.encrypt(field) + '');
 				}
 				String revStr = fields.get(6);
 				if (!revStr.isEmpty()) {
 					double revenue = Double.parseDouble(revStr);
-					outline.append(rnd.encrypt(revenue));
+					outline.append(ah.encrypt(revenue));
 				}
 				outline.append(''); // ^A
 				outline.append(encryptMap(fields.get(7), rnd));

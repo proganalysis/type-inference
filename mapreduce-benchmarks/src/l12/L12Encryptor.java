@@ -1,21 +1,25 @@
-package l6;
+package l12;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.StringJoiner;
 import encryption.AHEncryptor;
 import encryption.DETEncryptor;
 import encryption.RNDEncryptor;
+import jope.OPE;
 
-public class L6Encryptor {
+public class L12Encryptor {
 
 	static void printUsage() {
-		System.out.println("Usage: java L6Encryptor <input folder> <output folder>");
+		System.out.println("Usage: java L12Encryptor <input folder> <output folder>");
 		System.exit(1);
 	}
 
@@ -48,15 +52,23 @@ public class L6Encryptor {
 		AHEncryptor ah = new AHEncryptor(args[1]);
 		RNDEncryptor rnd = new RNDEncryptor();
 		DETEncryptor det = new DETEncryptor();
+		OPE ope = new OPE();
+		String opeNumFile = args[1] + "/opeNum";
+		try (PrintWriter out = new PrintWriter(opeNumFile)) {
+			out.println("opeZero: " + ope.encrypt(new BigInteger("0")));
+			out.println("min: " + ope.encrypt(BigInteger.valueOf(Integer.MIN_VALUE)));
+		} catch (FileNotFoundException e) {
+			System.out.println("Couldn't find the location " + opeNumFile);
+		}
 		int bufferedSize = 1024 * 1024;
 		for (File file : inputFolder.listFiles()) {
 			System.out.println("Encrypting file " + file.getName() + "...");
-			encryptPageViews(file, bufferedSize, outputFolder, det, ah, rnd);
+			encryptPageViews(file, bufferedSize, outputFolder, det, ah, rnd, ope);
 		}
 	}
 
 	private static void encryptPageViews(File file, int bufferedSize, File outputFolder, DETEncryptor det,
-			AHEncryptor ah, RNDEncryptor rnd) {
+			AHEncryptor ah, RNDEncryptor rnd, OPE ope) {
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(file), bufferedSize);
 			File outFile = new File(outputFolder.getAbsolutePath() + File.separator + file.getName() + "Cipher");
@@ -68,18 +80,18 @@ public class L6Encryptor {
 				List<String> fields = Library.splitLine(line, '');
 				String user = fields.get(0);
 				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
-				outline.append(rnd.encrypt(fields.get(1)) + '');
+				outline.append(det.encrypt(fields.get(1)) + '');
 				outline.append(ah.encrypt(Integer.parseInt(fields.get(2))) + '');
 				String query = fields.get(3);
 				outline.append((query.isEmpty() ? "" : det.encrypt(query)) + '');
 				for (int i = 4; i < 6; i++) {
 					long field = Long.parseLong(fields.get(i));
-					outline.append(det.encrypt(field) + '');
+					outline.append(rnd.encrypt(field) + '');
 				}
 				String revStr = fields.get(6);
 				if (!revStr.isEmpty()) {
-					double revenue = Double.parseDouble(revStr);
-					outline.append(rnd.encrypt(revenue));
+					int revenue = (int) Double.parseDouble(revStr);
+					outline.append(ope.encrypt(BigInteger.valueOf(revenue)).toString());
 				}
 				outline.append(''); // ^A
 				outline.append(encryptMap(fields.get(7), rnd));

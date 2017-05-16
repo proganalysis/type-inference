@@ -1,4 +1,4 @@
-package l6;
+package l17;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,10 +12,10 @@ import encryption.AHEncryptor;
 import encryption.DETEncryptor;
 import encryption.RNDEncryptor;
 
-public class L6Encryptor {
+public class L17Encryptor {
 
 	static void printUsage() {
-		System.out.println("Usage: java L6Encryptor <input folder> <output folder>");
+		System.out.println("Usage: java L17Encryptor <input folder> <output folder>");
 		System.exit(1);
 	}
 
@@ -66,10 +66,12 @@ public class L6Encryptor {
 			while ((line = in.readLine()) != null) {
 				StringBuffer outline = new StringBuffer();
 				List<String> fields = Library.splitLine(line, '');
+				// field: 0-8
 				String user = fields.get(0);
 				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
-				outline.append(rnd.encrypt(fields.get(1)) + '');
-				outline.append(ah.encrypt(Integer.parseInt(fields.get(2))) + '');
+				outline.append(det.encrypt(fields.get(1)) + '');
+				int f2 = Integer.parseInt(fields.get(2));
+				outline.append(det.encrypt(f2) + '&' + ah.encrypt(f2) + '');
 				String query = fields.get(3);
 				outline.append((query.isEmpty() ? "" : det.encrypt(query)) + '');
 				for (int i = 4; i < 6; i++) {
@@ -79,7 +81,7 @@ public class L6Encryptor {
 				String revStr = fields.get(6);
 				if (!revStr.isEmpty()) {
 					double revenue = Double.parseDouble(revStr);
-					outline.append(rnd.encrypt(revenue));
+					outline.append(det.encrypt(revenue) + '&' + ah.encrypt(revenue));
 				}
 				outline.append(''); // ^A
 				outline.append(encryptMap(fields.get(7), rnd));
@@ -87,6 +89,64 @@ public class L6Encryptor {
 				String mapBag = fields.get(8);
 				List<String> maps = Library.splitLine(mapBag, ''); // ^B
 				StringJoiner sj = new StringJoiner(""); // ^B
+				for (String map : maps) {
+					StringJoiner enMap = encryptMap(map, rnd);
+					sj.add(enMap.toString());
+				}
+				outline.append(sj);
+				outline.append(''); // ^A
+				// field: 9-17
+				user = fields.get(9);
+				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
+				outline.append(det.encrypt(fields.get(10)) + '');
+				f2 = Integer.parseInt(fields.get(11));
+				outline.append(det.encrypt(f2) + '&' + ah.encrypt(f2) + '');
+				query = fields.get(12);
+				outline.append((query.isEmpty() ? "" : det.encrypt(query)) + '');
+				for (int i = 13; i < 15; i++) {
+					long field = Long.parseLong(fields.get(i));
+					outline.append(det.encrypt(field) + '');
+				}
+				revStr = fields.get(15);
+				if (!revStr.isEmpty()) {
+					double revenue = Double.parseDouble(revStr);
+					outline.append(det.encrypt(revenue) + '&' + ah.encrypt(revenue));
+				}
+				outline.append(''); // ^A
+				outline.append(encryptMap(fields.get(16), rnd));
+				outline.append(''); // ^A
+				mapBag = fields.get(17);
+				maps = Library.splitLine(mapBag, ''); // ^B
+				sj = new StringJoiner(""); // ^B
+				for (String map : maps) {
+					StringJoiner enMap = encryptMap(map, rnd);
+					sj.add(enMap.toString());
+				}
+				outline.append(sj);
+				outline.append(''); // ^A
+				// field: 18-26
+				user = fields.get(18);
+				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
+				outline.append(det.encrypt(fields.get(19)) + '');
+				f2 = Integer.parseInt(fields.get(20));
+				outline.append(det.encrypt(f2) + '&' + ah.encrypt(f2) + '');
+				query = fields.get(21);
+				outline.append((query.isEmpty() ? "" : det.encrypt(query)) + '');
+				for (int i = 22; i < 24; i++) {
+					long field = Long.parseLong(fields.get(i));
+					outline.append(det.encrypt(field) + '');
+				}
+				revStr = fields.get(24);
+				if (!revStr.isEmpty()) {
+					double revenue = Double.parseDouble(revStr);
+					outline.append(det.encrypt(revenue) + '&' + ah.encrypt(revenue));
+				}
+				outline.append(''); // ^A
+				outline.append(encryptMap(fields.get(25), rnd));
+				outline.append(''); // ^A
+				mapBag = fields.get(26);
+				maps = Library.splitLine(mapBag, ''); // ^B
+				sj = new StringJoiner(""); // ^B
 				for (String map : maps) {
 					StringJoiner enMap = encryptMap(map, rnd);
 					sj.add(enMap.toString());

@@ -1,4 +1,4 @@
-package l6;
+package l16;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,10 +12,10 @@ import encryption.AHEncryptor;
 import encryption.DETEncryptor;
 import encryption.RNDEncryptor;
 
-public class L6Encryptor {
+public class L16Encryptor {
 
 	static void printUsage() {
-		System.out.println("Usage: java L6Encryptor <input folder> <output folder>");
+		System.out.println("Usage: java L16Encryptor <input folder> <output folder>");
 		System.exit(1);
 	}
 
@@ -68,18 +68,18 @@ public class L6Encryptor {
 				List<String> fields = Library.splitLine(line, '');
 				String user = fields.get(0);
 				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
-				outline.append(rnd.encrypt(fields.get(1)) + '');
-				outline.append(ah.encrypt(Integer.parseInt(fields.get(2))) + '');
+				for (int i = 1; i < 3; i++)
+					outline.append(rnd.encrypt(fields.get(i)) + '');
 				String query = fields.get(3);
-				outline.append((query.isEmpty() ? "" : det.encrypt(query)) + '');
+				outline.append((query.isEmpty() ? "" : rnd.encrypt(query)) + '');
 				for (int i = 4; i < 6; i++) {
 					long field = Long.parseLong(fields.get(i));
-					outline.append(det.encrypt(field) + '');
+					outline.append(rnd.encrypt(field) + '');
 				}
 				String revStr = fields.get(6);
 				if (!revStr.isEmpty()) {
 					double revenue = Double.parseDouble(revStr);
-					outline.append(rnd.encrypt(revenue));
+					outline.append(det.encrypt(revenue) + '&' + ah.encrypt(revenue));
 				}
 				outline.append(''); // ^A
 				outline.append(encryptMap(fields.get(7), rnd));
