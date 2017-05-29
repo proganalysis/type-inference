@@ -1,4 +1,4 @@
-package l8;
+package l15;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -9,12 +9,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.StringJoiner;
 import encryption.AHEncryptor;
+import encryption.DETEncryptor;
 import encryption.RNDEncryptor;
 
-public class L8Encryptor {
+public class L15Encryptor {
 
 	static void printUsage() {
-		System.out.println("Usage: java L8Encryptor <input folder> <output folder>");
+		System.out.println("Usage: java L15Encryptor <input folder> <output folder>");
 		System.exit(1);
 	}
 
@@ -46,15 +47,16 @@ public class L8Encryptor {
 
 		AHEncryptor ah = new AHEncryptor(args[1]);
 		RNDEncryptor rnd = new RNDEncryptor();
+		DETEncryptor det = new DETEncryptor();
 		int bufferedSize = 1024 * 1024;
 		for (File file : inputFolder.listFiles()) {
 			System.out.println("Encrypting file " + file.getName() + "...");
-			encryptPageViews(file, bufferedSize, outputFolder, ah, rnd);
+			encryptPageViews(file, bufferedSize, outputFolder, ah, rnd, det);
 		}
 	}
 
 	private static void encryptPageViews(File file, int bufferedSize, File outputFolder,
-			AHEncryptor ah, RNDEncryptor rnd) {
+			AHEncryptor ah, RNDEncryptor rnd, DETEncryptor det) {
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(file), bufferedSize);
 			File outFile = new File(outputFolder.getAbsolutePath() + File.separator + file.getName() + "Cipher");
@@ -65,9 +67,10 @@ public class L8Encryptor {
 				StringBuffer outline = new StringBuffer();
 				List<String> fields = Library.splitLine(line, '');
 				String user = fields.get(0);
-				outline.append((user.isEmpty() ? "" : rnd.encrypt(user)) + '');
-				outline.append(rnd.encrypt(Integer.parseInt(fields.get(1))) + '');
-				outline.append(ah.encrypt(Integer.parseInt(fields.get(2))) + '');
+				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
+				outline.append(det.encrypt(Integer.parseInt(fields.get(1))) + '');
+				int f2 = Integer.parseInt(fields.get(2));
+				outline.append(det.encrypt(f2) + '&' + ah.encrypt(f2) + '');
 				String query = fields.get(3);
 				outline.append((query.isEmpty() ? "" : rnd.encrypt(query)) + '');
 				for (int i = 4; i < 6; i++) {
@@ -77,7 +80,7 @@ public class L8Encryptor {
 				String revStr = fields.get(6);
 				if (!revStr.isEmpty()) {
 					double revenue = Double.parseDouble(revStr);
-					outline.append(ah.encrypt(revenue));
+					outline.append(det.encrypt(revenue) + '&' + ah.encrypt(revenue));
 				}
 				outline.append(''); // ^A
 				outline.append(encryptMap(fields.get(7), rnd));

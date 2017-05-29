@@ -15,10 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package l15;
+package l15Original;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +75,7 @@ public class L15 {
 		}
 	}
 
-	public static class Group extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+	public static class Combiner extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 
 		private PaillierContext context;
 		private PaillierPublicKey pub;
@@ -123,9 +127,72 @@ public class L15 {
 			sb.append("");
 			sb.append(Util.getAHString(ts));
 			sb.append("");
-			EncryptedNumber avg = ts.divide(cnt_per_combiner);
-			sb.append(Util.getAHString(avg));
+			sb.append(cnt_per_combiner);
 			sb.append("");
+			oc.collect(key, new Text(sb.toString()));
+			reporter.setStatus("OK");
+		}
+	}
+
+	public static class Group extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+
+		private int portNumber = 44444;
+		private String hostName;
+
+		@Override
+		public void configure(JobConf conf) {
+			hostName = conf.get("hostname");
+		}
+
+		public void reduce(Text key, Iterator<Text> iter, OutputCollector<Text, Text> oc, Reporter reporter)
+				throws IOException {
+			HashSet<Text> hash1 = new HashSet<Text>();
+			HashSet<String> hash2 = new HashSet<>();
+			HashSet<Integer> hash3 = new HashSet<>();
+			Socket socket = null;
+			try {
+				socket = new Socket(hostName, portNumber);
+			} catch (UnknownHostException e) {
+				System.err.println("Don't know about host " + hostName);
+				System.exit(1);
+			} catch (IOException e) {
+				System.err.println("Couldn't get I/O for the connection to " + hostName);
+				System.exit(1);
+			}
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+			while (iter.hasNext()) {
+				Text line = iter.next();
+				List<Text> vals = Library.splitLine(line, '');
+				hash1.add(vals.get(0));
+				out.writeObject(vals.get(1).toString());
+				String det = null;
+				try {
+					det = (String) in.readObject();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+				hash2.add(det);
+				out.writeObject(vals.get(2).toString());
+				int det2 = in.readInt();
+				hash3.add(det2);
+			}
+			out.writeObject(null);
+			out.close();
+			in.close();
+			Double rev = 0.0;
+			int ts = 0;
+			for (String t : hash2)
+				rev += Double.parseDouble(t);
+			for (int t : hash3)
+				ts += t;
+			StringBuffer sb = new StringBuffer();
+			sb.append((new Integer(hash1.size())).toString());
+			sb.append("");
+			sb.append(rev.toString());
+			sb.append("");
+			Double avg = (double) ts / hash3.size();
+			sb.append(avg);
 			oc.collect(key, new Text(sb.toString()));
 			reporter.setStatus("OK");
 		}
@@ -133,8 +200,8 @@ public class L15 {
 
 	public static void main(String[] args) throws IOException {
 
-		if (args.length != 4) {
-			System.out.println("Parameters: inputDir outputDir parallel pubKey");
+		if (args.length != 5) {
+			System.out.println("Parameters: inputDir outputDir parallel pubKey hostname");
 			System.exit(1);
 		}
 		String inputDir = args[0];
@@ -143,10 +210,12 @@ public class L15 {
 		JobConf lp = new JobConf(L15.class);
 		lp.setJobName("L15 Load Page Views");
 		lp.set("pubKey", args[3]);
+		lp.set("hostname", args[4]);
 		lp.setInputFormat(TextInputFormat.class);
 		lp.setOutputKeyClass(Text.class);
 		lp.setOutputValueClass(Text.class);
 		lp.setMapperClass(ReadPageViews.class);
+		lp.setCombinerClass(Combiner.class);
 		lp.setReducerClass(Group.class);
 		Properties props = System.getProperties();
 		for (Map.Entry<Object, Object> entry : props.entrySet()) {

@@ -69,7 +69,7 @@ public class L17Encryptor {
 				// field: 0-8
 				String user = fields.get(0);
 				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
-				outline.append(det.encrypt(fields.get(1)) + '');
+				outline.append(det.encrypt(Integer.parseInt(fields.get(1))) + '');
 				int f2 = Integer.parseInt(fields.get(2));
 				outline.append(det.encrypt(f2) + '&' + ah.encrypt(f2) + '');
 				String query = fields.get(3);
@@ -98,7 +98,7 @@ public class L17Encryptor {
 				// field: 9-17
 				user = fields.get(9);
 				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
-				outline.append(det.encrypt(fields.get(10)) + '');
+				outline.append(det.encrypt(Integer.parseInt(fields.get(10))) + '');
 				f2 = Integer.parseInt(fields.get(11));
 				outline.append(det.encrypt(f2) + '&' + ah.encrypt(f2) + '');
 				query = fields.get(12);
@@ -127,7 +127,7 @@ public class L17Encryptor {
 				// field: 18-26
 				user = fields.get(18);
 				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
-				outline.append(det.encrypt(fields.get(19)) + '');
+				outline.append(det.encrypt(Integer.parseInt(fields.get(19))) + '');
 				f2 = Integer.parseInt(fields.get(20));
 				outline.append(det.encrypt(f2) + '&' + ah.encrypt(f2) + '');
 				query = fields.get(21);

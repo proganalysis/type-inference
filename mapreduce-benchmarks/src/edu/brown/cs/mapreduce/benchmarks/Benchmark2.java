@@ -53,7 +53,7 @@ public class Benchmark2 extends Configured implements Tool {
 			// Get the page rank from the conf object
 			//
 			String property = job.get(BenchmarkBase.PROPERTY_BENCHMARKS2_SUBSTRING);
-			if (property == null) {
+			if (property != null) {
 				this.USE_SUBSTRING = Boolean.parseBoolean(property);
 			}
 			// this.USE_SUBSTRING = true; // HACK FOR NOW
@@ -157,7 +157,7 @@ public class Benchmark2 extends Configured implements Tool {
 		job.setInputFormat(base.getSequenceFile() ? SequenceFileInputFormat.class : KeyValueTextInputFormat.class);
 		// job.setInputFormat(KeyValueSetInputFormat.class);
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(DoubleWritable.class);
+		job.setOutputValueClass(Text.class);
 		if (base.getTupleData()) {
 			job.setMapperClass(Benchmark2.TupleWritableMap.class);
 		} else {

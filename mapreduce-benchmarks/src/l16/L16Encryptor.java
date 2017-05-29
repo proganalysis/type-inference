@@ -69,7 +69,7 @@ public class L16Encryptor {
 				String user = fields.get(0);
 				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
 				for (int i = 1; i < 3; i++)
-					outline.append(rnd.encrypt(fields.get(i)) + '');
+					outline.append(rnd.encrypt(Integer.parseInt(fields.get(i))) + '');
 				String query = fields.get(3);
 				outline.append((query.isEmpty() ? "" : rnd.encrypt(query)) + '');
 				for (int i = 4; i < 6; i++) {

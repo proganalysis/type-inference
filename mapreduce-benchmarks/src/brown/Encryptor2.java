@@ -3,16 +3,12 @@ package brown;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.math.BigInteger;
 import encryption.AHEncryptor;
 import encryption.DETEncryptor;
 import encryption.RNDEncryptor;
-import jope.OPE;
 
 public class Encryptor2 {
 
@@ -39,15 +35,7 @@ public class Encryptor2 {
 		AHEncryptor ah = new AHEncryptor(args[1]);
 		RNDEncryptor rnd = new RNDEncryptor();
 		DETEncryptor det = new DETEncryptor();
-		OPE ope = new OPE();
-		String opeNumFile = args[1] + "/opeNum";
-		try (PrintWriter out = new PrintWriter(opeNumFile)) {
-			out.println("startdate-" + args[2] + ": " + ope.encrypt(new BigInteger(args[2])));
-			out.println("stopdate-" + args[3] + ": " + ope.encrypt(new BigInteger(args[3])));
-		} catch (FileNotFoundException e) {
-			System.out.println("Couldn't find the location " + opeNumFile);
-		}
-		int bufferedSize = 1024;
+		int bufferedSize = 1024 * 1024;
 		for (File file : inputFolder.listFiles()) {
 			System.out.println("Encrypting file " + file.getName() + "...");
 			encryptUservisits(file, bufferedSize, outputFolder, det, ah, rnd);

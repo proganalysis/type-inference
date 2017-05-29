@@ -80,7 +80,7 @@ public class L12Encryptor {
 				List<String> fields = Library.splitLine(line, '');
 				String user = fields.get(0);
 				outline.append((user.isEmpty() ? "" : det.encrypt(user)) + '');
-				outline.append(det.encrypt(fields.get(1)) + '');
+				outline.append(det.encrypt(Integer.parseInt(fields.get(1))) + '');
 				outline.append(ah.encrypt(Integer.parseInt(fields.get(2))) + '');
 				String query = fields.get(3);
 				outline.append((query.isEmpty() ? "" : det.encrypt(query)) + '');

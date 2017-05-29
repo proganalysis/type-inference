@@ -46,7 +46,7 @@ public class OrBenchmark2 extends Configured implements Tool {
 	        // Get the page rank from the conf object
 	        //
 	        String property = job.get(BenchmarkBase.PROPERTY_BENCHMARKS2_SUBSTRING);
-	        if (property == null) {
+	        if (property != null) {
 	        	this.USE_SUBSTRING = Boolean.parseBoolean(property);
         	}
 //this.USE_SUBSTRING = true; // HACK FOR NOW
