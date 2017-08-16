@@ -1,4 +1,4 @@
-package histogramMovies;
+package kmeansModified;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
@@ -10,12 +10,12 @@ public class Server {
 	
 	public static void main(String[] args) {
 		
-		if (args.length != 3) {
+		if (args.length != 2) {
 			System.out.println("ERROR: Wrong number of parameters.");
-			System.out.println("Usage: java Server <private key file> <totalNumOfLines> <port number>");
+			System.out.println("Usage: java Server <private key file> <totalNumOfLines>");
 		}
 		
-	    int portNumber = Integer.parseInt(args[2]);
+	    int portNumber = 44444;
 	    int totalNumOfLines = Integer.parseInt(args[1]);
 		ExecutorService executor = Executors.newFixedThreadPool(50);
 		try {

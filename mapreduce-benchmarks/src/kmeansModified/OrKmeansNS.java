@@ -1,4 +1,4 @@
-package kmeans;
+package kmeansModified;
 
 import java.io.IOException;
 import java.util.*;
@@ -12,7 +12,7 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.io.LongWritable;
 import org.mortbay.log.Log;
 
-public class OrKmeans {
+public class OrKmeansNS {
 
 	private final static int maxClusters = 16;
 
@@ -21,12 +21,6 @@ public class OrKmeans {
 		WORDS, VALUES
 	}
 
-	public static class NonSplittableTextInputFormat extends TextInputFormat {
-		@Override
-		protected boolean isSplitable(FileSystem fs, Path file) {
-			return false;
-		}
-	}
 	public static Cluster[] centroids = new Cluster[maxClusters];
 	public static Cluster[] centroids_ref = new Cluster[maxClusters];
 
@@ -146,7 +140,8 @@ public class OrKmeans {
 					}
 				}
 
-				movies_arrl.movies.add(line);
+				//movies_arrl.movies.add(line);
+				movies_arrl.movies.add(movieIdStr);
 				movies_arrl.similarities.add(max_similarity);
 				movies_arrl.similarity = max_similarity;
 				output.collect(new IntWritable(clusterId), movies_arrl);
@@ -170,7 +165,7 @@ public class OrKmeans {
 			float avgSimilarity = 0.0f;
 			float similarity = 0.0f;
 			int s = 0;
-			int count;
+			//int count;
 			float diff = 0.0f;
 			float minDiff = 1.0f;
 			int candidate = 0;
@@ -179,7 +174,7 @@ public class OrKmeans {
 			ArrayList<String> arrl = new ArrayList<String>();
 			ArrayList<Float> simArrl = new ArrayList<Float>();
 			String oneElm = new String();
-			int indexShort, index2;
+			int indexShort;//, index2;
 			Text val = new Text();
 
 			while (values.hasNext()) {
@@ -217,19 +212,19 @@ public class OrKmeans {
 				}
 			}
 			data = arrl.get(candidate);
-			index2 = data.indexOf(":");
-			String movieStr = data.substring(0, index2);
-			String reviews = data.substring(index2 + 1);
-			StringTokenizer token = new StringTokenizer(reviews, ",");
-			count = 0;
-			while (token.hasMoreTokens()) {
-				token.nextToken();
-				count++;
-			}
+//			index2 = data.indexOf(":");
+//			String movieStr = data.substring(0, index2);
+//			String reviews = data.substring(index2 + 1);
+//			StringTokenizer token = new StringTokenizer(reviews, ",");
+//			count = 0;
+//			while (token.hasMoreTokens()) {
+//				token.nextToken();
+//				count++;
+//			}
 			Log.info("The key = " + key.toString() + " has members = " + numMovies + " simil = "
 					+ simArrl.get(candidate));
 			//Yao: val = new Text(simArrl.get(candidate) + " " + movieStr + " " + count + " " + reviews);
-			val = new Text(simArrl.get(candidate) + " " + movieStr + " " + count);
+			val = new Text(simArrl.get(candidate) + " " + data);
 			output.collect(key, val);
 			reporter.incrCounter(Counter.VALUES, 1);
 
@@ -328,11 +323,10 @@ public class OrKmeans {
 		Log.info("Job started: " + startTime);
 		Date startIteration;
 		Date endIteration;
-		JobConf conf = new JobConf(OrKmeans.class);
+		JobConf conf = new JobConf(OrKmeansNS.class);
 		conf.setJobName("kmeans");
 		conf.set("mapreduce.reduce.shuffle.input.buffer.percent", "0.2");
 		conf.setLong("mapred.task.timeout", 1000*60*60);
-		conf.setInputFormat(NonSplittableTextInputFormat.class);
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(Text.class);
 		conf.setMapOutputKeyClass(IntWritable.class);

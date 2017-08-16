@@ -41,7 +41,7 @@ public class Library {
         // Grab the last one.
         if (start != s.length()) cols.add(s.substring(start));
         // Grab the last null case.
-        else if (s.charAt(start - 1) == delimiter) cols.add(""); 
+        else if (s.charAt(start - 1) == delimiter) cols.add("");
         return cols;
     }
 
@@ -59,7 +59,7 @@ public class Library {
         // Grab the last one.
         if (start != s.length()) cols.add(new Text(s.substring(start)));
         // Grab the last null case.
-        else if (s.charAt(start - 1) == delimiter) cols.add(new Text()); 
+        else if (start > 0 && s.charAt(start - 1) == delimiter) cols.add(new Text()); 
         return cols;
     }
 

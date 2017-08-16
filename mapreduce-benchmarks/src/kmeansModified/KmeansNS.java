@@ -1,7 +1,13 @@
-package kmeans;
+package kmeansModified;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.math.BigInteger;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.*;
+import java.util.Base64.Decoder;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -12,25 +18,26 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.io.LongWritable;
 import org.mortbay.log.Log;
 
-public class OrKmeans {
+import com.n1analytics.paillier.EncryptedNumber;
+import com.n1analytics.paillier.PaillierContext;
+import com.n1analytics.paillier.PaillierPublicKey;
+
+import encryption.Util;
+
+public class KmeansNS {
 
 	private final static int maxClusters = 16;
+	private static Decoder decoder = Base64.getDecoder();
 
 	// private static final Log LOG = LogFactory.getLog(Kmeans.class);
 	private enum Counter {
 		WORDS, VALUES
 	}
 
-	public static class NonSplittableTextInputFormat extends TextInputFormat {
-		@Override
-		protected boolean isSplitable(FileSystem fs, Path file) {
-			return false;
-		}
-	}
 	public static Cluster[] centroids = new Cluster[maxClusters];
 	public static Cluster[] centroids_ref = new Cluster[maxClusters];
 
-	public static String strModelFile = "hdfs://cluster-1-m:8020/user/root/initial_centroids";
+	public static String strModelFile = "hdfs://cluster-1-m:8020/user/root/initial_centroidsCipher";
 	// Input data should have the following format. Each line of input record
 	// represents one movie and all of its reviews.
 	// Each record has the format:
@@ -65,51 +72,58 @@ public class OrKmeans {
 
 	public static class MapClass extends MapReduceBase
 			implements Mapper<LongWritable, Text, IntWritable, ClusterWritable> {
-		private int totalClusters;
 
+		private int totalClusters, portNumber = 44444;
+		private PaillierContext context;
+		private String hostName;
+		private PaillierPublicKey pub;
+		private EncryptedNumber zero;
+
+		@Override
 		public void configure(JobConf conf) {
 			try {
 				totalClusters = initializeCentroids();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			String pubKey = conf.get("pubKey");
+			pub = new PaillierPublicKey(new BigInteger(pubKey));
+			context = pub.createSignedContext();
+			hostName = conf.get("hostname");
+			zero = context.encrypt(0);
 		}
 
 		public void map(LongWritable key, Text value, OutputCollector<IntWritable, ClusterWritable> output,
 				Reporter reporter) throws IOException {
-
 			String movieIdStr = new String();
 			String reviewStr = new String();
 			String userIdStr = new String();
 			String reviews = new String();
 			String line = new String();
 			String tok = new String("");
-			long movieId;
-			int review, userId, p, q, r, rater, rating, movieIndex;
-			int clusterId = 0;
+			byte[] movieId, rater, userId;
+			int p, q, r, rating, movieIndex;
 			int[] n = new int[maxClusters];
-			float[] sq_a = new float[maxClusters];
-			float[] sq_b = new float[maxClusters];
-			float[] numer = new float[maxClusters];
-			float[] denom = new float[maxClusters];
+			int[] sq_b = new int[maxClusters];
+			EncryptedNumber[] numer = new EncryptedNumber[maxClusters];
+			EncryptedNumber[] sq_a = new EncryptedNumber[maxClusters];
 			float max_similarity = 0.0f;
-			float similarity = 0.0f;
 			Cluster movie = new Cluster();
 			ClusterWritable movies_arrl = new ClusterWritable();
+			EncryptedNumber review, reviewSquare;
 
 			line = ((Text) value).toString();
 			movieIndex = line.indexOf(":");
 			for (r = 0; r < maxClusters; r++) {
-				numer[r] = 0.0f;
-				denom[r] = 0.0f;
-				sq_a[r] = 0.0f;
-				sq_b[r] = 0.0f;
+				numer[r] = zero;
+				sq_a[r] = zero;
+				sq_b[r] = 0;
 				n[r] = 0;
 			}
 			if (movieIndex > 0) {
 				movieIdStr = line.substring(0, movieIndex);
-				movieId = Long.parseLong(movieIdStr);
-				movie.movie_id = movieId;
+				movieId = decoder.decode(movieIdStr);
+				movie.movie_id_sen = movieId;
 				reviews = line.substring(movieIndex + 1);
 				StringTokenizer token = new StringTokenizer(reviews, ",");
 
@@ -117,17 +131,22 @@ public class OrKmeans {
 					tok = token.nextToken();
 					int reviewIndex = tok.indexOf("_");
 					userIdStr = tok.substring(0, reviewIndex);
-					reviewStr = tok.substring(reviewIndex + 1);
-					userId = Integer.parseInt(userIdStr);
-					review = Integer.parseInt(reviewStr);
+					userId = decoder.decode(userIdStr);
+					reviewStr = tok.substring(reviewIndex + 1); // review&reviewSquare
+					int index = reviewStr.indexOf('&');
+					review = Util.getAHCipher(reviewStr.substring(0, index), context);
+					reviewSquare = Util.getAHCipher(reviewStr.substring(index + 1), context);
 					for (r = 0; r < totalClusters; r++) {
 						for (q = 0; q < centroids_ref[r].total; q++) {
-							rater = centroids_ref[r].reviews.get(q).rater_id;
+							rater = centroids_ref[r].reviews.get(q).rater_id_sen;
 							rating = (int) centroids_ref[r].reviews.get(q).rating;
-							if (userId == rater) {
-								numer[r] += (float) (review * rating);
-								sq_a[r] += (float) (review * review);
-								sq_b[r] += (float) (rating * rating);
+							if (Arrays.equals(rater, userId)) {
+								// numer[r] += (float) (review * rating);
+								EncryptedNumber mul = context.multiply(review, context.encode(rating));
+								numer[r] = context.add(numer[r], mul);
+								// sq_a[r] += (float) (review * review);
+								sq_a[r] = context.add(sq_a[r], reviewSquare);
+								sq_b[r] += rating * rating;
 								n[r]++; // counter
 								break; // to avoid multiple ratings by the same
 										// reviewer
@@ -135,22 +154,33 @@ public class OrKmeans {
 						}
 					}
 				}
-				for (p = 0; p < totalClusters; p++) {
-					denom[p] = (float) ((Math.sqrt((double) sq_a[p])) * (Math.sqrt((double) sq_b[p])));
-					if (denom[p] > 0) {
-						similarity = numer[p] / denom[p];
-						if (similarity > max_similarity) {
-							max_similarity = similarity;
-							clusterId = p;
-						}
+				// movies_arrl.movies.add(line);
+				movies_arrl.movies.add(movieIdStr);
+				try {
+					Socket socket = new Socket(hostName, portNumber);
+					ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+					out.writeInt(totalClusters);
+					for (p = 0; p < totalClusters; p++) {
+						out.writeObject(Util.getAHString(sq_a[p]));
+						out.writeInt(sq_b[p]);
+						out.writeObject(Util.getAHString(numer[p]));
 					}
+					out.flush();
+					ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+					int clusterId = in.readInt();
+					max_similarity = in.readFloat();
+					movies_arrl.similarities.add(max_similarity);
+					movies_arrl.similarity = max_similarity;
+					output.collect(new IntWritable(clusterId), movies_arrl);
+					reporter.incrCounter(Counter.WORDS, 1);
+					socket.close();
+				} catch (UnknownHostException e) {
+					System.err.println("Don't know about host " + hostName);
+					System.exit(1);
+				} catch (IOException e) {
+					System.err.println("Couldn't get I/O for the connection to " + hostName);
+					System.exit(1);
 				}
-
-				movies_arrl.movies.add(line);
-				movies_arrl.similarities.add(max_similarity);
-				movies_arrl.similarity = max_similarity;
-				output.collect(new IntWritable(clusterId), movies_arrl);
-				reporter.incrCounter(Counter.WORDS, 1);
 			}
 		}
 
@@ -170,7 +200,7 @@ public class OrKmeans {
 			float avgSimilarity = 0.0f;
 			float similarity = 0.0f;
 			int s = 0;
-			int count;
+			// int count;
 			float diff = 0.0f;
 			float minDiff = 1.0f;
 			int candidate = 0;
@@ -179,7 +209,7 @@ public class OrKmeans {
 			ArrayList<String> arrl = new ArrayList<String>();
 			ArrayList<Float> simArrl = new ArrayList<Float>();
 			String oneElm = new String();
-			int indexShort, index2;
+			int indexShort;// , index2;
 			Text val = new Text();
 
 			while (values.hasNext()) {
@@ -199,7 +229,7 @@ public class OrKmeans {
 						shortline = new String(oneElm.substring(0, indexShort));
 					}
 					arrl.add(shortline);
-					//output.collect(key, new Text(oneElm));
+					// output.collect(key, new Text(oneElm));
 				}
 				numMovies += cr.movies.size();
 				sumSimilarity += similarity;
@@ -217,19 +247,20 @@ public class OrKmeans {
 				}
 			}
 			data = arrl.get(candidate);
-			index2 = data.indexOf(":");
-			String movieStr = data.substring(0, index2);
-			String reviews = data.substring(index2 + 1);
-			StringTokenizer token = new StringTokenizer(reviews, ",");
-			count = 0;
-			while (token.hasMoreTokens()) {
-				token.nextToken();
-				count++;
-			}
+			// index2 = data.indexOf(":");
+			// String movieStr = data.substring(0, index2);
+			// String reviews = data.substring(index2 + 1);
+			// StringTokenizer token = new StringTokenizer(reviews, ",");
+			// count = 0;
+			// while (token.hasMoreTokens()) {
+			// token.nextToken();
+			// count++;
+			// }
 			Log.info("The key = " + key.toString() + " has members = " + numMovies + " simil = "
 					+ simArrl.get(candidate));
-			//Yao: val = new Text(simArrl.get(candidate) + " " + movieStr + " " + count + " " + reviews);
-			val = new Text(simArrl.get(candidate) + " " + movieStr + " " + count);
+			// Yao: val = new Text(simArrl.get(candidate) + " " + movieStr + " "
+			// + count + " " + reviews);
+			val = new Text(simArrl.get(candidate) + " " + data);
 			output.collect(key, val);
 			reporter.incrCounter(Counter.VALUES, 1);
 
@@ -269,7 +300,7 @@ public class OrKmeans {
 				reviewer = new String(singleRv.substring(0, index));
 				rating = new String(singleRv.substring(index + 1));
 				rv = new Review();
-				rv.rater_id = Integer.parseInt(reviewer);
+				rv.rater_id_sen = decoder.decode(reviewer);
 				rv.rating = (byte) Integer.parseInt(rating);
 				centroids_ref[k].reviews.add(rv);
 			}
@@ -319,8 +350,8 @@ public class OrKmeans {
 			}
 		}
 		// Make sure there are exactly 2 parameters left.
-		if (other_args.size() != 2) {
-			System.out.println("ERROR: Wrong number of parameters: " + other_args.size() + " instead of 2.");
+		if (other_args.size() != 4) {
+			System.out.println("ERROR: Wrong number of parameters: " + other_args.size() + " instead of .");
 			printUsage();
 		}
 
@@ -328,11 +359,12 @@ public class OrKmeans {
 		Log.info("Job started: " + startTime);
 		Date startIteration;
 		Date endIteration;
-		JobConf conf = new JobConf(OrKmeans.class);
+		JobConf conf = new JobConf(KmeansNS.class);
 		conf.setJobName("kmeans");
+		conf.set("pubKey", args[2]);
+		conf.set("hostname", args[3]);
 		conf.set("mapreduce.reduce.shuffle.input.buffer.percent", "0.2");
-		conf.setLong("mapred.task.timeout", 1000*60*60);
-		conf.setInputFormat(NonSplittableTextInputFormat.class);
+		conf.setLong("mapred.task.timeout", 1000 * 60 * 60);
 		conf.setOutputKeyClass(IntWritable.class);
 		conf.setOutputValueClass(Text.class);
 		conf.setMapOutputKeyClass(IntWritable.class);
