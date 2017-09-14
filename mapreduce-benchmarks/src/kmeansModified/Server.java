@@ -10,12 +10,12 @@ public class Server {
 	
 	public static void main(String[] args) {
 		
-		if (args.length != 2) {
+		if (args.length != 3) {
 			System.out.println("ERROR: Wrong number of parameters.");
-			System.out.println("Usage: java Server <private key file> <totalNumOfLines>");
+			System.out.println("Usage: java Server <private key file> <totalNumOfLines> <port number>");
 		}
 		
-	    int portNumber = 44444;
+	    int portNumber = Integer.parseInt(args[2]);
 	    int totalNumOfLines = Integer.parseInt(args[1]);
 		ExecutorService executor = Executors.newFixedThreadPool(50);
 		try {

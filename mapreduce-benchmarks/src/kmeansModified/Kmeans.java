@@ -43,7 +43,7 @@ public class Kmeans {
 	public static Cluster[] centroids = new Cluster[maxClusters];
 	public static Cluster[] centroids_ref = new Cluster[maxClusters];
 
-	public static String strModelFile = "hdfs://cluster-1-m:8020/user/root/initial_centroidsCipher";
+	public static String strModelFile = "hdfs://cluster-m:8020/user/root/initial_centroidsCipher";
 	// Input data should have the following format. Each line of input record
 	// represents one movie and all of its reviews.
 	// Each record has the format:
