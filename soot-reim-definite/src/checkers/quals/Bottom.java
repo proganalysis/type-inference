@@ -1,7 +1,7 @@
 package checkers.quals;
 
 import java.lang.annotation.Target;
-import com.sun.source.tree.Tree.Kind; // for use in Javadoc
+// import com.sun.source.tree.Tree.Kind; // for use in Javadoc
 
 /**
  * A special annotation intended solely for representing the bottom type in
