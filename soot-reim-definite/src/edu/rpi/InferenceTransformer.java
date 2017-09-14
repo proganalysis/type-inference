@@ -156,8 +156,13 @@ public abstract class InferenceTransformer extends BodyTransformer {
                 ret = new AnnotatedValue(identifier, type, kind, v, annos);
                 ret.setEnclosingClass(visitorState.getSootClass());
                 ret.setEnclosingMethod(visitorState.getSootMethod());
-                if (v != null)
+                if (v != null) {
                     localMap.put(identifier, ret);
+                    // Ana: adding following line. 
+                    // Adds locals to annotatedValueMap. 
+                    // Wei stores only params/rets into AnnotatedValueMap
+                    annotatedValues.put(identifier,ret);
+                }
             }
         } else {
             ret = annotatedValues.get(identifier);
@@ -190,6 +195,13 @@ public abstract class InferenceTransformer extends BodyTransformer {
     protected AnnotatedValue getAnnotatedValue(Local local) {
         SootMethod sm = visitorState.getSootMethod();
         String identifier = sm.getSignature() + "@" + local.toString();
+        if (local.toString().equals("this")) {
+        		// ANA: This is a bug in Reim. 
+        	    // With variable info, r0 remains "this".
+        	    // Local "this" gets the same Reim identifier as parameter @this, thus missing constraints.
+        	    // A fix is to distinguish the local by adding a 0 at the end. this0 = this.
+        		identifier += "0";
+        }
         AnnotatedValue ret = getAnnotatedValue(identifier, local.getType(), Kind.LOCAL, local);
         return ret;
     }
