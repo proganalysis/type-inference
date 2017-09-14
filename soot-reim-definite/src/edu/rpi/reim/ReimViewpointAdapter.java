@@ -10,11 +10,11 @@ import checkers.inference.reim.quals.*;
 
 public class ReimViewpointAdapter implements ViewpointAdapter {
 
-    private final Annotation READONLY;
+    protected final Annotation READONLY;
 
-    private final Annotation POLYREAD;
+    protected final Annotation POLYREAD;
 
-    private final Annotation MUTABLE;
+    protected final Annotation MUTABLE;
 
     public ReimViewpointAdapter() {
         READONLY = AnnotationUtils.fromClass(Readonly.class);
