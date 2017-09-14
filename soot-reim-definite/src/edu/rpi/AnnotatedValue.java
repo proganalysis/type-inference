@@ -81,6 +81,7 @@ public class AnnotatedValue {
 
         int i = identifier.lastIndexOf('@');
         name = (i >= 0 ? identifier.substring(i+1) : identifier);
+        
     }
 
     public Type getType() {
