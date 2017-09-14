@@ -47,7 +47,7 @@ import checkers.inference.reim.quals.*;
 public class ReimTransformer extends InferenceTransformer {
 
 
-    private Set<Annotation> sourceAnnos;
+    protected Set<Annotation> sourceAnnos;
 
     public final Annotation READONLY;
 
@@ -203,11 +203,19 @@ public class ReimTransformer extends InferenceTransformer {
         if (!isAnnotated(v) && method.getReturnType() != VoidType.v()) {
             if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
+            // replaced code below with new code. 
+            // TODO: Doublecheck paper. If I remember correctly, we annotate return with {READONLY,POLYREAD}
+            /*    
             } else if (isLibraryMethod(method)) {
                 v.addAnnotation(READONLY);
                 v.addAnnotation(POLYREAD);
             } else 
                 v.setAnnotations(sourceAnnos, this);
+            */ 
+            } else {
+            		v.addAnnotation(READONLY);
+            		v.addAnnotation(POLYREAD);
+            }
         }
     }
 
