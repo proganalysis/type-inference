@@ -25,7 +25,7 @@ import checkers.quals.TypeQualifier;
 @Documented
 @TypeQualifier
 @Inherited
-@SubtypeOf({Readonly.class, Polyread.class, MaybeMutable.class, PolyOrMaybe.class})
+@SubtypeOf({Readonly.class})
 @Retention(RetentionPolicy.RUNTIME)
 //@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 //@ImplicitFor(
@@ -33,6 +33,6 @@ import checkers.quals.TypeQualifier;
 ////    treeClasses={LiteralTree.class},
 ////    typeClasses={AnnotatedPrimitiveType.class}
 //    )
-public @interface Mutable {
+public @interface MaybeMutable {
     
 }
