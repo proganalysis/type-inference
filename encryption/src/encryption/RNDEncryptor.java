@@ -43,6 +43,11 @@ public class RNDEncryptor {
 		byte[] cipher = encrypt(ByteBuffer.allocate(8).putLong(ptext).array(), cipherAES, keyAES);
 		return encoder.encodeToString(cipher);
 	}
+	
+	public String encrypt(double ptext) {
+		byte[] cipher = encrypt(ByteBuffer.allocate(8).putDouble(ptext).array(), cipherAES, keyAES);
+		return encoder.encodeToString(cipher);
+	}
 
 	public byte[] encrypt(byte[] ptext, Cipher cipher, Key key) {
 		byte[] ctext = null;

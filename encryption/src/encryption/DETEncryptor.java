@@ -46,6 +46,11 @@ public class DETEncryptor {
 		byte[] cipher = encrypt(ptext.getBytes(), cipherAES, keyAES, ivAES);
 		return encoder.encodeToString(cipher);
 	}
+	
+	public String encrypt(double ptext) {
+		byte[] cipher = encrypt(ByteBuffer.allocate(8).putDouble(ptext).array(), cipherBF, keyBF, ivBF);
+		return encoder.encodeToString(cipher);
+	}
 
 	private byte[] encrypt(byte[] ptext, Cipher cipher, Key key, byte[] iv) {
 		byte[] ctext = null;
