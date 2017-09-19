@@ -1,0 +1,93 @@
+public class AdjList$MapClass extends org.apache.hadoop.mapred.MapReduceBase implements org.apache.hadoop.mapred.Mapper
+{
+
+    public void <init>()
+    {
+        AdjList$MapClass this;
+
+        this := @this: AdjList$MapClass;
+        specialinvoke this.<org.apache.hadoop.mapred.MapReduceBase: void <init>()>();
+        return;
+    }
+
+    public void map(org.apache.hadoop.io.LongWritable, org.apache.hadoop.io.Text, org.apache.hadoop.mapred.OutputCollector, org.apache.hadoop.mapred.Reporter) throws java.io.IOException
+    {
+        AdjList$MapClass this;
+        org.apache.hadoop.io.LongWritable key;
+        org.apache.hadoop.io.Text value, $r4, $r5;
+        org.apache.hadoop.mapred.OutputCollector output;
+        org.apache.hadoop.mapred.Reporter reporter;
+        java.lang.String line, outEdge, inEdge, outList, inList, $r2;
+        int index, $i0;
+        org.apache.commons.logging.Log $r0;
+        java.lang.StringBuilder $r1, $r3;
+        AdjList$Counter $r6;
+
+        this := @this: AdjList$MapClass;
+        key := @parameter0: org.apache.hadoop.io.LongWritable;
+        value := @parameter1: org.apache.hadoop.io.Text;
+        output := @parameter2: org.apache.hadoop.mapred.OutputCollector;
+        reporter := @parameter3: org.apache.hadoop.mapred.Reporter;
+        line = virtualinvoke value.<org.apache.hadoop.io.Text: java.lang.String toString()>();
+        index = virtualinvoke line.<java.lang.String: int lastIndexOf(java.lang.String)>(",");
+        if index != -1 goto label0;
+
+        $r0 = <AdjList: org.apache.commons.logging.Log LOG>;
+        $r1 = new java.lang.StringBuilder;
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>(java.lang.String)>("MAP INPUT IN WRONG FORMAT : ");
+        $r1 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(line);
+        $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.String toString()>();
+        interfaceinvoke $r0.<org.apache.commons.logging.Log: void info(java.lang.Object)>($r2);
+
+     label0:
+        outEdge = virtualinvoke line.<java.lang.String: java.lang.String substring(int,int)>(0, index);
+        $i0 = index + 1;
+        inEdge = virtualinvoke line.<java.lang.String: java.lang.String substring(int)>($i0);
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("from{");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(outEdge);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("}:to{}");
+        outList = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        $r3 = new java.lang.StringBuilder;
+        specialinvoke $r3.<java.lang.StringBuilder: void <init>(java.lang.String)>("from{}:to{");
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(inEdge);
+        $r3 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("}");
+        inList = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+        $r4 = new org.apache.hadoop.io.Text;
+        specialinvoke $r4.<org.apache.hadoop.io.Text: void <init>(java.lang.String)>(outEdge);
+        $r5 = new org.apache.hadoop.io.Text;
+        specialinvoke $r5.<org.apache.hadoop.io.Text: void <init>(java.lang.String)>(inList);
+        interfaceinvoke output.<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>($r4, $r5);
+        $r6 = <AdjList$Counter: AdjList$Counter WORDS>;
+        interfaceinvoke reporter.<org.apache.hadoop.mapred.Reporter: void incrCounter(java.lang.Enum,long)>($r6, 1L);
+        $r4 = new org.apache.hadoop.io.Text;
+        specialinvoke $r4.<org.apache.hadoop.io.Text: void <init>(java.lang.String)>(inEdge);
+        $r5 = new org.apache.hadoop.io.Text;
+        specialinvoke $r5.<org.apache.hadoop.io.Text: void <init>(java.lang.String)>(outList);
+        interfaceinvoke output.<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>($r4, $r5);
+        $r6 = <AdjList$Counter: AdjList$Counter WORDS>;
+        interfaceinvoke reporter.<org.apache.hadoop.mapred.Reporter: void incrCounter(java.lang.Enum,long)>($r6, 1L);
+        return;
+    }
+
+    public volatile void map(java.lang.Object, java.lang.Object, org.apache.hadoop.mapred.OutputCollector, org.apache.hadoop.mapred.Reporter) throws java.io.IOException
+    {
+        AdjList$MapClass l0;
+        java.lang.Object l1, l2;
+        org.apache.hadoop.mapred.OutputCollector l3, $r2;
+        org.apache.hadoop.mapred.Reporter l4;
+        org.apache.hadoop.io.LongWritable $r0;
+        org.apache.hadoop.io.Text $r1;
+
+        l0 := @this: AdjList$MapClass;
+        l1 := @parameter0: java.lang.Object;
+        l2 := @parameter1: java.lang.Object;
+        l3 := @parameter2: org.apache.hadoop.mapred.OutputCollector;
+        l4 := @parameter3: org.apache.hadoop.mapred.Reporter;
+        $r0 = (org.apache.hadoop.io.LongWritable) l1;
+        $r1 = (org.apache.hadoop.io.Text) l2;
+        $r2 = (org.apache.hadoop.mapred.OutputCollector) l3;
+        virtualinvoke l0.<AdjList$MapClass: void map(org.apache.hadoop.io.LongWritable,org.apache.hadoop.io.Text,org.apache.hadoop.mapred.OutputCollector,org.apache.hadoop.mapred.Reporter)>($r0, $r1, $r2, l4);
+        return;
+    }
+}
