@@ -9,10 +9,12 @@ public class Reference {
 	
 	private Value value;
 	private Set<Operation> operations;
+	private Set<Value> children;
 	
 	public Reference(Value value) {
 		this.setValue(value);
 		setOperations(new HashSet<>());
+		setChildren(new HashSet<>());
 	}
 
 	public Value getValue() {
@@ -30,10 +32,21 @@ public class Reference {
 	public void setOperations(Set<Operation> operations) {
 		this.operations = operations;
 	}
+	
+	public boolean addOperation(Operation ope) {
+		return operations.add(ope);
+	}
 
-	@Override
-	public String toString() {
-		return value.toString();
+	public Set<Value> getChildren() {
+		return children;
+	}
+
+	public void setChildren(Set<Value> children) {
+		this.children = children;
+	}
+	
+	public void addChild(Value child) {
+		children.add(child);
 	}
 
 	@Override
@@ -60,4 +73,10 @@ public class Reference {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "Reference [value=" + value + ", operations=" + operations + ", children=" + children + "]";
+	}
+
 }
