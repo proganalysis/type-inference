@@ -10,12 +10,10 @@ import java.util.Set;
 import soot.Body;
 import soot.BodyTransformer;
 import soot.BooleanType;
-import soot.SootMethod;
+import soot.IntType;
 import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
-import soot.jimple.InvokeExpr;
-import soot.jimple.InvokeStmt;
 import soot.jimple.internal.JimpleLocalBox;
 import soot.jimple.internal.VariableBox;
 import soot.toolkits.graph.BriefUnitGraph;
@@ -29,39 +27,32 @@ public class RDTransformer extends BodyTransformer {
 
 	private HashSet<String> sources;
 	private LocalUses uses;
-	//private Map<Reference, Set<Reference>> defUseChains;
 	private Map<Value, Set<Unit>> defUseChains;
 	private Map<Value, Reference> sensitiveValues;
-	private Map<String, Set<String>> detContainers;
+	private Set<String> keyBucket, detBucket, opeBucket, ignoreBucket;
+	private String detIgnore;
 
 	public RDTransformer(HashSet<String> sources) {
 		this.sources = sources;
 		defUseChains = new HashMap<>();
 		sensitiveValues = new HashMap<>();
-		detContainers = new HashMap<>();
+		keyBucket = new HashSet<>();
+		detBucket = new HashSet<>();
+		opeBucket = new HashSet<>();
+		ignoreBucket = new HashSet<>();
+		detIgnore = "<java.lang.String: boolean equals(java.lang.Object)>(\"\")";
 		
-		Set<String> methods = new HashSet<>();
-		methods.add("contains");
-		detContainers.put("java.util.ArrayList", methods);
-		methods = new HashSet<>();
-		methods.add("contains");
-		methods.add("add");
-		detContainers.put("java.util.HashSet", methods);
-		detContainers.put("java.util.TreeSet", methods);
-		methods = new HashSet<>();
-		methods.add("containsKey");
-		methods.add("put");
-		detContainers.put("java.util.HashMap", methods);
-		detContainers.put("java.util.LinkedHashMap", methods);
-		methods = new HashSet<>();
-		methods.add("equals");
-		detContainers.put("java.lang.String", methods);
-		methods = new HashSet<>();
-		methods.add("write");
-		detContainers.put("org.apache.hadoop.mapreduce.Mapper$Context", methods);
-		methods = new HashSet<>();
-		methods.add("collect");
-		detContainers.put("org.apache.hadoop.mapred.OutputCollector", methods);
+		keyBucket.add("<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>");
+		keyBucket.add("<org.apache.hadoop.mapreduce.Mapper$Context: void write"); //TODO
+		
+		detBucket.add("<java.lang.String: boolean equals(java.lang.Object)>");
+		detBucket.add("<java.util.List: boolean contains(java.lang.Object)>");
+		
+		opeBucket.add("<java.util.Collections: void sort(java.util.List)>");
+		
+		ignoreBucket.add("<java.util.List: int size()>");
+		ignoreBucket.add("<java.lang.String: int length()>");
+		ignoreBucket.add("<java.lang.String: int indexOf(java.lang.String)>");
 	}
 
 	@Override
@@ -122,6 +113,13 @@ public class RDTransformer extends BodyTransformer {
 					continue;
 				Reference defRef = sensitiveValues.get(defValue);
 				for (Unit useUnit : defUseChains.get(defValue)) {
+					boolean shouldIgnore = false;
+					for (String ignore : ignoreBucket)
+						if (useUnit.toString().contains(ignore)) {
+							shouldIgnore = true;
+							break;
+						}
+					if (shouldIgnore) continue;
 					for (Object valueBox : useUnit.getUseAndDefBoxes()) {
 						if (valueBox instanceof VariableBox || valueBox instanceof JimpleLocalBox) {
 							Value value = ((ValueBox) valueBox).getValue();
@@ -138,22 +136,44 @@ public class RDTransformer extends BodyTransformer {
 			
 			// Add operations and check conversions
 			for (Value defValue : sensitiveValues.keySet()) {
+				Reference ref = sensitiveValues.get(defValue);
 				for (Unit useUnit : defUseChains.get(defValue)) {
-					if (useUnit instanceof InvokeStmt) {
-						InvokeExpr invokeExpr = ((InvokeStmt) useUnit).getInvokeExpr();
-						SootMethod method = invokeExpr.getMethod();
-						String className = method.getDeclaringClass().getName();
-						if (detContainers.containsKey(className) &&
-								detContainers.get(className).contains(method.getName())) {
-							Reference ref = sensitiveValues.get(defValue);
-							Set<Operation> operations = ref.getOperations();
-							if (operations.contains(Operation.AH) || operations.contains(Operation.MH)) {
-								
-								System.out.println("Conversion: " + operations.iterator().next() + " -> DET");
-							}
-							ref.addOperation(Operation.DET);
+					for (String detUnitStr : detBucket) {
+						if (useUnit.toString().contains(detUnitStr))
+							if (!useUnit.toString().contains(detIgnore))
+								ref.addOperation(Operation.DET);
+					}
+					for (String keyUnitStr : keyBucket) {
+						if (useUnit.toString().contains(keyUnitStr)) {
+							String useUnitStr = useUnit.toString();
+							int indexBegin = useUnitStr.lastIndexOf('(') + 1;
+							int indexEnd = useUnitStr.lastIndexOf(',');
+							if (useUnitStr.substring(indexBegin, indexEnd).equals(defValue.toString()))
+								ref.addOperation(Operation.DET);
 						}
 					}
+					for (String opeUnitStr : opeBucket) {
+						if (useUnit.toString().contains(opeUnitStr) && defValue.getType() instanceof IntType)
+							ref.addOperation(Operation.OPE);
+					}
+//					if (useUnit instanceof InvokeStmt) {
+//						InvokeExpr invokeExpr = ((InvokeStmt) useUnit).getInvokeExpr();
+//						SootMethod method = invokeExpr.getMethod();
+//						String className = method.getDeclaringClass().getName();
+//						if (detContainers.containsKey(className) &&
+//								detContainers.get(className).contains(method.getName())) {
+//							Set<Operation> operations = ref.getOperations();
+//							if (operations.contains(Operation.AH) || operations.contains(Operation.MH)) {
+//								
+//								System.out.println("Conversion: " + operations.iterator().next() + " -> DET");
+//							}
+//							ref.addOperation(Operation.DET);
+//						}
+//						if (useUnit.toString().contains("<org.apache.hadoop.mapred.OutputCollector: void collect(java.lang.Object,java.lang.Object)>")
+//								&& (invokeExpr.getArg(0) == defValue)) {
+//							ref.addOperation(Operation.DET);
+//						}
+//					}
 				}
 			}
 			
@@ -164,8 +184,9 @@ public class RDTransformer extends BodyTransformer {
 				for (Value defValue : sensitiveValues.keySet()) {
 					Reference defRef = sensitiveValues.get(defValue);
 					for (Value child : defRef.getChildren()) {
-						for (Operation ope : sensitiveValues.get(child).getOperations()) {
-							changed = defRef.addOperation(ope);
+						for (Operation operation : sensitiveValues.get(child).getOperations()) {
+							if (defRef.addOperation(operation))
+								changed = true;
 						}
 					}
 				}
