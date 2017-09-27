@@ -10,6 +10,7 @@ public class Reference {
 	private Value value;
 	private Set<Operation> operations;
 	private Set<Value> children;
+	private boolean isInMap;
 	
 	public Reference(Value value) {
 		this.setValue(value);
@@ -49,6 +50,14 @@ public class Reference {
 		children.add(child);
 	}
 
+	public boolean isInMap() {
+		return isInMap;
+	}
+
+	public void setInMap(boolean isInMap) {
+		this.isInMap = isInMap;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -76,7 +85,8 @@ public class Reference {
 
 	@Override
 	public String toString() {
-		return "Reference [value=" + value + ", operations=" + operations + ", children=" + children + "]";
+		return  (isInMap ? "Map " : "Reduce " ) 
+				+ " [value=" + value + ", operations=" + operations + ", children=" + children + "]";
 	}
 
 }
