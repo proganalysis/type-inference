@@ -8,7 +8,7 @@ import soot.Value;
 public class Reference {
 	
 	private Value value;
-	private Set<Operation> operations;
+	private Set<String> operations;
 	private Set<Value> children;
 	private boolean isInMap;
 	
@@ -26,16 +26,32 @@ public class Reference {
 		this.value = value;
 	}
 
-	public Set<Operation> getOperations() {
+	public Set<String> getOperations() {
 		return operations;
 	}
 
-	public void setOperations(Set<Operation> operations) {
+	public void setOperations(Set<String> operations) {
 		this.operations = operations;
 	}
 	
-	public boolean addOperation(Operation ope) {
+	public boolean contains(String ope) {
+		return operations.contains(ope);
+	}
+	
+	public boolean addOperation(String ope) {
 		return operations.add(ope);
+	}
+	
+	public boolean removeOperation(String ope) {
+		return operations.remove(ope);
+	}
+	
+	public boolean clearOperations() {
+		if (operations.isEmpty()) return false;
+		else {
+			operations.clear();
+			return true;
+		}
 	}
 
 	public Set<Value> getChildren() {

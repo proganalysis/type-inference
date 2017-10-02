@@ -1,7 +1,7 @@
 package defuse;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,8 +25,8 @@ public class RDTransformer extends BodyTransformer {
 	private Value reduceKey, reduceValue;
 
 	public RDTransformer() {
-		setMapDefUseChains(new HashMap<>());
-		setReduceDefUseChains(new HashMap<>());
+		setMapDefUseChains(new LinkedHashMap<>());
+		setReduceDefUseChains(new LinkedHashMap<>());
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class RDTransformer extends BodyTransformer {
 				for (Object unitValue : uses.getUsesOf(unit)) {
 					UnitValueBoxPair usePair = (UnitValueBoxPair) unitValue;
 					Value defValue = usePair.getValueBox().getValue();
-					Set<Unit> useSet = defUseChains.getOrDefault(defValue, new HashSet<>());
+					Set<Unit> useSet = defUseChains.getOrDefault(defValue, new LinkedHashSet<>());
 					useSet.add(usePair.getUnit());
 					defUseChains.put(defValue, useSet);
 				}
