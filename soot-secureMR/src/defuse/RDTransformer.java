@@ -9,9 +9,12 @@ import soot.Body;
 import soot.BodyTransformer;
 import soot.Unit;
 import soot.Value;
+import soot.jimple.Stmt;
 import soot.jimple.internal.JimpleLocalBox;
 import soot.jimple.internal.VariableBox;
+import soot.jimple.toolkits.annotation.logic.Loop;
 import soot.toolkits.graph.BriefUnitGraph;
+import soot.toolkits.graph.LoopNestTree;
 import soot.toolkits.graph.UnitGraph;
 import soot.toolkits.scalar.LocalUses;
 import soot.toolkits.scalar.SimpleLocalDefs;
@@ -20,7 +23,6 @@ import soot.toolkits.scalar.UnitValueBoxPair;
 
 public class RDTransformer extends BodyTransformer {
 
-	private LocalUses uses;
 	private Map<Value, Set<Unit>> mapDefUseChains, reduceDefUseChains;
 	private Value reduceKey, reduceValue;
 
@@ -31,9 +33,6 @@ public class RDTransformer extends BodyTransformer {
 
 	@Override
 	protected void internalTransform(Body body, String arg1, @SuppressWarnings("rawtypes") Map arg2) {
-		UnitGraph cfg = new BriefUnitGraph(body);
-		SimpleLocalDefs defs = new SimpleLocalDefs(cfg);
-		uses = new SimpleLocalUses(body, defs);
 		String methodName = body.getMethod().getName();
 		// 4161 means the modifier is volatile which should be skipped
 		if (body.getMethod().getModifiers() == 4161)
@@ -45,6 +44,10 @@ public class RDTransformer extends BodyTransformer {
 			//System.out.println("Reduce Value: " + body.getParameterLocal(1));
 		}
 		if (methodName.equals("map") || methodName.equals("reduce")) {
+			UnitGraph cfg = new BriefUnitGraph(body);
+			SimpleLocalDefs defs = new SimpleLocalDefs(cfg);
+			LocalUses uses = new SimpleLocalUses(body, defs);
+			
 			Map<Value, Set<Unit>> defUseChains = methodName.equals("map") ? mapDefUseChains : reduceDefUseChains;
 			for (Unit unit : body.getUnits()) {
 				for (Object unitValue : uses.getUsesOf(unit)) {
@@ -67,6 +70,18 @@ public class RDTransformer extends BodyTransformer {
 				}
 				System.out.println();
 			}
+			LoopNestTree loopNestTree = new LoopNestTree(body);
+			for (Loop loop : loopNestTree) {
+	            System.out.print("Found a loop: " + loop.getHead().getJavaSourceStartLineNumber() + "-");
+	            //System.out.println(loop.getBackJumpStmt().getJavaSourceStartLineNumber());
+	            for (Stmt exit : loop.getLoopExits()) {
+	            	for (Stmt target : loop.targetsOfLoopExit(exit)) {
+	            		System.out.println("target line: " + target.getJavaSourceStartLineNumber());
+	            	}
+	            	//System.out.print(exit.getJavaSourceStartLineNumber() + ",");
+	            }
+	            System.out.println();
+	        }
 		}
 	}
 

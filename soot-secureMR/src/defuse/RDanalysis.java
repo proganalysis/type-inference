@@ -198,9 +198,11 @@ public class RDanalysis {
 	
 	public void addOperations() {
 		// Add operations and check conversions
-		for (Value defValue : sensitiveValues.keySet()) {
+		//for (Value defValue : sensitiveValues.keySet()) {
+		for (Value defValue : defUseChains.keySet()) {
 			Reference ref = sensitiveValues.get(defValue);
-			for (Unit useUnit : defUseChains.getOrDefault(defValue, new HashSet<>())) {
+			if (ref == null) continue;
+			for (Unit useUnit : defUseChains.get(defValue)) {
 				for (String detUnitStr : detBucket) {
 					if (useUnit.toString().contains(detUnitStr))
 						if (!useUnit.toString().contains(detIgnore))
@@ -226,7 +228,6 @@ public class RDanalysis {
 						convertedValues.add(defValue);
 						ref.clearOperations();
 						clearOperations(ref);
-						
 					}
 				}
 				if (useUnit instanceof IfStmt) {
@@ -307,8 +308,6 @@ public class RDanalysis {
 									ref.removeOperation("AH");
 									removeOperations(ref, "AH");
 								}
-							case " >> ":
-							case " >>> ":
 							}
 						}
 				}
@@ -359,7 +358,7 @@ public class RDanalysis {
 			for (Value defValue : sensitiveValues.keySet()) {
 				Reference defRef = sensitiveValues.get(defValue);
 				for (Value child : defRef.getChildren()) {
-					//if (convertedValues.contains(child)) continue;
+					if (convertedValues.contains(child)) continue;
 					for (String operation : sensitiveValues.get(child).getOperations()) {
 						if (defRef.addOperation(operation))
 							changed = true;
