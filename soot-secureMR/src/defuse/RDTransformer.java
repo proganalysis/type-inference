@@ -1,5 +1,6 @@
 package defuse;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -25,10 +26,12 @@ public class RDTransformer extends BodyTransformer {
 
 	private Map<Value, Set<Unit>> mapDefUseChains, reduceDefUseChains;
 	private Value reduceKey, reduceValue;
+	private ArrayList<Integer> loops;
 
 	public RDTransformer() {
 		setMapDefUseChains(new LinkedHashMap<>());
 		setReduceDefUseChains(new LinkedHashMap<>());
+		setLoops(new ArrayList<>());
 	}
 
 	@Override
@@ -72,15 +75,18 @@ public class RDTransformer extends BodyTransformer {
 			}
 			LoopNestTree loopNestTree = new LoopNestTree(body);
 			for (Loop loop : loopNestTree) {
-	            System.out.print("Found a loop: " + loop.getHead().getJavaSourceStartLineNumber() + "-");
-	            //System.out.println(loop.getBackJumpStmt().getJavaSourceStartLineNumber());
+				int start = loop.getHead().getJavaSourceStartLineNumber();
+	            System.out.print("Found a loop: " + start + "-");
 	            for (Stmt exit : loop.getLoopExits()) {
 	            	for (Stmt target : loop.targetsOfLoopExit(exit)) {
-	            		System.out.println("target line: " + target.getJavaSourceStartLineNumber());
+	            		int end = target.getJavaSourceStartLineNumber();
+	            		System.out.println("target line: " + end);
+	            		if (end > start) {
+	            			loops.add(start);
+	            			loops.add(end);
+	            		}
 	            	}
-	            	//System.out.print(exit.getJavaSourceStartLineNumber() + ",");
 	            }
-	            System.out.println();
 	        }
 		}
 	}
@@ -115,6 +121,14 @@ public class RDTransformer extends BodyTransformer {
 
 	public void setReduceValue(Value reduceValue) {
 		this.reduceValue = reduceValue;
+	}
+
+	public ArrayList<Integer> getLoops() {
+		return loops;
+	}
+
+	public void setLoops(ArrayList<Integer> loops) {
+		this.loops = loops;
 	}
 	
 }

@@ -33,18 +33,19 @@ public class RDanalysis {
 	private String detIgnore;
 	private RDTransformer transformer;
 	private Set<Value> convertedValues;
+	private ArrayList<Integer> loops;
+	private Set<Integer> conversions;
 	
 	public RDanalysis(RDTransformer transformer) {
 		this.transformer = transformer;
 		mapDefUseChains = transformer.getMapDefUseChains();
 		reduceDefUseChains = transformer.getReduceDefUseChains();
-//		defUseChains = Stream.of(mapDefUseChains, reduceDefUseChains)
-//				.flatMap(map -> map.entrySet().stream())
-//				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-//						(v1, v2) -> new HashSet<>()));
 		defUseChains = new LinkedHashMap<>();
 		defUseChains.putAll(mapDefUseChains);
 		defUseChains.putAll(reduceDefUseChains);
+		
+		loops = transformer.getLoops();
+		conversions = new HashSet<>();
 		
 		sensitiveValues = new LinkedHashMap<>();
 		convertedValues = new HashSet<>();
@@ -225,6 +226,7 @@ public class RDanalysis {
 				for (String opeUnitStr : mathBucket) {
 					if (useUnit.toString().contains(opeUnitStr)) {
 						System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+						conversions.add(useUnit.getJavaSourceStartLineNumber());
 						convertedValues.add(defValue);
 						ref.clearOperations();
 						clearOperations(ref);
@@ -248,6 +250,7 @@ public class RDanalysis {
 							case " - ":
 								if (ref.contains("MH")) {
 									System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+									conversions.add(useUnit.getJavaSourceStartLineNumber());
 									convertedValues.add(defValue);
 									ref.removeOperation("MH");
 									removeOperations(ref, "MH");
@@ -259,6 +262,7 @@ public class RDanalysis {
 								if (sensitiveValues.containsKey(op1) && sensitiveValues.containsKey(op2)) {
 									if (ref.contains("AH")) {
 										System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+										conversions.add(useUnit.getJavaSourceStartLineNumber());
 										convertedValues.add(defValue);
 										ref.removeOperation("AH");
 										removeOperations(ref, "AH");
@@ -268,6 +272,7 @@ public class RDanalysis {
 								} else {
 									if (ref.contains("MH")) {
 										System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+										conversions.add(useUnit.getJavaSourceStartLineNumber());
 										convertedValues.add(defValue);
 										ref.removeOperation("MH");
 										removeOperations(ref, "MH");
@@ -279,12 +284,14 @@ public class RDanalysis {
 							case " / ":
 								if (sensitiveValues.containsKey(op1) && sensitiveValues.containsKey(op2)) {
 									System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+									conversions.add(useUnit.getJavaSourceStartLineNumber());
 									convertedValues.add(defValue);
 									ref.clearOperations();
 									clearOperations(ref);
 								} else {
 									if (ref.contains("MH")) {
 										System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+										conversions.add(useUnit.getJavaSourceStartLineNumber());
 										convertedValues.add(defValue);
 										ref.removeOperation("MH");
 										removeOperations(ref, "MH");
@@ -296,6 +303,7 @@ public class RDanalysis {
 							case " cmpl ":
 								if (ref.contains("MH")) {
 									System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+									conversions.add(useUnit.getJavaSourceStartLineNumber());
 									convertedValues.add(defValue);
 									ref.addOperation("OPE");
 									ref.removeOperation("MH");
@@ -303,6 +311,7 @@ public class RDanalysis {
 								}
 								if (ref.contains("AH")) {
 									System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+									conversions.add(useUnit.getJavaSourceStartLineNumber());
 									convertedValues.add(defValue);
 									ref.addOperation("OPE");
 									ref.removeOperation("AH");
@@ -375,6 +384,23 @@ public class RDanalysis {
 	public Set<Reference> getSources() {
 		return sources;
 	}
+	
+	private Set<String> findRegion() {
+		Set<String> regions = new HashSet<>();
+		for (int conversion : conversions) {
+			boolean inLoop = false;
+			for (int i = 0; i < loops.size() - 1; i++) {
+				int start = loops.get(i);
+				int end = loops.get(i + 1);
+				if (conversion > start && conversion < end) {
+					regions.add(start + "-" + (end - 1));
+					inLoop = true;
+				}
+			}
+			if (!inLoop) regions.add(conversion + "-" + conversion);
+		}
+		return regions;
+	}
 
 	public void analyze(Set<String> mSources, Set<String> rSources) {
 		propagateMap(mSources);
@@ -383,6 +409,10 @@ public class RDanalysis {
 		linkValue();
 		addOperations();
 		propagateOperations();
+		Set<String> regions = findRegion();
+		System.out.println("Region should be extracted:");
+		for (String region : regions) 
+			System.out.println(region);
 	}
 
 	public static void main(String[] args) {
