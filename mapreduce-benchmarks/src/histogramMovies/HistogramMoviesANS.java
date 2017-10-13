@@ -1,4 +1,5 @@
 package histogramMovies;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -21,7 +22,6 @@ import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -48,34 +48,26 @@ import org.apache.commons.logging.LogFactory;
  * @author Faraz Ahmad
  */
 
-public class HistogramMoviesA extends Configured implements Tool {
+public class HistogramMoviesANS extends Configured implements Tool {
 
 	private enum Counter {
 		WORDS, VALUES
 	}
-	
+
 	public static final Log LOG = LogFactory.getLog("org.apache.hadoop.examples.HistogramMovies");
-	public static class NonSplittableTextInputFormat extends TextInputFormat {
-		@Override
-		protected boolean isSplitable(FileSystem fs, Path file) {
-			return false;
-		}
-	}
-	
+
 	public static class MapClass extends MapReduceBase
 			implements Mapper<LongWritable, Text, FloatWritable, IntWritable> {
 
 		private final static IntWritable one = new IntWritable(1);
-		//private final static float division = 0.5f;
+		// private final static float division = 0.5f;
 
 		private PaillierPublicKey pub;
 		private String hostName;
 		private PaillierContext context;
-		private String[] sumRatingsArray;
-		private int[] totalReviewsArray;
-		private int totalNumOfLines, count, portNumber = 44444;
+		private int portNumber = 44444;
 		private EncryptedNumber zero;
-		
+
 		@Override
 		public void configure(JobConf jobConf) {
 			String pubKey = jobConf.get("pubKey");
@@ -86,15 +78,12 @@ public class HistogramMoviesA extends Configured implements Tool {
 			String taskIdSub = taskId.substring(0, taskId.lastIndexOf('_'));
 			long taskNumber = Long.parseLong(taskIdSub.substring(taskIdSub.lastIndexOf('_') + 1));
 			hostName = hostNames[(int) (taskNumber % hostNames.length)];
-	        totalNumOfLines = Integer.parseInt(jobConf.get("totalNumOfLines"));
-	        sumRatingsArray = new String[totalNumOfLines];
-	        totalReviewsArray = new int[totalNumOfLines];
-	        zero = context.encrypt(0);
-	    }
-		
+			zero = context.encrypt(0);
+		}
+
 		public void map(LongWritable key, Text value, OutputCollector<FloatWritable, IntWritable> output,
 				Reporter reporter) throws IOException {
-
+			
 			int movieIndex, reviewIndex;
 			int totalReviews = 0;
 			float outValue = 0f;
@@ -102,6 +91,7 @@ public class HistogramMoviesA extends Configured implements Tool {
 			String line = new String();
 			String tok = new String();
 			String ratingStr = new String();
+
 			line = ((Text) value).toString();
 			movieIndex = line.indexOf(":");
 			EncryptedNumber sumRatings = zero, rating;
@@ -116,32 +106,23 @@ public class HistogramMoviesA extends Configured implements Tool {
 					sumRatings = context.add(rating, sumRatings);
 					totalReviews++;
 				}
-				sumRatingsArray[count] = Util.getAHString(sumRatings);
-				totalReviewsArray[count] = totalReviews;
-				count++;
-				if (count == totalNumOfLines) {
-					try {
-						Socket socket = new Socket(hostName, portNumber);
-						ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-						for (int i = 0; i < count; i++) {
-							out.writeObject(sumRatingsArray[i]);
-							out.writeInt(totalReviewsArray[i]);
-						}
-						out.flush();
-						ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-						for (int i = 0; i < count; i++) {
-							outValue = in.readFloat();
-							output.collect(new FloatWritable(outValue), one);
-							reporter.incrCounter(Counter.WORDS, 1);
-						}
-						socket.close();
-					} catch (UnknownHostException e) {
-						System.err.println("Don't know about host " + hostName);
-						System.exit(1);
-					} catch (IOException e) {
-						System.err.println("Couldn't get I/O for the connection to " + hostName);
-						System.exit(1);
-					}
+				try {
+					Socket socket = new Socket(hostName, portNumber);
+					ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+					out.writeObject(Util.getAHString(sumRatings));
+					out.writeInt(totalReviews);
+					out.flush();
+					ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+					outValue = in.readFloat();
+					output.collect(new FloatWritable(outValue), one);
+					reporter.incrCounter(Counter.WORDS, 1);
+					socket.close();
+				} catch (UnknownHostException e) {
+					System.err.println("Don't know about host " + hostName);
+					System.exit(1);
+				} catch (IOException e) {
+					System.err.println("Couldn't get I/O for the connection to " + hostName);
+					System.exit(1);
 				}
 			}
 		}
@@ -177,14 +158,12 @@ public class HistogramMoviesA extends Configured implements Tool {
 	 */
 
 	public int run(String[] args) throws Exception {
-		
-		JobConf conf = new JobConf(HistogramMoviesA.class);
+
+		JobConf conf = new JobConf(HistogramMoviesANS.class);
 		conf.set("pubKey", args[2]);
 		conf.set("hostnames", args[3]);
-		conf.set("totalNumOfLines", args[4]);
-		
+
 		conf.setJobName("histogram_movies");
-		conf.setInputFormat(NonSplittableTextInputFormat.class);
 		conf.setOutputKeyClass(FloatWritable.class);
 		conf.setOutputValueClass(IntWritable.class);
 
@@ -231,7 +210,7 @@ public class HistogramMoviesA extends Configured implements Tool {
 	}
 
 	public static void main(String[] args) throws Exception {
-		int ret = ToolRunner.run(new HistogramMoviesA(), args);
+		int ret = ToolRunner.run(new HistogramMoviesANS(), args);
 		System.exit(ret);
 	}
 }
