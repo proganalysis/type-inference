@@ -62,16 +62,18 @@ public class RDTransformer extends BodyTransformer {
 				}
 			}
 			// debug info; delete later
+			synchronized(this) {
 			for (Value key : defUseChains.keySet()) {
-				System.out.println("def: " + key);
+				System.out.println("def: " + key + "(" + methodName + ")");
 				for (Unit use : defUseChains.get(key)) {
-					System.out.println("use: " + use);
+					System.out.println("use(" + key + "(" + methodName + ")): " + use);
 					for (Object valueBox : use.getUseAndDefBoxes()) {
 						if (valueBox instanceof VariableBox || valueBox instanceof JimpleLocalBox)
 							System.out.println(valueBox);
 					}
 				}
 				System.out.println();
+			}
 			}
 			LoopNestTree loopNestTree = new LoopNestTree(body);
 			for (Loop loop : loopNestTree) {
