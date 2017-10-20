@@ -40,11 +40,11 @@ public class RDTransformer extends BodyTransformer {
 		// 4161 means the modifier is volatile which should be skipped
 		if (body.getMethod().getModifiers() == 4161)
 			return;
-		if (!methodName.equals("map") && !methodName.equals("reduce"))
+		if (!methodName.equals("map") && !methodName.equals("reduce") && !methodName.equals("getPartition"))
 			return;
 		Map<Value, Set<Unit>> defUseChains;
 		ArrayList<Integer> loops;
-		if (methodName.equals("reduce")) {
+		if (methodName.equals("reduce") || methodName.equals("getPartition")) {
 			setReduceKey(body.getParameterLocal(0));
 			setReduceValue(body.getParameterLocal(1));
 			setReduceClass(body.getMethod().getDeclaringClass().getName());

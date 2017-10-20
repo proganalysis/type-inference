@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import soot.BooleanType;
-import soot.IntType;
 import soot.PackManager;
 import soot.Transform;
 import soot.Unit;
@@ -22,6 +21,7 @@ import soot.jimple.EqExpr;
 import soot.jimple.IfStmt;
 import soot.jimple.NeExpr;
 import soot.jimple.NullConstant;
+import soot.jimple.internal.ImmediateBox;
 import soot.jimple.internal.JimpleLocalBox;
 import soot.jimple.internal.VariableBox;
 
@@ -76,6 +76,7 @@ public class RDanalysis {
 		detBucket.add("<java.util.Set: boolean add(java.lang.Object)>");
 		
 		opeBucket.add("<java.util.Collections: void sort(java.util.List)>");
+		opeBucket.add("<java.util.Arrays: void sort(java.lang.Object[])>");
 		
 		ignoreBucket.add("<java.util.List: int size()>");
 		ignoreBucket.add("<java.lang.String: int length()>");
@@ -133,7 +134,9 @@ public class RDanalysis {
 					}
 				if (shouldIgnore) continue;
 				for (Object valueBox : useUnit.getUseAndDefBoxes()) {
-					if (valueBox instanceof VariableBox || valueBox instanceof JimpleLocalBox) {
+					if (valueBox instanceof VariableBox || valueBox instanceof JimpleLocalBox
+							|| (useUnit.toString().contains("<java.util.List: java.lang.Object[] toArray(java.lang.Object[])>")
+									&& valueBox instanceof ImmediateBox)) {
 						Value value = ((ValueBox) valueBox).getValue();
 						if (value.getType() instanceof BooleanType) continue;
 						sensitiveValues.put(value, sensitiveValues.getOrDefault(value, new Reference(value)));
@@ -197,7 +200,7 @@ public class RDanalysis {
 						ref.addOperation("DET");
 				}
 				for (String opeUnitStr : opeBucket) {
-					if (useUnit.toString().contains(opeUnitStr) && defValue.getType() instanceof IntType) {
+					if (useUnit.toString().contains(opeUnitStr)) {
 						ref.addOperation("OPE");
 					}
 				}
