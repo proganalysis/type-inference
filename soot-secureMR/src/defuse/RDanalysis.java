@@ -17,8 +17,11 @@ import soot.Value;
 import soot.ValueBox;
 import soot.jimple.AssignStmt;
 import soot.jimple.BinopExpr;
+import soot.jimple.ConditionExpr;
+import soot.jimple.EqExpr;
 import soot.jimple.IfStmt;
 import soot.jimple.NeExpr;
+import soot.jimple.NullConstant;
 import soot.jimple.internal.JimpleLocalBox;
 import soot.jimple.internal.VariableBox;
 
@@ -32,8 +35,8 @@ public class RDanalysis {
 	private String detIgnore;
 	private RDTransformer transformer;
 	private Set<Value> convertedValues;
-	private ArrayList<Integer> loops;
-	private Set<Integer> conversions;
+	private ArrayList<Integer> mapLoops, reduceLoops;
+	private Set<Integer> mapConversions, reduceConversions;
 	
 	public RDanalysis(RDTransformer transformer) {
 		this.transformer = transformer;
@@ -43,8 +46,10 @@ public class RDanalysis {
 		defUseChains.putAll(mapDefUseChains);
 		defUseChains.putAll(reduceDefUseChains);
 		
-		loops = transformer.getLoops();
-		conversions = new HashSet<>();
+		mapLoops = transformer.getMapLoops();
+		reduceLoops = transformer.getReduceLoops();
+		mapConversions = new HashSet<>();
+		reduceConversions = new HashSet<>();
 		
 		sensitiveValues = new LinkedHashMap<>();
 		convertedValues = new HashSet<>();
@@ -66,6 +71,9 @@ public class RDanalysis {
 		
 		detBucket.add("<java.lang.String: boolean equals(java.lang.Object)>");
 		detBucket.add("<java.util.List: boolean contains(java.lang.Object)>");
+		detBucket.add("<java.util.Set: boolean contains(java.lang.Object)>");
+		detBucket.add("<java.util.HashSet: boolean add(java.lang.Object)>");
+		detBucket.add("<java.util.Set: boolean add(java.lang.Object)>");
 		
 		opeBucket.add("<java.util.Collections: void sort(java.util.List)>");
 		
@@ -75,7 +83,7 @@ public class RDanalysis {
 		ignoreBucket.add("<java.util.Map: java.lang.Object get(java.lang.Object)>");
 	}
 	
-	public void propagateMap(String[] mSources) {
+	private void propagateMap(String[] mSources) {
 		// propagate sensitivity; BFS; add children
 		mapSources = new Reference[mSources.length];
 		for (Value defValue : mapDefUseChains.keySet()) {
@@ -91,7 +99,7 @@ public class RDanalysis {
 		scanDefUseChains(mapDefUseChains);
 	}
 
-	public void propagateReduce(String[] rSources) {
+	private void propagateReduce(String[] rSources) {
 		// propagate sensitivity; BFS; add children
 		reduceSources = new Reference[rSources.length];
 		for (Value defValue : reduceDefUseChains.keySet()) {
@@ -140,58 +148,7 @@ public class RDanalysis {
 		}
 	}
 
-	public void linkKey() {
-		Value reduceKey = transformer.getReduceKey();
-		System.out.println("Reduce key: " + reduceKey);
-		for (Unit useUnit : reduceDefUseChains.get(reduceKey)) {
-			for (Object valueBox : useUnit.getUseAndDefBoxes()) {
-				Value value = ((ValueBox) valueBox).getValue();
-				if (sensitiveValues.containsKey(value)) {
-					for (Reference mapKey : getMapKeys()) {
-						mapKey.addChild(value);
-					}
-				}
-			}
-		}
-	}
-	
-	public Set<Reference> getMapKeys() {
-		Set<Reference> mapKeys = new HashSet<>();
-		for (Value defValue : sensitiveValues.keySet()) {
-			for (Unit useUnit : mapDefUseChains.getOrDefault(defValue, new HashSet<>())) {
-				for (String keyUnitStr : keyBucket) {
-					if (useUnit.toString().contains(keyUnitStr)) {
-						String useUnitStr = useUnit.toString();
-						int indexBegin = useUnitStr.lastIndexOf('(') + 1;
-						int indexEnd = useUnitStr.lastIndexOf(',');
-						if (useUnitStr.substring(indexBegin, indexEnd).equals(defValue.toString())) {
-							Reference ref = sensitiveValues.get(defValue);
-							mapKeys.add(ref);
-						}
-					}
-				}
-			}
-		}
-		System.out.println("Map keys: " + mapKeys);
-		return mapKeys;
-	}
-	
-	public void linkValue() {
-		Value reduceValue = transformer.getReduceValue();
-		System.out.println("Reduce value: " + reduceValue);
-		for (Unit useUnit : reduceDefUseChains.get(reduceValue)) {
-			for (Object valueBox : useUnit.getUseAndDefBoxes()) {
-				Value value = ((ValueBox) valueBox).getValue();
-				if (sensitiveValues.containsKey(value)) {
-					for (Reference mapValue : getMapValues()) {
-						mapValue.addChild(value);
-					}
-				}
-			}
-		}
-	}
-	
-	public Set<Reference> getMapValues() {
+	private Set<Reference> getMapValues() {
 		Set<Reference> mapValues = new HashSet<>();
 		for (Value defValue : sensitiveValues.keySet()) {
 			for (Unit useUnit : mapDefUseChains.getOrDefault(defValue, new HashSet<>())) {
@@ -208,15 +165,15 @@ public class RDanalysis {
 				}
 			}
 		}
-		System.out.println("Map values: " + mapValues);
 		return mapValues;
 	}
 	
-	public void addOperations() {
+	private void addOperations() {
 		// Add operations and check conversions
 		for (Value defValue : defUseChains.keySet()) {
 			Reference ref = sensitiveValues.get(defValue);
 			if (ref == null) continue;
+			Set<Integer> conversions = ref.isInMap() ? mapConversions : reduceConversions;
 			for (Unit useUnit : defUseChains.get(defValue)) {
 				for (String detUnitStr : detBucket) {
 					if (useUnit.toString().contains(detUnitStr))
@@ -246,7 +203,7 @@ public class RDanalysis {
 				}
 				for (String opeUnitStr : mathBucket) {
 					if (useUnit.toString().contains(opeUnitStr)) {
-						System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
+						//System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
 						conversions.add(useUnit.getJavaSourceStartLineNumber());
 						convertedValues.add(defValue);
 						ref.clearOperations();
@@ -255,9 +212,15 @@ public class RDanalysis {
 				}
 				if (useUnit instanceof IfStmt) {
 					Value condition = ((IfStmt) useUnit).getCondition();
-					if (condition instanceof NeExpr) {
-						if (((NeExpr) condition).getOp1() == defValue || ((NeExpr) condition).getOp2() == defValue) {
-							ref.addOperation("DET");
+					if (condition instanceof ConditionExpr) {
+						ConditionExpr conditionExpr = (ConditionExpr) condition;
+						if ((conditionExpr.getOp1() == defValue && !(conditionExpr.getOp2() instanceof NullConstant))
+								|| (conditionExpr.getOp2() == defValue && !(conditionExpr.getOp1() instanceof NullConstant))) {
+							if (condition instanceof NeExpr || condition instanceof EqExpr) {
+								ref.addOperation("DET");
+							} else {
+								ref.addOperation("OPE");
+							}
 						}
 					}
 				} else if (useUnit instanceof AssignStmt) {
@@ -270,7 +233,6 @@ public class RDanalysis {
 							case " + ":
 							case " - ":
 								if (ref.contains("MH")) {
-									System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
 									conversions.add(useUnit.getJavaSourceStartLineNumber());
 									convertedValues.add(defValue);
 									ref.removeOperation("MH");
@@ -282,7 +244,6 @@ public class RDanalysis {
 							case " * ":
 								if (sensitiveValues.containsKey(op1) && sensitiveValues.containsKey(op2)) {
 									if (ref.contains("AH")) {
-										System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
 										conversions.add(useUnit.getJavaSourceStartLineNumber());
 										convertedValues.add(defValue);
 										ref.removeOperation("AH");
@@ -292,7 +253,6 @@ public class RDanalysis {
 									addOperations(ref, "MH");
 								} else {
 									if (ref.contains("MH")) {
-										System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
 										conversions.add(useUnit.getJavaSourceStartLineNumber());
 										convertedValues.add(defValue);
 										ref.removeOperation("MH");
@@ -304,14 +264,12 @@ public class RDanalysis {
 								break;
 							case " / ":
 								if (sensitiveValues.containsKey(op1) && sensitiveValues.containsKey(op2)) {
-									System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
 									conversions.add(useUnit.getJavaSourceStartLineNumber());
 									convertedValues.add(defValue);
 									ref.clearOperations();
 									clearOperations(ref);
 								} else {
 									if (ref.contains("MH")) {
-										System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
 										conversions.add(useUnit.getJavaSourceStartLineNumber());
 										convertedValues.add(defValue);
 										ref.removeOperation("MH");
@@ -323,8 +281,8 @@ public class RDanalysis {
 								break;
 							case " cmpl ":
 							case " cmpg ":
+							case " >= ":
 								if (ref.contains("MH")) {
-									System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
 									conversions.add(useUnit.getJavaSourceStartLineNumber());
 									convertedValues.add(defValue);
 									ref.addOperation("OPE");
@@ -332,7 +290,6 @@ public class RDanalysis {
 									removeOperations(ref, "MH");
 								}
 								if (ref.contains("AH")) {
-									System.out.println("Conversion: " + useUnit.getJavaSourceStartLineNumber() + "-" + useUnit);
 									conversions.add(useUnit.getJavaSourceStartLineNumber());
 									convertedValues.add(defValue);
 									ref.addOperation("OPE");
@@ -353,14 +310,14 @@ public class RDanalysis {
 		}
 	}
 	
-	public void addOperations(Reference ref, String ope) {
+	private void addOperations(Reference ref, String ope) {
 		for (Value child : ref.getChildren()) {
 			if (sensitiveValues.get(child).addOperation(ope))
 				addOperations(sensitiveValues.get(child), ope);
 		}
 	}
 	
-	public void removeOperations(Reference ref, String ope) {
+	private void removeOperations(Reference ref, String ope) {
 		for (Value child : ref.getChildren()) {
 			if (sensitiveValues.get(child).contains(ope)) {
 				sensitiveValues.get(child).removeOperation(ope);
@@ -369,7 +326,7 @@ public class RDanalysis {
 		}
 	}
 	
-	public void propagateOperations() {
+	private void propagateOperations() {
 		// propagate operations bottom up
 		boolean changed = true;
 		while (changed) {
@@ -395,7 +352,7 @@ public class RDanalysis {
 		return mapSources;
 	}
 	
-	private String findRegion() {
+	private String findRegion(Set<Integer> conversions, ArrayList<Integer> loops, String className) {
 		int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
 		for (int conversion : conversions) {
 			boolean inLoop = false;
@@ -413,21 +370,23 @@ public class RDanalysis {
 				max = Math.max(max, conversion);
 			}
 		}
-		return min == Integer.MAX_VALUE ? null : (min + "-" + max);
+		return min == Integer.MAX_VALUE ? null : (min + "-" + max + " in " + className);
 	}
 
-	public void analyze(String[] mSources, String[] rSources) {
+	public String analyze(String[] mSources, String[] rSources) {
 		propagateMap(mSources);
 		if (rSources.length == 0) { // no direct input; link values
 			Value reduceValue = transformer.getReduceValue();
-			Set<Reference> mapValues = getMapValues();
-			// add all uses of reduce value to the use set of map value
-			for (Reference mapValue : mapValues) {
-				mapDefUseChains.get(mapValue.getValue()).addAll(reduceDefUseChains.get(reduceValue));
+			if (reduceValue != null) {
+				Set<Reference> mapValues = getMapValues();
+				// add all uses of reduce value to the use set of map value
+				for (Reference mapValue : mapValues) {
+					mapDefUseChains.get(mapValue.getValue()).addAll(reduceDefUseChains.get(reduceValue));
+				}
+				// propagate sensitivity
+				this.scanDefUseChains(defUseChains);
+				// all variables become map variables; leave it for now
 			}
-			// propagate sensitivity
-			this.scanDefUseChains(defUseChains);
-			// all variables become map variables; leave it for now
 		} else {
 			propagateReduce(rSources);
 			// link values
@@ -438,9 +397,19 @@ public class RDanalysis {
 		}
 		this.addOperations();
 		this.propagateOperations();
-		String region = findRegion();
-		if (region != null)
-			System.out.println("Region should be extracted: " + region);
+		Set<Integer> conversions;
+		ArrayList<Integer> loops;
+		String className;
+		if (!mapConversions.isEmpty()) {
+			conversions = mapConversions;
+			loops = mapLoops;
+			className = transformer.getMapClass();
+		} else {
+			conversions = reduceConversions;
+			loops = reduceLoops;
+			className = transformer.getReduceClass();
+		}
+		return findRegion(conversions, loops, className);
 	}
 
 	public static void main(String[] args) {
@@ -464,13 +433,8 @@ public class RDanalysis {
 		
 		String[] mSources = mapSources.split(":");
 		String[] rSources = reduceSources.equals("") ? new String[0] : reduceSources.split(":");
-		System.out.println("mSources length: " + mSources.length);
-		System.out.println("rSources length: " + rSources.length);
 		RDanalysis analysis = new RDanalysis(transformer);
-		analysis.analyze(mSources, rSources);
-		for (Value defValue : analysis.getSensitiveValues().keySet()) {
-			System.out.println(analysis.getSensitiveValues().get(defValue));
-		}
+		String region = analysis.analyze(mSources, rSources);
 		System.out.println();
 		for (Reference source : analysis.getSources()) {
 			Set<String> operations = source.getOperations();
@@ -479,6 +443,8 @@ public class RDanalysis {
 			else 
 				System.out.println(source.getValue() + ": " + operations);
 		}
+		if (region != null)
+			System.out.println("Region should be extracted: " + region);
 	}
 
 }

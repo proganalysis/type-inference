@@ -11,8 +11,6 @@ import soot.BodyTransformer;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.Stmt;
-import soot.jimple.internal.JimpleLocalBox;
-import soot.jimple.internal.VariableBox;
 import soot.jimple.toolkits.annotation.logic.Loop;
 import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.LoopNestTree;
@@ -26,70 +24,62 @@ public class RDTransformer extends BodyTransformer {
 
 	private Map<Value, Set<Unit>> mapDefUseChains, reduceDefUseChains;
 	private Value reduceKey, reduceValue;
-	private ArrayList<Integer> loops;
+	private ArrayList<Integer> mapLoops, reduceLoops;
+	private String mapClass, reduceClass;
 
 	public RDTransformer() {
 		setMapDefUseChains(new LinkedHashMap<>());
 		setReduceDefUseChains(new LinkedHashMap<>());
-		setLoops(new ArrayList<>());
+		setMapLoops(new ArrayList<>());
+		setReduceLoops(new ArrayList<>());
 	}
 
 	@Override
-	protected void internalTransform(Body body, String arg1, @SuppressWarnings("rawtypes") Map arg2) {
+	protected synchronized void internalTransform(Body body, String arg1, @SuppressWarnings("rawtypes") Map arg2) {
 		String methodName = body.getMethod().getName();
 		// 4161 means the modifier is volatile which should be skipped
 		if (body.getMethod().getModifiers() == 4161)
 			return;
+		if (!methodName.equals("map") && !methodName.equals("reduce"))
+			return;
+		Map<Value, Set<Unit>> defUseChains;
+		ArrayList<Integer> loops;
 		if (methodName.equals("reduce")) {
 			setReduceKey(body.getParameterLocal(0));
 			setReduceValue(body.getParameterLocal(1));
-			//System.out.println("Reduce Key: " + body.getParameterLocal(0));
-			//System.out.println("Reduce Value: " + body.getParameterLocal(1));
+			setReduceClass(body.getMethod().getDeclaringClass().getName());
+			defUseChains = reduceDefUseChains;
+			loops = reduceLoops;
+		} else {
+			setMapClass(body.getMethod().getDeclaringClass().getName());
+			defUseChains = mapDefUseChains;
+			loops = mapLoops;
 		}
-		if (methodName.equals("map") || methodName.equals("reduce")) {
-			UnitGraph cfg = new BriefUnitGraph(body);
-			SimpleLocalDefs defs = new SimpleLocalDefs(cfg);
-			LocalUses uses = new SimpleLocalUses(body, defs);
-			
-			Map<Value, Set<Unit>> defUseChains = methodName.equals("map") ? mapDefUseChains : reduceDefUseChains;
-			for (Unit unit : body.getUnits()) {
-				for (Object unitValue : uses.getUsesOf(unit)) {
-					UnitValueBoxPair usePair = (UnitValueBoxPair) unitValue;
-					Value defValue = usePair.getValueBox().getValue();
-					Set<Unit> useSet = defUseChains.getOrDefault(defValue, new LinkedHashSet<>());
-					useSet.add(usePair.getUnit());
-					defUseChains.put(defValue, useSet);
-				}
+		UnitGraph cfg = new BriefUnitGraph(body);
+		SimpleLocalDefs defs = new SimpleLocalDefs(cfg);
+		LocalUses uses = new SimpleLocalUses(body, defs);
+
+		for (Unit unit : body.getUnits()) {
+			for (Object unitValue : uses.getUsesOf(unit)) {
+				UnitValueBoxPair usePair = (UnitValueBoxPair) unitValue;
+				Value defValue = usePair.getValueBox().getValue();
+				Set<Unit> useSet = defUseChains.getOrDefault(defValue, new LinkedHashSet<>());
+				useSet.add(usePair.getUnit());
+				defUseChains.put(defValue, useSet);
 			}
-			// debug info; delete later
-			synchronized(this) {
-			for (Value key : defUseChains.keySet()) {
-				System.out.println("def: " + key + "(" + methodName + ")");
-				for (Unit use : defUseChains.get(key)) {
-					System.out.println("use(" + key + "(" + methodName + ")): " + use);
-					for (Object valueBox : use.getUseAndDefBoxes()) {
-						if (valueBox instanceof VariableBox || valueBox instanceof JimpleLocalBox)
-							System.out.println(valueBox);
+		}
+		LoopNestTree loopNestTree = new LoopNestTree(body);
+		for (Loop loop : loopNestTree) {
+			int start = loop.getHead().getJavaSourceStartLineNumber();
+			for (Stmt exit : loop.getLoopExits()) {
+				for (Stmt target : loop.targetsOfLoopExit(exit)) {
+					int end = target.getJavaSourceStartLineNumber();
+					if (end > start) {
+						loops.add(start);
+						loops.add(end);
 					}
 				}
-				System.out.println();
 			}
-			}
-			LoopNestTree loopNestTree = new LoopNestTree(body);
-			for (Loop loop : loopNestTree) {
-				int start = loop.getHead().getJavaSourceStartLineNumber();
-	            System.out.print("Found a loop: " + start + "-");
-	            for (Stmt exit : loop.getLoopExits()) {
-	            	for (Stmt target : loop.targetsOfLoopExit(exit)) {
-	            		int end = target.getJavaSourceStartLineNumber();
-	            		System.out.println("target line: " + end);
-	            		if (end > start) {
-	            			loops.add(start);
-	            			loops.add(end);
-	            		}
-	            	}
-	            }
-	        }
 		}
 	}
 
@@ -125,12 +115,36 @@ public class RDTransformer extends BodyTransformer {
 		this.reduceValue = reduceValue;
 	}
 
-	public ArrayList<Integer> getLoops() {
-		return loops;
+	public ArrayList<Integer> getMapLoops() {
+		return mapLoops;
 	}
 
-	public void setLoops(ArrayList<Integer> loops) {
-		this.loops = loops;
+	public void setMapLoops(ArrayList<Integer> loops) {
+		this.mapLoops = loops;
+	}
+
+	public ArrayList<Integer> getReduceLoops() {
+		return reduceLoops;
+	}
+
+	public void setReduceLoops(ArrayList<Integer> reduceLoops) {
+		this.reduceLoops = reduceLoops;
+	}
+
+	public String getMapClass() {
+		return mapClass;
+	}
+
+	public void setMapClass(String mapClass) {
+		this.mapClass = mapClass;
+	}
+
+	public String getReduceClass() {
+		return reduceClass;
+	}
+
+	public void setReduceClass(String reduceClass) {
+		this.reduceClass = reduceClass;
 	}
 	
 }
