@@ -1,6 +1,8 @@
 package histogramMovies;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,8 +23,14 @@ public class ServerNS {
 			@SuppressWarnings("resource")
 			ServerSocket serverSocket = new ServerSocket(portNumber);
 		    AHDecryptor ah = new AHDecryptor(args[0]);
+		    @SuppressWarnings("resource")
+			PrintWriter writer = new PrintWriter("log.txt", "UTF-8");
 			while (true) {
-				Runnable worker = new ServerThreadNS(serverSocket.accept(), ah);
+				Socket workerSocket = serverSocket.accept();
+				//System.out.println(workerSocket.getRemoteSocketAddress().toString());
+				writer.println(workerSocket.getRemoteSocketAddress().toString());
+				writer.flush();
+				Runnable worker = new ServerThreadNS(workerSocket, ah);
 	            executor.execute(worker);
 			}
 		} catch (IOException e) {
