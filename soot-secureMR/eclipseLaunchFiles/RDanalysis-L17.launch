@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/soot-secureMR/src/defuse/RDanalysis.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="defuse.RDanalysis"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-cp pigmix2.jar L17$ReadPageViews L17$Group -mapSources $r1:$r6:$r11:$r16:$r21:$r26:$r31:$r36:$r41:$r46:$r51:$r56:$r61:$r66:$r71:$r76:$r81:$r86:$r91:$r96:$r101 -reduceSources 0:1:$r2:3:4:5:$r14:9:10:$r6:12:13:14:$r18:18:19:$r10:21:22:23:$r22"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="soot-secureMR"/>
+</launchConfiguration>
