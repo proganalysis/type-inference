@@ -162,9 +162,12 @@ public class ReimTransformer extends InferenceTransformer {
     @Override
     protected void annotateField(AnnotatedValue v, SootField field) {
         if (!isAnnotated(v)) {
-            if (field.getName().equals("this$0")) {
+            // TODO: ANA: commented out this$0, handled normally
+        		/* if (field.getName().equals("this$0")) {
                 v.setAnnotations(sourceAnnos, this);
-            } else if (isDefaultReadonlyType(v.getType())) {
+            } else 
+            */
+            if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
             } else if (!field.isStatic()) {
                 v.addAnnotation(READONLY);
@@ -204,7 +207,7 @@ public class ReimTransformer extends InferenceTransformer {
             if (isDefaultReadonlyType(v.getType())) {
                 v.addAnnotation(READONLY);
             // replaced code below with new code. 
-            // TODO: Doublecheck paper. If I remember correctly, we annotate return with {READONLY,POLYREAD}
+            // TODO: Double check paper. If I remember correctly, we annotate return with {READONLY,POLYREAD}
             /*    
             } else if (isLibraryMethod(method)) {
                 v.addAnnotation(READONLY);
@@ -213,6 +216,7 @@ public class ReimTransformer extends InferenceTransformer {
                 v.setAnnotations(sourceAnnos, this);
             */ 
             } else {
+            		// if (!method.isPublic()) // ANA: Added this for library analysis. Remove for whole program.
             		v.addAnnotation(READONLY);
             		v.addAnnotation(POLYREAD);
             }

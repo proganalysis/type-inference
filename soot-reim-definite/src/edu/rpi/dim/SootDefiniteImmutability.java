@@ -12,6 +12,7 @@ import java.io.PrintStream;
 import java.io.File;
 
 import soot.PackManager;
+import soot.PrimType;
 import soot.Scene;
 import soot.SourceLocator;
 import soot.SootClass;
@@ -102,7 +103,30 @@ public class SootDefiniteImmutability {
 	}
 	*/
 	
-	private static void printTypeInfo(HashMap<String,AnnotatedValue> vm) {
+	private static boolean isLibraryVar(AnnotatedValue av) {
+			
+		if (av.getEnclosingClass().isJavaLibraryClass()) 
+			return true;
+		else 
+			return false;
+				
+	}
+	
+	private static boolean ignorePrefix(String s) {
+		if (s.startsWith("fake-") || s.startsWith("lib-"))
+			return true;
+		else 
+			return false;
+	}
+	
+	private static boolean isPrimitiveType(AnnotatedValue av) {
+		if (av.getType() instanceof PrimType) 
+			return true;
+		else
+			return false;
+	}
+	
+	private static void printTypeInfo(HashMap<String,AnnotatedValue> vm, boolean verbose) {
 		//	System.out.println("INFO: ");
 		int readonly = 0;
 		int polyread = 0;
@@ -111,31 +135,36 @@ public class SootDefiniteImmutability {
 		int polyOrMaybe = 0;
 		for (String v : vm.keySet()) {
 			AnnotatedValue av = vm.get(v);
+			if (isLibraryVar(av) || ignorePrefix(v) || isPrimitiveType(av)) continue;
 			if (av.containsAnno(AnnotationUtils.fromClass(Readonly.class))){
 				readonly++;
-				System.out.println(v + " is readonly");
+				if (verbose) System.out.println(v + " is readonly");
 			}
 			else if (av.containsAnno(AnnotationUtils.fromClass(MaybeMutable.class))) {
 				maybe++;
-				System.out.println(v + " is maybemutable");
+				if (verbose) System.out.println(v + " is maybemutable");
 			}
 			else if (av.containsAnno(AnnotationUtils.fromClass(Polyread.class))) {
 				polyread++;
-				System.out.println(v + " is polyread");
+				if (verbose) System.out.println(v + " is polyread");
 			}
 			else if (av.containsAnno(AnnotationUtils.fromClass(PolyOrMaybe.class))) {
 				polyOrMaybe++;
-				System.out.println(v + " is polyOrMaybe");
+				if (verbose) System.out.println(v + " is polyOrMaybe");
 			}
 			else {
 				mutable++;
-				System.out.println(v + " is mutable");
+				if (verbose) System.out.println(v + " is mutable");
 			}
 		}
 		System.out.println("INFO: Annotated value size: " + vm.size());
 		System.out.println("INFO: "+readonly+" READONLY, "+polyread+" POLYREAD, "+mutable+" MUTABLE.");
+		System.out.println("INFO: readonly/all: "+ ((float) readonly)/(readonly+mutable+maybe+polyOrMaybe+polyread));
+		System.out.println("INFO: mutable/all: "+ ((float) mutable)/(readonly+mutable+maybe+polyOrMaybe+polyread));
 		System.out.println("INFO: "+maybe+" MAYBEMUTABLE.");
 		System.out.println("INFO: "+polyOrMaybe+" POLYORMAYBE. ");
+		
+		System.out.println("INFO: DEF_MUT/ALL_MUT: "+((float) mutable)/(maybe+polyOrMaybe+mutable));
 	}
 	
 	public static void main(String[] args) {
@@ -163,20 +192,22 @@ public class SootDefiniteImmutability {
         try {
             PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-constraints.log");
             for (Constraint c : reimTransformer.getConstraints()) {
-                reimOut.println(c);
+                reimOut.println(c); 
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-                        
-                
-        printTypeInfo(AnnotatedValueMap.v());
+                                        
+        printTypeInfo(AnnotatedValueMap.v(), true);
 
-        for (Constraint c : errors)
-            System.out.println(c);
+        for (Constraint c : errors) {
+            System.out.println(c); // TODO: figure this out, why are there any errors... I think it's handling of inner classes.
+        }
         
         System.out.println("INFO: Finish solving Reim constraints. " + errors.size() + " error(s)");
 
+        // printTypeInfo(AnnotatedValueMap.v(), true);
+        
         try {
             PrintStream reimOut = new PrintStream(outputDir + File.separator + "reim-result.jaif");
             reimTransformer.printJaif(reimOut);

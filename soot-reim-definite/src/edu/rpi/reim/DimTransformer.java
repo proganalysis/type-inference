@@ -53,5 +53,9 @@ public class DimTransformer extends ReimTransformer {
         
     }
 	
+	@Override
+    public String getName() {
+        return "dim";
+    }
 	
 }
