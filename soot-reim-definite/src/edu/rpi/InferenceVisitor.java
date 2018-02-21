@@ -144,37 +144,52 @@ public class InferenceVisitor extends AbstractStmtSwitch {
 
         @Override
         public void caseStaticFieldRef(StaticFieldRef v) {
-            SootField field = v.getField();
-            AnnotatedValue aField = t.getAnnotatedField(field);
-            if (sub != null && sup == null) 
-                t.handleStaticFieldWrite(aField, sub);
-            else if (sub == null && sup != null)
-                t.handleStaticFieldRead(aField, sup);
+        		try {
+        			SootField field = v.getField();
+        			AnnotatedValue aField = t.getAnnotatedField(field);
+        			if (sub != null && sup == null) 
+        				t.handleStaticFieldWrite(aField, sub);
+        			else if (sub == null && sup != null)
+        				t.handleStaticFieldRead(aField, sup);
+        		}
+        		catch (RuntimeException e) {
+        			// TODO: Make exception type more precise
+        			System.out.println("Cannot resolve field for StaticFieldRef "+v);
+        		}
         }
 
         @Override
         public void caseInstanceFieldRef(InstanceFieldRef v) {
-            Value base = v.getBase();
-            assert base instanceof Local;
-            AnnotatedValue aBase = t.getAnnotatedValue((Local) base);
-            SootField field = v.getField();
-            if (field == null) {
-                System.out.println("WARN: " + base.getType() + " doesn't have field, at"
-                        + "\n\t" + t.getVisitorState().getUnit());
-                return;
-            }
-            AnnotatedValue aField = t.getAnnotatedField(field);
+        		try {
+        			Value base = v.getBase();
+        			assert base instanceof Local;
+        			AnnotatedValue aBase = t.getAnnotatedValue((Local) base);
+        			SootField field = v.getField();
+        			if (field == null) {
+        				System.out.println("WARN: " + base.getType() + " doesn't have field, at"
+        						+ "\n\t" + t.getVisitorState().getUnit());
+        				return;
+        			}
+        			AnnotatedValue aField = t.getAnnotatedField(field);
 
-            if (field.getName().equals("this$0")) {
-                // this is inner class, no adaptation
-                add(aField);
-            }
-            else if (sub != null && sup == null) 
-                t.handleInstanceFieldWrite(aBase, aField, sub);
-            else if (sub == null && sup != null)
-                t.handleInstanceFieldRead(aBase, aField, sup);
-            else
-                throw new RuntimeException("what happened?");
+        			// TODO: Double check. ANA: removed code so we can do adaptation
+        			// if (field.getName().equals("this$0")) {
+        			//	// this is inner class, no adaptation
+        			//	add(aField);
+        			// }
+        			// else 
+        			if (sub != null && sup == null) 
+        				t.handleInstanceFieldWrite(aBase, aField, sub);
+        			else if (sub == null && sup != null)
+        				t.handleInstanceFieldRead(aBase, aField, sup);
+        			else
+        				throw new RuntimeException("what happened?");
+        		}
+        		catch (RuntimeException e) {
+        			// TODO: Make exception type more precise!
+        			System.out.println("Cannot find field referenced in InstanceFieldRef "+v);
+        			// System.exit(1);
+        		}
         }
 
         @Override
@@ -337,23 +352,29 @@ public class InferenceVisitor extends AbstractStmtSwitch {
         }
 
         private void handleMethodCall(InvokeExpr v) {
-            if (v.getMethod() == null) {
-                System.out.println("WARN: Cannot find method at "
-                        + "\n\t" + t.getVisitorState().getUnit());
-                return;
-            }
-            // Skip accesses from inner classes, e.g. access$0
-            if (v.getMethod().isStatic() 
-                    && v.getMethod().getName().startsWith("access$")) {
-                handleInnerAccessCall((StaticInvokeExpr) v, sup);
-                return;
-            }
-            // Skip Object.<init>
-            SootMethod sm = v.getMethod();
-            if (sm.getName().equals("<init>") 
-                    && sm.getDeclaringClass().getName().equals("java.lang.Object"))
-                return;
-            t.handleMethodCall(v, sup);
+        		try {
+        			if (v.getMethod() == null) {
+        				System.out.println("WARN: Cannot find method at "
+        						+ "\n\t" + t.getVisitorState().getUnit());
+        				return;
+        			}
+        			// Skip accesses from inner classes, e.g. access$0
+        			// TODO: Double check. ANA: commented out handleInnerAccessCall, must be handled normally 
+        			// if (v.getMethod().isStatic() 
+        			//		&& v.getMethod().getName().startsWith("access$")) {
+        			//	handleInnerAccessCall((StaticInvokeExpr) v, sup);
+        			//	return;
+        			// }
+        			// Skip Object.<init>
+        			SootMethod sm = v.getMethod();
+        			if (sm.getName().equals("<init>") 
+        					&& sm.getDeclaringClass().getName().equals("java.lang.Object"))
+        				return;
+        			t.handleMethodCall(v, sup);
+        		} catch (RuntimeException e) {
+        			System.out.println("Cannot find method in invokeExpr "+v);
+        			// System.exit(1);
+        		}
         }
 
         private void add(AnnotatedValue av) {

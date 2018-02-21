@@ -89,9 +89,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
 
     public abstract String getName();
 
+    /*
     // Author: Lindsey
     // Threadfix variables
-
+    
     private HashMap <Integer, String> threadFixClassConnector = null;
 
     private HashMap <String, InvokeExpr> threadFixRunnables = null;
@@ -111,7 +112,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     private String RUN_METHOD = "run";
 
     private String EXECUTE_METHOD = "execute";
-    // end Lindsey
+    // end Lindsey    
+    */
 
     protected AnnotatedValue getFieldAdaptValue(AnnotatedValue context,
                                                 AnnotatedValue decl, AnnotatedValue assignTo) {
@@ -158,10 +160,10 @@ public abstract class InferenceTransformer extends BodyTransformer {
                 ret.setEnclosingMethod(visitorState.getSootMethod());
                 if (v != null) {
                     localMap.put(identifier, ret);
-                    // Ana: adding following line. 
+                    // ANA: adding following line. Comment out line if you want locals excluded from stats
                     // Adds locals to annotatedValueMap. 
                     // Wei stores only params/rets into AnnotatedValueMap
-                    annotatedValues.put(identifier,ret);
+                    // annotatedValues.put(identifier,ret);
                 }
             }
         } else {
@@ -627,6 +629,8 @@ public abstract class InferenceTransformer extends BodyTransformer {
     private boolean isAnon(Type t) {
         return t.toString().contains("$");
     }
+    
+    /*
     protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
         SootMethod enclosingMethod = getVisitorState().getSootMethod();
         SootMethod invokeMethod = v.getMethod();
@@ -742,7 +746,43 @@ public abstract class InferenceTransformer extends BodyTransformer {
             addSubtypeConstraint(getMethodAdaptValue(aBase, aReturn, assignTo), assignTo);
         }
     }
-
+	*/
+    
+    protected void handleMethodCall(InvokeExpr v, AnnotatedValue assignTo) {
+    		try {
+    			SootMethod enclosingMethod = getVisitorState().getSootMethod();
+    			SootMethod invokeMethod = v.getMethod();
+    			AnnotatedValue aBase = null;
+    			if (v instanceof InstanceInvokeExpr) {
+    				// receiver
+    				InstanceInvokeExpr iv = (InstanceInvokeExpr) v;
+    				Value base = iv.getBase();
+    				aBase = getAnnotatedValue(base);
+    				AnnotatedValue aThis = getAnnotatedThis(invokeMethod);
+    				addSubtypeConstraint(aBase, getMethodAdaptValue(aBase, aThis, assignTo));
+    			}
+    			// parameters
+    			List<Value> args = v.getArgs();
+    			for (int i = 0; i < v.getArgCount(); i++) {
+    				Value arg = args.get(i);
+    				assert arg instanceof Local;
+    				AnnotatedValue aArg = getAnnotatedValue(arg);
+    				AnnotatedValue aParam = getAnnotatedParameter(invokeMethod, i);
+    				addSubtypeConstraint(aArg, getMethodAdaptValue(aBase, aParam, assignTo));
+    			}
+    			// return
+    			if (invokeMethod.getReturnType() != VoidType.v()) {
+    				if (assignTo == null)
+    					throw new RuntimeException("Null assignTo");
+    				AnnotatedValue aReturn = getAnnotatedReturn(invokeMethod);
+    				addSubtypeConstraint(getMethodAdaptValue(aBase, aReturn, assignTo), assignTo);
+    			}
+    		} catch (RuntimeException e) {
+    			// TODO: Make Exception more precise!
+    			System.out.println("Cannot resolve getMethod for InstanceInvokeExpr "+v);
+    		}
+    }
+    
 
     @Override
     protected void internalTransform(final Body b, String phaseName,
