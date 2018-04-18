@@ -1,0 +1,440 @@
+package checkers.javari.quals:
+annotation @ReadOnly: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @PolyRead: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @Mutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @ThisMutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+class BlueReturn:
+
+    field vert:
+        type: @checkers.javari.quals.ThisMutable
+
+    field dist:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method vert()LVertex;:
+        return: @checkers.javari.quals.PolyRead
+        receiver: @checkers.javari.quals.PolyRead
+        local 0 #0+5:
+            type: @checkers.javari.quals.PolyRead
+
+    method setVert(LVertex;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+6:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+6:
+            type: @checkers.javari.quals.Mutable
+
+    method dist()I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method setDist(I)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        local 0 #0+6:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+6:
+
+package :
+class Graph:
+
+    field nodes:
+        type: @checkers.javari.quals.ThisMutable
+            inner-type 0: @checkers.javari.quals.ThisMutable
+
+    field CONST_m1:
+
+    field CONST_b:
+
+    field RANGE:
+
+    method <init>(I)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+55:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+55:
+        local 2 #14+41:
+            type: @checkers.javari.quals.Mutable
+        local 3 #18+31:
+        local 4 #40+3:
+            type: @checkers.javari.quals.Mutable
+
+    method createGraph(I)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        local 0 #0+51:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+51:
+        local 2 #10+41:
+            type: @checkers.javari.quals.Mutable
+        local 3 #14+31:
+        local 4 #36+3:
+            type: @checkers.javari.quals.Mutable
+
+    method firstNode()LVertex;:
+        return: @checkers.javari.quals.PolyRead
+        receiver: @checkers.javari.quals.PolyRead
+        local 0 #0+7:
+            type: @checkers.javari.quals.PolyRead
+
+    method addEdges(I)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        local 0 #0+83:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+83:
+        local 2 #2+81:
+        local 3 #9+73:
+            type: @checkers.javari.quals.Mutable
+        local 4 #19+55:
+            type: @checkers.javari.quals.Mutable
+        local 5 #22+49:
+        local 6 #44+21:
+
+    method computeDist(III)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        local 0 #0+37:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+37:
+        local 2 #0+37:
+        local 3 #0+37:
+        local 4 #8+6:
+        local 5 #11+3:
+        local 4 #17+20:
+        local 5 #20+17:
+
+    method mult(II)I:
+        return:
+        parameter #0:
+        parameter #1:
+        local 0 #0+49:
+        local 1 #0+49:
+        local 2 #6+43:
+        local 3 #12+37:
+        local 4 #19+30:
+        local 5 #26+23:
+
+    method random(I)I:
+        return:
+        parameter #0:
+        local 0 #0+9:
+
+package :
+class HashEntry:
+
+    field key:
+        type: @checkers.javari.quals.ReadOnly
+
+    field entry:
+        type: @checkers.javari.quals.ReadOnly
+
+    field next:
+        type: @checkers.javari.quals.ThisMutable
+
+    method <init>(Ljava/lang/Object;Ljava/lang/Object;LHashEntry;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #2:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+20:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+20:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+20:
+            type: @checkers.javari.quals.ReadOnly
+        local 3 #0+20:
+            type: @checkers.javari.quals.Mutable
+
+    method key()Ljava/lang/Object;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method entry()Ljava/lang/Object;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method next()LHashEntry;:
+        return: @checkers.javari.quals.PolyRead
+        receiver: @checkers.javari.quals.PolyRead
+        local 0 #0+5:
+            type: @checkers.javari.quals.PolyRead
+
+    method setNext(LHashEntry;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+6:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+6:
+            type: @checkers.javari.quals.Mutable
+
+package :
+class Hashtable:
+
+    field array:
+        type: @checkers.javari.quals.ThisMutable
+            inner-type 0: @checkers.javari.quals.ThisMutable
+
+    field size:
+
+    method <init>(I)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+21:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+21:
+
+    method hashMap(Ljava/lang/Object;)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+12:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+12:
+            type: @checkers.javari.quals.ReadOnly
+
+    method get(Ljava/lang/Object;)Ljava/lang/Object;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+46:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+46:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #6+40:
+        local 3 #8+38:
+            type: @checkers.javari.quals.ReadOnly
+
+    method put(Ljava/lang/Object;Ljava/lang/Object;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+32:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+32:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+32:
+            type: @checkers.javari.quals.ReadOnly
+        local 3 #6+26:
+        local 4 #23+9:
+            type: @checkers.javari.quals.Mutable
+
+    method remove(Ljava/lang/Object;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+79:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+79:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #6+73:
+        local 3 #13+66:
+            type: @checkers.javari.quals.Mutable
+        local 4 #41+37:
+            type: @checkers.javari.quals.Mutable
+
+package :
+class MST:
+
+    field vertices:
+
+    field printResult:
+
+    field printMsgs:
+
+    field MyVertexList:
+        type: @checkers.javari.quals.Mutable
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method main([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+243:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #41+202:
+        local 3 #52+191:
+            type: @checkers.javari.quals.Mutable
+        local 4 #57+186:
+        local 6 #76+167:
+        local 8 #85+158:
+        local 9 #90+153:
+
+    method computeMST(LGraph;I)I:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+        parameter #1:
+        local 0 #0+57:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+57:
+        local 2 #2+55:
+        local 3 #7+50:
+            type: @checkers.javari.quals.Mutable
+        local 4 #13+44:
+            type: @checkers.javari.quals.Mutable
+        local 5 #31+21:
+            type: @checkers.javari.quals.Mutable
+        local 6 #44+8:
+
+    method BlueRule(LVertex;LVertex;)LBlueReturn;:
+        return: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+237:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+237:
+            type: @checkers.javari.quals.Mutable
+        local 2 #8+229:
+            type: @checkers.javari.quals.Mutable
+        local 3 #22+215:
+            type: @checkers.javari.quals.Mutable
+        local 4 #41+196:
+            type: @checkers.javari.quals.ReadOnly
+        local 5 #49+188:
+            type: @checkers.javari.quals.ReadOnly
+        local 6 #64+21:
+        local 6 #99+138:
+        local 7 #105+130:
+            type: @checkers.javari.quals.Mutable
+        local 8 #126+6:
+            type: @checkers.javari.quals.Mutable
+        local 8 #149+73:
+        local 9 #172+18:
+
+    method doAllBlueRule(LVertex;)LBlueReturn;:
+        return: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+24:
+            type: @checkers.javari.quals.ReadOnly
+
+    method parseCmdLine([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+130:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #2+128:
+        local 2 #26+94:
+            type: @checkers.javari.quals.ReadOnly
+
+    method usage()V:
+        return:
+
+    method <clinit>()V:
+        return:
+
+package :
+class Vertex:
+
+    field mindist:
+
+    field next:
+        type: @checkers.javari.quals.ThisMutable
+
+    field neighbors:
+        type: @checkers.javari.quals.ThisMutable
+
+    method <init>(LVertex;I)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+        parameter #1:
+        local 0 #0+30:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+30:
+            type: @checkers.javari.quals.Mutable
+        local 2 #0+30:
+
+    method mindist()I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method setMindist(I)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        local 0 #0+6:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+6:
+
+    method next()LVertex;:
+        return: @checkers.javari.quals.PolyRead
+        receiver: @checkers.javari.quals.PolyRead
+        local 0 #0+5:
+            type: @checkers.javari.quals.PolyRead
+
+    method setNext(LVertex;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+6:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+6:
+            type: @checkers.javari.quals.Mutable
+
+    method neighbors()LHashtable;:
+        return: @checkers.javari.quals.PolyRead
+        receiver: @checkers.javari.quals.PolyRead
+        local 0 #0+5:
+            type: @checkers.javari.quals.PolyRead
+

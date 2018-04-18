@@ -1,0 +1,5 @@
+This directory contains the tests for the JOlden benchmarks for the Javarifier.
+
+To run all the tests and see the results, simply type 'make all'
+
+The source and scripts are from javarifier

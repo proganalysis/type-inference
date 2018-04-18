@@ -1,0 +1,753 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BaseKeyedObjectPool	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^public abstract class BaseKeyedObjectPool implements KeyedObjectPool {$/;"	c
+BaseKeyedPoolableObjectFactory	./src/java/org/apache/commons/pool/BaseKeyedPoolableObjectFactory.java	/^public abstract class BaseKeyedPoolableObjectFactory implements KeyedPoolableObjectFactory {$/;"	c
+BaseObjectPool	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^public abstract class BaseObjectPool implements ObjectPool {$/;"	c
+BasePoolableObjectFactory	./src/java/org/apache/commons/pool/BasePoolableObjectFactory.java	/^public abstract class BasePoolableObjectFactory implements PoolableObjectFactory {$/;"	c
+Config	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static class Config {$/;"	c	class:GenericKeyedObjectPool
+Config	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static class Config {$/;"	c	class:GenericObjectPool
+DEFAULT_INIT_SLEEPING_CAPACITY	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected static final int DEFAULT_INIT_SLEEPING_CAPACITY = 4;$/;"	f	class:StackKeyedObjectPool
+DEFAULT_INIT_SLEEPING_CAPACITY	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    protected static final int DEFAULT_INIT_SLEEPING_CAPACITY = 4;$/;"	f	class:StackObjectPool
+DEFAULT_MAX_ACTIVE	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final int DEFAULT_MAX_ACTIVE  = 8;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_MAX_ACTIVE	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final int DEFAULT_MAX_ACTIVE  = 8;$/;"	f	class:GenericObjectPool
+DEFAULT_MAX_IDLE	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final int DEFAULT_MAX_IDLE  = 8;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_MAX_IDLE	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final int DEFAULT_MAX_IDLE  = 8;$/;"	f	class:GenericObjectPool
+DEFAULT_MAX_SLEEPING	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected static final int DEFAULT_MAX_SLEEPING  = 8;$/;"	f	class:StackKeyedObjectPool
+DEFAULT_MAX_SLEEPING	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    protected static final int DEFAULT_MAX_SLEEPING  = 8;$/;"	f	class:StackObjectPool
+DEFAULT_MAX_TOTAL	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final int DEFAULT_MAX_TOTAL  = -1;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_MAX_WAIT	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final long DEFAULT_MAX_WAIT = -1L;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_MAX_WAIT	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final long DEFAULT_MAX_WAIT = -1L;$/;"	f	class:GenericObjectPool
+DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final long DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS = 1000L * 60L * 30L;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final long DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS = 1000L * 60L * 30L;$/;"	f	class:GenericObjectPool
+DEFAULT_MIN_IDLE	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final int DEFAULT_MIN_IDLE = 0;$/;"	f	class:GenericObjectPool
+DEFAULT_NUM_TESTS_PER_EVICTION_RUN	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final int DEFAULT_NUM_TESTS_PER_EVICTION_RUN = 3;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_NUM_TESTS_PER_EVICTION_RUN	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final int DEFAULT_NUM_TESTS_PER_EVICTION_RUN = 3;$/;"	f	class:GenericObjectPool
+DEFAULT_TEST_ON_BORROW	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final boolean DEFAULT_TEST_ON_BORROW = false;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_TEST_ON_BORROW	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final boolean DEFAULT_TEST_ON_BORROW = false;$/;"	f	class:GenericObjectPool
+DEFAULT_TEST_ON_RETURN	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final boolean DEFAULT_TEST_ON_RETURN = false;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_TEST_ON_RETURN	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final boolean DEFAULT_TEST_ON_RETURN = false;$/;"	f	class:GenericObjectPool
+DEFAULT_TEST_WHILE_IDLE	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final boolean DEFAULT_TEST_WHILE_IDLE = false;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_TEST_WHILE_IDLE	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final boolean DEFAULT_TEST_WHILE_IDLE = false;$/;"	f	class:GenericObjectPool
+DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final long DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS = -1L;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final long DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS = -1L;$/;"	f	class:GenericObjectPool
+DEFAULT_WHEN_EXHAUSTED_ACTION	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final byte DEFAULT_WHEN_EXHAUSTED_ACTION = WHEN_EXHAUSTED_BLOCK;$/;"	f	class:GenericKeyedObjectPool
+DEFAULT_WHEN_EXHAUSTED_ACTION	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final byte DEFAULT_WHEN_EXHAUSTED_ACTION = WHEN_EXHAUSTED_BLOCK;$/;"	f	class:GenericObjectPool
+Evictor	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public Evictor(long delay) {$/;"	m	class:GenericKeyedObjectPool.Evictor
+Evictor	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    class Evictor implements Runnable {$/;"	c	class:GenericKeyedObjectPool
+Evictor	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public Evictor(long delay) {$/;"	m	class:GenericObjectPool.Evictor
+Evictor	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    class Evictor implements Runnable {$/;"	c	class:GenericObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool() {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory, GenericKeyedObjectPool.Config config) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory, int maxActive) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, boolean testOnBorrow, boolean testOnReturn) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, boolean testOnBorrow, boolean testOnReturn) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, boolean testOnBorrow, boolean testOnReturn, long timeBetweenEvictionRunsMillis, int numTestsPerEvictionRun, long minEvictableIdleTimeMillis, boolean testWhileIdle) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public GenericKeyedObjectPool(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, int maxTotal, boolean testOnBorrow, boolean testOnReturn, long timeBetweenEvictionRunsMillis, int numTestsPerEvictionRun, long minEvictableIdleTimeMillis, boolean testWhileIdle) {$/;"	m	class:GenericKeyedObjectPool
+GenericKeyedObjectPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^public class GenericKeyedObjectPool extends BaseKeyedObjectPool implements KeyedObjectPool {$/;"	c
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, GenericKeyedObjectPool.Config config) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int maxActive) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, boolean testOnBorrow, boolean testOnReturn) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, boolean testOnBorrow, boolean testOnReturn) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, boolean testOnBorrow, boolean testOnReturn, long timeBetweenEvictionRunsMillis, int numTestsPerEvictionRun, long minEvictableIdleTimeMillis, boolean testWhileIdle) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, int maxTotal) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public GenericKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, int maxTotal, boolean testOnBorrow, boolean testOnReturn, long timeBetweenEvictionRunsMillis, int numTestsPerEvictionRun, long minEvictableIdleTimeMillis, boolean testWhileIdle) {$/;"	m	class:GenericKeyedObjectPoolFactory
+GenericKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^public class GenericKeyedObjectPoolFactory implements KeyedObjectPoolFactory {$/;"	c
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool() {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory, GenericObjectPool.Config config) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory, int maxActive) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, boolean testOnBorrow, boolean testOnReturn) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, boolean testOnBorrow, boolean testOnReturn) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, boolean testOnBorrow, boolean testOnReturn, long timeBetweenEvictionRunsMillis, int numTestsPerEvictionRun, long minEvictableIdleTimeMillis, boolean testWhileIdle) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public GenericObjectPool(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, int minIdle, boolean testOnBorrow, boolean testOnReturn, long timeBetweenEvictionRunsMillis, int numTestsPerEvictionRun, long minEvictableIdleTimeMillis, boolean testWhileIdle) {$/;"	m	class:GenericObjectPool
+GenericObjectPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^public class GenericObjectPool extends BaseObjectPool implements ObjectPool {$/;"	c
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory, GenericObjectPool.Config config) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory, int maxActive) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, boolean testOnBorrow, boolean testOnReturn) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, boolean testOnBorrow, boolean testOnReturn) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, boolean testOnBorrow, boolean testOnReturn, long timeBetweenEvictionRunsMillis, int numTestsPerEvictionRun, long minEvictableIdleTimeMillis, boolean testWhileIdle) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public GenericObjectPoolFactory(PoolableObjectFactory factory, int maxActive, byte whenExhaustedAction, long maxWait, int maxIdle, int minIdle, boolean testOnBorrow, boolean testOnReturn, long timeBetweenEvictionRunsMillis, int numTestsPerEvictionRun, long minEvictableIdleTimeMillis, boolean testWhileIdle) {$/;"	m	class:GenericObjectPoolFactory
+GenericObjectPoolFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^public class GenericObjectPoolFactory implements ObjectPoolFactory {$/;"	c
+KeyedObjectPool	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^public interface KeyedObjectPool {$/;"	i
+KeyedObjectPoolFactory	./src/java/org/apache/commons/pool/KeyedObjectPoolFactory.java	/^public interface KeyedObjectPoolFactory {$/;"	i
+KeyedPoolableObjectFactory	./src/java/org/apache/commons/pool/KeyedPoolableObjectFactory.java	/^public interface KeyedPoolableObjectFactory {$/;"	i
+LargePoolableObjectFactory	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public LargePoolableObjectFactory(int size) {$/;"	m	class:TestSoftRefOutOfMemory.LargePoolableObjectFactory
+LargePoolableObjectFactory	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public static class LargePoolableObjectFactory implements PoolableObjectFactory {$/;"	c	class:TestSoftRefOutOfMemory
+MyThread	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    class MyThread implements Runnable {$/;"	c	class:PerformanceTest
+ObjectPool	./src/java/org/apache/commons/pool/ObjectPool.java	/^public interface ObjectPool {$/;"	i
+ObjectPoolFactory	./src/java/org/apache/commons/pool/ObjectPoolFactory.java	/^public interface ObjectPoolFactory {$/;"	i
+ObjectTimestampPair	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        ObjectTimestampPair(Object val) {$/;"	m	class:GenericKeyedObjectPool.ObjectTimestampPair
+ObjectTimestampPair	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        ObjectTimestampPair(Object val, long time) {$/;"	m	class:GenericKeyedObjectPool.ObjectTimestampPair
+ObjectTimestampPair	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    class ObjectTimestampPair {$/;"	c	class:GenericKeyedObjectPool
+ObjectTimestampPair	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        ObjectTimestampPair(Object val) {$/;"	m	class:GenericObjectPool.ObjectTimestampPair
+ObjectTimestampPair	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        ObjectTimestampPair(Object val, long time) {$/;"	m	class:GenericObjectPool.ObjectTimestampPair
+ObjectTimestampPair	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    class ObjectTimestampPair {$/;"	c	class:GenericObjectPool
+PerformanceTest	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^public class PerformanceTest {$/;"	c
+PoolHarness	./src/PoolHarness.java	/^01 public class PoolHarness {$/;"	c
+PoolableObjectFactory	./src/java/org/apache/commons/pool/PoolableObjectFactory.java	/^public interface PoolableObjectFactory {$/;"	i
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public SimpleFactory() {$/;"	m	class:TestGenericKeyedObjectPool.SimpleFactory
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public SimpleFactory(boolean valid) {$/;"	m	class:TestGenericKeyedObjectPool.SimpleFactory
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    static class SimpleFactory implements KeyedPoolableObjectFactory {$/;"	c	class:TestGenericKeyedObjectPool
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public SimpleFactory() {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public SimpleFactory(boolean evalid, boolean ovalid) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public SimpleFactory(boolean valid) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public class SimpleFactory implements PoolableObjectFactory {$/;"	c	class:TestGenericObjectPool
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    class SimpleFactory implements KeyedPoolableObjectFactory {$/;"	c	class:TestStackKeyedObjectPool
+SimpleFactory	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    static class SimpleFactory implements PoolableObjectFactory {$/;"	c	class:TestStackObjectPool
+SleepingObjectFactory	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^public class SleepingObjectFactory implements PoolableObjectFactory {$/;"	c
+SmallPoolableObjectFactory	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public static class SmallPoolableObjectFactory implements PoolableObjectFactory {$/;"	c	class:TestSoftRefOutOfMemory
+SoftReferenceObjectPool	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public SoftReferenceObjectPool() {$/;"	m	class:SoftReferenceObjectPool
+SoftReferenceObjectPool	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public SoftReferenceObjectPool(PoolableObjectFactory factory) {$/;"	m	class:SoftReferenceObjectPool
+SoftReferenceObjectPool	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public SoftReferenceObjectPool(PoolableObjectFactory factory, int initSize) throws Exception {$/;"	m	class:SoftReferenceObjectPool
+SoftReferenceObjectPool	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^public class SoftReferenceObjectPool extends BaseObjectPool implements ObjectPool {$/;"	c
+StackKeyedObjectPool	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public StackKeyedObjectPool() {$/;"	m	class:StackKeyedObjectPool
+StackKeyedObjectPool	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public StackKeyedObjectPool(KeyedPoolableObjectFactory factory) {$/;"	m	class:StackKeyedObjectPool
+StackKeyedObjectPool	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public StackKeyedObjectPool(KeyedPoolableObjectFactory factory, int max) {$/;"	m	class:StackKeyedObjectPool
+StackKeyedObjectPool	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public StackKeyedObjectPool(KeyedPoolableObjectFactory factory, int max, int init) {$/;"	m	class:StackKeyedObjectPool
+StackKeyedObjectPool	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public StackKeyedObjectPool(int max) {$/;"	m	class:StackKeyedObjectPool
+StackKeyedObjectPool	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public StackKeyedObjectPool(int max, int init) {$/;"	m	class:StackKeyedObjectPool
+StackKeyedObjectPool	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^public class StackKeyedObjectPool extends BaseKeyedObjectPool implements KeyedObjectPool {$/;"	c
+StackKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    public StackKeyedObjectPoolFactory() {$/;"	m	class:StackKeyedObjectPoolFactory
+StackKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    public StackKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory) {$/;"	m	class:StackKeyedObjectPoolFactory
+StackKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    public StackKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int max) {$/;"	m	class:StackKeyedObjectPoolFactory
+StackKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    public StackKeyedObjectPoolFactory(KeyedPoolableObjectFactory factory, int max, int init) {$/;"	m	class:StackKeyedObjectPoolFactory
+StackKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    public StackKeyedObjectPoolFactory(int max) {$/;"	m	class:StackKeyedObjectPoolFactory
+StackKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    public StackKeyedObjectPoolFactory(int max, int init) {$/;"	m	class:StackKeyedObjectPoolFactory
+StackKeyedObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^public class StackKeyedObjectPoolFactory implements KeyedObjectPoolFactory {$/;"	c
+StackObjectPool	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public StackObjectPool() {$/;"	m	class:StackObjectPool
+StackObjectPool	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public StackObjectPool(PoolableObjectFactory factory) {$/;"	m	class:StackObjectPool
+StackObjectPool	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public StackObjectPool(PoolableObjectFactory factory, int maxIdle) {$/;"	m	class:StackObjectPool
+StackObjectPool	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public StackObjectPool(PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {$/;"	m	class:StackObjectPool
+StackObjectPool	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public StackObjectPool(int maxIdle) {$/;"	m	class:StackObjectPool
+StackObjectPool	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public StackObjectPool(int maxIdle, int initIdleCapacity) {$/;"	m	class:StackObjectPool
+StackObjectPool	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^public class StackObjectPool extends BaseObjectPool implements ObjectPool {$/;"	c
+StackObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    public StackObjectPoolFactory() {$/;"	m	class:StackObjectPoolFactory
+StackObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    public StackObjectPoolFactory(PoolableObjectFactory factory) {$/;"	m	class:StackObjectPoolFactory
+StackObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    public StackObjectPoolFactory(PoolableObjectFactory factory, int max) {$/;"	m	class:StackObjectPoolFactory
+StackObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    public StackObjectPoolFactory(PoolableObjectFactory factory, int max, int init) {$/;"	m	class:StackObjectPoolFactory
+StackObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    public StackObjectPoolFactory(int max) {$/;"	m	class:StackObjectPoolFactory
+StackObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    public StackObjectPoolFactory(int max, int init) {$/;"	m	class:StackObjectPoolFactory
+StackObjectPoolFactory	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^public class StackObjectPoolFactory implements ObjectPoolFactory {$/;"	c
+TestAll	./src/test/org/apache/commons/pool/TestAll.java	/^    public TestAll(String testName) {$/;"	m	class:TestAll
+TestAll	./src/test/org/apache/commons/pool/TestAll.java	/^public class TestAll extends TestCase {$/;"	c
+TestAll	./src/test/org/apache/commons/pool/impl/TestAll.java	/^    public TestAll(String testName) {$/;"	m	class:TestAll
+TestAll	./src/test/org/apache/commons/pool/impl/TestAll.java	/^public class TestAll extends TestCase {$/;"	c
+TestBaseKeyedObjectPool	./src/test/org/apache/commons/pool/TestBaseKeyedObjectPool.java	/^    public TestBaseKeyedObjectPool(String testName) {$/;"	m	class:TestBaseKeyedObjectPool
+TestBaseKeyedObjectPool	./src/test/org/apache/commons/pool/TestBaseKeyedObjectPool.java	/^public class TestBaseKeyedObjectPool extends TestCase {$/;"	c
+TestBaseKeyedPoolableObjectFactory	./src/test/org/apache/commons/pool/TestBaseKeyedPoolableObjectFactory.java	/^    public TestBaseKeyedPoolableObjectFactory(String testName) {$/;"	m	class:TestBaseKeyedPoolableObjectFactory
+TestBaseKeyedPoolableObjectFactory	./src/test/org/apache/commons/pool/TestBaseKeyedPoolableObjectFactory.java	/^public class TestBaseKeyedPoolableObjectFactory extends TestCase {$/;"	c
+TestBaseObjectPool	./src/test/org/apache/commons/pool/TestBaseObjectPool.java	/^    public TestBaseObjectPool(String testName) {$/;"	m	class:TestBaseObjectPool
+TestBaseObjectPool	./src/test/org/apache/commons/pool/TestBaseObjectPool.java	/^public class TestBaseObjectPool extends TestCase {$/;"	c
+TestBasePoolableObjectFactory	./src/test/org/apache/commons/pool/TestBasePoolableObjectFactory.java	/^    public TestBasePoolableObjectFactory(String testName) {$/;"	m	class:TestBasePoolableObjectFactory
+TestBasePoolableObjectFactory	./src/test/org/apache/commons/pool/TestBasePoolableObjectFactory.java	/^public class TestBasePoolableObjectFactory extends TestCase {$/;"	c
+TestGenericKeyedObjectPool	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public TestGenericKeyedObjectPool(String testName) {$/;"	m	class:TestGenericKeyedObjectPool
+TestGenericKeyedObjectPool	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^public class TestGenericKeyedObjectPool extends TestKeyedObjectPool {$/;"	c
+TestGenericObjectPool	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public TestGenericObjectPool(String testName) {$/;"	m	class:TestGenericObjectPool
+TestGenericObjectPool	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^public class TestGenericObjectPool extends TestObjectPool {$/;"	c
+TestKeyedObjectPool	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public TestKeyedObjectPool(String testName) {$/;"	m	class:TestKeyedObjectPool
+TestKeyedObjectPool	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^public abstract class TestKeyedObjectPool extends TestCase {$/;"	c
+TestObjectPool	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public TestObjectPool(String testName) {$/;"	m	class:TestObjectPool
+TestObjectPool	./src/test/org/apache/commons/pool/TestObjectPool.java	/^public abstract class TestObjectPool extends TestCase {$/;"	c
+TestSoftRefOutOfMemory	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public TestSoftRefOutOfMemory(String testName) {$/;"	m	class:TestSoftRefOutOfMemory
+TestSoftRefOutOfMemory	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^public class TestSoftRefOutOfMemory extends TestCase {$/;"	c
+TestSoftReferenceObjectPool	./src/test/org/apache/commons/pool/impl/TestSoftReferenceObjectPool.java	/^    public TestSoftReferenceObjectPool(String testName) {$/;"	m	class:TestSoftReferenceObjectPool
+TestSoftReferenceObjectPool	./src/test/org/apache/commons/pool/impl/TestSoftReferenceObjectPool.java	/^public class TestSoftReferenceObjectPool extends TestObjectPool {$/;"	c
+TestStackKeyedObjectPool	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public TestStackKeyedObjectPool(String testName) {$/;"	m	class:TestStackKeyedObjectPool
+TestStackKeyedObjectPool	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^public class TestStackKeyedObjectPool extends TestKeyedObjectPool {$/;"	c
+TestStackObjectPool	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public TestStackObjectPool(String testName) {$/;"	m	class:TestStackObjectPool
+TestStackObjectPool	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^public class TestStackObjectPool extends TestObjectPool {$/;"	c
+TestThread	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public TestThread(KeyedObjectPool pool) {$/;"	m	class:TestGenericKeyedObjectPool.TestThread
+TestThread	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public TestThread(KeyedObjectPool pool, int iter) {$/;"	m	class:TestGenericKeyedObjectPool.TestThread
+TestThread	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public TestThread(KeyedObjectPool pool, int iter, int delay) {$/;"	m	class:TestGenericKeyedObjectPool.TestThread
+TestThread	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    class TestThread implements Runnable {$/;"	c	class:TestGenericKeyedObjectPool
+TestThread	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public TestThread(ObjectPool pool) {$/;"	m	class:TestGenericObjectPool.TestThread
+TestThread	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public TestThread(ObjectPool pool, int iter) {$/;"	m	class:TestGenericObjectPool.TestThread
+TestThread	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public TestThread(ObjectPool pool, int iter, int delay) {$/;"	m	class:TestGenericObjectPool.TestThread
+TestThread	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    class TestThread implements Runnable {$/;"	c	class:TestGenericObjectPool
+WHEN_EXHAUSTED_BLOCK	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final byte WHEN_EXHAUSTED_BLOCK  = 1;$/;"	f	class:GenericKeyedObjectPool
+WHEN_EXHAUSTED_BLOCK	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final byte WHEN_EXHAUSTED_BLOCK  = 1;$/;"	f	class:GenericObjectPool
+WHEN_EXHAUSTED_FAIL	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final byte WHEN_EXHAUSTED_FAIL   = 0;$/;"	f	class:GenericKeyedObjectPool
+WHEN_EXHAUSTED_FAIL	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final byte WHEN_EXHAUSTED_FAIL   = 0;$/;"	f	class:GenericObjectPool
+WHEN_EXHAUSTED_GROW	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public static final byte WHEN_EXHAUSTED_GROW   = 2;$/;"	f	class:GenericKeyedObjectPool
+WHEN_EXHAUSTED_GROW	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public static final byte WHEN_EXHAUSTED_GROW   = 2;$/;"	f	class:GenericObjectPool
+_activeCount	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected HashMap _activeCount = null;$/;"	f	class:StackKeyedObjectPool
+_activeMap	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private HashMap _activeMap = null;$/;"	f	class:GenericKeyedObjectPool	file:
+_cancelled	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        private boolean _cancelled = false;$/;"	f	class:GenericKeyedObjectPool.Evictor	file:
+_cancelled	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        private boolean _cancelled = false;$/;"	f	class:GenericObjectPool.Evictor	file:
+_complete	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        boolean _complete = false;$/;"	f	class:TestGenericKeyedObjectPool.TestThread
+_complete	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        boolean _complete = false;$/;"	f	class:TestGenericObjectPool.TestThread
+_delay	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        private long _delay = 0L;$/;"	f	class:GenericKeyedObjectPool.Evictor	file:
+_delay	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        private long _delay = 0L;$/;"	f	class:GenericObjectPool.Evictor	file:
+_delay	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        int _delay = 50;$/;"	f	class:TestGenericKeyedObjectPool.TestThread
+_delay	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        int _delay = 50;$/;"	f	class:TestGenericObjectPool.TestThread
+_evictionCursor	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private CursorableLinkedList.Cursor _evictionCursor = null;$/;"	f	class:GenericKeyedObjectPool	file:
+_evictionCursor	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private CursorableLinkedList.Cursor _evictionCursor = null;$/;"	f	class:GenericObjectPool	file:
+_evictionKeyCursor	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private CursorableLinkedList.Cursor _evictionKeyCursor = null;$/;"	f	class:GenericKeyedObjectPool	file:
+_evictor	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private Evictor _evictor = null;$/;"	f	class:GenericKeyedObjectPool	file:
+_evictor	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private Evictor _evictor = null;$/;"	f	class:GenericObjectPool	file:
+_factory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private KeyedPoolableObjectFactory _factory = null;$/;"	f	class:GenericKeyedObjectPool	file:
+_factory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected KeyedPoolableObjectFactory _factory = null;$/;"	f	class:GenericKeyedObjectPoolFactory
+_factory	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private PoolableObjectFactory _factory = null;$/;"	f	class:GenericObjectPool	file:
+_factory	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected PoolableObjectFactory _factory = null;$/;"	f	class:GenericObjectPoolFactory
+_factory	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    private PoolableObjectFactory _factory = null;$/;"	f	class:SoftReferenceObjectPool	file:
+_factory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected KeyedPoolableObjectFactory _factory = null;$/;"	f	class:StackKeyedObjectPool
+_factory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    protected KeyedPoolableObjectFactory _factory = null;$/;"	f	class:StackKeyedObjectPoolFactory
+_factory	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    protected PoolableObjectFactory _factory = null;$/;"	f	class:StackObjectPool
+_factory	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    protected PoolableObjectFactory _factory = null;$/;"	f	class:StackObjectPoolFactory
+_failed	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        boolean _failed = false;$/;"	f	class:TestGenericKeyedObjectPool.TestThread
+_failed	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        boolean _failed = false;$/;"	f	class:TestGenericObjectPool.TestThread
+_initCapacity	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    protected int _initCapacity = StackKeyedObjectPool.DEFAULT_INIT_SLEEPING_CAPACITY;$/;"	f	class:StackKeyedObjectPoolFactory
+_initCapacity	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    protected int _initCapacity = StackObjectPool.DEFAULT_INIT_SLEEPING_CAPACITY;$/;"	f	class:StackObjectPoolFactory
+_initSleepingCapacity	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected int _initSleepingCapacity = DEFAULT_INIT_SLEEPING_CAPACITY;$/;"	f	class:StackKeyedObjectPool
+_iter	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        int _iter = 100;$/;"	f	class:TestGenericKeyedObjectPool.TestThread
+_iter	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        int _iter = 100;$/;"	f	class:TestGenericObjectPool.TestThread
+_maxActive	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private int _maxActive = DEFAULT_MAX_ACTIVE;$/;"	f	class:GenericKeyedObjectPool	file:
+_maxActive	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected int _maxActive = GenericKeyedObjectPool.DEFAULT_MAX_ACTIVE;$/;"	f	class:GenericKeyedObjectPoolFactory
+_maxActive	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private int _maxActive = DEFAULT_MAX_ACTIVE;$/;"	f	class:GenericObjectPool	file:
+_maxActive	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected int _maxActive = GenericObjectPool.DEFAULT_MAX_ACTIVE;$/;"	f	class:GenericObjectPoolFactory
+_maxIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private int _maxIdle = DEFAULT_MAX_IDLE;$/;"	f	class:GenericKeyedObjectPool	file:
+_maxIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected int _maxIdle = GenericKeyedObjectPool.DEFAULT_MAX_IDLE;$/;"	f	class:GenericKeyedObjectPoolFactory
+_maxIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private int _maxIdle = DEFAULT_MAX_IDLE;$/;"	f	class:GenericObjectPool	file:
+_maxIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected int _maxIdle = GenericObjectPool.DEFAULT_MAX_IDLE;$/;"	f	class:GenericObjectPoolFactory
+_maxSleeping	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected int _maxSleeping = DEFAULT_MAX_SLEEPING;$/;"	f	class:StackKeyedObjectPool
+_maxSleeping	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    protected int _maxSleeping = StackKeyedObjectPool.DEFAULT_MAX_SLEEPING;$/;"	f	class:StackKeyedObjectPoolFactory
+_maxSleeping	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    protected int _maxSleeping = DEFAULT_MAX_SLEEPING;$/;"	f	class:StackObjectPool
+_maxSleeping	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    protected int _maxSleeping = StackObjectPool.DEFAULT_MAX_SLEEPING;$/;"	f	class:StackObjectPoolFactory
+_maxTotal	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private int _maxTotal = DEFAULT_MAX_TOTAL;$/;"	f	class:GenericKeyedObjectPool	file:
+_maxTotal	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected int _maxTotal = GenericKeyedObjectPool.DEFAULT_MAX_TOTAL;$/;"	f	class:GenericKeyedObjectPoolFactory
+_maxWait	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private long _maxWait = DEFAULT_MAX_WAIT;$/;"	f	class:GenericKeyedObjectPool	file:
+_maxWait	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected long _maxWait = GenericKeyedObjectPool.DEFAULT_MAX_WAIT;$/;"	f	class:GenericKeyedObjectPoolFactory
+_maxWait	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private long _maxWait = DEFAULT_MAX_WAIT;$/;"	f	class:GenericObjectPool	file:
+_maxWait	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected long _maxWait = GenericObjectPool.DEFAULT_MAX_WAIT;$/;"	f	class:GenericObjectPoolFactory
+_minEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private long _minEvictableIdleTimeMillis = DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;$/;"	f	class:GenericKeyedObjectPool	file:
+_minEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected long _minEvictableIdleTimeMillis = GenericKeyedObjectPool.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;$/;"	f	class:GenericKeyedObjectPoolFactory
+_minEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private long _minEvictableIdleTimeMillis = DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;$/;"	f	class:GenericObjectPool	file:
+_minEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected long _minEvictableIdleTimeMillis = GenericObjectPool.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;$/;"	f	class:GenericObjectPoolFactory
+_minIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^   private int _minIdle = DEFAULT_MIN_IDLE;$/;"	f	class:GenericObjectPool	file:
+_minIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected int _minIdle = GenericObjectPool.DEFAULT_MIN_IDLE;$/;"	f	class:GenericObjectPoolFactory
+_numActive	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private int _numActive = 0;$/;"	f	class:GenericObjectPool	file:
+_numActive	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    private int _numActive = 0;$/;"	f	class:SoftReferenceObjectPool	file:
+_numActive	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    protected int _numActive = 0;$/;"	f	class:StackObjectPool
+_numTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private int _numTestsPerEvictionRun =  DEFAULT_NUM_TESTS_PER_EVICTION_RUN;$/;"	f	class:GenericKeyedObjectPool	file:
+_numTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected int _numTestsPerEvictionRun =  GenericKeyedObjectPool.DEFAULT_NUM_TESTS_PER_EVICTION_RUN;$/;"	f	class:GenericKeyedObjectPoolFactory
+_numTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private int _numTestsPerEvictionRun =  DEFAULT_NUM_TESTS_PER_EVICTION_RUN;$/;"	f	class:GenericObjectPool	file:
+_numTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected int _numTestsPerEvictionRun =  GenericObjectPool.DEFAULT_NUM_TESTS_PER_EVICTION_RUN;$/;"	f	class:GenericObjectPoolFactory
+_pool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private CursorableLinkedList _pool = null;$/;"	f	class:GenericObjectPool	file:
+_pool	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    private List _pool = null;$/;"	f	class:SoftReferenceObjectPool	file:
+_pool	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    protected Stack _pool = null;$/;"	f	class:StackObjectPool
+_pool	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    private KeyedObjectPool _pool = null;$/;"	f	class:TestKeyedObjectPool	file:
+_pool	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    private ObjectPool _pool = null;$/;"	f	class:TestObjectPool	file:
+_pool	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        KeyedObjectPool _pool = null;$/;"	f	class:TestGenericKeyedObjectPool.TestThread
+_pool	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        ObjectPool _pool = null;$/;"	f	class:TestGenericObjectPool.TestThread
+_poolList	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private CursorableLinkedList _poolList = null;$/;"	f	class:GenericKeyedObjectPool	file:
+_poolMap	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private HashMap _poolMap = null;$/;"	f	class:GenericKeyedObjectPool	file:
+_pools	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected HashMap _pools = null;$/;"	f	class:StackKeyedObjectPool
+_random	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        java.util.Random _random = new java.util.Random();$/;"	f	class:TestGenericKeyedObjectPool.TestThread
+_random	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        java.util.Random _random = new java.util.Random();$/;"	f	class:TestGenericObjectPool.TestThread
+_testOnBorrow	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private boolean _testOnBorrow = DEFAULT_TEST_ON_BORROW;$/;"	f	class:GenericKeyedObjectPool	file:
+_testOnBorrow	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected boolean _testOnBorrow = GenericKeyedObjectPool.DEFAULT_TEST_ON_BORROW;$/;"	f	class:GenericKeyedObjectPoolFactory
+_testOnBorrow	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private boolean _testOnBorrow = DEFAULT_TEST_ON_BORROW;$/;"	f	class:GenericObjectPool	file:
+_testOnBorrow	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected boolean _testOnBorrow = GenericObjectPool.DEFAULT_TEST_ON_BORROW;$/;"	f	class:GenericObjectPoolFactory
+_testOnReturn	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private boolean _testOnReturn = DEFAULT_TEST_ON_RETURN;$/;"	f	class:GenericKeyedObjectPool	file:
+_testOnReturn	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected boolean _testOnReturn = GenericKeyedObjectPool.DEFAULT_TEST_ON_RETURN;$/;"	f	class:GenericKeyedObjectPoolFactory
+_testOnReturn	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private boolean _testOnReturn = DEFAULT_TEST_ON_RETURN;$/;"	f	class:GenericObjectPool	file:
+_testOnReturn	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected boolean _testOnReturn = GenericObjectPool.DEFAULT_TEST_ON_RETURN;$/;"	f	class:GenericObjectPoolFactory
+_testWhileIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private boolean _testWhileIdle = DEFAULT_TEST_WHILE_IDLE;$/;"	f	class:GenericKeyedObjectPool	file:
+_testWhileIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected boolean _testWhileIdle = GenericKeyedObjectPool.DEFAULT_TEST_WHILE_IDLE;$/;"	f	class:GenericKeyedObjectPoolFactory
+_testWhileIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private boolean _testWhileIdle = DEFAULT_TEST_WHILE_IDLE;$/;"	f	class:GenericObjectPool	file:
+_testWhileIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected boolean _testWhileIdle = GenericObjectPool.DEFAULT_TEST_WHILE_IDLE;$/;"	f	class:GenericObjectPoolFactory
+_timeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private long _timeBetweenEvictionRunsMillis = DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS;$/;"	f	class:GenericKeyedObjectPool	file:
+_timeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected long _timeBetweenEvictionRunsMillis = GenericKeyedObjectPool.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS;$/;"	f	class:GenericKeyedObjectPoolFactory
+_timeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private long _timeBetweenEvictionRunsMillis = DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS;$/;"	f	class:GenericObjectPool	file:
+_timeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected long _timeBetweenEvictionRunsMillis = GenericObjectPool.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS;$/;"	f	class:GenericObjectPoolFactory
+_totActive	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected int _totActive = 0;$/;"	f	class:StackKeyedObjectPool
+_totIdle	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    protected int _totIdle = 0;$/;"	f	class:StackKeyedObjectPool
+_totalActive	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private int _totalActive = 0;$/;"	f	class:GenericKeyedObjectPool	file:
+_totalIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private int _totalIdle = 0;$/;"	f	class:GenericKeyedObjectPool	file:
+_whenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private byte _whenExhaustedAction = DEFAULT_WHEN_EXHAUSTED_ACTION;$/;"	f	class:GenericKeyedObjectPool	file:
+_whenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    protected byte _whenExhaustedAction = GenericKeyedObjectPool.DEFAULT_WHEN_EXHAUSTED_ACTION;$/;"	f	class:GenericKeyedObjectPoolFactory
+_whenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private byte _whenExhaustedAction = DEFAULT_WHEN_EXHAUSTED_ACTION;$/;"	f	class:GenericObjectPool	file:
+_whenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    protected byte _whenExhaustedAction = GenericObjectPool.DEFAULT_WHEN_EXHAUSTED_ACTION;$/;"	f	class:GenericObjectPoolFactory
+activateObject	./src/java/org/apache/commons/pool/BaseKeyedPoolableObjectFactory.java	/^    public void activateObject(Object key, Object obj)$/;"	m	class:BaseKeyedPoolableObjectFactory
+activateObject	./src/java/org/apache/commons/pool/BasePoolableObjectFactory.java	/^    public void activateObject(Object obj)$/;"	m	class:BasePoolableObjectFactory
+activateObject	./src/java/org/apache/commons/pool/KeyedPoolableObjectFactory.java	/^    void activateObject(Object key, Object obj) throws Exception;$/;"	m	interface:KeyedPoolableObjectFactory
+activateObject	./src/java/org/apache/commons/pool/PoolableObjectFactory.java	/^  void activateObject(Object obj) throws Exception;$/;"	m	interface:PoolableObjectFactory
+activateObject	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public void activateObject(Object key, Object obj) { }$/;"	m	class:TestGenericKeyedObjectPool.SimpleFactory
+activateObject	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public void activateObject(Object obj) throws Exception {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+activateObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public void activateObject(Object obj) { }$/;"	m	class:TestSoftRefOutOfMemory.LargePoolableObjectFactory
+activateObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public void activateObject(Object obj) { }$/;"	m	class:TestSoftRefOutOfMemory.SmallPoolableObjectFactory
+activateObject	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^        public void activateObject(Object key, Object obj) { }$/;"	m	class:TestStackKeyedObjectPool.SimpleFactory
+activateObject	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^        public void activateObject(Object obj) { }$/;"	m	class:TestStackObjectPool.SimpleFactory
+activateObject	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^	public void activateObject(Object obj) throws Exception {$/;"	m	class:SleepingObjectFactory
+addObject	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public void addObject(Object key) throws Exception, UnsupportedOperationException {$/;"	m	class:BaseKeyedObjectPool
+addObject	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public void addObject() throws Exception, UnsupportedOperationException {$/;"	m	class:BaseObjectPool
+addObject	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    void addObject(Object key) throws Exception;$/;"	m	interface:KeyedObjectPool
+addObject	./src/java/org/apache/commons/pool/ObjectPool.java	/^    void addObject() throws Exception;$/;"	m	interface:ObjectPool
+addObject	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public void addObject(Object key) throws Exception {$/;"	m	class:GenericKeyedObjectPool
+addObject	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public void addObject() throws Exception {$/;"	m	class:GenericObjectPool
+addObject	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public void addObject() throws Exception {$/;"	m	class:SoftReferenceObjectPool
+addObject	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public void addObject(Object key) throws Exception {$/;"	m	class:StackKeyedObjectPool
+addObject	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public void addObject() throws Exception {$/;"	m	class:StackObjectPool
+addObjectToPool	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private void addObjectToPool(Object obj, boolean decrementNumActive) throws Exception {$/;"	m	class:GenericObjectPool	file:
+assertConfiguration	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    private void assertConfiguration(GenericObjectPool.Config expected, GenericObjectPool actual) throws Exception {$/;"	m	class:TestGenericObjectPool	file:
+assertOpen	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    protected final void assertOpen() throws IllegalStateException {$/;"	m	class:BaseObjectPool
+borrowObject	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public abstract Object borrowObject(Object key) throws Exception;$/;"	m	class:BaseKeyedObjectPool
+borrowObject	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public abstract Object borrowObject() throws Exception;$/;"	m	class:BaseObjectPool
+borrowObject	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    Object borrowObject(Object key) throws Exception;$/;"	m	interface:KeyedObjectPool
+borrowObject	./src/java/org/apache/commons/pool/ObjectPool.java	/^    Object borrowObject() throws Exception;$/;"	m	interface:ObjectPool
+borrowObject	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized Object borrowObject(Object key) throws Exception {$/;"	m	class:GenericKeyedObjectPool
+borrowObject	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public Object borrowObject() throws Exception {$/;"	m	class:GenericObjectPool
+borrowObject	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public synchronized Object borrowObject() throws Exception {        $/;"	m	class:SoftReferenceObjectPool
+borrowObject	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized Object borrowObject(Object key) throws Exception {$/;"	m	class:StackKeyedObjectPool
+borrowObject	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public synchronized Object borrowObject() throws Exception {$/;"	m	class:StackObjectPool
+borrowTime	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^        long borrowTime;$/;"	f	class:PerformanceTest.MyThread
+buffer	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        private String buffer;$/;"	f	class:TestSoftRefOutOfMemory.LargePoolableObjectFactory	file:
+calculateDeficit	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private synchronized int calculateDeficit() {$/;"	m	class:GenericObjectPool	file:
+cancel	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        void cancel() {$/;"	m	class:GenericKeyedObjectPool.Evictor
+cancel	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        void cancel() {$/;"	m	class:GenericObjectPool.Evictor
+clear	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public void clear() throws Exception, UnsupportedOperationException {$/;"	m	class:BaseKeyedObjectPool
+clear	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public void clear(Object key)$/;"	m	class:BaseKeyedObjectPool
+clear	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public void clear() throws Exception, UnsupportedOperationException {$/;"	m	class:BaseObjectPool
+clear	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    void clear() throws Exception, UnsupportedOperationException;$/;"	m	interface:KeyedObjectPool
+clear	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    void clear(Object key) throws Exception, UnsupportedOperationException;$/;"	m	interface:KeyedObjectPool
+clear	./src/java/org/apache/commons/pool/ObjectPool.java	/^    void clear() throws Exception, UnsupportedOperationException;$/;"	m	interface:ObjectPool
+clear	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void clear() {$/;"	m	class:GenericKeyedObjectPool
+clear	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void clear(Object key) {$/;"	m	class:GenericKeyedObjectPool
+clear	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void clear() {$/;"	m	class:GenericObjectPool
+clear	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public synchronized void clear() {$/;"	m	class:SoftReferenceObjectPool
+clear	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized void clear() {$/;"	m	class:StackKeyedObjectPool
+clear	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized void clear(Object key) {$/;"	m	class:StackKeyedObjectPool
+clear	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public synchronized void clear() {$/;"	m	class:StackObjectPool
+close	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public void close() throws Exception {$/;"	m	class:BaseKeyedObjectPool
+close	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public void close() throws Exception {$/;"	m	class:BaseObjectPool
+close	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    void close() throws Exception;$/;"	m	interface:KeyedObjectPool
+close	./src/java/org/apache/commons/pool/ObjectPool.java	/^    void close() throws Exception;$/;"	m	interface:ObjectPool
+close	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void close() throws Exception {$/;"	m	class:GenericKeyedObjectPool
+close	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void close() throws Exception {$/;"	m	class:GenericObjectPool
+close	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    synchronized public void close() throws Exception {$/;"	m	class:SoftReferenceObjectPool
+close	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized void close() throws Exception {$/;"	m	class:StackKeyedObjectPool
+close	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    synchronized public void close() throws Exception {$/;"	m	class:StackObjectPool
+closed	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    private boolean closed = false;$/;"	f	class:BaseObjectPool	file:
+complete	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public boolean complete() {$/;"	m	class:TestGenericKeyedObjectPool.TestThread
+complete	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public boolean complete() {$/;"	m	class:TestGenericObjectPool.TestThread
+complete	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private volatile int complete = 0;$/;"	f	class:PerformanceTest	file:
+counter	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        int counter = 0;$/;"	f	class:TestGenericKeyedObjectPool.SimpleFactory
+counter	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        private int counter = 0;$/;"	f	class:TestSoftRefOutOfMemory.LargePoolableObjectFactory	file:
+counter	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        private int counter = 0;$/;"	f	class:TestSoftRefOutOfMemory.SmallPoolableObjectFactory	file:
+counter	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^        int counter = 0;$/;"	f	class:TestStackObjectPool.SimpleFactory
+counter	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^    private int counter = 0;$/;"	f	class:SleepingObjectFactory	file:
+createPool	./src/java/org/apache/commons/pool/KeyedObjectPoolFactory.java	/^    KeyedObjectPool createPool();$/;"	m	interface:KeyedObjectPoolFactory
+createPool	./src/java/org/apache/commons/pool/ObjectPoolFactory.java	/^    ObjectPool createPool();$/;"	m	interface:ObjectPoolFactory
+createPool	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^    public KeyedObjectPool createPool() {$/;"	m	class:GenericKeyedObjectPoolFactory
+createPool	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^    public ObjectPool createPool() {$/;"	m	class:GenericObjectPoolFactory
+createPool	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^    public KeyedObjectPool createPool() {$/;"	m	class:StackKeyedObjectPoolFactory
+createPool	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^    public ObjectPool createPool() {$/;"	m	class:StackObjectPoolFactory
+debug	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^    private boolean debug = false;$/;"	f	class:SleepingObjectFactory	file:
+debug	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^    private void debug(String method, Object obj) {$/;"	m	class:SleepingObjectFactory	file:
+debugInfo	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    synchronized String debugInfo() {$/;"	m	class:GenericKeyedObjectPool
+debugInfo	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    synchronized String debugInfo() {$/;"	m	class:GenericObjectPool
+decrementActiveCount	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private synchronized void decrementActiveCount(Object key) {$/;"	m	class:GenericKeyedObjectPool	file:
+decrementActiveCount	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    private void decrementActiveCount(Object key) {$/;"	m	class:StackKeyedObjectPool	file:
+destroyObject	./src/java/org/apache/commons/pool/BaseKeyedPoolableObjectFactory.java	/^    public void destroyObject(Object key, Object obj)$/;"	m	class:BaseKeyedPoolableObjectFactory
+destroyObject	./src/java/org/apache/commons/pool/BasePoolableObjectFactory.java	/^    public void destroyObject(Object obj)$/;"	m	class:BasePoolableObjectFactory
+destroyObject	./src/java/org/apache/commons/pool/KeyedPoolableObjectFactory.java	/^    void destroyObject(Object key, Object obj) throws Exception;$/;"	m	interface:KeyedPoolableObjectFactory
+destroyObject	./src/java/org/apache/commons/pool/PoolableObjectFactory.java	/^  void destroyObject(Object obj) throws Exception;$/;"	m	interface:PoolableObjectFactory
+destroyObject	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public void destroyObject(Object key, Object obj) { }$/;"	m	class:TestGenericKeyedObjectPool.SimpleFactory
+destroyObject	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public void destroyObject(Object obj) { }$/;"	m	class:TestGenericObjectPool.SimpleFactory
+destroyObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public void destroyObject(Object obj) { }$/;"	m	class:TestSoftRefOutOfMemory.LargePoolableObjectFactory
+destroyObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public void destroyObject(Object obj) { }$/;"	m	class:TestSoftRefOutOfMemory.SmallPoolableObjectFactory
+destroyObject	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^        public void destroyObject(Object key, Object obj) { }$/;"	m	class:TestStackKeyedObjectPool.SimpleFactory
+destroyObject	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^        public void destroyObject(Object obj) { }$/;"	m	class:TestStackObjectPool.SimpleFactory
+destroyObject	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^	public void destroyObject(Object obj) throws Exception {$/;"	m	class:SleepingObjectFactory
+destroyStack	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    private synchronized void destroyStack(Object key, Stack stack) {$/;"	m	class:StackKeyedObjectPool	file:
+enableValidation	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        boolean enableValidation = true;$/;"	f	class:TestGenericObjectPool.SimpleFactory
+ensureMinIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private void ensureMinIdle() throws Exception {$/;"	m	class:GenericObjectPool	file:
+evenValid	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        boolean evenValid = true;$/;"	f	class:TestGenericObjectPool.SimpleFactory
+evict	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void evict() throws Exception {$/;"	m	class:GenericKeyedObjectPool
+evict	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void evict() throws Exception {$/;"	m	class:GenericObjectPool
+exceptionOnActivate	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        boolean exceptionOnActivate = false;$/;"	f	class:TestGenericObjectPool.SimpleFactory
+exceptionOnPassivate	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        boolean exceptionOnPassivate = false;$/;"	f	class:TestGenericObjectPool.SimpleFactory
+failed	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public boolean failed() {$/;"	m	class:TestGenericKeyedObjectPool.TestThread
+failed	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public boolean failed() {$/;"	m	class:TestGenericObjectPool.TestThread
+getActiveCount	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private synchronized int getActiveCount(Object key) {$/;"	m	class:GenericKeyedObjectPool	file:
+getActiveCount	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    private int getActiveCount(Object key) {$/;"	m	class:StackKeyedObjectPool	file:
+getMaxActive	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized int getMaxActive() {$/;"	m	class:GenericKeyedObjectPool
+getMaxActive	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized int getMaxActive() {$/;"	m	class:GenericObjectPool
+getMaxIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized int getMaxIdle() {$/;"	m	class:GenericKeyedObjectPool
+getMaxIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized int getMaxIdle() {$/;"	m	class:GenericObjectPool
+getMaxTotal	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized int getMaxTotal() {$/;"	m	class:GenericKeyedObjectPool
+getMaxWait	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized long getMaxWait() {$/;"	m	class:GenericKeyedObjectPool
+getMaxWait	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized long getMaxWait() {$/;"	m	class:GenericObjectPool
+getMinEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized long getMinEvictableIdleTimeMillis() {$/;"	m	class:GenericKeyedObjectPool
+getMinEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized long getMinEvictableIdleTimeMillis() {$/;"	m	class:GenericObjectPool
+getMinIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized int getMinIdle() {$/;"	m	class:GenericObjectPool
+getNthObject	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    protected abstract Object getNthObject(Object key, int n);$/;"	m	class:TestKeyedObjectPool
+getNthObject	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    protected abstract Object getNthObject(int n);$/;"	m	class:TestObjectPool
+getNthObject	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    protected Object getNthObject(Object key, int n) {$/;"	m	class:TestGenericKeyedObjectPool
+getNthObject	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    protected Object getNthObject(int n) {$/;"	m	class:TestGenericObjectPool
+getNthObject	./src/test/org/apache/commons/pool/impl/TestSoftReferenceObjectPool.java	/^    protected Object getNthObject(int n) {$/;"	m	class:TestSoftReferenceObjectPool
+getNthObject	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    protected Object getNthObject(Object key, int n) {$/;"	m	class:TestStackKeyedObjectPool
+getNthObject	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    protected Object getNthObject(int n) {$/;"	m	class:TestStackObjectPool
+getNumActive	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public int getNumActive() throws UnsupportedOperationException {$/;"	m	class:BaseKeyedObjectPool
+getNumActive	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public int getNumActive(Object key) throws UnsupportedOperationException {$/;"	m	class:BaseKeyedObjectPool
+getNumActive	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public int getNumActive() throws UnsupportedOperationException {$/;"	m	class:BaseObjectPool
+getNumActive	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    int getNumActive() throws UnsupportedOperationException;$/;"	m	interface:KeyedObjectPool
+getNumActive	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    int getNumActive(Object key) throws UnsupportedOperationException;$/;"	m	interface:KeyedObjectPool
+getNumActive	./src/java/org/apache/commons/pool/ObjectPool.java	/^    int getNumActive() throws UnsupportedOperationException;$/;"	m	interface:ObjectPool
+getNumActive	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized int getNumActive() {$/;"	m	class:GenericKeyedObjectPool
+getNumActive	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized int getNumActive(Object key) {$/;"	m	class:GenericKeyedObjectPool
+getNumActive	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized int getNumActive() {$/;"	m	class:GenericObjectPool
+getNumActive	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public int getNumActive() {$/;"	m	class:SoftReferenceObjectPool
+getNumActive	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public int getNumActive() {$/;"	m	class:StackKeyedObjectPool
+getNumActive	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public int getNumActive(Object key) {$/;"	m	class:StackKeyedObjectPool
+getNumActive	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public int getNumActive() {$/;"	m	class:StackObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public int getNumIdle() throws UnsupportedOperationException {$/;"	m	class:BaseKeyedObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public int getNumIdle(Object key) throws UnsupportedOperationException {$/;"	m	class:BaseKeyedObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public int getNumIdle() throws UnsupportedOperationException {$/;"	m	class:BaseObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    int getNumIdle() throws UnsupportedOperationException;$/;"	m	interface:KeyedObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    int getNumIdle(Object key) throws UnsupportedOperationException;$/;"	m	interface:KeyedObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/ObjectPool.java	/^    int getNumIdle() throws UnsupportedOperationException;$/;"	m	interface:ObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized int getNumIdle() {$/;"	m	class:GenericKeyedObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized int getNumIdle(Object key) {$/;"	m	class:GenericKeyedObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized int getNumIdle() {$/;"	m	class:GenericObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public int getNumIdle() {$/;"	m	class:SoftReferenceObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public int getNumIdle() {$/;"	m	class:StackKeyedObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized int getNumIdle(Object key) {$/;"	m	class:StackKeyedObjectPool
+getNumIdle	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public int getNumIdle() {$/;"	m	class:StackObjectPool
+getNumTests	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private synchronized int getNumTests() {$/;"	m	class:GenericKeyedObjectPool	file:
+getNumTests	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    private int getNumTests() {$/;"	m	class:GenericObjectPool	file:
+getNumTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized int getNumTestsPerEvictionRun() {$/;"	m	class:GenericKeyedObjectPool
+getNumTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized int getNumTestsPerEvictionRun() {$/;"	m	class:GenericObjectPool
+getTestOnBorrow	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized boolean getTestOnBorrow() {$/;"	m	class:GenericKeyedObjectPool
+getTestOnBorrow	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized boolean getTestOnBorrow() {$/;"	m	class:GenericObjectPool
+getTestOnReturn	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized boolean getTestOnReturn() {$/;"	m	class:GenericKeyedObjectPool
+getTestOnReturn	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized boolean getTestOnReturn() {$/;"	m	class:GenericObjectPool
+getTestWhileIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized boolean getTestWhileIdle() {$/;"	m	class:GenericKeyedObjectPool
+getTestWhileIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized boolean getTestWhileIdle() {$/;"	m	class:GenericObjectPool
+getTimeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized long getTimeBetweenEvictionRunsMillis() {$/;"	m	class:GenericKeyedObjectPool
+getTimeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized long getTimeBetweenEvictionRunsMillis() {$/;"	m	class:GenericObjectPool
+getWhenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized byte getWhenExhaustedAction() {$/;"	m	class:GenericKeyedObjectPool
+getWhenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized byte getWhenExhaustedAction() {$/;"	m	class:GenericObjectPool
+incrementActiveCount	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    private synchronized void incrementActiveCount(Object key) {$/;"	m	class:GenericKeyedObjectPool	file:
+incrementActiveCount	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    private void incrementActiveCount(Object key) {$/;"	m	class:StackKeyedObjectPool	file:
+init	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private void init() {$/;"	m	class:PerformanceTest	file:
+invalidateObject	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public abstract void invalidateObject(Object key, Object obj) throws Exception;$/;"	m	class:BaseKeyedObjectPool
+invalidateObject	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public abstract void invalidateObject(Object obj) throws Exception;$/;"	m	class:BaseObjectPool
+invalidateObject	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    void invalidateObject(Object key, Object obj) throws Exception;$/;"	m	interface:KeyedObjectPool
+invalidateObject	./src/java/org/apache/commons/pool/ObjectPool.java	/^    void invalidateObject(Object obj) throws Exception;$/;"	m	interface:ObjectPool
+invalidateObject	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public void invalidateObject(Object key, Object obj) throws Exception {$/;"	m	class:GenericKeyedObjectPool
+invalidateObject	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public void invalidateObject(Object obj) throws Exception {$/;"	m	class:GenericObjectPool
+invalidateObject	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public synchronized void invalidateObject(Object obj) throws Exception {$/;"	m	class:SoftReferenceObjectPool
+invalidateObject	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized void invalidateObject(Object key, Object obj) throws Exception {$/;"	m	class:StackKeyedObjectPool
+invalidateObject	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public synchronized void invalidateObject(Object obj) throws Exception {$/;"	m	class:StackObjectPool
+isClosed	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    protected final boolean isClosed() {$/;"	m	class:BaseObjectPool
+isDebug	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^    public boolean isDebug() {$/;"	m	class:SleepingObjectFactory
+isThrowExceptionOnActivate	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public boolean isThrowExceptionOnActivate() {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+isValidationEnabled	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public boolean isValidationEnabled() {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+logLevel	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private int logLevel = 0;$/;"	f	class:PerformanceTest	file:
+main	./src/PoolHarness.java	/^02   public static void main(String[] args) {$/;"	m	class:PoolHarness
+main	./src/test/org/apache/commons/pool/TestAll.java	/^    public static void main(String args[]) {$/;"	m	class:TestAll
+main	./src/test/org/apache/commons/pool/impl/TestAll.java	/^    public static void main(String args[]) {$/;"	m	class:TestAll
+main	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    public static void main(String[] args) {$/;"	m	class:PerformanceTest
+makeCounter	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        int makeCounter = 0;$/;"	f	class:TestGenericObjectPool.SimpleFactory
+makeEmptyPool	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    protected abstract KeyedObjectPool makeEmptyPool(int mincapacity);$/;"	m	class:TestKeyedObjectPool
+makeEmptyPool	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    protected abstract ObjectPool makeEmptyPool(int mincapacity);$/;"	m	class:TestObjectPool
+makeEmptyPool	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    protected KeyedObjectPool makeEmptyPool(int mincapacity) {$/;"	m	class:TestGenericKeyedObjectPool
+makeEmptyPool	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    protected ObjectPool makeEmptyPool(int mincap) {$/;"	m	class:TestGenericObjectPool
+makeEmptyPool	./src/test/org/apache/commons/pool/impl/TestSoftReferenceObjectPool.java	/^    protected ObjectPool makeEmptyPool(int cap) {$/;"	m	class:TestSoftReferenceObjectPool
+makeEmptyPool	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    protected KeyedObjectPool makeEmptyPool(int mincapacity) {$/;"	m	class:TestStackKeyedObjectPool
+makeEmptyPool	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    protected ObjectPool makeEmptyPool(int mincap) {$/;"	m	class:TestStackObjectPool
+makeKey	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    protected abstract Object makeKey(int n);$/;"	m	class:TestKeyedObjectPool
+makeKey	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    protected Object makeKey(int n) {$/;"	m	class:TestGenericKeyedObjectPool
+makeKey	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    protected Object makeKey(int n) {$/;"	m	class:TestStackKeyedObjectPool
+makeObject	./src/java/org/apache/commons/pool/BaseKeyedPoolableObjectFactory.java	/^    public abstract Object makeObject(Object key)$/;"	m	class:BaseKeyedPoolableObjectFactory
+makeObject	./src/java/org/apache/commons/pool/BasePoolableObjectFactory.java	/^    public abstract Object makeObject()$/;"	m	class:BasePoolableObjectFactory
+makeObject	./src/java/org/apache/commons/pool/KeyedPoolableObjectFactory.java	/^    Object makeObject(Object key) throws Exception;$/;"	m	interface:KeyedPoolableObjectFactory
+makeObject	./src/java/org/apache/commons/pool/PoolableObjectFactory.java	/^  Object makeObject() throws Exception;$/;"	m	interface:PoolableObjectFactory
+makeObject	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public Object makeObject(Object key) { return String.valueOf(key) + String.valueOf(counter++); }$/;"	m	class:TestGenericKeyedObjectPool.SimpleFactory
+makeObject	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public Object makeObject() { return String.valueOf(makeCounter++); }$/;"	m	class:TestGenericObjectPool.SimpleFactory
+makeObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public Object makeObject() {$/;"	m	class:TestSoftRefOutOfMemory.LargePoolableObjectFactory
+makeObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public Object makeObject() {$/;"	m	class:TestSoftRefOutOfMemory.SmallPoolableObjectFactory
+makeObject	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^        public Object makeObject(Object key) { $/;"	m	class:TestStackKeyedObjectPool.SimpleFactory
+makeObject	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^        public Object makeObject() { return String.valueOf(counter++); }$/;"	m	class:TestStackObjectPool.SimpleFactory
+makeObject	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^	public Object makeObject() throws Exception {$/;"	m	class:SleepingObjectFactory
+map	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^        HashMap map = new HashMap();$/;"	f	class:TestStackKeyedObjectPool.SimpleFactory
+maxActive	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public int maxActive = GenericKeyedObjectPool.DEFAULT_MAX_ACTIVE;$/;"	f	class:GenericKeyedObjectPool.Config
+maxActive	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public int maxActive = GenericObjectPool.DEFAULT_MAX_ACTIVE;$/;"	f	class:GenericObjectPool.Config
+maxIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public int maxIdle = GenericKeyedObjectPool.DEFAULT_MAX_IDLE;$/;"	f	class:GenericKeyedObjectPool.Config
+maxIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public int maxIdle = GenericObjectPool.DEFAULT_MAX_IDLE;$/;"	f	class:GenericObjectPool.Config
+maxTotal	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public int maxTotal = GenericKeyedObjectPool.DEFAULT_MAX_TOTAL;$/;"	f	class:GenericKeyedObjectPool.Config
+maxWait	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public long maxWait = GenericKeyedObjectPool.DEFAULT_MAX_WAIT;$/;"	f	class:GenericKeyedObjectPool.Config
+maxWait	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public long maxWait = GenericObjectPool.DEFAULT_MAX_WAIT;$/;"	f	class:GenericObjectPool.Config
+minEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public long minEvictableIdleTimeMillis = GenericKeyedObjectPool.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;$/;"	f	class:GenericKeyedObjectPool.Config
+minEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public long minEvictableIdleTimeMillis = GenericObjectPool.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS;$/;"	f	class:GenericObjectPool.Config
+minIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public int minIdle = GenericObjectPool.DEFAULT_MIN_IDLE;$/;"	f	class:GenericObjectPool.Config
+nrIterations	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private int nrIterations = 5;$/;"	f	class:PerformanceTest	file:
+nrSamples	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private volatile int nrSamples = 0; $/;"	f	class:PerformanceTest	file:
+nrThreads	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private int nrThreads = 100;$/;"	f	class:PerformanceTest	file:
+numTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public int numTestsPerEvictionRun =  GenericKeyedObjectPool.DEFAULT_NUM_TESTS_PER_EVICTION_RUN;$/;"	f	class:GenericKeyedObjectPool.Config
+numTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public int numTestsPerEvictionRun =  GenericObjectPool.DEFAULT_NUM_TESTS_PER_EVICTION_RUN;$/;"	f	class:GenericObjectPool.Config
+oddValid	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        boolean oddValid = true;$/;"	f	class:TestGenericObjectPool.SimpleFactory
+org.apache.commons.pool	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/BaseKeyedPoolableObjectFactory.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/BasePoolableObjectFactory.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/KeyedObjectPoolFactory.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/KeyedPoolableObjectFactory.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/ObjectPool.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/ObjectPoolFactory.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/java/org/apache/commons/pool/PoolableObjectFactory.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/test/org/apache/commons/pool/TestAll.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/test/org/apache/commons/pool/TestBaseKeyedObjectPool.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/test/org/apache/commons/pool/TestBaseKeyedPoolableObjectFactory.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/test/org/apache/commons/pool/TestBaseObjectPool.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/test/org/apache/commons/pool/TestBasePoolableObjectFactory.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool	./src/test/org/apache/commons/pool/TestObjectPool.java	/^package org.apache.commons.pool;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPoolFactory.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/GenericObjectPoolFactory.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPoolFactory.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/java/org/apache/commons/pool/impl/StackObjectPoolFactory.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/test/org/apache/commons/pool/impl/TestAll.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/test/org/apache/commons/pool/impl/TestSoftReferenceObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.impl	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^package org.apache.commons.pool.impl;$/;"	p
+org.apache.commons.pool.performance	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^package org.apache.commons.pool.performance;$/;"	p
+org.apache.commons.pool.performance	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^package org.apache.commons.pool.performance;$/;"	p
+passivateObject	./src/java/org/apache/commons/pool/BaseKeyedPoolableObjectFactory.java	/^    public void passivateObject(Object key, Object obj) $/;"	m	class:BaseKeyedPoolableObjectFactory
+passivateObject	./src/java/org/apache/commons/pool/BasePoolableObjectFactory.java	/^    public void passivateObject(Object obj) $/;"	m	class:BasePoolableObjectFactory
+passivateObject	./src/java/org/apache/commons/pool/KeyedPoolableObjectFactory.java	/^    void passivateObject(Object key, Object obj) throws Exception;$/;"	m	interface:KeyedPoolableObjectFactory
+passivateObject	./src/java/org/apache/commons/pool/PoolableObjectFactory.java	/^  void passivateObject(Object obj) throws Exception;$/;"	m	interface:PoolableObjectFactory
+passivateObject	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public void passivateObject(Object key, Object obj) { }$/;"	m	class:TestGenericKeyedObjectPool.SimpleFactory
+passivateObject	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public void passivateObject(Object obj) throws Exception {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+passivateObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public void passivateObject(Object obj) { }$/;"	m	class:TestSoftRefOutOfMemory.LargePoolableObjectFactory
+passivateObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public void passivateObject(Object obj) { }$/;"	m	class:TestSoftRefOutOfMemory.SmallPoolableObjectFactory
+passivateObject	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^        public void passivateObject(Object key, Object obj) { }$/;"	m	class:TestStackKeyedObjectPool.SimpleFactory
+passivateObject	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^        public void passivateObject(Object obj) { }$/;"	m	class:TestStackObjectPool.SimpleFactory
+passivateObject	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^	public void passivateObject(Object obj) throws Exception {$/;"	m	class:SleepingObjectFactory
+pool	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    private GenericKeyedObjectPool pool = null;$/;"	f	class:TestGenericKeyedObjectPool	file:
+pool	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    private GenericObjectPool pool = null;$/;"	f	class:TestGenericObjectPool	file:
+pool	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    private SoftReferenceObjectPool pool;$/;"	f	class:TestSoftRefOutOfMemory	file:
+pool	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    private StackKeyedObjectPool pool = null;$/;"	f	class:TestStackKeyedObjectPool	file:
+pool	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private GenericObjectPool pool;$/;"	f	class:PerformanceTest	file:
+returnObject	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public abstract void returnObject(Object key, Object obj) throws Exception;$/;"	m	class:BaseKeyedObjectPool
+returnObject	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public abstract void returnObject(Object obj) throws Exception;$/;"	m	class:BaseObjectPool
+returnObject	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    void returnObject(Object key, Object obj) throws Exception;$/;"	m	interface:KeyedObjectPool
+returnObject	./src/java/org/apache/commons/pool/ObjectPool.java	/^    void returnObject(Object obj) throws Exception;$/;"	m	interface:ObjectPool
+returnObject	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public void returnObject(Object key, Object obj) throws Exception {$/;"	m	class:GenericKeyedObjectPool
+returnObject	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public void returnObject(Object obj) throws Exception {$/;"	m	class:GenericObjectPool
+returnObject	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    public void returnObject(Object obj) throws Exception {$/;"	m	class:SoftReferenceObjectPool
+returnObject	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized void returnObject(Object key, Object obj) throws Exception {$/;"	m	class:StackKeyedObjectPool
+returnObject	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    public void returnObject(Object obj) throws Exception {$/;"	m	class:StackObjectPool
+returnTime	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^        long returnTime;$/;"	f	class:PerformanceTest.MyThread
+run	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public void run() {$/;"	m	class:GenericKeyedObjectPool.Evictor
+run	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public void run() {$/;"	m	class:GenericObjectPool.Evictor
+run	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public void run() {$/;"	m	class:TestGenericKeyedObjectPool.TestThread
+run	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public void run() {$/;"	m	class:TestGenericObjectPool.TestThread
+run	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^        public void run() {$/;"	m	class:PerformanceTest.MyThread
+run	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private void run(int nrIterations, int nrThreads, int maxActive, int maxIdle) {$/;"	m	class:PerformanceTest	file:
+runOnce	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^        public void runOnce() {$/;"	m	class:PerformanceTest.MyThread
+setConfig	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setConfig(GenericKeyedObjectPool.Config conf) {$/;"	m	class:GenericKeyedObjectPool
+setConfig	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setConfig(GenericObjectPool.Config conf) {$/;"	m	class:GenericObjectPool
+setDebug	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^    public void setDebug(boolean b) {$/;"	m	class:SleepingObjectFactory
+setEvenValid	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        void setEvenValid(boolean valid) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+setFactory	./src/java/org/apache/commons/pool/BaseKeyedObjectPool.java	/^    public void setFactory(KeyedPoolableObjectFactory factory)$/;"	m	class:BaseKeyedObjectPool
+setFactory	./src/java/org/apache/commons/pool/BaseObjectPool.java	/^    public void setFactory(PoolableObjectFactory factory) throws IllegalStateException, UnsupportedOperationException {$/;"	m	class:BaseObjectPool
+setFactory	./src/java/org/apache/commons/pool/KeyedObjectPool.java	/^    void setFactory(KeyedPoolableObjectFactory factory) throws IllegalStateException, UnsupportedOperationException;$/;"	m	interface:KeyedObjectPool
+setFactory	./src/java/org/apache/commons/pool/ObjectPool.java	/^    void setFactory(PoolableObjectFactory factory) throws IllegalStateException, UnsupportedOperationException;$/;"	m	interface:ObjectPool
+setFactory	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setFactory(KeyedPoolableObjectFactory factory) throws IllegalStateException {$/;"	m	class:GenericKeyedObjectPool
+setFactory	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setFactory(PoolableObjectFactory factory) throws IllegalStateException {$/;"	m	class:GenericObjectPool
+setFactory	./src/java/org/apache/commons/pool/impl/SoftReferenceObjectPool.java	/^    synchronized public void setFactory(PoolableObjectFactory factory) throws IllegalStateException {$/;"	m	class:SoftReferenceObjectPool
+setFactory	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized void setFactory(KeyedPoolableObjectFactory factory) throws IllegalStateException {$/;"	m	class:StackKeyedObjectPool
+setFactory	./src/java/org/apache/commons/pool/impl/StackObjectPool.java	/^    synchronized public void setFactory(PoolableObjectFactory factory) throws IllegalStateException {$/;"	m	class:StackObjectPool
+setLogLevel	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    public void setLogLevel(int i) {$/;"	m	class:PerformanceTest
+setMaxActive	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setMaxActive(int maxActive) {$/;"	m	class:GenericKeyedObjectPool
+setMaxActive	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setMaxActive(int maxActive) {$/;"	m	class:GenericObjectPool
+setMaxIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setMaxIdle(int maxIdle) {$/;"	m	class:GenericKeyedObjectPool
+setMaxIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setMaxIdle(int maxIdle) {$/;"	m	class:GenericObjectPool
+setMaxTotal	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setMaxTotal(int maxTotal) {$/;"	m	class:GenericKeyedObjectPool
+setMaxWait	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setMaxWait(long maxWait) {$/;"	m	class:GenericKeyedObjectPool
+setMaxWait	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setMaxWait(long maxWait) {$/;"	m	class:GenericObjectPool
+setMinEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {$/;"	m	class:GenericKeyedObjectPool
+setMinEvictableIdleTimeMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {$/;"	m	class:GenericObjectPool
+setMinIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setMinIdle(int minIdle) {$/;"	m	class:GenericObjectPool
+setNumTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setNumTestsPerEvictionRun(int numTestsPerEvictionRun) {$/;"	m	class:GenericKeyedObjectPool
+setNumTestsPerEvictionRun	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setNumTestsPerEvictionRun(int numTestsPerEvictionRun) {$/;"	m	class:GenericObjectPool
+setOddValid	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        void setOddValid(boolean valid) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+setTestOnBorrow	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setTestOnBorrow(boolean testOnBorrow) {$/;"	m	class:GenericKeyedObjectPool
+setTestOnBorrow	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setTestOnBorrow(boolean testOnBorrow) {$/;"	m	class:GenericObjectPool
+setTestOnReturn	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setTestOnReturn(boolean testOnReturn) {$/;"	m	class:GenericKeyedObjectPool
+setTestOnReturn	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setTestOnReturn(boolean testOnReturn) {$/;"	m	class:GenericObjectPool
+setTestWhileIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setTestWhileIdle(boolean testWhileIdle) {$/;"	m	class:GenericKeyedObjectPool
+setTestWhileIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setTestWhileIdle(boolean testWhileIdle) {$/;"	m	class:GenericObjectPool
+setThrowExceptionOnActivate	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public void setThrowExceptionOnActivate(boolean b) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+setThrowExceptionOnPassivate	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public void setThrowExceptionOnPassivate(boolean bool) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+setTimeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {$/;"	m	class:GenericKeyedObjectPool
+setTimeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {$/;"	m	class:GenericObjectPool
+setUp	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void setUp() throws Exception {$/;"	m	class:TestKeyedObjectPool
+setUp	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void setUp() throws Exception {$/;"	m	class:TestObjectPool
+setUp	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void setUp() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+setUp	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void setUp() throws Exception {$/;"	m	class:TestGenericObjectPool
+setUp	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void setUp() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+setValid	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        void setValid(boolean valid) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+setValidationEnabled	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public void setValidationEnabled(boolean b) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+setWhenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    public synchronized void setWhenExhaustedAction(byte whenExhaustedAction) {$/;"	m	class:GenericKeyedObjectPool
+setWhenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    public synchronized void setWhenExhaustedAction(byte whenExhaustedAction) {$/;"	m	class:GenericObjectPool
+sleep	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^    private void sleep(long millis) {$/;"	m	class:SleepingObjectFactory	file:
+start	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private boolean start = false;$/;"	f	class:PerformanceTest	file:
+startEvictor	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^    protected synchronized void startEvictor(long delay) {$/;"	m	class:GenericKeyedObjectPool
+startEvictor	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^    protected synchronized void startEvictor(long delay) {$/;"	m	class:GenericObjectPool
+suite	./src/test/org/apache/commons/pool/TestAll.java	/^    public static Test suite() {$/;"	m	class:TestAll
+suite	./src/test/org/apache/commons/pool/TestBaseKeyedObjectPool.java	/^    public static Test suite() {$/;"	m	class:TestBaseKeyedObjectPool
+suite	./src/test/org/apache/commons/pool/TestBaseKeyedPoolableObjectFactory.java	/^    public static Test suite() {$/;"	m	class:TestBaseKeyedPoolableObjectFactory
+suite	./src/test/org/apache/commons/pool/TestBaseObjectPool.java	/^    public static Test suite() {$/;"	m	class:TestBaseObjectPool
+suite	./src/test/org/apache/commons/pool/TestBasePoolableObjectFactory.java	/^    public static Test suite() {$/;"	m	class:TestBasePoolableObjectFactory
+suite	./src/test/org/apache/commons/pool/impl/TestAll.java	/^    public static Test suite() {$/;"	m	class:TestAll
+suite	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public static Test suite() {$/;"	m	class:TestGenericKeyedObjectPool
+suite	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public static Test suite() {$/;"	m	class:TestGenericObjectPool
+suite	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public static TestSuite suite() {$/;"	m	class:TestSoftRefOutOfMemory
+suite	./src/test/org/apache/commons/pool/impl/TestSoftReferenceObjectPool.java	/^    public static Test suite() {$/;"	m	class:TestSoftReferenceObjectPool
+suite	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public static Test suite() {$/;"	m	class:TestStackKeyedObjectPool
+suite	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public static Test suite() {$/;"	m	class:TestStackObjectPool
+tearDown	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void tearDown() throws Exception {$/;"	m	class:TestKeyedObjectPool
+tearDown	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void tearDown() throws Exception {$/;"	m	class:TestObjectPool
+tearDown	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void tearDown() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+tearDown	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void tearDown() throws Exception {$/;"	m	class:TestGenericObjectPool
+tearDown	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public void tearDown() throws Exception {$/;"	m	class:TestSoftRefOutOfMemory
+tearDown	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void tearDown() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testActivationException	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testActivationException() throws Exception {$/;"	m	class:TestGenericObjectPool
+testActivationExceptionOnNewObject	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testActivationExceptionOnNewObject() throws Exception {$/;"	m	class:TestGenericObjectPool
+testAddObject	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testAddObject() throws Exception {$/;"	m	class:TestGenericObjectPool
+testBaseAddObject	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void testBaseAddObject() throws Exception {$/;"	m	class:TestKeyedObjectPool
+testBaseAddObject	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void testBaseAddObject() throws Exception {$/;"	m	class:TestObjectPool
+testBaseBorrow	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void testBaseBorrow() throws Exception {$/;"	m	class:TestKeyedObjectPool
+testBaseBorrow	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void testBaseBorrow() throws Exception {$/;"	m	class:TestObjectPool
+testBaseBorrowReturn	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void testBaseBorrowReturn() throws Exception {$/;"	m	class:TestKeyedObjectPool
+testBaseBorrowReturn	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void testBaseBorrowReturn() throws Exception {$/;"	m	class:TestObjectPool
+testBaseCantCloseTwice	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void testBaseCantCloseTwice() throws Exception {$/;"	m	class:TestObjectPool
+testBaseClear	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void testBaseClear() throws Exception {$/;"	m	class:TestKeyedObjectPool
+testBaseClear	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void testBaseClear() throws Exception {$/;"	m	class:TestObjectPool
+testBaseClosePool	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void testBaseClosePool() throws Exception {$/;"	m	class:TestObjectPool
+testBaseInvalidateObject	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void testBaseInvalidateObject() throws Exception {$/;"	m	class:TestKeyedObjectPool
+testBaseInvalidateObject	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void testBaseInvalidateObject() throws Exception {$/;"	m	class:TestObjectPool
+testBaseNumActiveNumIdle	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void testBaseNumActiveNumIdle() throws Exception {$/;"	m	class:TestKeyedObjectPool
+testBaseNumActiveNumIdle	./src/test/org/apache/commons/pool/TestObjectPool.java	/^    public void testBaseNumActiveNumIdle() throws Exception {$/;"	m	class:TestObjectPool
+testBaseNumActiveNumIdle2	./src/test/org/apache/commons/pool/TestKeyedObjectPool.java	/^    public void testBaseNumActiveNumIdle2() throws Exception {$/;"	m	class:TestKeyedObjectPool
+testBorrowFromEmptyPoolWithNullFactory	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testBorrowFromEmptyPoolWithNullFactory() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testBorrowFromEmptyPoolWithNullFactory	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public void testBorrowFromEmptyPoolWithNullFactory() throws Exception {$/;"	m	class:TestStackObjectPool
+testBorrowReturnWithSometimesInvalidObjects	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testBorrowReturnWithSometimesInvalidObjects() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testBorrowReturnWithSometimesInvalidObjects	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public void testBorrowReturnWithSometimesInvalidObjects() throws Exception {$/;"	m	class:TestStackObjectPool
+testCanResetFactoryWithoutActiveObjects	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testCanResetFactoryWithoutActiveObjects() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testCanResetFactoryWithoutActiveObjects	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public void testCanResetFactoryWithoutActiveObjects() throws Exception {$/;"	m	class:TestStackObjectPool
+testCantResetFactoryWithActiveObjects	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testCantResetFactoryWithActiveObjects() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testCantResetFactoryWithActiveObjects	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public void testCantResetFactoryWithActiveObjects() throws Exception {$/;"	m	class:TestStackObjectPool
+testCloseBug	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testCloseBug() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testConstructors	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testConstructors() throws Exception {$/;"	m	class:TestGenericObjectPool
+testDebugInfo	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testDebugInfo() throws Exception {$/;"	m	class:TestGenericObjectPool
+testDefaultConfiguration	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testDefaultConfiguration() throws Exception {$/;"	m	class:TestGenericObjectPool
+testDefaultMethods	./src/test/org/apache/commons/pool/TestBaseKeyedPoolableObjectFactory.java	/^    public void testDefaultMethods() throws Exception {$/;"	m	class:TestBaseKeyedPoolableObjectFactory
+testDefaultMethods	./src/test/org/apache/commons/pool/TestBasePoolableObjectFactory.java	/^    public void testDefaultMethods() throws Exception {$/;"	m	class:TestBasePoolableObjectFactory
+testEvictWhileEmpty	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testEvictWhileEmpty() throws Exception {$/;"	m	class:TestGenericObjectPool
+testEviction	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testEviction() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testEviction	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testEviction() throws Exception {$/;"	m	class:TestGenericObjectPool
+testEviction2	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testEviction2() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testEvictionWithNegativeNumTests	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testEvictionWithNegativeNumTests() throws Exception {$/;"	m	class:TestGenericObjectPool
+testExceptionOnPassivateDuringReturn	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testExceptionOnPassivateDuringReturn() throws Exception {$/;"	m	class:TestGenericObjectPool
+testIdleCap	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testIdleCap() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testIdleCap	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public void testIdleCap() throws Exception {$/;"	m	class:TestStackObjectPool
+testInvalidWhenExhaustedAction	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testInvalidWhenExhaustedAction() throws Exception {$/;"	m	class:TestGenericObjectPool
+testMaxActive	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testMaxActive() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testMaxActive	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testMaxActive() throws Exception {$/;"	m	class:TestGenericObjectPool
+testMaxIdle	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testMaxIdle() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testMaxIdle	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testMaxIdle() throws Exception {$/;"	m	class:TestGenericObjectPool
+testMaxTotal	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testMaxTotal() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testMinIdle	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testMinIdle() throws Exception {$/;"	m	class:TestGenericObjectPool
+testMinIdleMaxActive	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testMinIdleMaxActive() throws Exception {$/;"	m	class:TestGenericObjectPool
+testNegativeMaxActive	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testNegativeMaxActive() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testNegativeMaxActive	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testNegativeMaxActive() throws Exception {$/;"	m	class:TestGenericObjectPool
+testNumActiveNumIdle2	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testNumActiveNumIdle2() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testOnBorrow	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public boolean testOnBorrow = GenericKeyedObjectPool.DEFAULT_TEST_ON_BORROW;$/;"	f	class:GenericKeyedObjectPool.Config
+testOnBorrow	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public boolean testOnBorrow = GenericObjectPool.DEFAULT_TEST_ON_BORROW;$/;"	f	class:GenericObjectPool.Config
+testOnReturn	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public boolean testOnReturn = GenericKeyedObjectPool.DEFAULT_TEST_ON_RETURN;$/;"	f	class:GenericKeyedObjectPool.Config
+testOnReturn	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public boolean testOnReturn = GenericObjectPool.DEFAULT_TEST_ON_RETURN;$/;"	f	class:GenericObjectPool.Config
+testOutOfMemory	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public void testOutOfMemory() throws Exception {$/;"	m	class:TestSoftRefOutOfMemory
+testOutOfMemory1000	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public void testOutOfMemory1000() throws Exception {$/;"	m	class:TestSoftRefOutOfMemory
+testOutOfMemoryKeepMap	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public void testOutOfMemoryKeepMap() throws Exception {$/;"	m	class:TestSoftRefOutOfMemory
+testOutOfMemoryLarge	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^    public void testOutOfMemoryLarge() throws Exception {$/;"	m	class:TestSoftRefOutOfMemory
+testPoolWithNullFactory	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testPoolWithNullFactory() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testPoolWithNullFactory	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public void testPoolWithNullFactory() throws Exception {$/;"	m	class:TestStackObjectPool
+testSetConfig	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testSetConfig() throws Exception {$/;"	m	class:TestGenericObjectPool
+testSetFactory	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testSetFactory() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testSetFactory	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public void testSetFactory() throws Exception {$/;"	m	class:TestStackObjectPool
+testSetFactoryWithActiveObjects	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testSetFactoryWithActiveObjects() throws Exception {$/;"	m	class:TestGenericObjectPool
+testSetFactoryWithNoActiveObjects	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testSetFactoryWithNoActiveObjects() throws Exception {$/;"	m	class:TestGenericObjectPool
+testSettersAndGetters	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testSettersAndGetters() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testSettersAndGetters	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testSettersAndGetters() throws Exception {$/;"	m	class:TestGenericObjectPool
+testStartAndStopEvictor	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testStartAndStopEvictor() throws Exception {$/;"	m	class:TestGenericObjectPool
+testThreaded1	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testThreaded1() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testThreaded1	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testThreaded1() throws Exception {$/;"	m	class:TestGenericObjectPool
+testToString	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testToString() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testUnsupportedOperations	./src/test/org/apache/commons/pool/TestBaseKeyedObjectPool.java	/^    public void testUnsupportedOperations() throws Exception {$/;"	m	class:TestBaseKeyedObjectPool
+testUnsupportedOperations	./src/test/org/apache/commons/pool/TestBaseObjectPool.java	/^    public void testUnsupportedOperations() throws Exception {$/;"	m	class:TestBaseObjectPool
+testVariousConstructors	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^    public void testVariousConstructors() throws Exception {$/;"	m	class:TestStackKeyedObjectPool
+testVariousConstructors	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^    public void testVariousConstructors() throws Exception {$/;"	m	class:TestStackObjectPool
+testWhenExhaustedBlock	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testWhenExhaustedBlock() throws Exception {$/;"	m	class:TestGenericObjectPool
+testWhenExhaustedFail	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testWhenExhaustedFail() throws Exception {$/;"	m	class:TestGenericObjectPool
+testWhenExhaustedGrow	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testWhenExhaustedGrow() throws Exception {$/;"	m	class:TestGenericObjectPool
+testWhileIdle	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public boolean testWhileIdle = GenericKeyedObjectPool.DEFAULT_TEST_WHILE_IDLE;$/;"	f	class:GenericKeyedObjectPool.Config
+testWhileIdle	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public boolean testWhileIdle = GenericObjectPool.DEFAULT_TEST_WHILE_IDLE;$/;"	f	class:GenericObjectPool.Config
+testWithInitiallyInvalid	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testWithInitiallyInvalid() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testWithInitiallyInvalid	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testWithInitiallyInvalid() throws Exception {$/;"	m	class:TestGenericObjectPool
+testWithSometimesInvalid	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testWithSometimesInvalid() throws Exception {$/;"	m	class:TestGenericObjectPool
+testZeroMaxActive	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^    public void testZeroMaxActive() throws Exception {$/;"	m	class:TestGenericKeyedObjectPool
+testZeroMaxActive	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^    public void testZeroMaxActive() throws Exception {$/;"	m	class:TestGenericObjectPool
+timeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public long timeBetweenEvictionRunsMillis = GenericKeyedObjectPool.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS;$/;"	f	class:GenericKeyedObjectPool.Config
+timeBetweenEvictionRunsMillis	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public long timeBetweenEvictionRunsMillis = GenericObjectPool.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS;$/;"	f	class:GenericObjectPool.Config
+toString	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public String toString() {$/;"	m	class:GenericKeyedObjectPool.ObjectTimestampPair
+toString	./src/java/org/apache/commons/pool/impl/StackKeyedObjectPool.java	/^    public synchronized String toString() {$/;"	m	class:StackKeyedObjectPool
+totalBorrowTime	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private volatile long totalBorrowTime = 0;$/;"	f	class:PerformanceTest	file:
+totalReturnTime	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private volatile long totalReturnTime = 0;$/;"	f	class:PerformanceTest	file:
+tstamp	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        long tstamp;$/;"	f	class:GenericKeyedObjectPool.ObjectTimestampPair
+tstamp	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        long tstamp;$/;"	f	class:GenericObjectPool.ObjectTimestampPair
+valid	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        boolean valid;$/;"	f	class:TestGenericKeyedObjectPool.SimpleFactory
+validateCounter	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        int validateCounter = 0;$/;"	f	class:TestGenericObjectPool.SimpleFactory
+validateObject	./src/java/org/apache/commons/pool/BaseKeyedPoolableObjectFactory.java	/^    public boolean validateObject(Object key, Object obj) {$/;"	m	class:BaseKeyedPoolableObjectFactory
+validateObject	./src/java/org/apache/commons/pool/BasePoolableObjectFactory.java	/^    public boolean validateObject(Object obj) {$/;"	m	class:BasePoolableObjectFactory
+validateObject	./src/java/org/apache/commons/pool/KeyedPoolableObjectFactory.java	/^    boolean validateObject(Object key, Object obj);$/;"	m	interface:KeyedPoolableObjectFactory
+validateObject	./src/java/org/apache/commons/pool/PoolableObjectFactory.java	/^  boolean validateObject(Object obj);$/;"	m	interface:PoolableObjectFactory
+validateObject	./src/test/org/apache/commons/pool/impl/TestGenericKeyedObjectPool.java	/^        public boolean validateObject(Object key, Object obj) { return valid; }$/;"	m	class:TestGenericKeyedObjectPool.SimpleFactory
+validateObject	./src/test/org/apache/commons/pool/impl/TestGenericObjectPool.java	/^        public boolean validateObject(Object obj) {$/;"	m	class:TestGenericObjectPool.SimpleFactory
+validateObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public boolean validateObject(Object obj) {$/;"	m	class:TestSoftRefOutOfMemory.LargePoolableObjectFactory
+validateObject	./src/test/org/apache/commons/pool/impl/TestSoftRefOutOfMemory.java	/^        public boolean validateObject(Object obj) {$/;"	m	class:TestSoftRefOutOfMemory.SmallPoolableObjectFactory
+validateObject	./src/test/org/apache/commons/pool/impl/TestStackKeyedObjectPool.java	/^        public boolean validateObject(Object key, Object obj) { return true; }$/;"	m	class:TestStackKeyedObjectPool.SimpleFactory
+validateObject	./src/test/org/apache/commons/pool/impl/TestStackObjectPool.java	/^        public boolean validateObject(Object obj) { return true; }$/;"	m	class:TestStackObjectPool.SimpleFactory
+validateObject	./src/test/org/apache/commons/pool/performance/SleepingObjectFactory.java	/^	public boolean validateObject(Object obj) {$/;"	m	class:SleepingObjectFactory
+value	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        Object value;$/;"	f	class:GenericKeyedObjectPool.ObjectTimestampPair
+value	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        Object value;$/;"	f	class:GenericObjectPool.ObjectTimestampPair
+waiting	./src/test/org/apache/commons/pool/performance/PerformanceTest.java	/^    private volatile int waiting = 0;$/;"	f	class:PerformanceTest	file:
+whenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericKeyedObjectPool.java	/^        public byte whenExhaustedAction = GenericKeyedObjectPool.DEFAULT_WHEN_EXHAUSTED_ACTION;$/;"	f	class:GenericKeyedObjectPool.Config
+whenExhaustedAction	./src/java/org/apache/commons/pool/impl/GenericObjectPool.java	/^        public byte whenExhaustedAction = GenericObjectPool.DEFAULT_WHEN_EXHAUSTED_ACTION;$/;"	f	class:GenericObjectPool.Config

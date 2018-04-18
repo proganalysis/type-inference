@@ -1,0 +1,504 @@
+package checkers.javari.quals:
+annotation @ReadOnly: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @Mutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @ThisMutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+class Branch:
+
+    field D:
+        type: @checkers.javari.quals.ThisMutable
+
+    field alpha:
+
+    field beta:
+
+    field R:
+
+    field X:
+
+    field nextBranch:
+        type: @checkers.javari.quals.ThisMutable
+
+    field leaves:
+        type: @checkers.javari.quals.ThisMutable
+            inner-type 0: @checkers.javari.quals.ThisMutable
+
+    method <init>(II)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        local 0 #0+116:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+116:
+        local 2 #0+116:
+        local 3 #91+24:
+
+    method compute(DDDD)LDemand;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        parameter #3:
+        local 0 #0+396:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+396:
+        local 3 #0+396:
+        local 5 #0+396:
+        local 7 #0+396:
+        local 9 #23+373:
+        local 11 #46+350:
+        local 13 #49+347:
+            type: @checkers.javari.quals.ReadOnly
+        local 14 #81+37:
+        local 14 #155+241:
+        local 16 #205+191:
+        local 18 #232+164:
+        local 20 #283+113:
+
+package :
+class Demand:
+
+    field P:
+
+    field Q:
+
+    field F_EPSILON:
+
+    field G_EPSILON:
+
+    field H_EPSILON:
+
+    method <init>(DD)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        local 0 #0+15:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+15:
+        local 3 #0+15:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+
+    method increment(LDemand;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+27:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+27:
+            type: @checkers.javari.quals.ReadOnly
+
+    method reset()V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        local 0 #0+11:
+            type: @checkers.javari.quals.Mutable
+
+    method add(LDemand;LDemand;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+27:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+27:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+27:
+            type: @checkers.javari.quals.ReadOnly
+
+    method assign(LDemand;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+17:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+17:
+            type: @checkers.javari.quals.ReadOnly
+
+    method optimizeNode(DD)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        local 0 #0+442:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+442:
+        local 3 #0+442:
+        local 5 #5+437:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 6 #10+432:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 7 #15+427:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 8 #20+422:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 11 #26+416:
+        local 13 #46+39:
+        local 15 #53+32:
+        local 9 #91+351:
+        local 13 #108+59:
+        local 15 #135+32:
+        local 13 #177+202:
+        local 15 #188+191:
+        local 17 #191+28:
+        local 17 #262+28:
+        local 17 #307+12:
+
+    method findG()D:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+24:
+            type: @checkers.javari.quals.ReadOnly
+
+    method findH()D:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+14:
+            type: @checkers.javari.quals.ReadOnly
+
+    method findGradientF(DD[D)D:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        parameter #2:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 0 #0+97:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+97:
+        local 3 #0+97:
+        local 5 #0+97:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 6 #31+66:
+        local 8 #34+28:
+        local 8 #72+22:
+
+    method findGradientG([D)D:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 0 #0+81:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+81:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 2 #24+57:
+        local 4 #27+24:
+        local 4 #59+20:
+
+    method findGradientH([D)D:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 0 #0+69:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+69:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 2 #12+57:
+        local 4 #15+24:
+        local 4 #47+20:
+
+    method findDDGradF(DD[D)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        parameter #2:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 0 #0+81:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+81:
+        local 3 #0+81:
+        local 5 #0+81:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 6 #10+71:
+        local 8 #20+61:
+        local 10 #26+55:
+        local 12 #32+49:
+        local 14 #48+33:
+
+    method makeOrthogonal([D[D)D:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0:
+        local 0 #0+126:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+126:
+            type: @checkers.javari.quals.Mutable
+                inner-type 0:
+        local 2 #0+126:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0:
+        local 3 #2+124:
+        local 5 #5+24:
+        local 5 #32+94:
+        local 7 #35+39:
+        local 7 #84+21:
+
+package :
+class Lateral:
+
+    field D:
+        type: @checkers.javari.quals.ThisMutable
+
+    field alpha:
+
+    field beta:
+
+    field R:
+
+    field X:
+
+    field next_lateral:
+        type: @checkers.javari.quals.ThisMutable
+
+    field branch:
+        type: @checkers.javari.quals.ThisMutable
+
+    method <init>(III)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        local 0 #0+96:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+96:
+        local 2 #0+96:
+        local 3 #0+96:
+
+    method compute(DDDD)LDemand;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        parameter #3:
+        local 0 #0+381:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+381:
+        local 3 #0+381:
+        local 5 #0+381:
+        local 7 #0+381:
+        local 9 #23+358:
+        local 11 #46+335:
+        local 13 #68+3:
+            type: @checkers.javari.quals.ReadOnly
+        local 13 #74+307:
+            type: @checkers.javari.quals.ReadOnly
+        local 14 #89+292:
+            type: @checkers.javari.quals.ReadOnly
+        local 15 #140+241:
+        local 17 #190+191:
+        local 19 #217+164:
+        local 21 #268+113:
+
+package :
+class Leaf:
+
+    field D:
+        type: @checkers.javari.quals.ThisMutable
+
+    field pi_R:
+
+    field pi_I:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+18:
+            type: @checkers.javari.quals.Mutable
+
+    method compute(DD)LDemand;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        local 0 #0+42:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+42:
+        local 3 #0+42:
+
+package :
+class Power:
+
+    field printResults:
+
+    field printMsgs:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method main([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+205:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #8+197:
+        local 3 #23+182:
+            type: @checkers.javari.quals.Mutable
+        local 4 #28+177:
+        local 6 #33+172:
+        local 8 #90+115:
+
+    method parseCmdLine([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+74:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #2+72:
+        local 2 #26+47:
+            type: @checkers.javari.quals.ReadOnly
+
+    method usage()V:
+        return:
+
+    method <clinit>()V:
+        return:
+
+package :
+class Root:
+
+    field D:
+        type: @checkers.javari.quals.ThisMutable
+
+    field theta_R:
+
+    field theta_I:
+
+    field last:
+        type: @checkers.javari.quals.ThisMutable
+
+    field last_theta_R:
+
+    field last_theta_I:
+
+    field feeders:
+        type: @checkers.javari.quals.ThisMutable
+            inner-type 0: @checkers.javari.quals.ThisMutable
+
+    field ROOT_EPSILON:
+
+    field map_P:
+        type: @checkers.javari.quals.ReadOnly
+            inner-type 0:
+
+    field MIN_THETA_R:
+
+    field PER_INDEX_R:
+
+    field MAX_THETA_R:
+
+    field map_Q:
+        type: @checkers.javari.quals.ReadOnly
+            inner-type 0:
+
+    field MIN_THETA_I:
+
+    field PER_INDEX_I:
+
+    field MAX_THETA_I:
+
+    method <init>(IIII)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        parameter #3:
+        local 0 #0+82:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+82:
+        local 2 #0+82:
+        local 3 #0+82:
+        local 4 #0+82:
+        local 5 #51+30:
+
+    method reachedLimit()Z:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+58:
+            type: @checkers.javari.quals.ReadOnly
+
+    method compute()V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        local 0 #0+66:
+            type: @checkers.javari.quals.Mutable
+        local 1 #18+47:
+
+    method nextIter(ZDD)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        local 0 #0+56:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+56:
+        local 2 #0+56:
+        local 4 #0+56:
+
+    method nextIter(Z)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        local 0 #0+240:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+240:
+        local 2 #14+226:
+        local 3 #67+173:
+        local 5 #135+105:
+
+    method toString()Ljava/lang/String;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+65:
+            type: @checkers.javari.quals.ReadOnly
+
+    method <clinit>()V:
+        return:
+

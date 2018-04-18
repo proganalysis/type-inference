@@ -1,0 +1,138 @@
+package checkers.javari.quals:
+annotation @ReadOnly: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @Mutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+class TreeAdd:
+
+    field levels:
+
+    field printResult:
+
+    field printMsgs:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method main([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+193:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #8+185:
+        local 3 #19+174:
+            type: @checkers.javari.quals.ReadOnly
+        local 4 #24+169:
+        local 6 #29+164:
+        local 8 #35+158:
+        local 9 #40+153:
+
+    method parseCmdLine([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+130:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #2+128:
+        local 2 #26+94:
+            type: @checkers.javari.quals.ReadOnly
+
+    method usage()V:
+        return:
+
+    method <clinit>()V:
+        return:
+
+package :
+class TreeNode:
+
+    field value:
+
+    field left:
+        type: @checkers.javari.quals.ReadOnly
+
+    field right:
+        type: @checkers.javari.quals.ReadOnly
+
+    method <init>(ILTreeNode;LTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #2:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+35:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+35:
+        local 2 #0+35:
+            type: @checkers.javari.quals.ReadOnly
+        local 3 #0+35:
+            type: @checkers.javari.quals.ReadOnly
+
+    method <init>(LTreeNode;LTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+8:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+8:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+8:
+            type: @checkers.javari.quals.ReadOnly
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+8:
+            type: @checkers.javari.quals.ReadOnly
+
+    method <init>(I)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+85:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+85:
+
+    method setChildren(LTreeNode;LTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+11:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+11:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+11:
+            type: @checkers.javari.quals.ReadOnly
+
+    method createTree(I)LTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+36:
+        local 1 #14+22:
+            type: @checkers.javari.quals.Mutable
+
+    method addTree()I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+41:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #5+36:
+

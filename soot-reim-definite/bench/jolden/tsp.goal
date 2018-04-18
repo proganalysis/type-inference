@@ -1,0 +1,305 @@
+package checkers.javari.quals:
+annotation @ReadOnly: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @Mutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @PolyRead: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @ThisMutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+class TSP:
+
+    field cities:
+
+    field printResult:
+
+    field printMsgs:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method main([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+201:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #41+160:
+        local 3 #53+148:
+            type: @checkers.javari.quals.Mutable
+        local 4 #58+143:
+        local 6 #63+138:
+        local 8 #76+125:
+
+    method parseCmdLine([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+130:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #2+128:
+        local 2 #26+94:
+            type: @checkers.javari.quals.ReadOnly
+
+    method usage()V:
+        return:
+
+    method <clinit>()V:
+        return:
+
+package :
+class Tree:
+
+    field sz:
+
+    field x:
+
+    field y:
+
+    field left:
+        type: @checkers.javari.quals.ThisMutable
+
+    field right:
+        type: @checkers.javari.quals.ThisMutable
+
+    field next:
+        type: @checkers.javari.quals.ThisMutable
+
+    field prev:
+        type: @checkers.javari.quals.ThisMutable
+
+    field M_E2:
+
+    field M_E3:
+
+    field M_E6:
+
+    field M_E12:
+
+    method <init>(IDDLTree;LTree;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        parameter #3:
+            type: @checkers.javari.quals.Mutable
+        parameter #4:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+43:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+43:
+        local 2 #0+43:
+        local 4 #0+43:
+        local 6 #0+43:
+            type: @checkers.javari.quals.Mutable
+        local 7 #0+43:
+            type: @checkers.javari.quals.Mutable
+
+    method distance(LTree;)D:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+43:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+43:
+            type: @checkers.javari.quals.ReadOnly
+
+    method makeList()LTree;:
+        return: @checkers.javari.quals.Mutable
+        receiver: @checkers.javari.quals.Mutable
+        local 0 #0+96:
+            type: @checkers.javari.quals.Mutable
+        local 5 #3+93:
+            type: @checkers.javari.quals.PolyRead
+        local 1 #18+3:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #23+73:
+            type: @checkers.javari.quals.PolyRead
+        local 2 #38+3:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #43+53:
+            type: @checkers.javari.quals.Mutable
+
+    method reverse()V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        local 0 #0+70:
+            type: @checkers.javari.quals.Mutable
+        local 1 #5+65:
+            type: @checkers.javari.quals.Mutable
+        local 2 #17+53:
+            type: @checkers.javari.quals.Mutable
+        local 3 #19+51:
+            type: @checkers.javari.quals.Mutable
+        local 5 #25+34:
+            type: @checkers.javari.quals.Mutable
+        local 4 #37+22:
+            type: @checkers.javari.quals.Mutable
+
+    method conquer()LTree;:
+        return: @checkers.javari.quals.Mutable
+        receiver: @checkers.javari.quals.Mutable
+        local 0 #0+207:
+            type: @checkers.javari.quals.Mutable
+        local 1 #5+202:
+            type: @checkers.javari.quals.Mutable
+        local 2 #7+200:
+            type: @checkers.javari.quals.Mutable
+        local 3 #31+174:
+            type: @checkers.javari.quals.Mutable
+        local 4 #34+166:
+            type: @checkers.javari.quals.Mutable
+        local 5 #41+159:
+        local 7 #47+40:
+            type: @checkers.javari.quals.Mutable
+        local 8 #61+16:
+        local 7 #94+106:
+            type: @checkers.javari.quals.Mutable
+        local 8 #101+99:
+            type: @checkers.javari.quals.Mutable
+        local 9 #110+90:
+        local 11 #119+81:
+        local 13 #127+73:
+        local 15 #135+65:
+
+    method merge(LTree;LTree;)LTree;:
+        return: @checkers.javari.quals.Mutable
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+        parameter #1:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+613:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+613:
+            type: @checkers.javari.quals.Mutable
+        local 2 #0+613:
+            type: @checkers.javari.quals.Mutable
+        local 3 #2+611:
+            type: @checkers.javari.quals.Mutable
+        local 4 #9+604:
+        local 6 #12+601:
+            type: @checkers.javari.quals.ReadOnly
+        local 7 #30+14:
+        local 7 #58+555:
+            type: @checkers.javari.quals.Mutable
+        local 8 #64+549:
+            type: @checkers.javari.quals.ReadOnly
+        local 9 #72+541:
+        local 11 #80+533:
+        local 13 #88+525:
+        local 15 #96+517:
+        local 17 #114+14:
+            type: @checkers.javari.quals.ReadOnly
+        local 18 #117+11:
+            type: @checkers.javari.quals.ReadOnly
+        local 19 #121+7:
+        local 21 #125+3:
+        local 17 #131+482:
+            type: @checkers.javari.quals.Mutable
+        local 18 #135+478:
+            type: @checkers.javari.quals.Mutable
+        local 21 #139+474:
+        local 19 #143+470:
+        local 23 #173+14:
+        local 23 #257+14:
+            type: @checkers.javari.quals.ReadOnly
+        local 24 #260+11:
+            type: @checkers.javari.quals.ReadOnly
+        local 25 #264+7:
+        local 27 #268+3:
+        local 23 #274+339:
+            type: @checkers.javari.quals.Mutable
+        local 24 #278+335:
+            type: @checkers.javari.quals.Mutable
+        local 27 #282+331:
+        local 25 #286+327:
+        local 29 #295+318:
+        local 31 #304+309:
+        local 33 #313+300:
+        local 35 #322+291:
+        local 37 #335+278:
+        local 38 #345+268:
+
+    method tsp(I)LTree;:
+        return: @checkers.javari.quals.Mutable
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        local 0 #0+38:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+38:
+        local 2 #22+16:
+            type: @checkers.javari.quals.Mutable
+        local 3 #31+7:
+            type: @checkers.javari.quals.Mutable
+
+    method printVisitOrder()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+99:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #45+53:
+            type: @checkers.javari.quals.ReadOnly
+
+    method median(DDI)D:
+        return:
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        local 0 #0+94:
+        local 2 #0+94:
+        local 4 #0+94:
+        local 5 #12+82:
+        local 7 #46+3:
+        local 7 #71+23:
+
+    method uniform(DD)D:
+        return:
+        parameter #0:
+        parameter #1:
+        local 0 #0+25:
+        local 2 #0+25:
+        local 4 #12+13:
+
+    method buildTree(IZDDDD)LTree;:
+        return: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        parameter #3:
+        parameter #4:
+        parameter #5:
+        local 0 #0+159:
+        local 1 #0+159:
+        local 2 #0+159:
+        local 4 #0+159:
+        local 6 #0+159:
+        local 8 #0+159:
+        local 16 #29+46:
+        local 10 #45+33:
+            type: @checkers.javari.quals.ReadOnly
+        local 11 #62+16:
+            type: @checkers.javari.quals.ReadOnly
+        local 12 #66+12:
+        local 14 #75+3:
+        local 16 #98+44:
+        local 10 #114+45:
+            type: @checkers.javari.quals.Mutable
+        local 11 #130+29:
+            type: @checkers.javari.quals.Mutable
+        local 14 #134+25:
+        local 12 #142+17:
+

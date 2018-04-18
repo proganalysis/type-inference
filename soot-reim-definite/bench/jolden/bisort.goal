@@ -1,0 +1,194 @@
+package checkers.javari.quals:
+annotation @ReadOnly: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @Mutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @ThisMutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+class BiSort:
+
+    field size:
+
+    field printMsgs:
+
+    field printResults:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method main([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+326:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #46+280:
+        local 3 #55+271:
+            type: @checkers.javari.quals.Mutable
+        local 4 #60+266:
+        local 6 #70+256:
+        local 7 #107+219:
+        local 9 #121+205:
+        local 11 #144+182:
+        local 13 #158+168:
+
+    method parseCmdLine([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+130:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #2+128:
+        local 2 #26+94:
+            type: @checkers.javari.quals.ReadOnly
+
+    method usage()V:
+        return:
+
+    method <clinit>()V:
+        return:
+
+package :
+class Value:
+
+    field value:
+
+    field left:
+        type: @checkers.javari.quals.ThisMutable
+
+    field right:
+        type: @checkers.javari.quals.ThisMutable
+
+    field FORWARD:
+
+    field BACKWARD:
+
+    field CONST_m1:
+
+    field CONST_b:
+
+    field RANGE:
+
+    method <init>(I)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+20:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+20:
+
+    method createTree(II)LValue;:
+        return: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        local 0 #0+56:
+        local 1 #0+56:
+        local 2 #15+39:
+        local 3 #24+30:
+            type: @checkers.javari.quals.Mutable
+
+    method bisort(IZ)I:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        local 0 #0+89:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+89:
+        local 2 #0+89:
+        local 3 #27+10:
+        local 3 #45+42:
+        local 4 #69+18:
+
+    method bimerge(IZ)I:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+        parameter #1:
+        local 0 #0+212:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+212:
+        local 2 #0+212:
+        local 3 #5+207:
+        local 4 #11+201:
+            type: @checkers.javari.quals.Mutable
+        local 5 #17+195:
+            type: @checkers.javari.quals.Mutable
+        local 6 #31+181:
+        local 7 #55+119:
+        local 8 #62+112:
+            type: @checkers.javari.quals.Mutable
+        local 9 #69+105:
+            type: @checkers.javari.quals.Mutable
+        local 10 #82+92:
+            type: @checkers.javari.quals.Mutable
+        local 11 #89+85:
+            type: @checkers.javari.quals.Mutable
+        local 12 #104+70:
+
+    method swapValRight(LValue;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+37:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+37:
+            type: @checkers.javari.quals.Mutable
+        local 2 #5+32:
+        local 3 #10+27:
+            type: @checkers.javari.quals.Mutable
+
+    method swapValLeft(LValue;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.Mutable
+        local 0 #0+37:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+37:
+            type: @checkers.javari.quals.Mutable
+        local 2 #5+32:
+        local 3 #10+27:
+            type: @checkers.javari.quals.Mutable
+
+    method inOrder()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+64:
+            type: @checkers.javari.quals.ReadOnly
+
+    method mult(II)I:
+        return:
+        parameter #0:
+        parameter #1:
+        local 0 #0+49:
+        local 1 #0+49:
+        local 2 #6+43:
+        local 3 #12+37:
+        local 4 #19+30:
+        local 5 #26+23:
+
+    method skiprand(II)I:
+        return:
+        parameter #0:
+        parameter #1:
+        local 0 #0+17:
+        local 1 #0+17:
+
+    method random(I)I:
+        return:
+        parameter #0:
+        local 0 #0+11:
+        local 1 #9+2:
+

@@ -1,0 +1,1189 @@
+options 
+{
+  LOOKAHEAD=1;
+//  UNICODE_INPUT=true;
+  //IGNORE_CASE=true;
+  FORCE_LA_CHECK=true;
+  CACHE_TOKENS=true;
+  STATIC=false;
+}
+
+PARSER_BEGIN(TinySQLParser)
+
+package ORG.as220.tinySQL.parser;
+
+import ORG.as220.tinySQL.*;
+import ORG.as220.tinySQL.sqlparser.*;
+import java.io.*;
+import java.util.*;
+import java.math.*;
+import java.sql.Types;
+
+public class TinySQLParser 
+{
+  private class AliasedItem
+  {
+    public LValue item;
+    public String alias;
+    
+    public AliasedItem (LValue item, String alias)
+    {
+      this.item = item;
+      this.alias = alias;
+    }
+  }
+
+  private class AliasedString
+  {
+    public String item;
+    public String alias;
+    
+    public AliasedString (String item, String alias)
+    {
+      this.item = item;
+      this.alias = alias;
+    }
+  }
+
+  public static BigDecimal createBigDecimal (String numeric_literal)
+  {
+    try
+    {
+      return new BigDecimal (numeric_literal);
+    }
+    catch (Exception e)
+    {
+      return new BigDecimal (0);
+    }
+  }
+  
+  public static String stripQuote (String s)
+  {
+    if (s.length() < 2)
+      return s;
+    else
+      return s.substring (1, s.length() - 1);  
+  }
+}
+
+
+PARSER_END(TinySQLParser)
+
+SKIP : 
+{
+    <WHITESPACE:  ["\u0000" - "\u0020"]>
+  | <"--" (~["\n","\r"])* ("\n" | "\r" | "\r\n")>
+
+}
+
+
+TOKEN: 
+{
+    <#LETTER:            (["a" - "z"]|["A" - "Z"]|["_"]|["$"])>
+  | <#NON_ZERO_DIGIT:    ["1"-"9"]>
+  | <#DIGIT:             ["0" - "9"]>
+
+  | <#HEX_DIGIT:         (<DIGIT> | ["A" - "F"] | ["a" - "f"])>
+  | <#BINARY_DIGIT:      ["0", "1"] >
+
+  | <UNSIGNED_INTEGER:  ( ["0"] | (<NON_ZERO_DIGIT> (<DIGIT>)*))>
+
+  | <#EXPONENT_PART:     ( ("e" | "E") (("+" | "-")?) (<DIGIT>)+ ) >
+
+  | <#NEWLINE:           (["\n","\r"] | "\n\r" | "\r\n")>
+  | <#NONQUOTE_CHARACTER:  ("''" | "\\" ["a"-"z", "\\", "'"] | ~["'"] ) >
+  
+  | <COMMA:             "," >
+  | <#PERIOD:            "." >
+  | <#COLON:             ":" >
+  | <#QUOTE:             "'" >
+  | <#DQUOTE:            "\"" >
+  | <SEMICOLON:          ";" >
+  | <L_PAREN:            "(" >
+  | <R_PAREN:            ")" >
+  | <QUEST:              "?" >
+
+//  | <#COMMENT_INTRODUCER:          "--">
+}
+
+
+TOKEN [IGNORE_CASE]: 
+{
+// Reserved Keywords
+//
+
+    <ADD:     "add">
+  | <AND:     "and">
+  | <ALL:     "all">
+  | <ALTER:   "alter">
+  | <AS:      "as">
+  | <ASC:     "asc">
+  | <BY:      "by">
+  | <COLUMN:  "column">
+  | <COMPACT: "compact">
+  | <CREATE:  "create">
+  | <DELETE:  "delete">
+  | <DESC:    "desc">
+  | <DISTINCT:"distinct">
+  | <DROP:    "drop">
+  | <EXIST:   "exist">
+  | <EXISTS:  "exists">
+  | <FROM:    "from">
+  | <GROUP:   "group">
+  | <IF:      "if">
+  | <INSERT:  "insert">
+  | <INTO:    "into">
+  | <LIMIT:   "limit">
+  | <NOT:     "not">
+  | <NULL:    "null">
+  | <OR:      "or">
+  | <ORDER:   "order">
+  | <RENAME:  "rename">
+  | <SELECT:  "select">
+  | <SET:     "set">
+  | <TABLE:   "table">
+  | <TO:      "to">
+  | <UPDATE:  "update">
+  | <VALUES:  "values">
+  | <WHERE:   "where">
+
+// JDBC Datatypes -> Helpers
+//
+  | <CHAR:     ("char" | "character")>
+  | <INT:      ("int"  | "integer")>
+  | <NUMERIC:  ("numeric" | "decimal")>
+  | <DATE:     "date">
+  | <BOOLEAN:  "boolean">
+  | <FLOAT:    "float">
+  | <BIT:      "bit">
+  | <DECIMAL:  "decimal">
+  | <DOUBLE:   "double">
+  | <REAL:     "real">
+  | <BIGINT:   ("bigint" | "biginteger")>
+  | <SMALLINT: ("smallint" | "smallinteger")>
+  | <TINYINT:  ("tinyint" | "tinyinteger")>
+  | <VARCHAR:  "varchar">
+  | <LONGVARCHAR: "longvarchar">
+  | <BINARY:   "binary">
+  | <VARBINARY: "varbinary">
+  | <LONGVARBINARY: "longvarbinary">
+  | <TIME:      "time">
+  | <TIMESTAMP: "timestamp">
+  | <BLOB:      "blob">
+  | <CLOB:      "clob">
+    
+// Operators for expressions
+// Braces are no real operatorsm just Tokens to mark the begin of enclosing
+// Expressions for the tree
+  | <PLUS:     "+">
+  | <MINUS:    "-">
+  | <MULT:     "*">
+  | <DIV:      "/">
+  | <ASSIGN:   "=">
+
+  | <EQUALS:       "==">
+  | <NOT_EQUALS:   "<>">
+  | <LT_EQUALS:    "<=">
+  | <GT_EQUALS:    ">=">
+  | <LT:           "<">
+  | <GT:           ">">
+  | <BETWEEN:      "between">
+  | <NBETWEEN:     ("not" "between")>
+  | <LIKE:         "like">
+  
+  
+///
+///
+  | <IDENTIFIER:  (<LETTER> (<LETTER> | <DIGIT>)* (<PERIOD> (<LETTER> | <DIGIT>)*)?)>
+  | <QUOTED_IDENTIFIER:  (<DQUOTE> <IDENTIFIER> <DQUOTE>)>
+  | <STRING_LITERAL:     (<QUOTE> (<NONQUOTE_CHARACTER>)* <QUOTE>)>
+  | <JOKER_IDENTIFIER:   (<LETTER> (<LETTER> | <DIGIT>)* (<PERIOD> <MULT>) )>
+  | <QUOTED_JOKER_IDENTIFIER: (<DQUOTE> <JOKER_IDENTIFIER> <DQUOTE>)>
+  
+/// Defining numeric and date values as SQL-92 does.  
+///
+  | <UNSIGNED_NUMERIC_LITERAL:     (<EXACT_NUMERIC_LITERAL> | <APPROXIMATE_NUMERIC_LITERAL>)>
+  | <#EXACT_NUMERIC_LITERAL:        (<UNSIGNED_INTEGER> (<PERIOD> <UNSIGNED_INTEGER>)? | (<PERIOD> <UNSIGNED_INTEGER>))>
+  | <#APPROXIMATE_NUMERIC_LITERAL: (<MANTISSA> ["E","e"] <EXPONENT>)>
+  | <#EXPONENT:                    <SIGNED_INTEGER> >
+  | <#MANTISSA:                    <EXACT_NUMERIC_LITERAL> >
+  | <SIGNED_INTEGER:              ( (<SIGN>)? <UNSIGNED_INTEGER>) >
+  | <#SIGN:                        ["+","-"]>
+  | <SIGNED_NUMERIC_LITERAL:       ( (<SIGN>)? <UNSIGNED_NUMERIC_LITERAL>)>  
+
+
+//  | <DATA_TYPE:    
+//         (<CHARACTER_STRING_TYPE> 
+//        | <NUMERIC_TYPE> 
+//        | <DATETIME_TYPE>
+//        )>
+//  | <CHARACTER_STRING_TYPE:
+//      (<CHAR> <L_PAREN> <LENGTH> <R_PAREN>)>
+//      
+//  | <LENGTH:  <UNSIGNED_INTEGER>>
+//              
+//  | <NUMERIC_TYPE: (<EXACT_NUMERIC_TYPE> | <APPROXIMATE_NUMERIC_TYPE>)>
+//  | <#EXACT_NUMERIC_TYPE:
+//      (
+//         (<NUMERIC> (<L_PAREN> <PRECISION> (<COMMA> <SCALE>)? <R_PAREN>)?)
+//        |<INT>
+//      )>
+//  | <#APPROXIMATE_NUMERIC_TYPE:
+//      (
+//         <FLOAT>
+//      )>
+//  | <DATETIME_TYPE: <DATE>>
+//  | <PRECISION:     <UNSIGNED_INTEGER>>
+//  | <SCALE:         <UNSIGNED_INTEGER>>
+  
+}
+
+/**
+ * Productions
+ */
+SQLStatement getStatement(tinySQLStatement statement) throws tinySQLException :
+{
+  SQLStatement currentStatement = null;
+}
+{
+  (
+    (
+        currentStatement = Select (statement)
+      | currentStatement = Update (statement)
+      | currentStatement = Insert (statement)
+      | currentStatement = Delete (statement)
+      | currentStatement = DropTable (statement)
+      | currentStatement = AlterTable (statement)
+      | currentStatement = CreateTable (statement)
+      | currentStatement = CompactTable (statement)
+    )
+    ( <SEMICOLON> | <EOF> )
+  )
+  {
+    if (currentStatement == null)
+    {
+      currentStatement = new EmptyStatement (statement);
+//      throw new tinySQLException ("Empty");
+    }
+    return currentStatement;
+  }
+}
+
+SQLStatement Select (tinySQLStatement statement) throws tinySQLException :
+{
+  SelectStatement select = new SelectStatement (statement);
+  int mod = select.getModifier ();
+  Vector columnList = null;
+  Vector tables = null;
+  LValue whereC = null;
+  LValue order  = null;
+}
+{
+  ( 
+    <SELECT>
+       [ mod = getSelectMod () ]
+       columnList = getSelectColumns ()
+       [ tables   = getSelectTables ()]
+       [ whereC   = getWhereClauseExpression ()]
+       [ order    = getOrderBy ()]
+//       [ having   = getHaving ()]   
+  )
+
+  {
+    select.setModifier (mod);
+    if (tables != null)
+    {
+      for (int i = 0; i < tables.size (); i++)
+      {
+        AliasedString a = (AliasedString) tables.elementAt (i);
+        select.addTable (a.item, a.alias);
+      }
+    }
+    
+    for (int i = 0; i < columnList.size (); i++)
+    {
+      AliasedItem a = (AliasedItem) columnList.elementAt (i);
+      select.addColumn (a.item, a.alias);
+    }
+    
+    if (whereC != null)
+    {
+      WhereClause w = new WhereClause (select);
+      w.setExpression (whereC);
+      select.setWhereClause (w);
+    }
+    return select;
+  }
+}
+
+/**
+ * @returns MOD_DISTINCT or MOD_ALL, called from Select ()
+ */
+int getSelectMod () :
+{
+}
+{
+    <DISTINCT> { return SelectStatement.MOD_DISTINCT; }
+  | <ALL> { return SelectStatement.MOD_ALL; }
+}
+
+
+Vector getSelectColumns () :
+{
+  Vector retval = null;
+  LValue column = null;
+  String alias = null;
+}
+{
+  ( 
+    (
+      (
+        column = getExpression (0) 
+        alias  = getAlias (column.getName ())
+      )
+      |
+      (
+        alias  = getJokerName ()
+        {
+          column = new JokerColumnValue (alias);
+        }
+      )
+    )
+    {
+      retval = new Vector ();
+      retval.add (new AliasedItem (column, alias));
+    }
+  )
+  (
+    <COMMA>
+    (
+      (
+        column = getExpression (0) 
+        alias  = getAlias (column.getName ())
+      )  
+      |
+      (
+        alias  = getJokerName ()
+        {
+          column = new JokerColumnValue (alias);
+        }
+      )
+    )
+    {
+      retval.add (new AliasedItem (column, alias));
+    }
+  )*
+  {
+    return retval;
+  }
+}
+
+
+
+String getAlias (String colname) :
+{
+  Token alias_token = null;
+  String alias = colname;
+}
+{
+  [<AS> alias = getString()]
+  {
+    return alias;
+  }
+}
+
+String getName () :
+{
+  Token retval = null;
+  String name = null;
+}
+{
+  (
+      (retval = <IDENTIFIER> )
+      {
+        name = retval.image;
+      }
+      |
+      (retval = <QUOTED_IDENTIFIER>)
+      {
+        name = stripQuote (retval.image);
+      }
+  )
+  {
+    return name;
+  }
+}
+
+String getJokerName () :
+{
+  String name = null;
+  Token retval = null;
+}
+{
+  (
+      retval = <JOKER_IDENTIFIER> 
+      {
+        name = retval.image;
+      }
+    | retval = <QUOTED_JOKER_IDENTIFIER>
+      {
+        name = stripQuote (retval.image);
+      }
+    | retval = <MULT>
+      {
+        name = retval.image;
+      }
+  )
+  {
+    return name;
+  }
+}
+
+
+String getString () :
+{
+  Token retval = null;
+  String val = null;
+}
+{
+  (
+      retval = <IDENTIFIER> 
+      {
+        val = retval.image;
+      }
+    | retval = <QUOTED_IDENTIFIER> 
+      {
+        val = stripQuote (retval.image);
+      }
+    | retval = <STRING_LITERAL>
+      {
+        val = stripQuote (retval.image);
+      }
+  )
+  {
+    return retval.image;
+  }
+}
+
+
+LValue getExpression (int level) :
+{
+  LValue retval = null;
+  LValue tail_value = null;
+  Operator op = null;
+  Expression ex = null;
+  Token value = null;
+  if (level == -1) level = -2;
+}
+{
+  retval = getLValue (level + 1)
+  ( 
+    ex = startTail (retval, ex) 
+  )*
+  {
+    if (ex != null)
+    {
+      return ex;
+    }
+    if ((level == 0) && (retval instanceof Expression))
+    {
+      ex = (Expression) retval;
+    }
+    return retval;  
+  }
+}
+
+Expression startTail (LValue retval, Expression ex) :
+{
+  LValue val = null; Operator op = null;
+}
+{
+    op = getOperator ()
+    val = getLValue (-1)
+    {
+      if (ex == null)
+      {
+        if (retval instanceof Expression)
+        {
+          ex = (Expression) retval;
+        }
+        else
+        {
+          ex = new Expression (retval);
+        }
+      }
+      ex.add (op, val);
+      
+      return ex;
+    }
+}
+
+LValue getLValue (int level):
+{
+  Token value = null; LValue retval = null; LValue lval;
+}
+{
+  (
+    value = <IDENTIFIER> { retval = new ColumnValue (value.image); }
+  | value = <QUOTED_IDENTIFIER> { retval = new ColumnValue (stripQuote(value.image)); }
+  | value = <STRING_LITERAL> { retval = new StaticValue (stripQuote(value.image)); }
+  | value = <SIGNED_NUMERIC_LITERAL> { retval = new StaticValue (createBigDecimal (value.image)); }
+  | value = <UNSIGNED_NUMERIC_LITERAL> { retval = new StaticValue (createBigDecimal (value.image)); }
+  | value = <SIGNED_INTEGER> { retval = new StaticValue (createBigDecimal (value.image)); }
+  | value = <UNSIGNED_INTEGER> { retval = new StaticValue (createBigDecimal (value.image)); }
+  | value = <QUEST> { retval = new ParameterValue (); }
+  | value = <NULL> { retval = new StaticValue (null); }
+  | <L_PAREN> retval = getExpression (level) <R_PAREN> 
+    {
+      if (level != -1) 
+      {
+        retval = new Expression (retval);
+      }
+    }
+  )
+  {
+    return retval;
+  }
+}
+
+Operator getOperator () :
+{
+  Operator op = null;
+}
+{
+  (
+    <PLUS>       {op = Operator.ADD; }
+  | <MINUS>      {op = Operator.SUB; }
+  | <MULT>       {op = Operator.MULT; }
+  | <DIV>        {op = Operator.DIV; }
+  | <EQUALS>     {op = Operator.EQUAL; }
+  | <ASSIGN>     {op = Operator.EQUAL; }
+  | <NOT_EQUALS> {op = Operator.NEQUAL; }
+  | <LT_EQUALS>  {op = Operator.LEQUAL; }
+  | <GT_EQUALS>  {op = Operator.GEQUAL; }
+  | <LT>         {op = Operator.LESSER; }
+  | <GT>         {op = Operator.GREATER; }
+  | <AND>        {op = Operator.AND; }
+  | <OR>         {op = Operator.OR; }
+  | <BETWEEN>    {op = Operator.BETWEEN; }
+  | <NBETWEEN>   {op = Operator.NBETWEEN; }
+  | <LIKE>       {op = Operator.LIKE; }
+  )
+  
+  {
+    return op;
+  }
+}
+
+
+Vector getSelectTables () :
+{
+  Vector v = null; String table = null; String alias = null;
+}
+{
+  ( 
+    <FROM>
+    table = getName () 
+    alias  = getAlias (table)
+    {
+      v = new Vector ();
+      v.add (new AliasedString (table, alias));
+    }
+  )
+  (
+    <COMMA>
+    table = getName () 
+    alias  = getAlias (table)
+    {
+      v.add (new AliasedString (table, alias));
+    }
+  )*
+
+  {
+    return v;
+  }
+}
+
+LValue getWhereClauseExpression () :
+{
+  LValue lval = null;
+}
+{
+  <WHERE> lval = getExpression (0)
+  {
+    return lval;
+  }
+}
+
+LValue getOrderBy () :
+{
+  LValue lval = null;
+}
+{
+  <ORDER> <BY> lval = getExpression (0)
+  {
+    return lval;
+  }
+}
+
+
+SQLStatement Update (tinySQLStatement statement) throws tinySQLException :
+{
+  String table = null;
+  Vector cols = new Vector (); // Vector of String
+  Vector vals = new Vector (); // Vector of Expression
+  LValue whereC = null;
+}
+{
+  (
+    <UPDATE> 
+    table = getName () 
+    updateSetColsVals(cols, vals) 
+    (whereC = getWhereClauseExpression ())? 
+  )
+  {
+    UpdateStatement upd = new UpdateStatement (statement);
+    upd.setTable (table);
+    for (int i = 0; i < cols.size (); i++)
+    {
+      upd.addColumn ((String) cols.elementAt (i));
+    }
+
+    if (whereC != null)
+    {
+      WhereClause w = new WhereClause (upd);
+      w.setExpression (whereC);
+      upd.setWhereClause (w);
+    }
+
+    upd.setValues (vals);
+    return upd;
+  }
+}
+
+void updateSetColsVals (Vector cols, Vector retvals) :
+{
+  String name = null;
+  LValue expr = null;
+}
+{
+  (
+    (
+      <SET> 
+      name = getName () 
+      <ASSIGN> 
+      expr = getExpression (0)
+      {
+        cols.add (name);
+        retvals.add (expr);
+      }
+    ) 
+    ( 
+      <COMMA> 
+      name = getName () 
+      <ASSIGN> 
+      expr = getExpression (0)
+      {
+        cols.add (name);
+        retvals.add (expr);
+      }
+    )*
+  )
+}
+
+
+SQLStatement Insert (tinySQLStatement statement) throws tinySQLException :
+{
+  String table = null;
+  Vector cols = new Vector (); // Vector of String
+  Vector vals = new Vector (); // Vector of Vector of Expression
+  SQLStatement select = null;
+}
+{
+  (<INSERT> <INTO> table = getName())
+  (
+    (select = Select (statement))
+    |
+    (insertColsVals (cols, vals))
+  )
+  {
+    InsertStatement ins = new InsertStatement (statement);
+    ins.setTable (table);
+    if (select == null)
+    {        
+      for (int i = 0; i < cols.size (); i++)
+      {
+        ins.addColumn ((String) cols.elementAt (i));
+      }
+      for (int i = 0; i < vals.size (); i++)
+      {
+        ins.addValues ((Vector) vals.elementAt (i));
+      }
+    }
+    else
+      ins.addSelect ((SelectStatement)select);
+    return ins;
+  }
+}
+
+void insertColsVals (Vector cols, Vector vals) :
+{
+}
+{
+  (insertSetColsVals (cols, vals))
+  |
+  (insertValuesColsVals (cols, vals))
+}
+
+void insertSetColsVals (Vector cols, Vector vals) :
+{
+  String name = null;
+  LValue expr = null;
+  Vector retvals = new Vector ();
+  vals.addElement (retvals);
+}
+{
+  (
+    (
+      <SET> 
+      name = getName () 
+      <ASSIGN> 
+      expr = getExpression (0)
+      {
+        cols.add (name);
+        retvals.add (expr);
+      }
+    ) 
+    ( 
+      <COMMA> 
+      name = getName () 
+      <ASSIGN> 
+      expr = getExpression (0)
+      {
+        cols.add (name);
+        retvals.add (expr);
+      }
+    )*
+  )
+}
+
+void insertValuesColsVals (Vector cols, Vector vals) :
+{
+  String name = null;
+  Vector valrow = null;
+}
+{
+  (
+    (
+      <L_PAREN> 
+      name = getName () 
+      {
+        cols.add (name);
+      }
+    ) 
+    ( 
+      <COMMA> 
+      name = getName () 
+      {
+        cols.add (name);
+      }
+    )*
+    (
+      <R_PAREN> 
+    )
+  )
+  <VALUES> 
+  (
+    (
+      valrow = getInsertValuesVal () 
+      {
+        vals.add (valrow);
+      }
+    ) 
+    ( 
+      <COMMA> 
+      valrow = getInsertValuesVal () 
+      {
+        vals.add (valrow);
+      }
+    )*
+  )
+}
+
+Vector getInsertValuesVal () :
+{
+  Vector vals = new Vector ();
+  LValue expr = null;
+}
+{
+  (
+    <L_PAREN>
+    expr = getExpression (0) 
+    {
+      vals.add (expr);
+    }
+  ) 
+  ( 
+    <COMMA> 
+    expr = getExpression (0) 
+    {
+      vals.add (expr);
+    }
+  )*
+  (
+    <R_PAREN> 
+  )
+  {
+    return vals;
+  }
+}
+
+
+
+SQLStatement Delete (tinySQLStatement statement) throws tinySQLException :
+{
+  String table = null;
+  LValue w = null;
+}
+{
+  (<DELETE> <FROM> table = getName () (w = getWhereClauseExpression ())?)
+  {
+    DeleteStatement del = new DeleteStatement (statement);
+    del.setTable (table);
+    if (w != null)
+    {
+      WhereClause where = new WhereClause (del);
+      where.setExpression (w);
+      del.setWhereClause (where);
+    }
+    return del;  
+  }
+}
+  
+
+boolean ifExists () :
+{
+}
+{
+  (<IF> <EXISTS>)
+   { return true; }
+}
+
+boolean ifNotExists () :
+{
+}
+{
+  (<IF> <NOT> <EXISTS>)
+   { return true; }
+}
+
+SQLStatement DropTable (tinySQLStatement statement) throws tinySQLException :
+{
+  String table = null; boolean ifex = false;
+}
+{
+  <DROP> <TABLE> (ifex = ifExists())? table = getName ()
+  {
+    DropTableStatement stmt = new DropTableStatement (statement);
+    stmt.setTable (table, ifex);
+    return stmt;
+  }
+  
+}
+
+SQLStatement CompactTable (tinySQLStatement statement) throws tinySQLException :
+{
+  String table = null;
+}
+{
+  <COMPACT> <TABLE> table = getName ()
+  {
+    CompactTableStatement stmt = new CompactTableStatement (statement);
+    stmt.setTable (table);
+    return stmt;
+  }
+}
+
+SQLStatement CreateTable (tinySQLStatement statement) throws tinySQLException :
+{
+  String table = null;
+  Vector coldefs = null;
+}
+{
+  <CREATE> <TABLE> table = getName () coldefs = getColumnDefinitions ()
+  {
+    CreateTableStatement stmt = new CreateTableStatement (statement);
+
+    stmt.setTable (table);
+
+    int size = coldefs.size();
+    for (int i = 0; i < size; i++)
+    {
+      stmt.addColumnDefinition ((ColumnDefinition) coldefs.elementAt (i));
+    }
+    return stmt;
+  }
+}
+
+Vector getColumnDefinitions () throws tinySQLException  :
+{
+  Vector retval = new Vector ();
+  ColumnDefinition coldef = null;
+}
+{
+  (
+    (
+      <L_PAREN> 
+      coldef = getColumnDefinition ()
+      {
+        retval.add (coldef);
+      }
+    ) 
+    ( 
+      <COMMA> 
+      coldef = getColumnDefinition ()
+      {
+        retval.add (coldef);
+      }
+    )*
+    (
+      <R_PAREN> 
+    )
+  )
+  {
+    return retval;
+  }
+}
+
+ColumnDefinition getColumnDefinition () throws tinySQLException  :
+{
+  ColumnDefinition coldef = null;
+  String name = null;
+}
+{
+  (
+    name = getName ()
+    {
+      coldef = new ColumnDefinition (name);
+    }
+  )
+  (
+      getSimpleType (coldef)  //uses (type)
+    | getCharType (coldef)    //uses (type (size))
+    | getNumericType (coldef) //uses (type (size, prec))
+  )
+  (
+      (<NULL>) { coldef.setNullable (true); }
+    | (<NOT> <NULL>) { coldef.setNullable (false); }
+  )?
+  {
+    return coldef;
+  }
+}
+
+// Check types that need a numeric precision size
+void getNumericType (ColumnDefinition coldef) throws tinySQLException :
+{
+  Token scale = null;
+  Token size  = null;
+  int type;
+}
+{
+  (
+    (
+      ( <NUMERIC> { type = Types.NUMERIC; })
+    | ( <DECIMAL> { type = Types.DECIMAL; })
+    | ( <FLOAT>   { type = Types.REAL; })
+    )
+    <L_PAREN>
+    size = <UNSIGNED_INTEGER> 
+    
+    (
+      <COMMA> 
+      scale = <UNSIGNED_INTEGER>
+    )?
+    <R_PAREN>
+  )
+  {
+    coldef.setType (type);
+    int isize  = Integer.parseInt (size.image);
+    if (scale != null)
+    {
+      int iscale = Integer.parseInt (scale.image);
+      coldef.setSize (isize, iscale);
+    }
+    else
+    {
+      coldef.setSize (isize, 0);
+    }
+  }
+}
+
+// Check types that dont need a size
+void getSimpleType (ColumnDefinition coldef) throws tinySQLException  :
+{
+  Token scale = null;
+  Token size  = null;
+  int type;
+}
+{
+  (
+    ( <INT> { type = Types.INTEGER; })
+  | ( <BIGINT> { type = Types.BIGINT; })
+  | ( <TINYINT> { type = Types.TINYINT; })
+  | ( <SMALLINT> { type = Types.SMALLINT; })
+  | ( <REAL> { type = Types.REAL; })
+  | ( <DOUBLE> { type = Types.DOUBLE; })
+  | ( <DATE> { type = Types.DATE; })
+  | ( <TIME> { type = Types.TIME; })
+  | ( <TIMESTAMP> { type = Types.TIMESTAMP; })
+  | ( <BIT> { type = Types.BIT; })
+  | ( <BOOLEAN> { type = Types.BIT; })
+  )
+  {
+    coldef.setType (type);
+  }
+}
+
+// Checks types that need a single size
+void getCharType (ColumnDefinition coldef) throws tinySQLException :
+{
+  Token size  = null;
+  int type = 0;
+}
+{
+  (
+    (
+      ( <CHAR> { type = Types.CHAR; })
+    | ( <VARCHAR> { type = Types.VARCHAR; })
+    | ( <LONGVARCHAR> { type = Types.LONGVARCHAR; })
+    | ( <BINARY> { type = Types.BINARY; })
+    | ( <VARBINARY> { type = Types.VARBINARY; })
+    | ( <LONGVARBINARY> { type = Types.LONGVARBINARY; })
+    | ( <CLOB> { type = Types.CLOB; })
+    | ( <BLOB> { type = Types.BLOB; })
+    )
+    <L_PAREN>
+    size = <UNSIGNED_INTEGER> 
+    <R_PAREN>
+  )
+  {
+    coldef.setType (type);
+    coldef.setSize (Integer.parseInt (size.image));
+  }
+}
+
+SQLStatement AlterTable (tinySQLStatement statement) throws tinySQLException :
+{
+  String name = null;
+  SQLStatement stmt;
+}
+{
+  <ALTER>
+  (
+    ( stmt = AlterCreateTable (statement))
+    |
+    (
+      <TABLE> name = getName ()
+      (
+          stmt = AlterTableAddColumn (statement, name)
+        | stmt = AlterTableDropColumn (statement, name)
+        | stmt = AlterTableRenameColumn (statement, name)
+      )
+    )
+  )
+  {
+    return stmt;
+  }
+}
+
+SQLStatement AlterTableAddColumn (tinySQLStatement statement, String name) throws tinySQLException :
+{
+  Vector coldefs = null;
+}
+{
+  (<ADD> (<COLUMN>)? coldefs = getColumnDefinitions ())
+  {
+    AlterTableAddColumnStatement stmt = new AlterTableAddColumnStatement (statement);
+    stmt.setTable (name);
+    int size = coldefs.size ();
+    for (int i = 0; i < size; i++)
+    {
+      stmt.addColumn ((ColumnDefinition) coldefs.elementAt (i));
+    }
+    return stmt;
+  }
+}
+
+SQLStatement AlterTableDropColumn (tinySQLStatement statement, String name) throws tinySQLException :
+{
+  Vector columns = null;
+}
+{
+  (<DROP> (<COLUMN>)? columns = getNames ())
+  {
+    AlterTableDropColumnStatement stmt = new AlterTableDropColumnStatement (statement);
+    stmt.setTable (name);
+    int size = columns.size ();
+    for (int i = 0; i < size; i++)
+    {
+      stmt.addColumn ((String) columns.elementAt (i));
+    }
+    return stmt;
+  }
+}
+
+SQLStatement AlterTableRenameColumn (tinySQLStatement statement, String name) throws tinySQLException :
+{
+  String oldCol = null;
+  String newCol = null;
+}
+{
+  <RENAME> (<COLUMN>)? oldCol = getName () (<TO>)? newCol = getName ()
+  {
+    AlterTableRenameColumnStatement stmt = new AlterTableRenameColumnStatement (statement);
+    stmt.setTable (name);
+    stmt.addColumn (oldCol, newCol);
+    return stmt;
+  }
+}
+
+SQLStatement AlterCreateTable (tinySQLStatement statement) throws tinySQLException :
+{
+  SQLStatement cstmt = null;
+}
+{
+
+  cstmt = CreateTable (statement)
+  {
+    AlterCreateTableStatement stmt = new AlterCreateTableStatement (statement);
+    stmt.setCreateTableStatement ((CreateTableStatement) cstmt);
+    return stmt;
+  }
+}
+
+Vector getNames () :
+{
+  Vector cols = new Vector ();
+  String name = null;
+}
+{
+  (
+    (
+      name = getName () 
+      {
+        cols.add (name);
+      }
+    ) 
+    ( 
+      <COMMA> 
+      name = getName () 
+      {
+        cols.add (name);
+      }
+    )*
+  )
+  {
+    return cols;
+  }
+}

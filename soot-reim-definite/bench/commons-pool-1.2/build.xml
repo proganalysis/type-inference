@@ -1,0 +1,167 @@
+<!--
+   Copyright 2003-2004 The Apache Software Foundation
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!-- $Id: build.xml,v 1.24 2004/05/20 16:30:46 dirkv Exp $ -->
+<project name="commons-pool" default="test" basedir=".">
+
+   <target name="init">
+      <tstamp/>
+
+      <!-- read properties from the build.properties, if any -->
+      <property name="component-propfile" value="${basedir}/build.properties"/>
+      <property file="${component-propfile}"/>
+
+      <!-- read properties from the commons build.properties, if any -->
+      <property name="commons-propfile" value="${basedir}/../build.properties"/>
+      <property file="${commons-propfile}"/>
+
+      <!-- read properties from the ${user.home}/propfile, if any -->
+      <property name="user-propfile" value="${user.home}/build.properties"/>
+      <property file="${user-propfile}"/>
+
+      <property name="commons-collections.jar" value="${basedir}/lib/commons-collections-3.1.jar"/>
+      <property name="junit.jar" value="${basedir}/lib/junit.jar"/>
+
+      <!-- command line classpath, if any -->
+      <property name="cp" value=""/>
+
+      <!-- now combine the classpaths -->
+      <property name="classpath" value="${cp}:${commons-collections.jar}:${junit.jar}"/>
+
+      <property name="name" value="commons-pool"/>
+      <property name="title" value="Jakarta Commons Object Pooling Package"/>
+      <property name="version" value="Nightly-${DSTAMP}${TSTAMP}"/>
+      <property name="package" value="org.apache.commons.pool.*"/>
+
+      <property name="src.dir" value="${basedir}/src"/>
+      <property name="src.java.dir" value="${src.dir}/java"/>
+      <property name="src.test.dir" value="${src.dir}/test"/>
+      <property name="build.dir" value="${basedir}/build"/>
+      <property name="build.classes.dir" value="${build.dir}/classes"/>
+      <property name="build.test-classes.dir" value="${build.dir}/test-classes"/>
+      <property name="dist.dir" value="${basedir}/dist"/>
+      <property name="dist.jar" value="${dist.dir}/${name}.jar"/>
+
+      <property name="test.entry" value="org.apache.commons.pool.TestAll"/>
+      <property name="test.failonerror" value="true" /> 
+      <property name="test.runner" value="junit.textui.TestRunner" /> 
+     
+      <property name="javadoc.dir" value="${dist.dir}/docs/api"/>
+      <property name="javadoc.bottom" value="&lt;small&gt;Copyright &amp;copy; 2001-2003 Apache Software Foundation. Documenation generated ${TODAY}&lt;/small&gt;."/>
+      <property name="javadoc.overview" value="${src.java.dir}/org/apache/commons/pool/overview.html" />
+
+      <property name="javac.optimize" value="false"/>
+      <property name="javac.debug" value="true"/>
+      <property name="javac.deprecation" value="true"/>
+   </target>
+
+   <!-- ######################################################### -->
+
+   <target name="clean" depends="init" description="removes generated files">
+      <delete dir="${build.dir}"/>
+      <delete dir="${dist.dir}"/>
+   </target>
+
+   <target name="javadoc" depends="init" description="generates javadocs">
+      <mkdir dir="${javadoc.dir}"/>
+      <javadoc packagenames="org.*"
+               sourcepath="${src.java.dir}"
+               classpath="${classpath}"
+               destdir="${javadoc.dir}"
+               windowtitle="${title}"
+               doctitle="${title}"
+               bottom="${javadoc.bottom}"
+               overview="${javadoc.overview}"
+               public="true"
+               version="true"
+               author="true"
+               splitindex="false"
+               nodeprecated="true"
+               nodeprecatedlist="true"
+               notree="true"
+               noindex="false"
+               nohelp="true"
+               nonavbar="false"
+               serialwarn="false">
+          <link href="http://java.sun.com/j2se/1.4.2/docs/api"/>
+      </javadoc>
+   </target>
+
+   <!-- ######################################################### -->
+
+   <target name="compile" depends="init" description="compiles source files">
+      <mkdir dir="${build.classes.dir}"/>
+      <javac destdir="${build.classes.dir}"
+             srcdir="${src.java.dir}"
+             classpath="${classpath}"
+             debug="${javac.debug}"
+             deprecation="${javac.deprecation}"
+             optimize="${javac.optimize}"/>
+   </target>
+   
+   <target name="compile-test" depends="compile">
+      <mkdir dir="${build.test-classes.dir}"/>
+      <javac destdir="${build.test-classes.dir}"
+             srcdir="${src.test.dir}"
+             debug="${javac.debug}"
+             deprecation="${javac.deprecation}"
+             optimize="${javac.optimize}">
+        <classpath>
+          <pathelement location="${build.classes.dir}" /> 
+          <pathelement location="${build.test-classes.dir}" /> 
+          <pathelement path="${classpath}" /> 
+        </classpath>
+      </javac>
+   </target>
+
+   <target name="test" depends="compile-test" description="runs (junit) unit tests">
+      <echo message="Because we need to sleep to test the eviction threads, this takes a little while (around 35 seconds)..."/>
+      <java classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
+        <arg value="${test.entry}"/> 
+        <classpath>
+          <pathelement location="${build.classes.dir}" /> 
+          <pathelement location="${build.test-classes.dir}" /> 
+          <pathelement path="${classpath}" /> 
+        </classpath>
+      </java>
+   </target>
+
+   <target name="build-jar" depends="compile">
+      <mkdir dir="${dist.dir}"/>
+      <jar jarfile="${dist.jar}">
+         <fileset dir="${build.classes.dir}"/>
+         <metainf dir="${basedir}" includes="LICENSE.txt,NOTICE.txt"/>
+         <manifest>
+            <attribute name="Built-By" value="${user.name}"/>
+            <attribute name="Package" value="${package}"/>
+            <attribute name="Extension-Name" value="${name}"/>
+            <attribute name="Specification-Vendor" value="Apache Software Foundation"/>
+            <attribute name="Specification-Title" value="${title}"/>
+            <attribute name="Implementation-Version" value="${version}"/>
+            <attribute name="Implementation-Vendor" value="Apache Software Foundation"/>
+
+         </manifest>
+      </jar>
+   </target>
+
+   <target name="build" depends="clean,build-jar,javadoc">
+      <copy todir="${dist.dir}" file="${basedir}/LICENSE.txt"/>
+      <copy todir="${dist.dir}" file="${basedir}/NOTICE.txt"/>
+      <copy todir="${dist.dir}" file="${basedir}/README.txt"/>
+   </target>
+
+   <target name="dist" depends="build" description="gump target"/>
+   
+</project>

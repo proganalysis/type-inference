@@ -1,0 +1,29 @@
+Soot started on Sat Aug 27 22:10:10 EDT 2011
+To disable progess messages, use -Q option.
+Javarifier preparations started on: 311 classes.
+StubCleaner finished.
+BridgeMethodMarker finished.
+MethodRefAdder finished.
+TypeInitializer finished.
+OwnerAdder finished.
+RawTypeWildcardifier finished.
+TypeIndexer finished.
+TypeInferencer finished.
+RepChecker finished.
+JrTyper finished.
+AnnotationLoader finished.
+StubConstraints finished.
+ConstraintGenerator finished.
+BoundGuarder finished.
+ParameterConstraints finished.
+SubtypeConstraints finished.
+Solved constraints.
+Applied solutions to types.
+UnknownEliminator finished.
+UnneededPolyreadRemover finished.
+
+Writing Javari's results to tinySQL.jaif
+Transforming ORG.as220.tinySQL.tinySQL... 
+Writing to sootOutput/ORG.as220.tinySQL.tinySQL.jimple
+Soot finished on Sat Aug 27 22:10:56 EDT 2011
+Soot has run for 0 min. 45 sec.

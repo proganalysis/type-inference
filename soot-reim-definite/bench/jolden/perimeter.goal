@@ -1,0 +1,583 @@
+package checkers.javari.quals:
+annotation @ReadOnly: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package checkers.javari.quals:
+annotation @Mutable: @java.lang.annotation.Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package :
+class BlackNode:
+
+    method <init>(LQuadrant;LQuadTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+
+    method perimeter(I)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+184:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+184:
+        local 2 #2+182:
+        local 3 #8+176:
+            type: @checkers.javari.quals.ReadOnly
+
+    method sumAdjacent(LQuadrant;LQuadrant;I)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #2:
+        local 0 #0+2:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+2:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+2:
+            type: @checkers.javari.quals.ReadOnly
+        local 3 #0+2:
+
+package :
+class GreyNode:
+
+    method <init>(LQuadrant;LQuadTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+
+    method perimeter(I)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+48:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+48:
+        local 2 #13+35:
+
+    method sumAdjacent(LQuadrant;LQuadrant;I)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #2:
+        local 0 #0+40:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+40:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+40:
+            type: @checkers.javari.quals.ReadOnly
+        local 3 #0+40:
+        local 4 #9+31:
+            type: @checkers.javari.quals.ReadOnly
+        local 5 #18+22:
+            type: @checkers.javari.quals.ReadOnly
+
+package :
+class NorthEast:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method adjacent(I)Z:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+15:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+15:
+
+    method reflect(I)LQuadrant;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+18:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+18:
+
+    method child(LQuadTreeNode;)LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+package :
+class NorthWest:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method adjacent(I)Z:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+15:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+15:
+
+    method reflect(I)LQuadrant;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+18:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+18:
+
+    method child(LQuadTreeNode;)LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+package :
+class Perimeter:
+
+    field levels:
+
+    field printResult:
+
+    field printMsgs:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method main([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+267:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #10+257:
+        local 2 #18+249:
+        local 3 #38+229:
+        local 5 #53+214:
+            type: @checkers.javari.quals.ReadOnly
+        local 6 #58+209:
+        local 8 #63+204:
+        local 10 #70+197:
+        local 11 #75+192:
+        local 13 #80+187:
+        local 15 #88+179:
+        local 16 #93+174:
+
+    method parseCmdLine([Ljava/lang/String;)V:
+        return:
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 0 #0+130:
+            type: @checkers.javari.quals.ReadOnly
+                inner-type 0: @checkers.javari.quals.ReadOnly
+        local 1 #2+128:
+        local 2 #26+94:
+            type: @checkers.javari.quals.ReadOnly
+
+    method usage()V:
+        return:
+
+    method <clinit>()V:
+        return:
+
+package :
+class QuadTreeNode:
+
+    field gcmp:
+
+    field lcmp:
+
+    field quadrant:
+        type: @checkers.javari.quals.ReadOnly
+
+    field nw:
+        type: @checkers.javari.quals.ReadOnly
+
+    field ne:
+        type: @checkers.javari.quals.ReadOnly
+
+    field sw:
+        type: @checkers.javari.quals.ReadOnly
+
+    field se:
+        type: @checkers.javari.quals.ReadOnly
+
+    field parent:
+        type: @checkers.javari.quals.ReadOnly
+
+    field NORTH:
+
+    field EAST:
+
+    field SOUTH:
+
+    field WEST:
+
+    method <init>(LQuadrant;LQuadTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+11:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+11:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+11:
+            type: @checkers.javari.quals.ReadOnly
+
+    method <init>(LQuadrant;LQuadTreeNode;LQuadTreeNode;LQuadTreeNode;LQuadTreeNode;LQuadTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #2:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #3:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #4:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #5:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+38:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+38:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+38:
+            type: @checkers.javari.quals.ReadOnly
+        local 3 #0+38:
+            type: @checkers.javari.quals.ReadOnly
+        local 4 #0+38:
+            type: @checkers.javari.quals.ReadOnly
+        local 5 #0+38:
+            type: @checkers.javari.quals.ReadOnly
+        local 6 #0+38:
+            type: @checkers.javari.quals.ReadOnly
+
+    method setChildren(LQuadTreeNode;LQuadTreeNode;LQuadTreeNode;LQuadTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.Mutable
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #2:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #3:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+22:
+            type: @checkers.javari.quals.Mutable
+        local 1 #0+22:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+22:
+            type: @checkers.javari.quals.ReadOnly
+        local 3 #0+22:
+            type: @checkers.javari.quals.ReadOnly
+        local 4 #0+22:
+            type: @checkers.javari.quals.ReadOnly
+
+    method getNorthWest()LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method getNorthEast()LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method getSouthWest()LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method getSouthEast()LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method createTree(IIILQuadTreeNode;LQuadrant;I)LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        parameter #3:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #4:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #5:
+        local 0 #0+192:
+        local 1 #0+192:
+        local 2 #0+192:
+        local 3 #0+192:
+            type: @checkers.javari.quals.ReadOnly
+        local 4 #0+192:
+            type: @checkers.javari.quals.ReadOnly
+        local 5 #0+192:
+        local 7 #8+184:
+        local 6 #36+3:
+            type: @checkers.javari.quals.ReadOnly
+        local 6 #57+3:
+            type: @checkers.javari.quals.ReadOnly
+        local 6 #77+3:
+            type: @checkers.javari.quals.ReadOnly
+        local 6 #92+100:
+            type: @checkers.javari.quals.Mutable
+        local 8 #113+76:
+            type: @checkers.javari.quals.ReadOnly
+        local 9 #134+55:
+            type: @checkers.javari.quals.ReadOnly
+        local 10 #155+34:
+            type: @checkers.javari.quals.ReadOnly
+        local 11 #176+13:
+            type: @checkers.javari.quals.ReadOnly
+
+    method perimeter(I)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+
+    method sumAdjacent(LQuadrant;LQuadrant;I)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #2:
+
+    method gtEqualAdjNeighbor(I)LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+67:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+67:
+        local 2 #29+3:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #37+30:
+            type: @checkers.javari.quals.ReadOnly
+
+    method countTree()I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+62:
+            type: @checkers.javari.quals.ReadOnly
+
+    method checkOutside(II)I:
+        return:
+        parameter #0:
+        parameter #1:
+        local 0 #0+28:
+        local 1 #0+28:
+        local 2 #8+20:
+
+    method checkIntersect(III)I:
+        return:
+        parameter #0:
+        parameter #1:
+        parameter #2:
+        local 0 #0+105:
+        local 1 #0+105:
+        local 2 #0+105:
+        local 3 #90+15:
+
+    method toString()Ljava/lang/String;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+39:
+            type: @checkers.javari.quals.ReadOnly
+
+    method <clinit>()V:
+        return:
+
+package :
+class Quadrant:
+
+    field cNorthWest:
+        type: @checkers.javari.quals.ReadOnly
+
+    field cNorthEast:
+        type: @checkers.javari.quals.ReadOnly
+
+    field cSouthWest:
+        type: @checkers.javari.quals.ReadOnly
+
+    field cSouthEast:
+        type: @checkers.javari.quals.ReadOnly
+
+    method adjacent(I)Z:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+
+    method reflect(I)LQuadrant;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+
+    method child(LQuadTreeNode;)LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+
+    method <clinit>()V:
+        return:
+
+package :
+class SouthEast:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method adjacent(I)Z:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+16:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+16:
+
+    method reflect(I)LQuadrant;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+18:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+18:
+
+    method child(LQuadTreeNode;)LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+package :
+class SouthWest:
+
+    method <init>()V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+    method adjacent(I)Z:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+16:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+16:
+
+    method reflect(I)LQuadrant;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+18:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+18:
+
+    method child(LQuadTreeNode;)LQuadTreeNode;:
+        return: @checkers.javari.quals.ReadOnly
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+5:
+            type: @checkers.javari.quals.ReadOnly
+
+package :
+class WhiteNode:
+
+    method <init>(LQuadrant;LQuadTreeNode;)V:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        local 0 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+7:
+            type: @checkers.javari.quals.ReadOnly
+
+    method perimeter(I)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+        local 0 #0+2:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+2:
+
+    method sumAdjacent(LQuadrant;LQuadrant;I)I:
+        return:
+        receiver: @checkers.javari.quals.ReadOnly
+        parameter #0:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #1:
+            type: @checkers.javari.quals.ReadOnly
+        parameter #2:
+        local 0 #0+2:
+            type: @checkers.javari.quals.ReadOnly
+        local 1 #0+2:
+            type: @checkers.javari.quals.ReadOnly
+        local 2 #0+2:
+            type: @checkers.javari.quals.ReadOnly
+        local 3 #0+2:
+
