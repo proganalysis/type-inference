@@ -8,12 +8,6 @@ public class Library {
         set.add(a1);
         Set<X> set2 = set;
         int size = set2.size();
-        
-    }
-    
-    public static void main(String[] a) {
-    	Library l = new Library();
-    	l.foo();
     }
 }
 
