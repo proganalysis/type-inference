@@ -30,7 +30,8 @@ public class ServerNS {
 		}
 
 	    int portNumber = Integer.parseInt(args[1]);
-		ExecutorService executor = Executors.newFixedThreadPool(1000);
+		// ExecutorService executor = Executors.newFixedThreadPool(50);
+		ExecutorService executor = Executors.newCachedThreadPool();
 		try {
 			@SuppressWarnings("resource")
 			ServerSocket serverSocket = new ServerSocket(portNumber);

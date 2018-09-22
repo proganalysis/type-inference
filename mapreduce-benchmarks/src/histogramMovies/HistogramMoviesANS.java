@@ -47,7 +47,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Faraz Ahmad
  */
-
+@SuppressWarnings("Duplicates")
 public class HistogramMoviesANS extends Configured implements Tool {
 
 	private enum Counter {
@@ -201,6 +201,10 @@ public class HistogramMoviesANS extends Configured implements Tool {
 		Date startTime = new Date();
 		System.out.println("Job started: " + startTime);
 
+		System.out.println("Here are the extra arguments");
+        for (int i = 0; i < other_args.size(); i++) {
+            System.out.println(String.format("\tArgument (%d) = %s", i, other_args.get(i)));
+        }
 		JobClient.runJob(conf);
 
 		Date end_time = new Date();
