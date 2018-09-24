@@ -8,6 +8,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.TaskCounter;
 
+// Taken from here: https://github.com/punit-naik/MLHadoop
+
 public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 	public static int count=0;
 	public static long number_inputs=(long) 0;

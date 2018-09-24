@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
+// Taken from here: https://github.com/punit-naik/MLHadoop
 
 public class Driver {
 	public static int num_features; // needs to be set
