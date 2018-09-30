@@ -23,6 +23,8 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+// from here https://github.com/tzulitai/distributed-svm
+
 /*
  * Currently only supports 2-class SVM training.
  */

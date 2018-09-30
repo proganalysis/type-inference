@@ -11,6 +11,8 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
+// from here https://github.com/tzulitai/distributed-svm
+
 public class TrainingSubsetInputFormat extends FileInputFormat<NullWritable, Text> {
 	
 	@Override

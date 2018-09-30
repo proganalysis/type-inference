@@ -14,6 +14,8 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
+// from here https://github.com/tzulitai/distributed-svm
+
 public class TrainingSubsetRecordReader extends RecordReader<NullWritable, Text> {
 
 	private FileSplit fileSplit;
