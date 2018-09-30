@@ -18,7 +18,7 @@ public class TrainingSubsetInputFormat extends FileInputFormat<NullWritable, Tex
 	@Override
 	public RecordReader<NullWritable, Text> createRecordReader(InputSplit split, TaskAttemptContext context) 
 		throws IOException, InterruptedException {
-		TrainingSubsetRecordReader reader = new TrainingSubsetRecordReader();
+		SVM.io.TrainingSubsetRecordReader reader = new SVM.io.TrainingSubsetRecordReader();
 		reader.initialize(split, context);
 		return reader;
 	}
