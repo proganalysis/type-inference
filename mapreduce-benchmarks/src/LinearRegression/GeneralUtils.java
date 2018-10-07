@@ -24,7 +24,7 @@ public class GeneralUtils {
     public static void send_to_server(String msg) {
         if(DEBUG) {
             try {
-                Socket s = new Socket("34.207.147.212", 44444);
+                Socket s = new Socket("AN IP", 44444);
                 DataOutputStream out = new DataOutputStream(s.getOutputStream());
                 byte[] ptext = make_date_msg(msg).getBytes("UTF-8");
                 out.write(ptext);
