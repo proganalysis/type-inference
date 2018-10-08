@@ -58,9 +58,13 @@ public class Driver {
 				hdfs.delete(new Path(args[4]),true);
 			}
 
+			LinearRegression.GeneralUtils.print_msg(String.format("remoteAddr -> %s", args[5]));
+			LinearRegression.GeneralUtils.print_msg(String.format("numberInputs -> %s", args[6]));
+
 			//alpha value initialisation
 			conf.setFloat("alpha", alpha);
-
+			conf.setStrings("bundle", args[5], args[6]);
+			conf.set("numberInputs", args[6]);
 			//Theta Value Initialisation
 			for(int j=0;j<num_features;j++){
 				conf.setFloat("theta".concat(String.valueOf(j)), theta[j]);

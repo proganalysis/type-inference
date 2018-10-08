@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class GeneralUtils {
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = true;
 
     private static String make_date_msg(String msg) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -21,18 +21,4 @@ public class GeneralUtils {
         }
     }
 
-    public static void send_to_server(String msg) {
-        if(DEBUG) {
-            try {
-                Socket s = new Socket("AN IP", 44444);
-                DataOutputStream out = new DataOutputStream(s.getOutputStream());
-                byte[] ptext = make_date_msg(msg).getBytes("UTF-8");
-                out.write(ptext);
-                out.close();
-                s.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
