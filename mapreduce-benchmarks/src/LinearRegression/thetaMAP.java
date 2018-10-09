@@ -10,6 +10,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.TaskCounter;
+import scala.Int;
 
 // This code came from here:
 // https://github.com/punit-naik/MLHadoop/tree/master/LinearRegression_MapReduce
@@ -32,10 +33,11 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 		String bundle[] = context.getConfiguration().getStrings("bundle");
 		alpha=context.getConfiguration().getFloat("alpha",0);
 		remoteAddr=bundle[0]; // context.getConfiguration().get("remoteAddr");
-		// number_inputs=Long.getLong(bundle[1]);
-        // number_inputs=context.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS).getValue();
-		 number_inputs=context.getCounter(TaskCounter.MAP_INPUT_RECORDS).getValue();
 		logWriter = new LinearRegression.LogWriter(remoteAddr);
+		number_inputs=Long.parseLong(bundle[1]);
+        // number_inputs=context.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS).getValue();
+		// number_inputs=context.getCounter(TaskCounter.MAP_INPUT_RECORDS).getValue();
+
 		logWriter.write_net(String.format("Alpha -> %.2f", alpha));
 		logWriter.write_net(String.format("number_inputs -> %d", number_inputs));
 
@@ -47,7 +49,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 
 		// LinearRegression.GeneralUtils.send_to_server(String.format("MAPPER: got this line \'%s\'", value));
 
-		logWriter.write_net(String.format("MAPPER: got this line \'%s\'", value));
+		// logWriter.write_net(String.format("MAPPER: got this line \'%s\'", value));
 
 		if(count==1){
 			for(int i=0;i<tok.length;i++){
