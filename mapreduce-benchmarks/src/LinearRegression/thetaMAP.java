@@ -42,15 +42,14 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 		logWriter.write_net(String.format("number_inputs -> %d", number_inputs));
 
 	}
+
 	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 		++count;
 		float h_theta=0;
 		String[] tok=value.toString().split("\\,");
 
-		// LinearRegression.GeneralUtils.send_to_server(String.format("MAPPER: got this line \'%s\'", value));
-
-		// logWriter.write_net(String.format("MAPPER: got this line \'%s\'", value));
-
+		logWriter.write_net(String.format("got this line \'%s\'", value));
+		logWriter.write_net(String.format("current count value -> %d", count));
 		if(count==1){
 			for(int i=0;i<tok.length;i++){
 				theta_i.add(context.getConfiguration().getFloat("theta".concat(String.valueOf(i)),0));
@@ -68,8 +67,9 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 		for(int i=0;i<Xi.length;i++){
 			h_theta += Xi[i]*theta_i.get(i);
 		}
-
+		logWriter.write_net(String.format("current h_theta value -> %.2f", h_theta));
 		float Yi=Float.parseFloat(tok[tok.length-1]);
+		logWriter.write_net(String.format("current Yi value -> %.2f", Yi));
 		StringBuilder sb = new StringBuilder();
 		for(float f : theta_i) {
 			sb.append(Float.toString(f));
