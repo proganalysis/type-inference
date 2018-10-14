@@ -1,16 +1,12 @@
 package LinearRegression;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.TaskCounter;
-import scala.Int;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 // This code came from here:
 // https://github.com/punit-naik/MLHadoop/tree/master/LinearRegression_MapReduce
@@ -33,7 +29,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 		String bundle[] = context.getConfiguration().getStrings("bundle");
 		alpha=context.getConfiguration().getFloat("alpha",0);
 		remoteAddr=bundle[0]; // context.getConfiguration().get("remoteAddr");
-		logWriter = new LinearRegression.LogWriter(remoteAddr);
+		logWriter = new LinearRegression.LogWriter(remoteAddr, LinearRegression.LogWriterType.NETWRITER);
 		number_inputs=Long.parseLong(bundle[1]);
         // number_inputs=context.getCounter(org.apache.hadoop.mapred.Task.Counter.MAP_INPUT_RECORDS).getValue();
 		// number_inputs=context.getCounter(TaskCounter.MAP_INPUT_RECORDS).getValue();
@@ -78,8 +74,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 		logWriter.write_net(String.format("theta_i before: %s", sb.toString()));
 		sb = new StringBuilder();
 		for(int i=0;i<Xi.length;i++){
-			float temp=theta_i.get(i);
-			theta_i.remove(i);
+			float temp = theta_i.remove(i);
 			theta_i.add(i, (temp+(alpha/number_inputs)*(Yi-h_theta)*(Xi[i])));
 		}
 		for(float f : theta_i) {
