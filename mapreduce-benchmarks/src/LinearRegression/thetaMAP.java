@@ -22,6 +22,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 	public static ArrayList<Float> theta_i=new ArrayList<Float>();
 	public static String remoteAddr;
 	public static LinearRegression.LogWriter logWriter;
+	public static float normalizer;
 
     // public static final Log log = LogFactory.getLog(thetaMAP.class);
 	@Override
@@ -36,6 +37,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 
 		logWriter.write_net(String.format("Alpha -> %.2f", alpha));
 		logWriter.write_net(String.format("number_inputs -> %d", number_inputs));
+		normalizer = alpha/number_inputs;
 
 	}
 
@@ -71,11 +73,13 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, FloatWritable> {
 			sb.append(Float.toString(f));
 			sb.append(" ");
 		}
+		// $f0:$f1:Yi:h_theta:$r12:temp:temp2
 		logWriter.write_net(String.format("theta_i before: %s", sb.toString()));
 		sb = new StringBuilder();
 		for(int i=0;i<Xi.length;i++){
 			float temp = theta_i.remove(i);
-			theta_i.add(i, (temp+(alpha/number_inputs)*(Yi-h_theta)*(Xi[i])));
+			float temp2 = (temp+(normalizer)*(Yi-h_theta)*(Xi[i]));
+			theta_i.add(i, temp2);
 		}
 		for(float f : theta_i) {
 			sb.append(Float.toString(f));
