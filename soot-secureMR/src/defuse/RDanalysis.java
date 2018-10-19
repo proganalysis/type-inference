@@ -1,13 +1,10 @@
 package defuse;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
+
 import soot.BooleanType;
 import soot.PackManager;
 import soot.Transform;
@@ -37,7 +34,8 @@ public class RDanalysis {
 	private Set<Value> convertedValues;
 	private ArrayList<Integer> mapLoops, reduceLoops;
 	private Set<Integer> mapConversions, reduceConversions;
-	
+	private Map<Value, Map<Integer, String>> conversionCount;
+
 	public RDanalysis(RDTransformer transformer) {
 		this.transformer = transformer;
 		mapDefUseChains = transformer.getMapDefUseChains();
@@ -50,7 +48,9 @@ public class RDanalysis {
 		reduceLoops = transformer.getReduceLoops();
 		mapConversions = new HashSet<>();
 		reduceConversions = new HashSet<>();
-		
+
+		conversionCount = new HashMap<>();
+
 		sensitiveValues = new LinkedHashMap<>();
 		convertedValues = new HashSet<>();
 		keyBucket = new HashSet<>();
@@ -83,11 +83,29 @@ public class RDanalysis {
 		ignoreBucket.add("<java.lang.String: int indexOf(java.lang.String)>");
 		ignoreBucket.add("<java.util.Map: java.lang.Object get(java.lang.Object)>");
 	}
-	
+
+
 	private void propagateMap(String[] mSources) {
 		// propagate sensitivity; BFS; add children
+		int feskhj = 10;
+
+		BufferedWriter writer = null;
+		try {
+			writer = new BufferedWriter(new FileWriter("propogateMap"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
 		mapSources = new Reference[mSources.length];
 		for (Value defValue : mapDefUseChains.keySet()) {
+			try {
+				writer.write(String.format("%s\n", defValue.toString()));
+				writer.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 			for (int i = 0; i < mSources.length; i++) {
 				if (mSources[i].equals(defValue.toString())) {
 					Reference ref = sensitiveValues.getOrDefault(defValue, new Reference(defValue));
@@ -96,6 +114,11 @@ public class RDanalysis {
 					mapSources[i] = ref;
 				}
 			}
+		}
+		try {
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		scanDefUseChains(mapDefUseChains);
 	}
@@ -170,7 +193,27 @@ public class RDanalysis {
 		}
 		return mapValues;
 	}
-	
+
+	private void print_op_line(Value defValue, Value op1, Value op2, String symbol) {
+		String print_str = String.format("Analyzing this line: %s = %s %s %s", defValue.toString(), op1.toString(), symbol, op2.toString());
+		System.out.println(print_str);
+	}
+
+	private void print_conversion(Value defValue, String from, String to, int line) {
+		Map<Integer, String> tmp;
+		if(conversionCount.containsKey(defValue)) {
+			tmp = conversionCount.get(defValue);
+		}
+		else {
+			tmp = new HashMap<>();
+		}
+		tmp.put(line, String.format("From %s To %s", from, to));
+		conversionCount.put(defValue, tmp);
+		String print_str = String.format("Value %s must be converted from %s to %s", defValue.toString(), from, to);
+		System.out.println(print_str);
+	}
+
+	@SuppressWarnings("Duplicates")
 	private void addOperations() {
 		// Add operations and check conversions
 		for (Value defValue : defUseChains.keySet()) {
@@ -228,15 +271,19 @@ public class RDanalysis {
 					}
 				} else if (useUnit instanceof AssignStmt) {
 						Value rhsOp = ((AssignStmt) useUnit).getRightOp();
+
 						if (rhsOp instanceof BinopExpr) {
 							String symbol = ((BinopExpr) rhsOp).getSymbol();
 							Value op1 = ((BinopExpr) rhsOp).getOp1();
 							Value op2 = ((BinopExpr) rhsOp).getOp2();
+							print_op_line(defValue, op1, op2, symbol);
 							switch (symbol) {
 							case " + ":
 							case " - ":
 								if (ref.contains("MH")) {
-									conversions.add(useUnit.getJavaSourceStartLineNumber());
+									int line_num = useUnit.getJavaSourceStartLineNumber();
+									print_conversion(defValue,"MH", "AH", line_num);
+									conversions.add(line_num);
 									convertedValues.add(defValue);
 									ref.removeOperation("MH");
 									removeOperations(ref, "MH");
@@ -247,7 +294,9 @@ public class RDanalysis {
 							case " * ":
 								if (sensitiveValues.containsKey(op1) && sensitiveValues.containsKey(op2)) {
 									if (ref.contains("AH")) {
-										conversions.add(useUnit.getJavaSourceStartLineNumber());
+										int line_num = useUnit.getJavaSourceStartLineNumber();
+										print_conversion(defValue,"AH", "MH", line_num);
+										conversions.add(line_num);
 										convertedValues.add(defValue);
 										ref.removeOperation("AH");
 										removeOperations(ref, "AH");
@@ -256,7 +305,9 @@ public class RDanalysis {
 									addOperations(ref, "MH");
 								} else {
 									if (ref.contains("MH")) {
-										conversions.add(useUnit.getJavaSourceStartLineNumber());
+										int line_num = useUnit.getJavaSourceStartLineNumber();
+										print_conversion(defValue,"AH", "MH", line_num);
+										conversions.add(line_num);
 										convertedValues.add(defValue);
 										ref.removeOperation("MH");
 										removeOperations(ref, "MH");
@@ -273,7 +324,9 @@ public class RDanalysis {
 									clearOperations(ref);
 								} else {
 									if (ref.contains("MH")) {
-										conversions.add(useUnit.getJavaSourceStartLineNumber());
+										int line_num = useUnit.getJavaSourceStartLineNumber();
+										print_conversion(defValue,"AH", "MH", line_num);
+										conversions.add(line_num);
 										convertedValues.add(defValue);
 										ref.removeOperation("MH");
 										removeOperations(ref, "MH");
@@ -357,7 +410,18 @@ public class RDanalysis {
 	
 	private String findRegion(Set<Integer> conversions, ArrayList<Integer> loops, String className) {
 		int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+		for(Map.Entry<Value, Map<Integer, String>> entry : conversionCount.entrySet()) {
+			String print_str = String.format("%s must be converted %d times", entry.getKey().toString(), entry.getValue().keySet().size());
+			System.out.println(print_str);
+			Map<Integer, String> value_map = entry.getValue();
+			for(Map.Entry<Integer, String> value_entry : value_map.entrySet()) {
+				print_str = String.format("\tLine %d: %s",value_entry.getKey(), value_entry.getValue());
+				System.out.println(print_str);
+			}
+		}
+
 		for (int conversion : conversions) {
+			System.out.println(String.format("Conversion on line: %d", conversion));
 			boolean inLoop = false;
 			for (int i = 0; i < loops.size() - 1; i++) {
 				int start = loops.get(i);
@@ -394,8 +458,13 @@ public class RDanalysis {
 			propagateReduce(rSources);
 			// link values
 			for (int i = 0; i < mapSources.length; i++) {
-				if (reduceSources[i] == null) continue;
-				mapSources[i].addChild(reduceSources[i].getValue());
+				if (reduceSources[i] == null) {
+					continue;
+				}
+				else {
+					mapSources[i].addChild(reduceSources[i].getValue());
+				}
+
 			}
 		}
 		this.addOperations();
@@ -433,17 +502,20 @@ public class RDanalysis {
 		RDTransformer transformer = new RDTransformer();
 		PackManager.v().getPack("jtp").add(new Transform("jtp.rd", transformer));
 		soot.Main.main(arguments.toArray(new String[0]));
-		
+
 		String[] mSources = mapSources.split(":");
 		String[] rSources = reduceSources.equals("") ? new String[0] : reduceSources.split(":");
 		RDanalysis analysis = new RDanalysis(transformer);
+
+		int llfl = 94;
+
 		String region = analysis.analyze(mSources, rSources);
 		System.out.println();
 		for (Reference source : analysis.getSources()) {
 			Set<String> operations = source.getOperations();
 			if (operations.isEmpty())
 				System.out.println(source.getValue() + ": [RND]");
-			else 
+			else
 				System.out.println(source.getValue() + ": " + operations);
 		}
 		if (region != null)
