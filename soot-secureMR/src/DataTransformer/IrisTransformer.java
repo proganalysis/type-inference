@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class IrisTransformer {
     public static void main(String[] args) {
-        
+
         BigInteger p = new BigInteger("4115582333");
         BigInteger q = new BigInteger("4013819549");
         BigInteger mod = new BigInteger("16519204823714427817");
@@ -25,6 +25,26 @@ public class IrisTransformer {
 
         PaillierPublicKey pub = new PaillierPublicKey(mod);
         PaillierPrivateKey pvt = new PaillierPrivateKey(pub, totient);
+
+        PaillierPublicKey.Serializer pub_serializer = new PaillierPublicKey.Serializer() {
+            @Override
+            public void serialize(BigInteger bigInteger) {
+                System.out.println(bigInteger);
+            }
+        };
+
+        PaillierPrivateKey.Serializer serializer = new PaillierPrivateKey.Serializer() {
+            @Override
+            public void serialize(PaillierPublicKey paillierPublicKey, BigInteger bigInteger, BigInteger bigInteger1) {
+                System.out.println(bigInteger);
+                System.out.println(bigInteger1);
+                System.out.println(paillierPublicKey);
+            }
+
+        };
+        pub.serialize(pub_serializer);
+        pvt.serialize(serializer);
+
 //
 //        PaillierPrivateKey pvt = PaillierPrivateKey.create(64);
 //        PaillierPublicKey pub = pvt.getPublicKey();
@@ -32,16 +52,20 @@ public class IrisTransformer {
 
         PaillierContext context = pub.createSignedContext();
 
-//        BigInteger a_raw = pub.raw_encrypt(new BigInteger("5"));
-//        BigInteger b_raw = pub.raw_encrypt(new BigInteger("20"));
-//
-//        EncryptedNumber a = new EncryptedNumber(context, a_raw, 1);
-//        EncryptedNumber b = new EncryptedNumber(context, b_raw, 1);
-//
-//        EncryptedNumber c = context.add(a, b);
-//
-//        EncodedNumber c_encoded = pvt.decrypt(c);
-//        System.out.println(c_encoded.getValue().toString());
+        BigInteger a_raw = pub.raw_encrypt(new BigInteger("5"));
+        BigInteger b_raw = pub.raw_encrypt(new BigInteger("20"));
+
+        EncryptedNumber a = new EncryptedNumber(context, a_raw, 1);
+        EncryptedNumber b = new EncryptedNumber(context, b_raw, 1);
+
+
+        EncryptedNumber c = context.add(a, b);
+
+        EncodedNumber c_encoded = pvt.decrypt(c);
+        System.out.println(c_encoded.getValue().toString());
+
+        BigInteger bi = pvt.raw_decrypt(new BigInteger("24455590686746858144017520591119508899"));
+        System.out.println(bi);
 
         String in_file = "generated_iris_data";
         String out_file = "generated_iris_data_out";

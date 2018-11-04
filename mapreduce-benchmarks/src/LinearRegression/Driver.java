@@ -15,15 +15,21 @@ import java.util.regex.Pattern;
 // This code came from here:
 // https://github.com/punit-naik/MLHadoop/tree/master/LinearRegression_MapReduce
 
-// This is added because Intellij is _very_ annoying about this
-@SuppressWarnings("Duplicates")
+// This is added because Intellij is _very_ annoying about thisd
+// @SuppressWarnings("Duplicates")
 
 public class Driver {
-    public static LinearRegression.LogWriter logWriter;
+    // public static LinearRegression.LogWriter logWriter;
 	public static int num_features; // needs to be set
 	public static float alpha; // needs to be set
 	// Got help with this from here: https://www.programcreek.com/java-api-examples/?class=org.apache.hadoop.fs.FileSystem&method=listFiles
 	public static float[] getIntermediateTheta(FileSystem hdfs, String dirname, int dimenNum) {
+		// LinearRegression.LogWriter logWriter = null;
+//		try {
+//			logWriter = new LinearRegression.LogWriter("getIntermediateTheta",  LinearRegression.LogWriterType.CONSOLEWRITER);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		Path path = new Path(dirname);
 		float[] theta_vals = new float[dimenNum];
 		// part-r-00010
@@ -48,7 +54,7 @@ public class Driver {
 							if (fileContentMatcher.find()) {
 								int theta_num = Integer.parseInt(fileContentMatcher.group(1));
 								float theta_val = Float.parseFloat(fileContentMatcher.group(2));
-                                logWriter.write_console(String.format("Found a match! theta%d %.6f", theta_num, theta_val));
+                                // logWriter.write_console(String.format("Found a match! theta%d %.6f", theta_num, theta_val));
 								theta_vals[theta_num] = theta_val;
 							}
 						}
@@ -68,7 +74,7 @@ public class Driver {
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException{
-        logWriter = new LinearRegression.LogWriter("Master",  LinearRegression.LogWriterType.CONSOLEWRITER);
+		// LinearRegression.LogWriter logWriter = new LinearRegression.LogWriter("Master",  LinearRegression.LogWriterType.CONSOLEWRITER);
 		//args[0] is the number of features each input has.
 		num_features=Integer.parseInt(args[0]);
 		++num_features;
@@ -79,7 +85,7 @@ public class Driver {
 		float[] theta=new float[num_features];
 		//args[2] is the number of times you want to iterate over your training set.
 		for(int i=0;i<Integer.parseInt(args[2]);i++){
-            logWriter.write_console(String.format("Starting run %d", i));
+            // logWriter.write_console(String.format("Starting run %d", i));
 			//for the first run
 			if(i==0){
 				for(int i1=0;i1<num_features;i1++){
@@ -90,7 +96,7 @@ public class Driver {
 			else{
 				theta = getIntermediateTheta(hdfs, args[4], num_features);
                 for(int count=0; count < theta.length; count++) {
-                    logWriter.write_console(String.format("Intermediate Theta%d after run %d -> %.6f", count, i-1, theta[count]));
+                    // logWriter.write_console(String.format("Intermediate Theta%d after run %d -> %.6f", count, i-1, theta[count]));
                 }
 //				int iter=0;
 //				//args[4] is the output path for storing the theta values.
@@ -107,8 +113,8 @@ public class Driver {
 				hdfs.delete(new Path(args[4]),true);
 			}
 
-            logWriter.write_console(String.format("remoteAddr -> %s", args[5]));
-            logWriter.write_console(String.format("numberInputs -> %s", args[6]));
+            // logWriter.write_console(String.format("remoteAddr -> %s", args[5]));
+            // logWriter.write_console(String.format("numberInputs -> %s", args[6]));
 
 			//alpha value initialisation
 			conf.setFloat("alpha", alpha);
@@ -129,13 +135,13 @@ public class Driver {
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(FloatWritable.class);
 			job.waitForCompletion(true);
-            logWriter.write_console(String.format("Ending run %d", i));
+            // logWriter.write_console(String.format("Ending run %d", i));
 
 		}
 		theta = getIntermediateTheta(hdfs, args[4], num_features);
-		for(int count=0; count < theta.length; count++) {
-            logWriter.write_console(String.format("Final Theta%d %.6f", count, theta[count]));
-		}
+		// for(int count=0; count < theta.length; count++) {
+        //     logWriter.write_console(String.format("Final Theta%d %.6f", count, theta[count]));
+		// }
         hdfs.close();
 	}  
 }
