@@ -33,7 +33,7 @@ public class CryptoWorker {
     private String host;
     private int port;
     public CryptoWorker(PaillierPublicKey pub_key,
-                        int exp, float alpha, float number_inputs,
+                        int exp, float alpha, float number_of_inputs,
                         String host, int port) {
         this.host = host;
         this.port = port;
@@ -43,16 +43,32 @@ public class CryptoWorker {
         this.zero = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger("0")), exp);
         this.one = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger("100")), exp);
         this.alpha = alpha;
-        this.number_of_inputs = number_inputs;
-        this.normalizer = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger(Integer.toString((int)((100 * alpha) / number_inputs) ))), exp);
+        this.number_of_inputs = number_of_inputs;
+        this.normalizer = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger(Integer.toString((int)((100 * alpha) / number_of_inputs) ))), exp);
         generate_phi_lambda();
     }
+
+    public CryptoWorker(PaillierPublicKey pub_key,
+                        int exp, String host, int port) {
+        this.host = host;
+        this.port = port;
+        this.pub_key = pub_key;
+        this.paillier_context = pub_key.createSignedContext();
+        this.exp = exp;
+        this.zero = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger("0")), exp);
+        this.one = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger("100")), exp);
+        this.alpha = 0;
+        this.number_of_inputs = 0;
+        this.normalizer = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger("0")), exp);
+        generate_phi_lambda();
+    }
+
     public void generate_phi_lambda() {
         SecureRandom rand = new SecureRandom();
         byte[] rand_bytes = new byte[4];
         rand.nextBytes(rand_bytes);
-        phi = new BigInteger(String.valueOf(ByteBuffer.wrap(rand_bytes).getInt()));
-        lambda = new BigInteger( String.valueOf(ByteBuffer.wrap(rand_bytes).getInt()));
+        phi = new BigInteger("0");//String.valueOf(ByteBuffer.wrap(rand_bytes).getInt()));
+        lambda = new BigInteger("0");// String.valueOf(ByteBuffer.wrap(rand_bytes).getInt()));
         phi_lambda = phi.multiply(lambda);
         phi_enc = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger(String.valueOf(phi))), exp);
         lambda_enc = new EncryptedNumber(paillier_context, pub_key.raw_encrypt(new BigInteger(String.valueOf(lambda))), exp);
@@ -85,16 +101,14 @@ public class CryptoWorker {
         return null;
     }
 
-    public EncryptedNumber multiply(EncryptedNumber a, EncryptedNumber b) {
-        return a;
+    public EncryptedNumber subtract(EncryptedNumber a, EncryptedNumber b) {
+        return a.subtract(b);
     }
-    public  EncryptedNumber add(EncryptedNumber a, EncryptedNumber b) {
+    public EncryptedNumber add(EncryptedNumber a, EncryptedNumber b) {
         return a.add(b);
     }
-    public  EncryptedNumber divide(EncryptedNumber a, EncryptedNumber b) {
-        return a;
-    }
-    public  EncryptedNumber str_to_encrypted_number(String s) {
+
+    public EncryptedNumber str_to_encrypted_number(String s) {
         return new EncryptedNumber(paillier_context, new BigInteger(s), exp);
     }
     public EncryptedNumber get_zero() {

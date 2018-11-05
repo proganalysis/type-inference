@@ -1,18 +1,22 @@
 package LinearRegression;
 
+import com.n1analytics.paillier.EncryptedNumber;
+import com.n1analytics.paillier.PaillierPublicKey;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// This code came from here:
+// This code came from here:d
 // https://github.com/punit-naik/MLHadoop/tree/master/LinearRegression_MapReduce
 
 // This is added because Intellij is _very_ annoying about thisd
@@ -22,8 +26,9 @@ public class Driver {
     // public static LinearRegression.LogWriter logWriter;
 	public static int num_features; // needs to be set
 	public static float alpha; // needs to be set
+	public static CryptoWorker cryptoWorker;
 	// Got help with this from here: https://www.programcreek.com/java-api-examples/?class=org.apache.hadoop.fs.FileSystem&method=listFiles
-	public static float[] getIntermediateTheta(FileSystem hdfs, String dirname, int dimenNum) {
+	public static EncryptedNumber[] getIntermediateTheta(FileSystem hdfs, String dirname, int dimenNum) {
 		// LinearRegression.LogWriter logWriter = null;
 //		try {
 //			logWriter = new LinearRegression.LogWriter("getIntermediateTheta",  LinearRegression.LogWriterType.CONSOLEWRITER);
@@ -31,10 +36,11 @@ public class Driver {
 //			e.printStackTrace();
 //		}
 		Path path = new Path(dirname);
-		float[] theta_vals = new float[dimenNum];
+		EncryptedNumber[] theta_vals = new EncryptedNumber[dimenNum];
 		// part-r-00010
 		Pattern filenameRe = Pattern.compile(String.format("hdfs://cluster-.*/user/root/%s/part-r-\\d{5}", dirname));
-		Pattern fileContentRe = Pattern.compile("theta(\\d+).*(\\d+\\.\\d+)");
+		// Pattern fileContentRe = Pattern.compile("theta(\\d+).*(\\d+\\.\\d+)");
+		Pattern fileContentRe = Pattern.compile("theta(\\d+)\\s(\\d+)$");
 		try {
 			if(hdfs.exists(path)) {
 				RemoteIterator<LocatedFileStatus> fileListItr = hdfs.listFiles(path, false);
@@ -53,9 +59,10 @@ public class Driver {
 							Matcher fileContentMatcher = fileContentRe.matcher(content);
 							if (fileContentMatcher.find()) {
 								int theta_num = Integer.parseInt(fileContentMatcher.group(1));
-								float theta_val = Float.parseFloat(fileContentMatcher.group(2));
+								// float theta_val = Float.parseFloat(fileContentMatcher.group(2));
+								String theta_val = fileContentMatcher.group(2);
                                 // logWriter.write_console(String.format("Found a match! theta%d %.6f", theta_num, theta_val));
-								theta_vals[theta_num] = theta_val;
+								theta_vals[theta_num] = cryptoWorker.str_to_encrypted_number(theta_val);
 							}
 						}
 						// else {
@@ -80,16 +87,24 @@ public class Driver {
 		++num_features;
 		//args[1] is the value of alpha that you want to use.
 		alpha=Float.parseFloat(args[1]);
+		String remote_host = args[5];
+		String remote_port = args[6];
+		String public_key = args[7];
+		String number_of_inputs = args[8];
 		Configuration conf=new Configuration();
 		FileSystem hdfs=FileSystem.get(conf);
-		float[] theta=new float[num_features];
+		EncryptedNumber[] theta=new EncryptedNumber[num_features];
 		//args[2] is the number of times you want to iterate over your training set.
+
+		PaillierPublicKey pub_key = new PaillierPublicKey(new BigInteger(public_key));
+		cryptoWorker = new CryptoWorker(pub_key, 1, alpha, Float.parseFloat(number_of_inputs), remote_host, Integer.parseInt(remote_port));
+
 		for(int i=0;i<Integer.parseInt(args[2]);i++){
             // logWriter.write_console(String.format("Starting run %d", i));
 			//for the first run
 			if(i==0){
 				for(int i1=0;i1<num_features;i1++){
-					theta[i1]= 0.0f;
+					theta[i1]= cryptoWorker.get_zero();
 				}
 			}
 			//for the second run
@@ -116,13 +131,16 @@ public class Driver {
             // logWriter.write_console(String.format("remoteAddr -> %s", args[5]));
             // logWriter.write_console(String.format("numberInputs -> %s", args[6]));
 
+
+
+
 			//alpha value initialisation
 			conf.setFloat("alpha", alpha);
-			conf.setStrings("bundle", args[5], args[6]);
-			conf.set("numberInputs", args[6]);
+			// passing args
+			conf.setStrings("bundle", remote_host, remote_port, public_key, number_of_inputs);
 			//Theta Value Initialisation
 			for(int j=0;j<num_features;j++){
-				conf.setFloat("theta".concat(String.valueOf(j)), theta[j]);
+				conf.set("theta".concat(String.valueOf(j)), theta[j].calculateCiphertext().toString());
 			}
 			Job job = Job.getInstance(conf, "Calculation of Theta");
 			// Job job = new Job(conf,"Calculation of Theta");
@@ -133,7 +151,7 @@ public class Driver {
 			job.setMapperClass(LinearRegression.thetaMAP.class);
 			job.setReducerClass(LinearRegression.thetaREDUCE.class);
 			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(FloatWritable.class);
+			job.setOutputValueClass(ObjectWritable.class);
 			job.waitForCompletion(true);
             // logWriter.write_console(String.format("Ending run %d", i));
 
