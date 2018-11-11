@@ -86,18 +86,13 @@ public class IrisTransformer {
                 if(m.matches()) {
                     StringBuilder new_line = new StringBuilder();
                     for(int i = 1; i < 6; i++) {
-                        if(i != 5) {
-                            int num = (int) (Float.parseFloat(m.group(i)) * 100);
-                            BigInteger num_enc = pub.raw_encrypt(new BigInteger(Integer.toString(num)));
-                            new_line.append(String.format("%s,", num_enc.toString()));
-                        }
-                        else {
-                            int num = Integer.parseInt(m.group(i));
-                            BigInteger num_enc = pub.raw_encrypt(new BigInteger(Integer.toString(num)));
-                            new_line.append(String.format("%s\n", num_enc.toString()));
-                        }
-
+                        EncryptedNumber num_enc = context.encrypt(Double.parseDouble(m.group(i)));
+                        String line_msg = String.format("%s#%d,", num_enc.calculateCiphertext().toString(), num_enc.getExponent());
+                        // System.out.println(m.group(i) + " " + line_msg);
+                        new_line.append(line_msg);
                     }
+
+                    new_line.append("\n");
                     bufferedWriter.write(new_line.toString());
                 }
                 else {
