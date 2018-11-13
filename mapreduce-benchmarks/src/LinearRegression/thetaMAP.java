@@ -5,9 +5,7 @@ import com.n1analytics.paillier.PaillierPublicKey;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.TaskCounter;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -65,6 +63,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 		// TODO: add generate_phi_lambda() call
 		++count;
 		EncryptedNumber h_theta_enc = cryptoWorker.get_zero();
+		// cryptoWorker.send_value("INIT HTHETA", h_theta_enc);
 		double h_theta = 0.0D;
 		String[] tok=value.toString().split("\\,");
 		// cryptoWorker.send_remote_msg(String.format("got this line \'%s\'", value));
@@ -94,23 +93,33 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 					Xi_enc[i] = cryptoWorker.cast_encrypted_number_raw_split(tok[i - 1]);
 				}
 			}
+
 			for(int i=0;i<Xi_enc.length;i++){
 				// h_theta += Xi[i]*theta_i.get(i);
-				EncryptedNumber tmp_multiply = cryptoWorker.remote_multiply(Xi_enc[i], theta_i_enc.get(i), "Xi_enc[i], theta_i_enc.get(i)");
+				// cryptoWorker.send_value("h_theta_before", h_theta_enc);
+				EncryptedNumber tmp_multiply = cryptoWorker.remote_op(Xi_enc[i], theta_i_enc.get(i), "Xi_enc[i], theta_i_enc.get(i)", Operations.MULTIPLY);
+				// cryptoWorker.send_value(String.format("Xi[%d]", i), Xi_enc[i]);
+				// cryptoWorker.send_value(String.format("theta_i_enc.get(%d)", i), theta_i_enc.get(i));
 				assert tmp_multiply != null;
-				h_theta_enc = cryptoWorker.add(h_theta_enc, tmp_multiply);
+				h_theta_enc = h_theta_enc.add(tmp_multiply);
+				// cryptoWorker.send_value("h_theta_after", h_theta_enc);
 
 			}
 			EncryptedNumber Yi_enc= cryptoWorker.cast_encrypted_number_raw_split(tok[tok.length-1]);
 			for(int i=0;i<Xi_enc.length;i++){
+			 	// TODO: javallier library messus up add and subtract on floating point numbers with large amounts of sig figs
 				// theta_i.add(i,(float) (temp+(alpha/number_inputs)*(Yi-h_theta)*(Xi[i])));
 				EncryptedNumber temp = theta_i_enc.remove(i);
-				EncryptedNumber yi_minus_htheta = cryptoWorker.subtract(Yi_enc, h_theta_enc);
-				EncryptedNumber first_mult = cryptoWorker.remote_multiply(yi_minus_htheta, cryptoWorker.get_normalizer_enc(), "yi_minus_htheta, cryptoWorker.get_normalizer_enc()");
+				// cryptoWorker.send_value("Yi_enc", Yi_enc);
+				// cryptoWorker.send_value("h_theta_enc", h_theta_enc);
+				// EncryptedNumber yi_minus_htheta = cryptoWorker.remote_op(Yi_enc, h_theta_enc, "Yi_enc - h_theta_enc", Operations.SUBTRACT);
+				EncryptedNumber yi_minus_htheta = Yi_enc.subtract(h_theta_enc);
+				// cryptoWorker.send_value("yi_minus_htheta", yi_minus_htheta);
+				EncryptedNumber first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer_enc(), "yi_minus_htheta, cryptoWorker.get_normalizer_enc()", Operations.MULTIPLY);
 				assert first_mult != null;
-				EncryptedNumber second_mult = cryptoWorker.remote_multiply(first_mult, Xi_enc[i], "first_mult, Xi_enc[i]");
+				EncryptedNumber second_mult = cryptoWorker.remote_op(first_mult, Xi_enc[i], "first_mult, Xi_enc[i]", Operations.MULTIPLY);
 				assert second_mult != null;
-				EncryptedNumber ans = cryptoWorker.add(temp, second_mult);
+				EncryptedNumber ans = temp.add(second_mult);
 				theta_i_enc.add(i, ans);
 			}
 		}
@@ -123,14 +132,21 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 				}
 			}
 			for(int i=0;i<Xi.length;i++){
+				// cryptoWorker.send_remote_msg(String.format("h_theta_before = %.5f", h_theta));
+				// cryptoWorker.send_remote_msg(String.format("Xi[%d] = %.5f", i, Xi[i]));
+				// cryptoWorker.send_remote_msg(String.format("theta_i.get(%d) = %.5f", i, theta_i.get(i)));
 				h_theta += Xi[i]*theta_i.get(i);
+				// cryptoWorker.send_remote_msg(String.format("h_theta_after = %.5f", h_theta));
 			}
 			double Yi=Double.parseDouble(tok[tok.length-1]);
 			for(int i=0;i<Xi.length;i++){
 				double temp = theta_i.remove(i);
+				// cryptoWorker.send_remote_msg(String.format("Yi = %.5f", Yi));
+				// cryptoWorker.send_remote_msg(String.format("h_theta = %.5f", h_theta));
 				double yi_minus_htheta = Yi - h_theta;
-				double first_mult = cryptoWorker.remote_multiply(yi_minus_htheta, cryptoWorker.get_normalizer(), "yi_minus_htheta, cryptoWorker.get_normalizer()");
-				double second_mult = cryptoWorker.remote_multiply(first_mult, Xi[i], "first_mult, Xi[i]");
+				// cryptoWorker.send_remote_msg(String.format("yi_minus_htheta = %.5f", yi_minus_htheta));
+				double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), "yi_minus_htheta, cryptoWorker.get_normalizer()", Operations.MULTIPLY);
+				double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], "first_mult, Xi[i]", Operations.MULTIPLY);
 				double ans = temp + second_mult;
 				theta_i.add(i, ans);
 			}

@@ -1,20 +1,11 @@
 package DataTransformer;
 
-import com.n1analytics.paillier.EncodedNumber;
 import com.n1analytics.paillier.EncryptedNumber;
+import com.n1analytics.paillier.PaillierContext;
 import com.n1analytics.paillier.PaillierPrivateKey;
 import com.n1analytics.paillier.PaillierPublicKey;
 
-import java.io.*;
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.util.ArrayList;
 
 public class ServerTester {
      // 66811329142549379802763801401523408106
@@ -27,40 +18,28 @@ public class ServerTester {
         return n < 0.0D ? n * -1.0D : n;
     }
 
+    private static void p_enc_num(EncryptedNumber a, PaillierPrivateKey pvt) {
+        System.out.println(pvt.decrypt(a).decodeDouble() + " " + a.getExponent());
+    }
+
     public static void main(String[] args) {
-        SecureRandom rand = new SecureRandom();
-        byte[] rand_bytes = new byte[2];
-        rand.nextBytes(rand_bytes);
 
-        ArrayList<Double> theta_i= new ArrayList<>();
 
-        theta_i.add(0.0);
-
-        Double d = 19d;
-        double x = theta_i.get(0);
-
-        BigInteger p = new BigInteger("4115582333");
-        BigInteger q = new BigInteger("4013819549");
-        BigInteger mod = new BigInteger("16519204823714427817");
+        BigInteger p = new BigInteger("94028421798108658065983939145167508185344846264998716600360366570357521750597");
+        BigInteger q = new BigInteger("88747269719464841585520587469635161356202715255126386936579883832478299374653");
+        BigInteger mod = new BigInteger("8344765710612356362123652943233543188417167186982505615679396916352063638143504329387287046434809473270740110064040923675389861768599385627649390929417841");
         BigInteger pminus1 = p.subtract(new BigInteger("1"));
         BigInteger qminus1 = q.subtract(new BigInteger("1"));
         BigInteger totient = pminus1.multiply(qminus1);
-        BigDecimal phi = new BigDecimal(String.valueOf(check_neg(ByteBuffer.wrap(rand_bytes).getChar())));
-        rand.nextBytes(rand_bytes);
-        BigDecimal lambda = new BigDecimal(String.valueOf(check_neg(ByteBuffer.wrap(rand_bytes).getChar())));
+
         PaillierPublicKey pub = new PaillierPublicKey(mod);
         PaillierPrivateKey pvt = new PaillierPrivateKey(pub, totient);
-        // 6.0 244583953774185486190241972727137617476#-13,
-        // 2.2 175594740065577971742773310443803127578#-13,
-        LinearRegression.CryptoWorker cryptoWorker = new LinearRegression.CryptoWorker(pub, "localhost", 44444);
-        EncryptedNumber a = cryptoWorker.cast_encrypted_number(new BigInteger("244583953774185486190241972727137617476"), -13);
-        EncryptedNumber b = cryptoWorker.cast_encrypted_number(new BigInteger("175594740065577971742773310443803127578"), -13);
-        cryptoWorker.send_value("a", a);
-        cryptoWorker.send_value("b", b);
-         EncryptedNumber ans = cryptoWorker.remote_multiply(a, b);
-        // double z = cryptoWorker.remote_multiply(5.3, 2.5, "rawr");
-        // System.out.println(z);
-        System.out.println(pvt.decrypt(ans).decodeDouble());
+        PaillierContext paillier_context = pub.createSignedContext();
+        CryptoWorker cryptoWorker = new CryptoWorker(pub, "localhost", 44444);
+        EncryptedNumber a = cryptoWorker.create_encrypted_number(10.0d);
+        EncryptedNumber b = cryptoWorker.create_encrypted_number(5.0d);
+        EncryptedNumber ans = cryptoWorker.remote_op(a, b, Operations.MULTIPLY);
+        p_enc_num(ans, pvt);
 
     }
 }

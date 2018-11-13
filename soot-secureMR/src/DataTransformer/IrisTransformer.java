@@ -2,23 +2,17 @@ package DataTransformer;
 
 import com.n1analytics.paillier.*;
 
-import encryption.Util;
-import com.squareup.jnagmp.Gmp;
-
 import java.io.*;
 import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-
-
 public class IrisTransformer {
     public static void main(String[] args) {
 
-        BigInteger p = new BigInteger("4115582333");
-        BigInteger q = new BigInteger("4013819549");
-        BigInteger mod = new BigInteger("16519204823714427817");
+        BigInteger p = new BigInteger("94028421798108658065983939145167508185344846264998716600360366570357521750597");
+        BigInteger q = new BigInteger("88747269719464841585520587469635161356202715255126386936579883832478299374653");
+        BigInteger mod = new BigInteger("8344765710612356362123652943233543188417167186982505615679396916352063638143504329387287046434809473270740110064040923675389861768599385627649390929417841");
         BigInteger pminus1 = p.subtract(new BigInteger("1"));
         BigInteger qminus1 = q.subtract(new BigInteger("1"));
         BigInteger totient = pminus1.multiply(qminus1);

@@ -31,7 +31,7 @@ public class thetaREDUCE extends Reducer<Text, ObjectWritable, Text, ObjectWrita
 			float count = 0.0F;
 			for (Object value : values) {
 				EncryptedNumber value_enc = (EncryptedNumber)value;
-				sum = cryptoWorker.add(sum, value_enc);
+				sum = sum.add(value_enc);
 				count++;
 			}
 			EncryptedNumber ans = sum.divide(count);
