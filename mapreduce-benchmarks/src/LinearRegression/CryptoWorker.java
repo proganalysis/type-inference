@@ -4,7 +4,6 @@ import com.n1analytics.paillier.EncodedNumber;
 import com.n1analytics.paillier.EncryptedNumber;
 import com.n1analytics.paillier.PaillierContext;
 import com.n1analytics.paillier.PaillierPublicKey;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,52 +12,61 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static LinearRegression.Constants.MSG_DELIM;
 import static LinearRegression.Constants.NUM_DELIM;
 
 public class CryptoWorker {
+    private boolean hide_vals;
     private PaillierContext paillier_context;
     private PaillierPublicKey pub_key;
     private EncryptedNumber zero;
     private EncryptedNumber one;
     private EncryptedNumber normalizer_enc;
-    private double phi;
-    private double lambda;
-    private EncryptedNumber phi_enc;
-    private EncryptedNumber lambda_enc;
-    private EncryptedNumber phi_lambda_enc;
-    private String host;
+    private EncryptedNumber phi;
+    private EncryptedNumber lambda;
+    private EncryptedNumber phi_lambda;
+
+    private EncodedNumber phi_encoded;
+    private EncodedNumber lambda_encoded;
+    private EncodedNumber phi_lambda_encoded;
+
+    private ArrayList<String> host_list;
     private int port;
     private double normalizer;
-    private static final int PLACES = 2;
+    private static final int PLACES = 5;
 
     public CryptoWorker(PaillierPublicKey pub_key,
                         double alpha, double number_of_inputs,
-                        String host, int port) {
-        this.host = host;
+                        String hosts, int port, boolean hide_vals) {
+        this.hide_vals = hide_vals;
+        this.host_list = make_host_list(hosts);
         this.port = port;
         this.pub_key = pub_key;
         this.paillier_context = pub_key.createSignedContext();
-        this.zero = paillier_context.encrypt(0.0D);
-        this.one = paillier_context.encrypt(1.0D);
+        this.zero = paillier_context.encrypt(0.0);
+        this.one = paillier_context.encrypt(1.0);
         this.normalizer = alpha / number_of_inputs;
         this.normalizer_enc = paillier_context.encrypt(normalizer);
         generate_phi_lambda();
     }
 
     public CryptoWorker(PaillierPublicKey pub_key,
-                        String host, int port) {
-        this.host = host;
+                        String hosts, int port) {
+        this.host_list = make_host_list(hosts);
         this.port = port;
         this.pub_key = pub_key;
         this.paillier_context = pub_key.createSignedContext();
-        this.zero = paillier_context.encrypt(0.0D);
-        this.one = paillier_context.encrypt(1.0D);
-        this.normalizer = 0.0D;
+        this.zero = paillier_context.encrypt(0.0);
+        this.one = paillier_context.encrypt(1.0);
+        this.normalizer = 0.0;
         this.normalizer_enc = paillier_context.encrypt(normalizer);
         // generate_phi_lambda();
     }
@@ -77,6 +85,27 @@ public class CryptoWorker {
         return "NONE";
     }
 
+    private ArrayList<String> make_host_list(String hosts_raw) {
+        ArrayList<String> ret_val = new ArrayList<>();
+        Pattern ip_regex = Pattern.compile("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$");
+        for(String s : hosts_raw.split(",")) {
+            Matcher matcher = ip_regex.matcher(s);
+            if(matcher.matches()) {
+                ret_val.add(s);
+            }
+        }
+        return ret_val;
+    }
+
+    private int get_host_index() {
+        byte[] rand_bytes = new byte[4];
+        int index = check_neg(ByteBuffer.wrap(rand_bytes).getChar());
+        return index % this.host_list.size();
+    }
+
+    private String get_host() {
+        return this.host_list.get(get_host_index());
+    }
 
     private static double round(double value) {
         BigDecimal bd = new BigDecimal(Double.toString(value));
@@ -88,29 +117,46 @@ public class CryptoWorker {
     private void generate_phi_lambda() {
         // TODO: this is still not working as intended
         SecureRandom rand = new SecureRandom();
-        phi = round(rand.nextFloat());
-        lambda = round(rand.nextFloat());
-        double phi_lambda = phi * lambda;
-        phi_enc = paillier_context.encrypt(phi);
-        lambda_enc = paillier_context.encrypt(lambda);
-        phi_lambda_enc = paillier_context.encrypt(phi_lambda);
+
+        BigDecimal tmp_phi = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
+        BigDecimal tmp_lambda = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
+        BigDecimal tmp_phi_lambda = tmp_phi.multiply(tmp_lambda);
+
+        tmp_phi = tmp_phi.setScale(PLACES, RoundingMode.HALF_UP);
+        tmp_lambda = tmp_lambda.setScale(PLACES, RoundingMode.HALF_UP);
+        tmp_phi_lambda = tmp_phi_lambda.setScale(PLACES, RoundingMode.HALF_UP);
+
+        phi_encoded = paillier_context.encode(tmp_phi);
+        lambda_encoded = paillier_context.encode(tmp_lambda);
+        phi_lambda_encoded = paillier_context.encode(tmp_phi_lambda);
+
+        phi = paillier_context.encrypt(phi_encoded);
+        lambda = paillier_context.encrypt(lambda_encoded);
+        phi_lambda = paillier_context.encrypt(phi_lambda_encoded);
     }
 
+
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
-        // generate_phi_lambda();
 
-        // send_remote_msg(String.format("PHI: %f LAMBDA %f", phi, lambda));
 
-        // EncryptedNumber to_send_a = a.add(phi);
-        // EncryptedNumber to_send_b = b.add(lambda);
-
+        if(hide_vals) {
+            send_remote_msg(String.format("PHI: %f LAMBDA %f", phi_encoded.decodeDouble(), lambda_encoded.decodeDouble()));
+            // send_value("a before1", a);
+            // send_value("b before1", b);
+            a = a.add(phi);
+            b = b.add(lambda);
+            // send_value("a after1", a);
+            // send_value("b after1", b);
+        }
         String op_str = get_op_str(op);
+
+
 
         BigInteger ciphertext_a = a.calculateCiphertext();
         BigInteger ciphertext_b = b.calculateCiphertext();
 
         try {
-            Socket s = new Socket(host, port);
+            Socket s = new Socket(get_host(), port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
             String msg;
             String msg_format;
@@ -138,11 +184,29 @@ public class CryptoWorker {
             String input_str = new String(raw_input).trim();
             if(!Objects.equals(input_str, "ERROR")) {
                 EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
-                // TODO: this is still not working as intended
-                // EncryptedNumber first = a.multiply(lambda);
-                // EncryptedNumber second = b.multiply(phi);
+                if(hide_vals) {
+                    // TODO: this is still not working as intended
+                    // send_value("a before2", a);
+                    // send_value("b before2", b);
+                    a = a.subtract(phi);
+                    b = b.subtract(lambda);
+                    // send_value("a after2", a);
+                    // send_value("b after2", b);
+                    EncryptedNumber first = a.multiply(lambda_encoded);
+                    first = round_value(first);
+                    // send_value("first", first);
+                    EncryptedNumber second = b.multiply(phi_encoded);
+                    second = round_value(second);
+                    // send_value("second", second);
+                    EncryptedNumber sub = first.add(second);
+                    // send_value("sub1", sub);
+                    sub = sub.add(phi_lambda);
+                    // send_value("sub2", sub);
+                    aug_ans = aug_ans.subtract(sub);
+                    // send_value("aug_ans", aug_ans);
+                }
                 s.close();
-                return aug_ans; //.subtract(first).subtract(second).subtract(lambda * phi);
+                return aug_ans;
             }
             else {
                 return null;
@@ -153,10 +217,33 @@ public class CryptoWorker {
         return null;
     }
 
+    public EncryptedNumber round_value(EncryptedNumber a) {
+        try {
+            Socket s = new Socket(get_host(), port);
+            DataOutputStream out = new DataOutputStream(s.getOutputStream());
+            String msg = String.format("ROUND|%s#%d", a.calculateCiphertext().toString(), a.getExponent());
+            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
+            out.write(ptext);
+            BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            char[] raw_input = new char[1024];
+            int rc = br.read(raw_input);
+            if (rc < 0) {
+                System.err.println(String.format("ERROR: read %d from read rc", rc));
+            }
+            String input_str = new String(raw_input).trim();
+            EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
+            s.close();
+            return aug_ans;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private double send_op_pt(double a, double b, String additional_msg, Operations op) {
         String op_str = get_op_str(op);
         try {
-            Socket s = new Socket(host, port);
+            Socket s = new Socket(get_host(), port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
             String msg = String.format("%s%s%s%s%s%s%s%s%s", "OPD",
                     MSG_DELIM, op_str,
@@ -204,7 +291,7 @@ public class CryptoWorker {
 
     public void send_value(String name, EncryptedNumber a){
         try {
-            Socket s = new Socket(host, port);
+            Socket s = new Socket(get_host(), port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
             String msg = String.format("VALUE|%s|%s#%d", name, a.calculateCiphertext().toString(), a.getExponent());
             byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
@@ -217,7 +304,7 @@ public class CryptoWorker {
 
     public void send_remote_msg(String base_msg) {
         try {
-            Socket s = new Socket(host, port);
+            Socket s = new Socket(get_host(), port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
             String msg = String.format("MSG|%s", base_msg);
             byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);

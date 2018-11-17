@@ -21,20 +21,19 @@ public class CryptoWorker {
 
     private static final String NUM_DELIM = "#";
     private static final String MSG_DELIM = "|";
+    private boolean hide_vals;
     private PaillierContext paillier_context;
     private PaillierPublicKey pub_key;
     private EncryptedNumber zero;
     private EncryptedNumber one;
     private EncryptedNumber normalizer_enc;
-    private double phi;
-    private double lambda;
-    private EncryptedNumber phi_enc;
-    private EncryptedNumber lambda_enc;
-    private EncryptedNumber phi_lambda_enc;
+    private EncodedNumber phi;
+    private EncodedNumber lambda;
+    private EncodedNumber phi_lambda;
     private String host;
     private int port;
     private double normalizer;
-    private static final int PLACES = 2;
+    private static final int PLACES = 6;
 
     public CryptoWorker(PaillierPublicKey pub_key,
                         double alpha, double number_of_inputs,
@@ -48,12 +47,15 @@ public class CryptoWorker {
         this.normalizer = alpha / number_of_inputs;
         this.normalizer_enc = paillier_context.encrypt(normalizer);
         generate_phi_lambda();
+
+
     }
 
     public CryptoWorker(PaillierPublicKey pub_key,
-                        String host, int port) {
+                        String host, int port, boolean hide_vals) {
         this.host = host;
         this.port = port;
+        this.hide_vals = hide_vals;
         this.pub_key = pub_key;
         this.paillier_context = pub_key.createSignedContext();
         this.zero = paillier_context.encrypt(0.0D);
@@ -73,6 +75,8 @@ public class CryptoWorker {
                 return "MH";
             case SUBTRACT:
                 return "SUB";
+            case ROUND:
+                return "ROUND";
         }
         return "NONE";
     }
@@ -88,21 +92,29 @@ public class CryptoWorker {
     private void generate_phi_lambda() {
         // TODO: this is still not working as intended
         SecureRandom rand = new SecureRandom();
-        phi = round(rand.nextFloat());
-        lambda = round(rand.nextFloat());
-        double phi_lambda = phi * lambda;
-        phi_enc = paillier_context.encrypt(phi);
-        lambda_enc = paillier_context.encrypt(lambda);
-        phi_lambda_enc = paillier_context.encrypt(phi_lambda);
+
+        BigDecimal tmp_phi = new BigDecimal(Double.toString(rand.nextFloat()));
+        BigDecimal tmp_lambda = new BigDecimal(Double.toString(rand.nextFloat()));
+        BigDecimal tmp_phi_lambda = tmp_phi.multiply(tmp_lambda);
+
+        tmp_phi = tmp_phi.setScale(PLACES, RoundingMode.HALF_UP);
+        tmp_lambda = tmp_lambda.setScale(PLACES, RoundingMode.HALF_UP);
+        tmp_phi_lambda = tmp_phi_lambda.setScale(PLACES, RoundingMode.HALF_UP);
+
+        phi_lambda = paillier_context.encode(tmp_phi_lambda);
+        phi = paillier_context.encode(tmp_phi);
+        lambda = paillier_context.encode(tmp_lambda);
     }
 
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
-        // generate_phi_lambda();
 
-        // send_remote_msg(String.format("PHI: %f LAMBDA %f", phi, lambda));
 
-        // EncryptedNumber to_send_a = a.add(phi);
-        // EncryptedNumber to_send_b = b.add(lambda);
+        if(hide_vals) {
+            generate_phi_lambda();
+            // send_remote_msg(String.format("PHI: %f LAMBDA %f", phi, lambda));
+            a = a.add(phi);
+            b = b.add(lambda);
+        }
 
         String op_str = get_op_str(op);
 
@@ -137,11 +149,18 @@ public class CryptoWorker {
             String input_str = new String(raw_input).trim();
             if (!Objects.equals(input_str, "ERROR")) {
                 EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
-                // TODO: this is still not working as intended
-                // EncryptedNumber first = a.multiply(lambda);
-                // EncryptedNumber second = b.multiply(phi);
+                if(hide_vals) {
+                    // TODO: this is still not working as intended
+                    a = a.subtract(phi);
+                    b = b.subtract(lambda);
+                    EncryptedNumber first = a.multiply(lambda);
+                    EncryptedNumber second = b.multiply(phi);
+                    EncryptedNumber sub = first.add(second);
+                    sub = sub.add(phi_lambda);
+                    aug_ans = aug_ans.subtract(sub);
+                }
                 s.close();
-                return aug_ans; //.subtract(first).subtract(second).subtract(lambda * phi);
+                return aug_ans;
             } else {
                 return null;
             }
@@ -180,8 +199,6 @@ public class CryptoWorker {
         }
         return 0.0D;
     }
-
-
     public EncryptedNumber remote_op(EncryptedNumber a, EncryptedNumber b, Operations op) {
         return this.send_op_enc(a, b, "", op);
     }
@@ -226,6 +243,28 @@ public class CryptoWorker {
 
     }
 
+    public EncryptedNumber round_value(EncryptedNumber a) {
+        try {
+            Socket s = new Socket(host, port);
+            DataOutputStream out = new DataOutputStream(s.getOutputStream());
+            String msg = String.format("ROUND|%s#%d", a.calculateCiphertext().toString(), a.getExponent());
+            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
+            out.write(ptext);
+            BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            char[] raw_input = new char[1024];
+            int rc = br.read(raw_input);
+            if (rc < 0) {
+                System.err.println(String.format("ERROR: read %d from read rc", rc));
+            }
+            String input_str = new String(raw_input).trim();
+            EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
+            s.close();
+            return aug_ans;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public EncryptedNumber get_zero() {
         return zero;

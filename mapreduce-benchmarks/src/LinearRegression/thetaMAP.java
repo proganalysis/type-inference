@@ -31,6 +31,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 	private static String public_key;
 	private static int remote_port;
 	private static boolean USE_ENC;
+	private static boolean hide_vals;
 	private CryptoWorker cryptoWorker;
 	public static LinearRegression.LogWriter logWriter;
 
@@ -41,6 +42,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 		String bundle[] = context.getConfiguration().getStrings("bundle");
 		alpha = context.getConfiguration().getFloat("alpha",0);
 		USE_ENC = context.getConfiguration().getBoolean("USE_ENC", true);
+		hide_vals = context.getConfiguration().getBoolean("hide_vals", true);
 		remote_host = bundle[0];
 		remote_port = Integer.parseInt(bundle[1]);
 		public_key = bundle[2];
@@ -53,10 +55,11 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 //		long input_num = context.getCounter(TaskCounter.MAP_INPUT_RECORDS).getValue();
 //		cryptoWorker.send_remote_msg("INPUT_COUNTER: " + Long.toString(input_num));
 		PaillierPublicKey pub_key = new PaillierPublicKey(new BigInteger(public_key));
-		cryptoWorker = new CryptoWorker(pub_key, alpha, number_of_inputs, remote_host, remote_port);
+		cryptoWorker = new CryptoWorker(pub_key, alpha, number_of_inputs, remote_host, remote_port, hide_vals);
 		cryptoWorker.send_remote_msg(String.format("Alpha -> %.2f", alpha));
 		cryptoWorker.send_remote_msg(String.format("number_inputs -> %.2f", number_of_inputs));
-
+		cryptoWorker.send_remote_msg(String.format("hide_vals -> %b", hide_vals));
+		cryptoWorker.send_remote_msg(String.format("USE_ENC -> %b", USE_ENC));
 	}
 
 	public void map(LongWritable key, Text value, Context context) {
@@ -64,7 +67,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 		++count;
 		EncryptedNumber h_theta_enc = cryptoWorker.get_zero();
 		// cryptoWorker.send_value("INIT HTHETA", h_theta_enc);
-		double h_theta = 0.0D;
+		double h_theta = 0.0;
 		String[] tok=value.toString().split("\\,");
 		// cryptoWorker.send_remote_msg(String.format("got this line \'%s\'", value));
 		if(count==1){
@@ -100,6 +103,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 				EncryptedNumber tmp_multiply = cryptoWorker.remote_op(Xi_enc[i], theta_i_enc.get(i), "Xi_enc[i], theta_i_enc.get(i)", Operations.MULTIPLY);
 				// cryptoWorker.send_value(String.format("Xi[%d]", i), Xi_enc[i]);
 				// cryptoWorker.send_value(String.format("theta_i_enc.get(%d)", i), theta_i_enc.get(i));
+				// cryptoWorker.send_value(String.format("tmp_multiply (%d)", i), tmp_multiply);
 				assert tmp_multiply != null;
 				h_theta_enc = h_theta_enc.add(tmp_multiply);
 				// cryptoWorker.send_value("h_theta_after", h_theta_enc);
@@ -107,7 +111,6 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 			}
 			EncryptedNumber Yi_enc= cryptoWorker.cast_encrypted_number_raw_split(tok[tok.length-1]);
 			for(int i=0;i<Xi_enc.length;i++){
-			 	// TODO: javallier library messus up add and subtract on floating point numbers with large amounts of sig figs
 				// theta_i.add(i,(float) (temp+(alpha/number_inputs)*(Yi-h_theta)*(Xi[i])));
 				EncryptedNumber temp = theta_i_enc.remove(i);
 				// cryptoWorker.send_value("Yi_enc", Yi_enc);
@@ -148,7 +151,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 				double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), "yi_minus_htheta, cryptoWorker.get_normalizer()", Operations.MULTIPLY);
 				double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], "first_mult, Xi[i]", Operations.MULTIPLY);
 				double ans = temp + second_mult;
-				theta_i.add(i, ans);
+				// theta_i.add(i, ans);
 			}
 		}
 	}

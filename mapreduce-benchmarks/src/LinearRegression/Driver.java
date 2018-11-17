@@ -11,8 +11,11 @@ import org.apache.hadoop.mapreduce.JobCounter;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,6 +79,35 @@ public class Driver {
 		return theta_vals;
 	}
 
+	public static void print_results(FileSystem hdfs, String dirname) {
+		Path path = new Path(dirname);
+		ArrayList<String> theta_vals = new ArrayList<>();
+		try {
+			if (hdfs.exists(path)) {
+				RemoteIterator<LocatedFileStatus> fileListItr = hdfs.listFiles(path, false);
+				while(fileListItr != null && fileListItr.hasNext()) {
+					LocatedFileStatus file = fileListItr.next();
+					Path filePath = file.getPath();
+					FSDataInputStream inputStream = hdfs.open(filePath);
+					byte[] buffer = new byte[512];
+					int rc = inputStream.read(buffer);
+					if(rc > 0) {
+						theta_vals.add(new String(buffer));
+					}
+				}
+				BufferedWriter writer = new BufferedWriter(new FileWriter("~/FINAL_OUTPUT"));
+				for(String s : theta_vals) {
+					writer.write(String.format("%s\n", s));
+				}
+				writer.close();
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException{
 		// LinearRegression.LogWriter logWriter = new LinearRegression.LogWriter("Master",  LinearRegression.LogWriterType.CONSOLEWRITER);
 		//args[0] is the number of features each input has.
@@ -83,11 +115,12 @@ public class Driver {
 		++num_features;
 		//args[1] is the value of alpha that you want to use.
 		alpha=Float.parseFloat(args[1]);
-		String remote_host = args[5];
+		String remote_host_list = args[5];
 		String remote_port = args[6];
 		String public_key = args[7];
 		String number_of_inputs = args[8];
 		boolean USE_ENC = Boolean.parseBoolean(args[9]);
+		boolean hide_vals = Boolean.parseBoolean(args[10]);
 		Configuration conf=new Configuration();
 		FileSystem hdfs=FileSystem.get(conf);
 		EncryptedNumber[] theta_enc = new EncryptedNumber[num_features];
@@ -96,7 +129,7 @@ public class Driver {
 		//args[2] is the number of times you want to iterate over your training set.
 
 		PaillierPublicKey pub_key = new PaillierPublicKey(new BigInteger(public_key));
-		cryptoWorker = new CryptoWorker(pub_key,  alpha, Float.parseFloat(number_of_inputs), remote_host, Integer.parseInt(remote_port));
+		cryptoWorker = new CryptoWorker(pub_key, alpha, Float.parseFloat(number_of_inputs), remote_host_list, Integer.parseInt(remote_port), hide_vals);
 
 		for(int i=0;i<Integer.parseInt(args[2]);i++){
             // logWriter.write_console(String.format("Starting run %d", i));
@@ -141,8 +174,9 @@ public class Driver {
 			//alpha value initialisation
 			conf.setFloat("alpha", alpha);
 			// passing args
-			conf.setStrings("bundle", remote_host, remote_port, public_key, number_of_inputs);
+			conf.setStrings("bundle", remote_host_list, remote_port, public_key, number_of_inputs);
 			conf.setBoolean("USE_ENC", USE_ENC);
+			conf.setBoolean("hide_vals", hide_vals);
 			//Theta Value Initialisation
 			for(int j=0;j<num_features;j++){
 				if(USE_ENC) {
@@ -176,6 +210,7 @@ public class Driver {
 		// for(int count=0; count < theta.length; count++) {
         //     logWriter.write_console(String.format("Final Theta%d %.6f", count, theta[count]));
 		// }
+		print_results(hdfs, args[4]);
         hdfs.close();
 	}  
 }
