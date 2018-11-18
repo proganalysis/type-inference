@@ -95,7 +95,7 @@ public class Driver {
 						theta_vals.add(new String(buffer));
 					}
 				}
-				BufferedWriter writer = new BufferedWriter(new FileWriter("~/FINAL_OUTPUT"));
+				BufferedWriter writer = new BufferedWriter(new FileWriter("./FINAL_OUTPUT"));
 				for(String s : theta_vals) {
 					writer.write(String.format("%s\n", s));
 				}

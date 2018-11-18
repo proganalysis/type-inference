@@ -69,7 +69,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 		// cryptoWorker.send_value("INIT HTHETA", h_theta_enc);
 		double h_theta = 0.0;
 		String[] tok=value.toString().split("\\,");
-		// cryptoWorker.send_remote_msg(String.format("got this line \'%s\'", value));
+		cryptoWorker.send_remote_msg(String.format("got this line \'%s\'", value));
 		if(count==1){
 			for(int i=0;i<tok.length;i++){
 				String current_theta = context.getConfiguration().get("theta".concat(String.valueOf(i)));
@@ -129,7 +129,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 		else {
 			for(int i=0;i<Xi.length;i++) {
 				if (i == 0) {
-					Xi[0] = 1.0D;
+					Xi[0] = 1.0;
 				} else {
 					Xi[i] = Double.parseDouble(tok[i - 1]);
 				}
@@ -151,7 +151,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, ObjectWritable> {
 				double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), "yi_minus_htheta, cryptoWorker.get_normalizer()", Operations.MULTIPLY);
 				double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], "first_mult, Xi[i]", Operations.MULTIPLY);
 				double ans = temp + second_mult;
-				// theta_i.add(i, ans);
+				theta_i.add(i, ans);
 			}
 		}
 	}
