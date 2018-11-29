@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerTester {
      // 66811329142549379802763801401523408106
@@ -62,7 +64,8 @@ public class ServerTester {
         phi = paillier_context.encode(tmp_phi);
         lambda = paillier_context.encode(tmp_lambda);
 
-        CryptoWorker cryptoWorker = new CryptoWorker(pub, "localhost", 44444, false);
+
+        CryptoWorker cryptoWorker = new CryptoWorker(pub, "54.85.216.50", 44444, false);
 
 
 
@@ -72,20 +75,22 @@ public class ServerTester {
 
 
 
-
-
-
-
+        ExecutorService executor = Executors.newFixedThreadPool(128);
 
 
         p_enc_num(a, pvt);
+        for(int i = 0; i < 10000; i++) {
+            System.out.println(i);
+            // Runnable worker = new ServerTestThread(cryptoWorker);
+            // executor.execute(worker);
+        }
         EncryptedNumber ans = cryptoWorker.remote_op(a, b, Operations.MULTIPLY);
         p_enc_num(ans, pvt);
         ans = cryptoWorker.round_value(ans);
         p_enc_num(ans, pvt);
         System.out.println(ans.calculateCiphertext() + " " + ans.getExponent());
 
-
+        double d = cryptoWorker.remote_op(10.0, 20.0, Operations.MULTIPLY);
         double x = ((((4.7 * 0.33) * 0.33) - 0.33) - 0.33);
         System.out.println(x);
 

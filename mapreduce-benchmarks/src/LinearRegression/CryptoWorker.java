@@ -4,6 +4,7 @@ import com.n1analytics.paillier.EncodedNumber;
 import com.n1analytics.paillier.EncryptedNumber;
 import com.n1analytics.paillier.PaillierContext;
 import com.n1analytics.paillier.PaillierPublicKey;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -91,6 +92,7 @@ public class CryptoWorker {
         for(String s : hosts_raw.split(",")) {
             Matcher matcher = ip_regex.matcher(s);
             if(matcher.matches()) {
+
                 ret_val.add(s);
             }
         }
@@ -98,7 +100,9 @@ public class CryptoWorker {
     }
 
     private int get_host_index() {
+        SecureRandom rand = new SecureRandom();
         byte[] rand_bytes = new byte[4];
+        rand.nextBytes(rand_bytes);
         int index = check_neg(ByteBuffer.wrap(rand_bytes).getChar());
         return index % this.host_list.size();
     }
@@ -113,9 +117,7 @@ public class CryptoWorker {
         return bd.doubleValue();
     }
 
-
     private void generate_phi_lambda() {
-        // TODO: this is still not working as intended
         SecureRandom rand = new SecureRandom();
 
         BigDecimal tmp_phi = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
@@ -135,22 +137,14 @@ public class CryptoWorker {
         phi_lambda = paillier_context.encrypt(phi_lambda_encoded);
     }
 
-
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
-
-
         if(hide_vals) {
-            send_remote_msg(String.format("PHI: %f LAMBDA %f", phi_encoded.decodeDouble(), lambda_encoded.decodeDouble()));
-            // send_value("a before1", a);
-            // send_value("b before1", b);
+            generate_phi_lambda();
+            System.out.println(String.format("PHI: %f LAMBDA %f", phi_encoded.decodeDouble(), lambda_encoded.decodeDouble()));
             a = a.add(phi);
             b = b.add(lambda);
-            // send_value("a after1", a);
-            // send_value("b after1", b);
         }
         String op_str = get_op_str(op);
-
-
 
         BigInteger ciphertext_a = a.calculateCiphertext();
         BigInteger ciphertext_b = b.calculateCiphertext();
@@ -158,22 +152,25 @@ public class CryptoWorker {
         try {
             Socket s = new Socket(get_host(), port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            String msg;
+            StringBuilder msg = new StringBuilder();
             String msg_format;
+            String[] components;
             if(Objects.equals(additional_msg, "")) {
-                msg_format = "%s%s%s%s%s%s%d%s%s%s%d";
-                msg = String.format(msg_format, "OPE", MSG_DELIM, op_str, MSG_DELIM,
-                        ciphertext_a.toString(), NUM_DELIM, a.getExponent(), MSG_DELIM,
-                        ciphertext_b.toString(), NUM_DELIM, b.getExponent());
+                components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
+                        ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
+                        ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent())};
             }
             else {
-                msg_format = "%s%s%s%s%s%s%d%s%s%s%d%s%s";
-                msg = String.format(msg_format, "OPE", MSG_DELIM, op_str, MSG_DELIM,
-                        ciphertext_a.toString(), NUM_DELIM, a.getExponent(), MSG_DELIM,
-                        ciphertext_b.toString(), NUM_DELIM, b.getExponent(),
-                        MSG_DELIM, additional_msg);
+                components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
+                        ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
+                        ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent()),
+                        MSG_DELIM, additional_msg};
             }
-            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
+            for(String str : components) {
+                msg.append(str);
+            }
+
+            byte[] ptext = msg.toString().getBytes(StandardCharsets.UTF_8);
             out.write(ptext);
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
             char[] raw_input = new char[1024];
@@ -185,25 +182,15 @@ public class CryptoWorker {
             if(!Objects.equals(input_str, "ERROR")) {
                 EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
                 if(hide_vals) {
-                    // TODO: this is still not working as intended
-                    // send_value("a before2", a);
-                    // send_value("b before2", b);
                     a = a.subtract(phi);
                     b = b.subtract(lambda);
-                    // send_value("a after2", a);
-                    // send_value("b after2", b);
                     EncryptedNumber first = a.multiply(lambda_encoded);
                     first = round_value(first);
-                    // send_value("first", first);
                     EncryptedNumber second = b.multiply(phi_encoded);
                     second = round_value(second);
-                    // send_value("second", second);
-                    EncryptedNumber sub = first.add(second);
-                    // send_value("sub1", sub);
+                    EncryptedNumber sub = first.add(second);;
                     sub = sub.add(phi_lambda);
-                    // send_value("sub2", sub);
                     aug_ans = aug_ans.subtract(sub);
-                    // send_value("aug_ans", aug_ans);
                 }
                 s.close();
                 return aug_ans;
@@ -245,12 +232,25 @@ public class CryptoWorker {
         try {
             Socket s = new Socket(get_host(), port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            String msg = String.format("%s%s%s%s%s%s%s%s%s", "OPD",
-                    MSG_DELIM, op_str,
-                    MSG_DELIM, Double.toString(a),
-                    MSG_DELIM, Double.toString(b),
-                    MSG_DELIM, additional_msg);
-            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
+            StringBuilder msg = new StringBuilder();
+            String[] components;
+            if(Objects.equals(additional_msg, "")) {
+                components = new String[]{"OPD",
+                        MSG_DELIM, op_str,
+                        MSG_DELIM, Double.toString(a),
+                        MSG_DELIM, Double.toString(b)};
+            }
+            else {
+                components = new String[]{"OPD",
+                        MSG_DELIM, op_str,
+                        MSG_DELIM, Double.toString(a),
+                        MSG_DELIM, Double.toString(b),
+                        MSG_DELIM, additional_msg};
+            }
+            for(String str : components) {
+                msg.append(str);
+            }
+            byte[] ptext = msg.toString().getBytes(StandardCharsets.UTF_8);
             out.write(ptext);
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
             char[] raw_input = new char[1024];
@@ -288,6 +288,19 @@ public class CryptoWorker {
         return this.send_op_pt(a, b, "", op);
     }
 
+
+    public void send_final_value(String name, EncryptedNumber a){
+        try {
+            Socket s = new Socket(host_list.get(0), port);
+            DataOutputStream out = new DataOutputStream(s.getOutputStream());
+            String msg = String.format("VALUE|%s|%s#%d", name, a.calculateCiphertext().toString(), a.getExponent());
+            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
+            out.write(ptext);
+            s.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void send_value(String name, EncryptedNumber a){
         try {
@@ -348,6 +361,7 @@ public class CryptoWorker {
         String[] raw_split = line.split(NUM_DELIM);
         return cast_encrypted_number(raw_split[0], Integer.parseInt(raw_split[1]));
     }
+
     public EncodedNumber encode_number(BigInteger s) {
         return paillier_context.encode(s);
     }

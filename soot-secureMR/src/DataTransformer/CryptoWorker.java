@@ -124,21 +124,25 @@ public class CryptoWorker {
         try {
             Socket s = new Socket(host, port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            String msg;
-            String msg_format;
-            if (Objects.equals(additional_msg, "")) {
-                msg_format = "%s%s%s%s%s%s%d%s%s%s%d";
-                msg = String.format(msg_format, "OPE", MSG_DELIM, op_str, MSG_DELIM,
-                        ciphertext_a.toString(), NUM_DELIM, a.getExponent(), MSG_DELIM,
-                        ciphertext_b.toString(), NUM_DELIM, b.getExponent());
-            } else {
-                msg_format = "%s%s%s%s%s%s%d%s%s%s%d%s%s";
-                msg = String.format(msg_format, "OPE", MSG_DELIM, op_str, MSG_DELIM,
-                        ciphertext_a.toString(), NUM_DELIM, a.getExponent(), MSG_DELIM,
-                        ciphertext_b.toString(), NUM_DELIM, b.getExponent(),
-                        MSG_DELIM, additional_msg);
+            StringBuilder msg = new StringBuilder();
+            String[] components;
+            if(Objects.equals(additional_msg, "")) {
+                // msg_format = "%s%s%s%s%s%s%d%s%s%s%d";
+                components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
+                        ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
+                        ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent())};
             }
-            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
+            else {
+                // msg_format = "%s%s%s%s%s%s%d%s%s%s%d%s%s";
+                components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
+                        ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
+                        ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent()),
+                        MSG_DELIM, additional_msg};
+            }
+            for(String str : components) {
+                msg.append(str);
+            }
+            byte[] ptext = msg.toString().getBytes(StandardCharsets.UTF_8);
             out.write(ptext);
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
             char[] raw_input = new char[1024];
@@ -175,12 +179,25 @@ public class CryptoWorker {
         try {
             Socket s = new Socket(host, port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            String msg = String.format("%s%s%s%s%s%s%s%s%s", "OPD",
-                    MSG_DELIM, op_str,
-                    MSG_DELIM, Double.toString(a),
-                    MSG_DELIM, Double.toString(b),
-                    MSG_DELIM, additional_msg);
-            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
+            StringBuilder msg = new StringBuilder();
+            String[] components;
+            if(Objects.equals(additional_msg, "")) {
+                components = new String[]{"OPD",
+                        MSG_DELIM, op_str,
+                        MSG_DELIM, Double.toString(a),
+                        MSG_DELIM, Double.toString(b)};
+            }
+            else {
+                components = new String[]{"OPD",
+                        MSG_DELIM, op_str,
+                        MSG_DELIM, Double.toString(a),
+                        MSG_DELIM, Double.toString(b),
+                        MSG_DELIM, additional_msg};
+            }
+            for(String str : components) {
+                msg.append(str);
+            }
+            byte[] ptext = msg.toString().getBytes(StandardCharsets.UTF_8);
             out.write(ptext);
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
             char[] raw_input = new char[1024];

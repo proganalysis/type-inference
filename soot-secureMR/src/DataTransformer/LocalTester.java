@@ -33,13 +33,38 @@ public class LocalTester {
     }
 
 
-    private static String get_host(ArrayList<String> host_list) {
+//    private static String get_host(ArrayList<String> host_list) {
+//        SecureRandom rand = new SecureRandom();
+//        byte[] rand_bytes = new byte[4];
+//        rand.nextBytes(rand_bytes);
+//        int index = check_neg(ByteBuffer.wrap(rand_bytes).getChar());
+//        index = index % host_list.size();
+//        return host_list.get(index);
+//    }
+
+    private static ArrayList<String> make_host_list(String hosts_raw) {
+        ArrayList<String> ret_val = new ArrayList<>();
+        Pattern ip_regex = Pattern.compile("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$");
+        for(String s : hosts_raw.split(",")) {
+            Matcher matcher = ip_regex.matcher(s);
+            if(matcher.matches()) {
+
+                ret_val.add(s);
+            }
+        }
+        return ret_val;
+    }
+
+    private static int get_host_index(int list_size) {
         SecureRandom rand = new SecureRandom();
         byte[] rand_bytes = new byte[4];
         rand.nextBytes(rand_bytes);
         int index = check_neg(ByteBuffer.wrap(rand_bytes).getChar());
-        index = index % host_list.size();
-        return host_list.get(index);
+        return index % list_size;
+    }
+
+    private static String get_host(ArrayList<String> a) {
+        return a.get(get_host_index(a.size()));
     }
 
     public static void main(String[] args) {
@@ -48,6 +73,15 @@ public class LocalTester {
 
         PaillierPrivateKey aa = PaillierPrivateKey.create(304);
         PaillierPublicKey bb = aa.getPublicKey();
+
+        String fff = "35.153.53.33,100.24.70.147,54.164.166.51,34.227.72.119";
+        ArrayList<String> ffff = make_host_list(fff);
+
+        for(int i =0; i < 10; i++) {
+            System.out.println(get_host(ffff));
+        }
+
+
         // 16642224343773146887
         // 15167667500820634847
         // 252423725320413976638768024298321771289

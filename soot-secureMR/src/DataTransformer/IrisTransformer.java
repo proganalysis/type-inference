@@ -61,8 +61,23 @@ public class IrisTransformer {
         BigInteger bi = pvt.raw_decrypt(new BigInteger("24455590686746858144017520591119508899"));
         System.out.println(bi);
 
+        Pattern name_pattern = Pattern.compile("generated_iris_data_(\\d{1,10})$");
+
+        File folder = new File("./");
+        File[] listOfFiles = folder.listFiles();
+
+        assert listOfFiles != null;
+
         String in_file = "generated_iris_data";
         String out_file = "generated_iris_data_out";
+
+        for(File f : listOfFiles) {
+            Matcher m = name_pattern.matcher(f.getName());
+            if(m.matches()) {
+                in_file = f.getName();
+            }
+        }
+
         try {
             String line = null;
             FileReader fileReader = new FileReader(in_file);

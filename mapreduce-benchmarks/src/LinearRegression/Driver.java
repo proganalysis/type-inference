@@ -4,10 +4,8 @@ import com.n1analytics.paillier.EncryptedNumber;
 import com.n1analytics.paillier.PaillierPublicKey;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
-import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.JobCounter;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
@@ -41,7 +39,9 @@ public class Driver {
 		Pattern filenameRe = Pattern.compile(String.format("hdfs://cluster-.*/user/root/%s/part-r-\\d{5}", dirname));
 		// Pattern fileContentRe = Pattern.compile("theta(\\d+).*(\\d+\\.\\d+)");
 		// TODO: this regex is wrong! fix it, add one for enc values when i do multiple runs
-		// theta0 OW[class=class java.lang.String,value=73783010351929239918268141496077811855]
+		// theta0__final   832045300353636985662476051730748352328792020329586665598909851063119862331341912403355172579535753525291077463953685847683709182452098214872509
+		//  69112374837211724814803342881325960010#-46
+
 		Pattern fileContentRe = Pattern.compile("theta(\\d+)\\s(\\d+)$");
 		try {
 			if(hdfs.exists(path)) {
@@ -173,8 +173,15 @@ public class Driver {
 
 			//alpha value initialisation
 			conf.setFloat("alpha", alpha);
+
+			System.out.println(String.format("Remote Host List: \'%s\'", remote_host_list));
+
 			// passing args
-			conf.setStrings("bundle", remote_host_list, remote_port, public_key, number_of_inputs);
+			conf.set("remote_hosts", remote_host_list);
+			conf.set("public_key", public_key);
+			conf.setInt("remote_port", Integer.parseInt(remote_port));
+			conf.setInt("number_of_inputs", Integer.parseInt(number_of_inputs));
+			// conf.setStrings("bundle", remote_host_list, remote_port, public_key, number_of_inputs);
 			conf.setBoolean("USE_ENC", USE_ENC);
 			conf.setBoolean("hide_vals", hide_vals);
 			//Theta Value Initialisation
@@ -187,17 +194,21 @@ public class Driver {
 				}
 			}
 			Job job = Job.getInstance(conf, "Calculation of Theta");
+			FileInputFormat.setMaxInputSplitSize(job, 1024);
 
-
-			// Job job = new Job(conf,"Calculation of Theta");
 			job.setJarByClass(Driver.class);
 			//args[3] is the input path.
 			FileInputFormat.setInputPaths(job, new Path(args[3]));
 			FileOutputFormat.setOutputPath(job, new Path(args[4]));
 			job.setMapperClass(LinearRegression.thetaMAP.class);
 			job.setReducerClass(LinearRegression.thetaREDUCE.class);
+			// TODO: classes are messup up, reducer is not being called
+
 			job.setOutputKeyClass(Text.class);
-			job.setOutputValueClass(ObjectWritable.class);
+			job.setOutputValueClass(Text.class);
+			job.setOutputKeyClass(Text.class);
+			job.setOutputValueClass(Text.class);
+
 			job.waitForCompletion(true);
             // logWriter.write_console(String.format("Ending run %d", i));
             long map_input_records = job.getCounters()
