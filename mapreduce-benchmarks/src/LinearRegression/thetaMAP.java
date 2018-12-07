@@ -5,6 +5,7 @@ import com.n1analytics.paillier.PaillierPublicKey;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.TaskCounter;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -26,33 +27,29 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 	private static ArrayList<Double> theta_i= new ArrayList<>();
 	private static boolean USE_ENC;
 	private CryptoWorker cryptoWorker;
-	private static LinearRegression.LogWriter logWriter;
+	private double alpha;
+	private double number_of_inputs;
+	private LogWriter logWriter;
 
 	@Override
 	public void setup(Context context) {
-		// TODO: add constants file
-		double alpha = context.getConfiguration().getFloat("alpha", 0);
-		USE_ENC = context.getConfiguration().getBoolean("USE_ENC", true);
-		boolean hide_vals = context.getConfiguration().getBoolean("hide_vals", true);
-		String remote_host = context.getConfiguration().get("remote_hosts");
-		int remote_port = context.getConfiguration().getInt("remote_port", 44444);
-		String public_key = context.getConfiguration().get("public_key");
-		double number_of_inputs = context.getConfiguration().getInt("remote_port", 30000);
-		try {
-			logWriter = new LogWriter(remote_host, LogWriterType.CONSOLEWRITER);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		alpha = context.getConfiguration().getFloat(Constants.ALPHA_TAG, 0);
+		USE_ENC = context.getConfiguration().getBoolean(Constants.USE_ENC_TAG, true);
+		boolean hide_vals = context.getConfiguration().getBoolean(Constants.HIDE_VALS_TAG, true);
+		String remote_host = context.getConfiguration().get(Constants.REMOTE_HOSTS_TAG);
+		int remote_port = context.getConfiguration().getInt(Constants.REMOTE_PORT_TAG, 44444);
+		String public_key = context.getConfiguration().get(Constants.PUB_KEY_TAG);
+		number_of_inputs = context.getConfiguration().getInt(Constants.NUM_INPUTS_TAG, 30000);
 		PaillierPublicKey pub_key = new PaillierPublicKey(new BigInteger(public_key));
 		cryptoWorker = new CryptoWorker(pub_key, alpha, number_of_inputs, remote_host, remote_port, hide_vals);
-//		cryptoWorker.send_remote_msg(String.format("Alpha -> %.2f", alpha));
-//		cryptoWorker.send_remote_msg(String.format("number_inputs -> %.2f", number_of_inputs));
-//		cryptoWorker.send_remote_msg(String.format("hide_vals -> %b", hide_vals));
-//		cryptoWorker.send_remote_msg(String.format("USE_ENC -> %b", USE_ENC));
+		System.out.println(String.format("Alpha -> %.2f", alpha));
+		System.out.println(String.format("number_inputs -> %.2f", number_of_inputs));
+		System.out.println(String.format("hide_vals -> %b", hide_vals));
+		System.out.println(String.format("USE_ENC -> %b", USE_ENC));
+
 	}
 
-	public void map(LongWritable key, Text value, Context context) {
-		System.out.println("Started a map task");
+	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 		++count;
 		EncryptedNumber h_theta_enc = cryptoWorker.get_zero();
 		double h_theta = 0.0;
@@ -76,6 +73,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 				Xi = new double[tok.length];
 			}
 		}
+
 		if(USE_ENC) {
 			for(int i=0;i<Xi_enc.length;i++) {
 				if (i == 0) {
@@ -118,12 +116,19 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 			double Yi=Double.parseDouble(tok[tok.length-1]);
 			for(int i=0;i<Xi.length;i++){
 				double temp = theta_i.remove(i);
-				double yi_minus_htheta = Yi - h_theta;
-				double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), "yi_minus_htheta, cryptoWorker.get_normalizer()", Operations.MULTIPLY);
-				double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], "first_mult, Xi[i]", Operations.MULTIPLY);
-				double ans = temp + second_mult;
-				theta_i.add(i, ans);
+				theta_i.add(i, (temp+(alpha/number_of_inputs)*(Yi-h_theta)*(Xi[i])));
+//				double yi_minus_htheta = Yi - h_theta;
+//				double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), Operations.MULTIPLY);
+//				double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], Operations.MULTIPLY);
+//				double ans = temp + second_mult;
+//				theta_i.add(i, ans);
 			}
+//			for(int i=0;i<theta_i.size();i++){
+//				double d = theta_i.get(i);
+//				String out = Double.toString(d);
+//				context.write(new Text("theta"+i), new Text(out));
+//				cryptoWorker.send_remote_msg("theta"+i + " " + out);
+//			}
 		}
 	}
 

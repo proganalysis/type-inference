@@ -33,11 +33,10 @@ public class CryptoWorker {
     private EncryptedNumber normalizer_enc;
     private EncryptedNumber phi;
     private EncryptedNumber lambda;
-    private EncryptedNumber phi_lambda;
-
+    private BigDecimal phi_big_dec;
+    private BigDecimal lambda_big_dec;
     private EncodedNumber phi_encoded;
     private EncodedNumber lambda_encoded;
-    private EncodedNumber phi_lambda_encoded;
 
     private ArrayList<String> host_list;
     private int port;
@@ -69,7 +68,7 @@ public class CryptoWorker {
         this.one = paillier_context.encrypt(1.0);
         this.normalizer = 0.0;
         this.normalizer_enc = paillier_context.encrypt(normalizer);
-        // generate_phi_lambda();
+        generate_phi_lambda();
     }
 
     private static int check_neg(int n) {
@@ -111,36 +110,31 @@ public class CryptoWorker {
         return this.host_list.get(get_host_index());
     }
 
-    private static double round(double value) {
-        BigDecimal bd = new BigDecimal(Double.toString(value));
-        bd = bd.setScale(PLACES, RoundingMode.HALF_UP);
-        return bd.doubleValue();
+    private BigDecimal local_round(BigDecimal value) { ;
+        return value.setScale(PLACES, RoundingMode.HALF_UP);
     }
 
     private void generate_phi_lambda() {
         SecureRandom rand = new SecureRandom();
 
-        BigDecimal tmp_phi = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
-        BigDecimal tmp_lambda = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
-        BigDecimal tmp_phi_lambda = tmp_phi.multiply(tmp_lambda);
+        phi_big_dec = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
+        lambda_big_dec = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
 
-        tmp_phi = tmp_phi.setScale(PLACES, RoundingMode.HALF_UP);
-        tmp_lambda = tmp_lambda.setScale(PLACES, RoundingMode.HALF_UP);
-        tmp_phi_lambda = tmp_phi_lambda.setScale(PLACES, RoundingMode.HALF_UP);
+        phi_big_dec = local_round(phi_big_dec);
+        lambda_big_dec = local_round(lambda_big_dec);
 
-        phi_encoded = paillier_context.encode(tmp_phi);
-        lambda_encoded = paillier_context.encode(tmp_lambda);
-        phi_lambda_encoded = paillier_context.encode(tmp_phi_lambda);
+
+        // TODO: need to try/catch java.lang.ArithmeticException here
+        phi_encoded = paillier_context.encode(phi_big_dec);
+        lambda_encoded = paillier_context.encode(lambda_big_dec);
 
         phi = paillier_context.encrypt(phi_encoded);
         lambda = paillier_context.encrypt(lambda_encoded);
-        phi_lambda = paillier_context.encrypt(phi_lambda_encoded);
     }
 
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
         if(hide_vals) {
             generate_phi_lambda();
-            System.out.println(String.format("PHI: %f LAMBDA %f", phi_encoded.decodeDouble(), lambda_encoded.decodeDouble()));
             a = a.add(phi);
             b = b.add(lambda);
         }
@@ -178,6 +172,7 @@ public class CryptoWorker {
             if(rc < 0) {
                 System.err.println(String.format("ERROR: read %d from read rc", rc));
             }
+            assert rc > 0;
             String input_str = new String(raw_input).trim();
             if(!Objects.equals(input_str, "ERROR")) {
                 EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
@@ -185,11 +180,16 @@ public class CryptoWorker {
                     a = a.subtract(phi);
                     b = b.subtract(lambda);
                     EncryptedNumber first = a.multiply(lambda_encoded);
-                    first = round_value(first);
+                    first = remote_round(first);
                     EncryptedNumber second = b.multiply(phi_encoded);
-                    second = round_value(second);
-                    EncryptedNumber sub = first.add(second);;
-                    sub = sub.add(phi_lambda);
+                    second = remote_round(second);
+                    assert first != null && second != null;
+                    EncryptedNumber sub = first.add(second);
+                    BigDecimal phi_lambda = phi_big_dec.multiply(lambda_big_dec);
+                    phi_lambda = local_round(phi_lambda);
+                    assert phi_lambda != null;
+                    EncodedNumber phi_lambda_encoded = paillier_context.encode(phi_lambda);
+                    sub = sub.add(phi_lambda_encoded);
                     aug_ans = aug_ans.subtract(sub);
                 }
                 s.close();
@@ -204,7 +204,7 @@ public class CryptoWorker {
         return null;
     }
 
-    public EncryptedNumber round_value(EncryptedNumber a) {
+    private EncryptedNumber remote_round(EncryptedNumber a) {
         try {
             Socket s = new Socket(get_host(), port);
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
@@ -217,6 +217,7 @@ public class CryptoWorker {
             if (rc < 0) {
                 System.err.println(String.format("ERROR: read %d from read rc", rc));
             }
+            assert rc > 0;
             String input_str = new String(raw_input).trim();
             EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
             s.close();
@@ -258,6 +259,7 @@ public class CryptoWorker {
             if(rc < 0) {
                 System.err.println(String.format("ERROR: read %d from read rc", rc));
             }
+            assert rc > 0;
             String input_str = new String(raw_input).trim();
             if(!Objects.equals(input_str, "ERROR")) {
                 return Double.parseDouble(input_str);
@@ -270,7 +272,6 @@ public class CryptoWorker {
         }
         return 0.0D;
     }
-
 
     public EncryptedNumber remote_op(EncryptedNumber a, EncryptedNumber b, Operations op) {
         return this.send_op_enc(a, b, "", op);
@@ -351,7 +352,7 @@ public class CryptoWorker {
     public EncryptedNumber create_encrypted_number(Double d) {
         return paillier_context.encrypt(d);
     }
-    public EncryptedNumber cast_encrypted_number(String cipher_text, int exp) {
+    private EncryptedNumber cast_encrypted_number(String cipher_text, int exp) {
         return new EncryptedNumber(paillier_context, new BigInteger(cipher_text), exp);
     }
     public EncryptedNumber cast_encrypted_number(BigInteger cipher_text, int exp) {
