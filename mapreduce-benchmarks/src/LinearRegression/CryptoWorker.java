@@ -16,6 +16,8 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -31,17 +33,13 @@ public class CryptoWorker {
     private EncryptedNumber zero;
     private EncryptedNumber one;
     private EncryptedNumber normalizer_enc;
-    private EncryptedNumber phi;
-    private EncryptedNumber lambda;
-    private BigDecimal phi_big_dec;
-    private BigDecimal lambda_big_dec;
-    private EncodedNumber phi_encoded;
-    private EncodedNumber lambda_encoded;
+    private Obfuscator phi;
+    private Obfuscator lambda;
+    private Obfuscator phi_lambda;
 
     private ArrayList<String> host_list;
     private int port;
     private double normalizer;
-    private static final int PLACES = 5;
 
     public CryptoWorker(PaillierPublicKey pub_key,
                         double alpha, double number_of_inputs,
@@ -110,33 +108,45 @@ public class CryptoWorker {
         return this.host_list.get(get_host_index());
     }
 
-    private BigDecimal local_round(BigDecimal value) { ;
-        return value.setScale(PLACES, RoundingMode.HALF_UP);
-    }
-
     private void generate_phi_lambda() {
-        SecureRandom rand = new SecureRandom();
+        phi = new Obfuscator(paillier_context);
+        lambda = new Obfuscator(paillier_context);
+        try {
+            phi_lambda = new Obfuscator(phi, lambda, paillier_context);
+        } catch (ArithmeticException e) {
+            // have to try it all again!
+            System.err.println("ERROR: " + e.getMessage());
+            generate_phi_lambda();
+        }
+        //TODO: something funky is going on here causing huge _WRONG_ at the end numbers.
 
-        phi_big_dec = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
-        lambda_big_dec = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
-
-        phi_big_dec = local_round(phi_big_dec);
-        lambda_big_dec = local_round(lambda_big_dec);
-
-
-        // TODO: need to try/catch java.lang.ArithmeticException here
-        phi_encoded = paillier_context.encode(phi_big_dec);
-        lambda_encoded = paillier_context.encode(lambda_big_dec);
-
-        phi = paillier_context.encrypt(phi_encoded);
-        lambda = paillier_context.encrypt(lambda_encoded);
+//        try {
+//            // TODO: need to try/catch java.lang.ArithmeticException here
+//            phi_big_dec = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
+//            lambda_big_dec = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
+//
+//        } catch (java.lang.ArithmeticException e) {
+//
+//            phi_big_dec = new BigDecimal(Double.toString(rand.nextInt() % 100));
+//            lambda_big_dec = new BigDecimal(Double.toString(rand.nextInt() % 100));
+//        }
+//        phi_big_dec = local_round(phi_big_dec);
+//        phi_encoded = paillier_context.encode(phi_big_dec);
+//        lambda_big_dec = local_round(lambda_big_dec);
+//        lambda_encoded = paillier_context.encode(lambda_big_dec);
+//        phi_lambda_dec = phi_big_dec.multiply(lambda_big_dec);
+//        phi_lambda_dec = local_round(phi_lambda_dec);
+//        phi_lambda_encoded = paillier_context.encode(phi_lambda_dec);
+//        phi_lambda = paillier_context.encrypt(phi_lambda_encoded);
+//        phi = paillier_context.encrypt(phi_encoded);
+//        lambda = paillier_context.encrypt(lambda_encoded);
     }
 
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
         if(hide_vals) {
             generate_phi_lambda();
-            a = a.add(phi);
-            b = b.add(lambda);
+            a = a.add(phi.getEncrypted());
+            b = b.add(lambda.getEncrypted());
         }
         String op_str = get_op_str(op);
 
@@ -177,19 +187,15 @@ public class CryptoWorker {
             if(!Objects.equals(input_str, "ERROR")) {
                 EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
                 if(hide_vals) {
-                    a = a.subtract(phi);
-                    b = b.subtract(lambda);
-                    EncryptedNumber first = a.multiply(lambda_encoded);
+                    a = a.subtract(phi.getEncrypted());
+                    b = b.subtract(lambda.getEncrypted());
+                    EncryptedNumber first = a.multiply(lambda.getEncoded());
                     first = remote_round(first);
-                    EncryptedNumber second = b.multiply(phi_encoded);
+                    EncryptedNumber second = b.multiply(phi.getEncoded());
                     second = remote_round(second);
                     assert first != null && second != null;
                     EncryptedNumber sub = first.add(second);
-                    BigDecimal phi_lambda = phi_big_dec.multiply(lambda_big_dec);
-                    phi_lambda = local_round(phi_lambda);
-                    assert phi_lambda != null;
-                    EncodedNumber phi_lambda_encoded = paillier_context.encode(phi_lambda);
-                    sub = sub.add(phi_lambda_encoded);
+                    sub = sub.add(phi_lambda.getEncrypted());
                     aug_ans = aug_ans.subtract(sub);
                 }
                 s.close();
@@ -229,6 +235,9 @@ public class CryptoWorker {
     }
 
     private double send_op_pt(double a, double b, String additional_msg, Operations op) {
+        Instant start = Instant.now();
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
         String op_str = get_op_str(op);
         try {
             Socket s = new Socket(get_host(), port);

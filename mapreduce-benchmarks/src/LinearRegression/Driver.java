@@ -36,7 +36,7 @@ import static java.lang.Math.toIntExact;
 // @SuppressWarnings("Duplicates")
 
 public class Driver {
-    public static LogWriter logWriter;
+    public static LogWriter logWriter = new LogWriter();
 	public static int num_features; // needs to be set
 	public static float alpha; // needs to be set
 	public static CryptoWorker cryptoWorker;
@@ -46,11 +46,7 @@ public class Driver {
 		Object[] theta_vals = new Object[dimenNum];
 		// part-r-00010
 		Pattern filenameRe = Pattern.compile(String.format("hdfs://cluster-.*/user/root/%s/part-r-\\d{5}", dirname));
-		// Pattern fileContentRe = Pattern.compile("theta(\\d+).*(\\d+\\.\\d+)");
-		// TODO: this regex is wrong! fix it, add one for enc values when i do multiple runs
-		// theta0__final   832045300353636985662476051730748352328792020329586665598909851063119862331341912403355172579535753525291077463953685847683709182452098214872509
-		//  69112374837211724814803342881325960010#-46
-
+		// TODO: need to add regex for non encrypted version
 		Pattern fileContentRe = Pattern.compile("theta(\\d+)\\s+(\\d+#(?:-)\\d+)");
 		try {
 			if(hdfs.exists(path)) {
@@ -82,6 +78,7 @@ public class Driver {
 				}
 			}
 		} catch (IOException e) {
+			logWriter.write_err("ERROR: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return theta_vals;
@@ -89,6 +86,7 @@ public class Driver {
 
 	public static void print_results(FileSystem hdfs, String dirname) {
 		Path path = new Path(dirname);
+		Pattern line_re = Pattern.compile("theta(\\d+)__final\\s+(\\d+#(?:-)\\d+)");
 		ArrayList<String> theta_vals = new ArrayList<>();
 		try {
 			if (hdfs.exists(path)) {
@@ -97,23 +95,23 @@ public class Driver {
 					LocatedFileStatus file = fileListItr.next();
 					Path filePath = file.getPath();
 					FSDataInputStream inputStream = hdfs.open(filePath);
-					byte[] buffer = new byte[512];
+					byte[] buffer = new byte[1024];
 					int rc = inputStream.read(buffer);
 					if(rc > 0) {
-						theta_vals.add(new String(buffer));
+						String input_str = new String(buffer).trim();
+						Matcher m = line_re.matcher(input_str);
+						if(m.matches()) {
+							int theta_num = Integer.parseInt(m.group(1)) + 1;
+							String out_str = String.format("ans%d = \"%s\"", theta_num, m.group(2));
+							System.out.println(out_str);
+						}
 					}
 				}
-				BufferedWriter writer = new BufferedWriter(new FileWriter("./FINAL_OUTPUT"));
-				for(String s : theta_vals) {
-					writer.write(String.format("%s\n", s));
-				}
-				writer.close();
 			}
-
 		} catch (IOException e) {
+			logWriter.write_err("ERROR: " + e.getMessage());
 			e.printStackTrace();
 		}
-
 	}
 
 	public static int get_input_size_bytes(FileSystem hdfs, String dirname) {
@@ -130,14 +128,25 @@ public class Driver {
 				}
 			}
 		} catch (IOException e) {
+			logWriter.write_err("ERROR: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return total_size;
 	}
 
+	public static void usage() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Arguments (in order):\n");
+		sb.append("<Number of Features>\n<Alpha Value>\n");
+		sb.append("<Number of Rounds>\n<Input Path>\n");
+		sb.append("<Output Path>\n<Remote Host List>\n");
+		sb.append("<Remote Port>\n<Public Key>\n");
+		sb.append("<Number of Inputs>\n<Number of Nodes>\n");
+		sb.append("<Use encrypyion?>\n<Hide Values?>\n");
+		logWriter.write_out(sb.toString());
+	}
 
 	public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException{
-		LinearRegression.LogWriter logWriter = new LinearRegression.LogWriter();
 		// args[0] is the number of features each input has.
 		num_features=Integer.parseInt(args[0]);
 		++num_features;
@@ -149,7 +158,7 @@ public class Driver {
 		String remote_host_list = args[5];
 		int remote_port = Integer.parseInt(args[6]);
 		String public_key = args[7];
-		int  number_of_inputs = Integer.parseInt(args[8]);
+		int number_of_inputs = Integer.parseInt(args[8]);
 		int number_of_nodes = Integer.parseInt(args[9]);
 		boolean use_enc = Boolean.parseBoolean(args[10]);
 		boolean hide_vals = Boolean.parseBoolean(args[11]);
@@ -191,23 +200,23 @@ public class Driver {
 			if(hdfs.exists(new Path(output_path))){
 				hdfs.delete(new Path(output_path),true);
 			}
-
+			// TODO: reducing the total node number _may_ solve the 99% slowdown.
+			number_of_nodes = (int)Math.ceil((double)number_of_nodes * Constants.NODE_NUM_REDUCE_FACTOR);
 			logWriter.write_out(String.format("Remote Host List: \'%s\'", remote_host_list));
 			int total_size = get_input_size_bytes(hdfs, input_path);
 			logWriter.write_out(String.format("Total size: %d", total_size));
 			double max_split_size = Math.ceil(total_size / number_of_nodes);
 			logWriter.write_out(String.format("MaxInputSplitSize: %d", (int)max_split_size));
-			int lines_per_node = (int)Math.ceil(number_of_inputs / number_of_nodes);
-			logWriter.write_out(String.format("lines_per_node: %d", lines_per_node));
+			logWriter.write_out(String.format("number_of_inputs: %d", number_of_inputs));
 
 			// passing args
 			conf.set("yarn.log-aggregation-enable", "true");
-			//alpha value initialisation
+			// alpha value initialisation
 			conf.setFloat(Constants.ALPHA_TAG, alpha);
 			conf.set(Constants.REMOTE_HOSTS_TAG, remote_host_list);
 			conf.set(Constants.PUB_KEY_TAG, public_key);
 			conf.setInt(Constants.REMOTE_PORT_TAG, remote_port);
-			conf.setInt(Constants.NUM_INPUTS_TAG, lines_per_node);
+			conf.setInt(Constants.NUM_INPUTS_TAG, number_of_inputs);
 			conf.setBoolean(Constants.USE_ENC_TAG, use_enc);
 			conf.setBoolean(Constants.HIDE_VALS_TAG, hide_vals);
 			//Theta Value Initialisation
@@ -222,7 +231,7 @@ public class Driver {
 
 			Job job = Job.getInstance(conf, "Calculation of Theta");
 
-			// TODO: this number needs to be large enough that averaging with maps will work but small enough to create lots of packets
+			// TODO: this number needs to be large enough to be well distributed  but small enough to create lots of packets
 			FileInputFormat.setMaxInputSplitSize(job, (int)max_split_size);
 
 			job.setJarByClass(Driver.class);
@@ -241,10 +250,6 @@ public class Driver {
             logWriter.write_out(String.format("Ending run %d", i));
 
 		}
-		// theta = getIntermediateTheta(hdfs, output_path, num_features);
-		// for(int count=0; count < theta.length; count++) {
-        //     logWriter.write_console(String.format("Final Theta%d %.6f", count, theta[count]));
-		// }
 		print_results(hdfs, output_path);
         hdfs.close();
 	}  

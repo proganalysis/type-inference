@@ -46,45 +46,27 @@ public class ServerTester {
         PaillierPrivateKey pvt = new PaillierPrivateKey(pub, totient);
         PaillierContext paillier_context = pub.createSignedContext();
 
-        EncodedNumber phi;
-        EncodedNumber lambda;
-        EncodedNumber phi_lambda;
-
-        SecureRandom rand = new SecureRandom();
-
-        BigDecimal tmp_phi = new BigDecimal(Double.toString(rand.nextFloat()));
-        BigDecimal tmp_lambda = new BigDecimal(Double.toString(rand.nextFloat()));
-        BigDecimal tmp_phi_lambda = tmp_phi.multiply(tmp_lambda);
-
-        tmp_phi = tmp_phi.setScale(PLACES, RoundingMode.HALF_UP);
-        tmp_lambda = tmp_lambda.setScale(PLACES, RoundingMode.HALF_UP);
-        tmp_phi_lambda = tmp_phi_lambda.setScale(PLACES, RoundingMode.HALF_UP);
-
-        phi_lambda = paillier_context.encode(tmp_phi_lambda);
-        phi = paillier_context.encode(tmp_phi);
-        lambda = paillier_context.encode(tmp_lambda);
 
 
-        CryptoWorker cryptoWorker = new CryptoWorker(pub, "54.85.216.50", 44444, false);
+        CryptoWorker cryptoWorker = new CryptoWorker(pub, "localhost", 44444, false);
 
+        double d2 = 0.0;
+        double count = 0;
 
+        for(int i = 0; i < 453; i++) {
+            d2 += i;
+            count++;
+        }
 
+        System.out.println(d2 / count);
+
+        cryptoWorker.send_remote_msg("lalalalala");
 
         EncryptedNumber a = cryptoWorker.create_encrypted_number(0.01166666666666661200);
         EncryptedNumber b = cryptoWorker.create_encrypted_number( 1.00000000000000000000);
 
 
-
-        ExecutorService executor = Executors.newFixedThreadPool(128);
-
-
-        p_enc_num(a, pvt);
-        for(int i = 0; i < 10000; i++) {
-            System.out.println(i);
-            // Runnable worker = new ServerTestThread(cryptoWorker);
-            // executor.execute(worker);
-        }
-        EncryptedNumber ans = cryptoWorker.remote_op(a, b, Operations.MULTIPLY);
+        EncryptedNumber ans = cryptoWorker.remote_op(a, b, "feafes", Operations.MULTIPLY);
         p_enc_num(ans, pvt);
         ans = cryptoWorker.round_value(ans);
         p_enc_num(ans, pvt);

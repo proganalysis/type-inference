@@ -10,4 +10,8 @@ public class Constants {
     public static final String USE_ENC_TAG = "use_enc";
     public static final String HIDE_VALS_TAG = "hide_vals";
     public static final String ALPHA_TAG = "alpha";
+    public static final double OBFUSCATOR_MULTI_CONST_DOUBLE = 10.0;
+    public static final double OBFUSCATOR_MOD_CONST_INT = 100.0;
+    public static final int PLACES = 5;
+    public static final double NODE_NUM_REDUCE_FACTOR = 0.8;
 }

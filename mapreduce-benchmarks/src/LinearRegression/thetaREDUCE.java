@@ -35,7 +35,6 @@ public class thetaREDUCE extends Reducer<Text, Text, Text, Text>{
 			}
 			EncryptedNumber ans = sum.divide(count);
 			String out = String.format("%s%s%d", ans.calculateCiphertext().toString(), Constants.NUM_DELIM, ans.getExponent());
-			cryptoWorker.send_final_value(key.toString(), ans);
 			String sb = String.valueOf(key) + "__final";
 			Text final_txt = new Text(sb);
 			context.write(final_txt, new Text(out));

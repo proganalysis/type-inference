@@ -10,7 +10,7 @@ import java.util.Date;
 
 public class LogWriter {
     private  String make_date_msg(String msg) {
-        SimpleDateFormat formatter = new SimpleDateFormat("d/M/y H:m:s:S");
+        SimpleDateFormat formatter = new SimpleDateFormat("d/M/y HH:mm:ss:SSS");
         Date date = new Date();
         return String.format("[%s]: %s\n", formatter.format(date), msg);
     }
