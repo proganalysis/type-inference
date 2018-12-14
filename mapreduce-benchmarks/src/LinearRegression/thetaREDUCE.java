@@ -30,7 +30,7 @@ public class thetaREDUCE extends Reducer<Text, Text, Text, Text>{
 			for (Text value : values) {
 				String raw_vals = value.toString();
 				EncryptedNumber value_enc = cryptoWorker.cast_encrypted_number_raw_split(raw_vals);
-				sum = sum.add(value_enc);
+				sum = cryptoWorker.add_enc(sum, value_enc);
 				count++;
 			}
 			EncryptedNumber ans = sum.divide(count);

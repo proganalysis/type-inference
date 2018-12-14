@@ -84,6 +84,7 @@ public class Driver {
 		return theta_vals;
 	}
 
+
 	public static void print_results(FileSystem hdfs, String dirname) {
 		Path path = new Path(dirname);
 		Pattern line_re = Pattern.compile("theta(\\d+)__final\\s+(\\d+#(?:-)\\d+)");
@@ -200,7 +201,6 @@ public class Driver {
 			if(hdfs.exists(new Path(output_path))){
 				hdfs.delete(new Path(output_path),true);
 			}
-			// TODO: reducing the total node number _may_ solve the 99% slowdown.
 			number_of_nodes = (int)Math.ceil((double)number_of_nodes * Constants.NODE_NUM_REDUCE_FACTOR);
 			logWriter.write_out(String.format("Remote Host List: \'%s\'", remote_host_list));
 			int total_size = get_input_size_bytes(hdfs, input_path);

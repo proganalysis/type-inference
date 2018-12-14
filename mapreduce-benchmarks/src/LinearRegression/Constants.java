@@ -13,5 +13,6 @@ public class Constants {
     public static final double OBFUSCATOR_MULTI_CONST_DOUBLE = 10.0;
     public static final double OBFUSCATOR_MOD_CONST_INT = 100.0;
     public static final int PLACES = 5;
-    public static final double NODE_NUM_REDUCE_FACTOR = 0.8;
+    // TODO: this number needs to be tweaked
+    public static final double NODE_NUM_REDUCE_FACTOR = 0.9;
 }

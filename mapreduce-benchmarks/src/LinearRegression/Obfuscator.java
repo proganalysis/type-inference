@@ -9,6 +9,7 @@ import java.math.RoundingMode;
 import java.security.SecureRandom;
 
 public class Obfuscator {
+    // TODO: might change this logic to house phi lambda and phi_lambda
     private BigDecimal decimal;
     private EncodedNumber encoded;
     private EncryptedNumber encrypted;

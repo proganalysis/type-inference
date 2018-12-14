@@ -1,9 +1,6 @@
 package LinearRegression;
 
-import com.n1analytics.paillier.EncodedNumber;
-import com.n1analytics.paillier.EncryptedNumber;
-import com.n1analytics.paillier.PaillierContext;
-import com.n1analytics.paillier.PaillierPublicKey;
+import com.n1analytics.paillier.*;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -89,7 +86,6 @@ public class CryptoWorker {
         for(String s : hosts_raw.split(",")) {
             Matcher matcher = ip_regex.matcher(s);
             if(matcher.matches()) {
-
                 ret_val.add(s);
             }
         }
@@ -145,8 +141,8 @@ public class CryptoWorker {
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
         if(hide_vals) {
             generate_phi_lambda();
-            a = a.add(phi.getEncrypted());
-            b = b.add(lambda.getEncrypted());
+            a = add_enc(a, phi.getEncrypted());
+            b = add_enc(b, lambda.getEncrypted());
         }
         String op_str = get_op_str(op);
 
@@ -187,16 +183,16 @@ public class CryptoWorker {
             if(!Objects.equals(input_str, "ERROR")) {
                 EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
                 if(hide_vals) {
-                    a = a.subtract(phi.getEncrypted());
-                    b = b.subtract(lambda.getEncrypted());
+                    a = subtract_enc(a, phi.getEncrypted());
+                    b = subtract_enc(b, lambda.getEncrypted());
                     EncryptedNumber first = a.multiply(lambda.getEncoded());
                     first = remote_round(first);
                     EncryptedNumber second = b.multiply(phi.getEncoded());
                     second = remote_round(second);
                     assert first != null && second != null;
-                    EncryptedNumber sub = first.add(second);
-                    sub = sub.add(phi_lambda.getEncrypted());
-                    aug_ans = aug_ans.subtract(sub);
+                    EncryptedNumber sub = add_enc(first, second);
+                    sub = add_enc(sub, phi_lambda.getEncrypted());
+                    aug_ans = subtract_enc(aug_ans, sub);
                 }
                 s.close();
                 return aug_ans;
@@ -339,6 +335,27 @@ public class CryptoWorker {
 
     }
 
+    public EncryptedNumber add_enc(EncryptedNumber a, EncryptedNumber b) {
+        assert a != null;
+        assert b != null;
+        try {
+            a.checkSameContext(b);
+        } catch (PaillierContextMismatchException e) {
+            e.printStackTrace();
+        }
+        return a.add(b);
+    }
+
+    public EncryptedNumber subtract_enc(EncryptedNumber a, EncryptedNumber b) {
+        try {
+            a.checkSameContext(b);
+        } catch (PaillierContextMismatchException e) {
+            e.printStackTrace();
+        }
+        assert a != null;
+        assert b != null;
+        return a.subtract(b);
+    }
 
     public EncryptedNumber get_zero() {
         return zero;

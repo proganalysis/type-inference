@@ -86,19 +86,19 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 			for(int i=0;i<Xi_enc.length;i++){
 				EncryptedNumber tmp_multiply = cryptoWorker.remote_op(Xi_enc[i], theta_i_enc.get(i), Operations.MULTIPLY);
 				assert tmp_multiply != null;
-				h_theta_enc = h_theta_enc.add(tmp_multiply);
+				h_theta_enc = cryptoWorker.add_enc(h_theta_enc, tmp_multiply);
 
 			}
 			EncryptedNumber Yi_enc= cryptoWorker.cast_encrypted_number_raw_split(tok[tok.length-1]);
 			for(int i=0;i<Xi_enc.length;i++){
 				// theta_i.add(i,(float) (temp+(alpha/number_inputs)*(Yi-h_theta)*(Xi[i])));
 				EncryptedNumber temp = theta_i_enc.remove(i);
-				EncryptedNumber yi_minus_htheta = Yi_enc.subtract(h_theta_enc);
+				EncryptedNumber yi_minus_htheta = cryptoWorker.subtract_enc(Yi_enc, h_theta_enc);
 				EncryptedNumber first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer_enc(),  Operations.MULTIPLY);
 				assert first_mult != null;
 				EncryptedNumber second_mult = cryptoWorker.remote_op(first_mult, Xi_enc[i], Operations.MULTIPLY);
 				assert second_mult != null;
-				EncryptedNumber ans = temp.add(second_mult);
+				EncryptedNumber ans = cryptoWorker.add_enc(temp, second_mult);
 				theta_i_enc.add(i, ans);
 			}
 		}
@@ -116,12 +116,12 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 			double Yi=Double.parseDouble(tok[tok.length-1]);
 			for(int i=0;i<Xi.length;i++){
 				double temp = theta_i.remove(i);
-				theta_i.add(i, (temp+(alpha/number_of_inputs)*(Yi-h_theta)*(Xi[i])));
-//				double yi_minus_htheta = Yi - h_theta;
-//				double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), Operations.MULTIPLY);
-//				double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], Operations.MULTIPLY);
-//				double ans = temp + second_mult;
-//				theta_i.add(i, ans);
+				// theta_i.add(i, (temp+(alpha/number_of_inputs)*(Yi-h_theta)*(Xi[i])));
+				double yi_minus_htheta = Yi - h_theta;
+				double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), Operations.MULTIPLY);
+				double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], Operations.MULTIPLY);
+				double ans = temp + second_mult;
+				theta_i.add(i, ans);
 			}
 //			for(int i=0;i<theta_i.size();i++){
 //				double d = theta_i.get(i);
