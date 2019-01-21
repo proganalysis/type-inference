@@ -19,11 +19,12 @@ public class thetaREDUCE extends Reducer<Text, Text, Text, Text>{
 		LogWriter logWriter = new LogWriter();
 		logWriter.write_out("Started a reducer task");
 		boolean USE_ENC = context.getConfiguration().getBoolean(Constants.USE_ENC_TAG, true);
+		boolean use_network = context.getConfiguration().getBoolean(Constants.USE_NETWORK_TAG, true);
 		int remote_port = context.getConfiguration().getInt(Constants.REMOTE_PORT_TAG, 44444);
 		String public_key = context.getConfiguration().get(Constants.PUB_KEY_TAG);
 		String remote_host = context.getConfiguration().get(Constants.REMOTE_HOSTS_TAG);
         PaillierPublicKey pub_key = new PaillierPublicKey(new BigInteger(public_key));
-        CryptoWorker cryptoWorker = new CryptoWorker(pub_key, remote_host, remote_port);
+        CryptoWorker cryptoWorker = new CryptoWorker(pub_key, remote_host, remote_port, true);
 		if(USE_ENC) {
 			EncryptedNumber sum = cryptoWorker.get_zero();
 			double count = 0.0;
@@ -47,7 +48,9 @@ public class thetaREDUCE extends Reducer<Text, Text, Text, Text>{
 				count++;
 			}
 			double ans = sum / count;
-			cryptoWorker.send_remote_msg(String.format("%s -> sum = %.4f count = %d ans = %f", key, sum, count, ans));
+			if(use_network) {
+				cryptoWorker.send_remote_msg(String.format("%s -> sum = %.4f count = %d ans = %f", key, sum, count, ans));
+			}
 			context.write(key, new Text(Double.toString(ans)));
 		}
 	}

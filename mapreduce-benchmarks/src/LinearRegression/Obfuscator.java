@@ -24,10 +24,18 @@ public class Obfuscator {
         generate();
     }
 
-    public Obfuscator(Obfuscator a, Obfuscator b, PaillierContext context) {
+    public Obfuscator(Obfuscator a, Obfuscator b, PaillierContext context, ObfuscatorOperations op) {
         this.context = context;
         this.is_aggregate = true;
-        decimal = a.getDecimal().multiply(b.getDecimal());
+        switch (op) {
+            case MULTIPLY:
+                decimal = a.getDecimal().multiply(b.getDecimal());
+                break;
+            case DIVIDE:
+                double ans = b.getDecimal().doubleValue() / a.getDecimal().doubleValue();
+                decimal = new BigDecimal(ans);
+                break;
+        }
         decimal = round(decimal);
         encoded = context.encode(decimal);
         encrypted = context.encrypt(encoded);

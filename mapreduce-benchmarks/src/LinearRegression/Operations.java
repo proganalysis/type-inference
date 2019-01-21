@@ -2,5 +2,7 @@ package LinearRegression;
 
 public enum Operations {
     MULTIPLY,
-    SUBTRACT
+    ROUND,
+    DIVIDE,
+    COMPARE
 }

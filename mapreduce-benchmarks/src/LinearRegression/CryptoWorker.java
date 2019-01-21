@@ -50,11 +50,11 @@ public class CryptoWorker {
         this.one = paillier_context.encrypt(1.0);
         this.normalizer = alpha / number_of_inputs;
         this.normalizer_enc = paillier_context.encrypt(normalizer);
-        generate_phi_lambda();
     }
 
     public CryptoWorker(PaillierPublicKey pub_key,
-                        String hosts, int port) {
+                        String hosts, int port, boolean hide_vals) {
+        this.hide_vals = hide_vals;
         this.host_list = make_host_list(hosts);
         this.port = port;
         this.pub_key = pub_key;
@@ -63,7 +63,6 @@ public class CryptoWorker {
         this.one = paillier_context.encrypt(1.0);
         this.normalizer = 0.0;
         this.normalizer_enc = paillier_context.encrypt(normalizer);
-        generate_phi_lambda();
     }
 
     private static int check_neg(int n) {
@@ -74,8 +73,12 @@ public class CryptoWorker {
         switch (op) {
             case MULTIPLY:
                 return "MH";
-            case SUBTRACT:
-                return "SUB";
+            case ROUND:
+                return "ROUND";
+            case DIVIDE:
+                return "DVD";
+            case COMPARE:
+                return "COMP";
         }
         return "NONE";
     }
@@ -104,15 +107,15 @@ public class CryptoWorker {
         return this.host_list.get(get_host_index());
     }
 
-    private void generate_phi_lambda() {
+    private void generate_phi_lambda(ObfuscatorOperations op) {
         phi = new Obfuscator(paillier_context);
         lambda = new Obfuscator(paillier_context);
         try {
-            phi_lambda = new Obfuscator(phi, lambda, paillier_context);
+            phi_lambda = new Obfuscator(phi, lambda, paillier_context, op);
         } catch (ArithmeticException e) {
             // have to try it all again!
             System.err.println("ERROR: " + e.getMessage());
-            generate_phi_lambda();
+            generate_phi_lambda(op);
         }
         //TODO: something funky is going on here causing huge _WRONG_ at the end numbers.
 
@@ -138,144 +141,157 @@ public class CryptoWorker {
 //        lambda = paillier_context.encrypt(lambda_encoded);
     }
 
+
+    private String send_rcv_msg(String msg, boolean rcv_msg) {
+        Socket s;
+        try {
+            s = new Socket(get_host(), port);
+            DataOutputStream out = new DataOutputStream(s.getOutputStream());
+            if(rcv_msg) {
+                byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
+                out.write(ptext);
+                BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                char[] raw_input = new char[1024];
+                int rc = br.read(raw_input);
+                if (rc < 0) {
+                    System.err.println(String.format("ERROR: read %d from read rc", rc));
+                }
+                return new String(raw_input).trim();
+            }
+            s.close();
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
+        String op_str = get_op_str(op);
+        switch (op) {
+            case MULTIPLY:
+                return remote_add_enc(a, b, additional_msg);
+            case DIVIDE:
+                return remote_divide_enc(a, b, additional_msg);
+            case COMPARE:
+                break;
+        }
+        return null;
+    }
+
+    private String build_complex_msg(EncryptedNumber a, EncryptedNumber b, String op_str, String additional_msg) {
+        BigInteger ciphertext_a = a.calculateCiphertext();
+        BigInteger ciphertext_b = b.calculateCiphertext();
+        StringBuilder msg = new StringBuilder();
+        String msg_format;
+        String[] components;
+        if(Objects.equals(additional_msg, "")) {
+            components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
+                    ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
+                    ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent())};
+        }
+        else {
+            components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
+                    ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
+                    ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent()),
+                    MSG_DELIM, additional_msg};
+        }
+        for(String str : components) {
+            msg.append(str);
+        }
+        return msg.toString();
+    }
+
+    private EncryptedNumber remote_divide_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg){
+        String op_str = get_op_str(Operations.DIVIDE);
         if(hide_vals) {
-            generate_phi_lambda();
+            generate_phi_lambda(ObfuscatorOperations.DIVIDE);
+            a = a.multiply(phi.getEncoded());
+            b = b.multiply(lambda.getEncoded());
+        }
+        String msg = build_complex_msg(a, b, op_str, additional_msg);
+        String input_str = send_rcv_msg(msg.toString(), true);
+        assert !(Objects.equals(input_str, null));
+        if(!Objects.equals(input_str, "ERROR")) {
+            EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
+            if(hide_vals) {
+                aug_ans = aug_ans.multiply(phi_lambda.getEncoded());
+                remote_round(aug_ans);
+            }
+            return aug_ans;
+        }
+        else {
+            return null;
+        }
+
+    }
+
+
+    private EncryptedNumber remote_add_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg){
+        String op_str = get_op_str(Operations.MULTIPLY);
+        if(hide_vals) {
+            generate_phi_lambda(ObfuscatorOperations.MULTIPLY);
             a = add_enc(a, phi.getEncrypted());
             b = add_enc(b, lambda.getEncrypted());
         }
-        String op_str = get_op_str(op);
-
-        BigInteger ciphertext_a = a.calculateCiphertext();
-        BigInteger ciphertext_b = b.calculateCiphertext();
-
-        try {
-            Socket s = new Socket(get_host(), port);
-            DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            StringBuilder msg = new StringBuilder();
-            String msg_format;
-            String[] components;
-            if(Objects.equals(additional_msg, "")) {
-                components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
-                        ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
-                        ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent())};
+        String msg = build_complex_msg(a, b, op_str, additional_msg);
+        String input_str = send_rcv_msg(msg.toString(), true);
+        assert !(Objects.equals(input_str, null));
+        if(!Objects.equals(input_str, "ERROR")) {
+            EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
+            if(hide_vals) {
+                a = subtract_enc(a, phi.getEncrypted());
+                b = subtract_enc(b, lambda.getEncrypted());
+                EncryptedNumber first = a.multiply(lambda.getEncoded());
+                first = remote_round(first);
+                EncryptedNumber second = b.multiply(phi.getEncoded());
+                second = remote_round(second);
+                assert first != null && second != null;
+                EncryptedNumber sub = add_enc(first, second);
+                sub = add_enc(sub, phi_lambda.getEncrypted());
+                aug_ans = subtract_enc(aug_ans, sub);
             }
-            else {
-                components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
-                        ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
-                        ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent()),
-                        MSG_DELIM, additional_msg};
-            }
-            for(String str : components) {
-                msg.append(str);
-            }
-
-            byte[] ptext = msg.toString().getBytes(StandardCharsets.UTF_8);
-            out.write(ptext);
-            BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            char[] raw_input = new char[1024];
-            int rc = br.read(raw_input);
-            if(rc < 0) {
-                System.err.println(String.format("ERROR: read %d from read rc", rc));
-            }
-            assert rc > 0;
-            String input_str = new String(raw_input).trim();
-            if(!Objects.equals(input_str, "ERROR")) {
-                EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
-                if(hide_vals) {
-                    a = subtract_enc(a, phi.getEncrypted());
-                    b = subtract_enc(b, lambda.getEncrypted());
-                    EncryptedNumber first = a.multiply(lambda.getEncoded());
-                    first = remote_round(first);
-                    EncryptedNumber second = b.multiply(phi.getEncoded());
-                    second = remote_round(second);
-                    assert first != null && second != null;
-                    EncryptedNumber sub = add_enc(first, second);
-                    sub = add_enc(sub, phi_lambda.getEncrypted());
-                    aug_ans = subtract_enc(aug_ans, sub);
-                }
-                s.close();
-                return aug_ans;
-            }
-            else {
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            return aug_ans;
         }
-        return null;
+        else {
+            return null;
+        }
     }
 
-    private EncryptedNumber remote_round(EncryptedNumber a) {
-        try {
-            Socket s = new Socket(get_host(), port);
-            DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            String msg = String.format("ROUND|%s#%d", a.calculateCiphertext().toString(), a.getExponent());
-            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
-            out.write(ptext);
-            BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            char[] raw_input = new char[1024];
-            int rc = br.read(raw_input);
-            if (rc < 0) {
-                System.err.println(String.format("ERROR: read %d from read rc", rc));
-            }
-            assert rc > 0;
-            String input_str = new String(raw_input).trim();
-            EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
-            s.close();
-            return aug_ans;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public EncryptedNumber remote_round(EncryptedNumber a) {
+        String msg = String.format("ROUND|%s#%d", a.calculateCiphertext().toString(), a.getExponent());
+        String input_str = send_rcv_msg(msg, true);
+        EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
+        return aug_ans;
     }
 
     private double send_op_pt(double a, double b, String additional_msg, Operations op) {
-        Instant start = Instant.now();
-        Instant finish = Instant.now();
-        long timeElapsed = Duration.between(start, finish).toMillis();
         String op_str = get_op_str(op);
-        try {
-            Socket s = new Socket(get_host(), port);
-            DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            StringBuilder msg = new StringBuilder();
-            String[] components;
-            if(Objects.equals(additional_msg, "")) {
-                components = new String[]{"OPD",
-                        MSG_DELIM, op_str,
-                        MSG_DELIM, Double.toString(a),
-                        MSG_DELIM, Double.toString(b)};
-            }
-            else {
-                components = new String[]{"OPD",
-                        MSG_DELIM, op_str,
-                        MSG_DELIM, Double.toString(a),
-                        MSG_DELIM, Double.toString(b),
-                        MSG_DELIM, additional_msg};
-            }
-            for(String str : components) {
-                msg.append(str);
-            }
-            byte[] ptext = msg.toString().getBytes(StandardCharsets.UTF_8);
-            out.write(ptext);
-            BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            char[] raw_input = new char[1024];
-            int rc = br.read(raw_input);
-            if(rc < 0) {
-                System.err.println(String.format("ERROR: read %d from read rc", rc));
-            }
-            assert rc > 0;
-            String input_str = new String(raw_input).trim();
-            if(!Objects.equals(input_str, "ERROR")) {
-                return Double.parseDouble(input_str);
-            }
-            else {
-                return 0.0D;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        StringBuilder msg = new StringBuilder();
+        String[] components;
+        if(Objects.equals(additional_msg, "")) {
+            components = new String[]{"OPD",
+                    MSG_DELIM, op_str,
+                    MSG_DELIM, Double.toString(a),
+                    MSG_DELIM, Double.toString(b)};
         }
-        return 0.0D;
+        else {
+            components = new String[]{"OPD",
+                    MSG_DELIM, op_str,
+                    MSG_DELIM, Double.toString(a),
+                    MSG_DELIM, Double.toString(b),
+                    MSG_DELIM, additional_msg};
+        }
+        for(String str : components) {
+            msg.append(str);
+        }
+        String input_str = send_rcv_msg(msg.toString(), true);
+        assert !(Objects.equals(input_str, null));
+        if (!Objects.equals(input_str, "ERROR")) {
+            return Double.parseDouble(input_str);
+        } else {
+            return 0.0D;
+        }
     }
 
     public EncryptedNumber remote_op(EncryptedNumber a, EncryptedNumber b, Operations op) {
@@ -308,32 +324,16 @@ public class CryptoWorker {
         }
     }
 
-    public void send_value(String name, EncryptedNumber a){
-        try {
-            Socket s = new Socket(get_host(), port);
-            DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            String msg = String.format("VALUE|%s|%s#%d", name, a.calculateCiphertext().toString(), a.getExponent());
-            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
-            out.write(ptext);
-            s.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void send_value(String name, EncryptedNumber a) {
+        String msg = String.format("VALUE|%s|%s#%d", name, a.calculateCiphertext().toString(), a.getExponent());
+        send_rcv_msg(msg, false);
     }
 
     public void send_remote_msg(String base_msg) {
-        try {
-            Socket s = new Socket(get_host(), port);
-            DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            String msg = String.format("MSG|%s", base_msg);
-            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
-            out.write(ptext);
-            s.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        String msg = String.format("MSG|%s", base_msg);
+        send_rcv_msg(msg, false);
     }
+
 
     public EncryptedNumber add_enc(EncryptedNumber a, EncryptedNumber b) {
         assert a != null;

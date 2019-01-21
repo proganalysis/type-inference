@@ -4,6 +4,7 @@ import com.n1analytics.paillier.EncryptedNumber;
 import com.n1analytics.paillier.PaillierPublicKey;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.TaskCounter;
 
@@ -26,6 +27,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 	private static ArrayList<EncryptedNumber> theta_i_enc= new ArrayList<>();
 	private static ArrayList<Double> theta_i= new ArrayList<>();
 	private static boolean USE_ENC;
+	private static boolean use_network;
 	private CryptoWorker cryptoWorker;
 	private double alpha;
 	private double number_of_inputs;
@@ -35,6 +37,7 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 	public void setup(Context context) {
 		alpha = context.getConfiguration().getFloat(Constants.ALPHA_TAG, 0);
 		USE_ENC = context.getConfiguration().getBoolean(Constants.USE_ENC_TAG, true);
+		use_network = context.getConfiguration().getBoolean(Constants.USE_NETWORK_TAG, true);
 		boolean hide_vals = context.getConfiguration().getBoolean(Constants.HIDE_VALS_TAG, true);
 		String remote_host = context.getConfiguration().get(Constants.REMOTE_HOSTS_TAG);
 		int remote_port = context.getConfiguration().getInt(Constants.REMOTE_PORT_TAG, 44444);
@@ -46,6 +49,8 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 		System.out.println(String.format("number_inputs -> %.2f", number_of_inputs));
 		System.out.println(String.format("hide_vals -> %b", hide_vals));
 		System.out.println(String.format("USE_ENC -> %b", USE_ENC));
+		System.out.println(String.format("use_network -> %b", use_network));
+
 
 	}
 
@@ -117,11 +122,16 @@ public class thetaMAP extends Mapper<LongWritable, Text, Text, Text> {
 			for(int i=0;i<Xi.length;i++){
 				double temp = theta_i.remove(i);
 				// theta_i.add(i, (temp+(alpha/number_of_inputs)*(Yi-h_theta)*(Xi[i])));
-				double yi_minus_htheta = Yi - h_theta;
-				double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), Operations.MULTIPLY);
-				double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], Operations.MULTIPLY);
-				double ans = temp + second_mult;
-				theta_i.add(i, ans);
+				if(use_network) {
+					double yi_minus_htheta = Yi - h_theta;
+					double first_mult = cryptoWorker.remote_op(yi_minus_htheta, cryptoWorker.get_normalizer(), Operations.MULTIPLY);
+					double second_mult = cryptoWorker.remote_op(first_mult, Xi[i], Operations.MULTIPLY);
+					double ans = temp + second_mult;
+					theta_i.add(i, ans);
+				}
+				else {
+					theta_i.add(i, (temp+(alpha/number_of_inputs)*(Yi-h_theta)*(Xi[i])));
+				}
 			}
 //			for(int i=0;i<theta_i.size();i++){
 //				double d = theta_i.get(i);

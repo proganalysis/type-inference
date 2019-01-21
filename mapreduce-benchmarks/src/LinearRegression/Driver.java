@@ -143,7 +143,7 @@ public class Driver {
 		sb.append("<Output Path>\n<Remote Host List>\n");
 		sb.append("<Remote Port>\n<Public Key>\n");
 		sb.append("<Number of Inputs>\n<Number of Nodes>\n");
-		sb.append("<Use encrypyion?>\n<Hide Values?>\n");
+		sb.append("<Use encrypyion?>\n<Hide Values?>\n<use network?>");
 		logWriter.write_out(sb.toString());
 	}
 
@@ -163,10 +163,14 @@ public class Driver {
 		int number_of_nodes = Integer.parseInt(args[9]);
 		boolean use_enc = Boolean.parseBoolean(args[10]);
 		boolean hide_vals = Boolean.parseBoolean(args[11]);
+		boolean use_network = Boolean.parseBoolean(args[11]);
 		Configuration conf = new Configuration();
 		FileSystem hdfs = FileSystem.get(conf);
 		EncryptedNumber[] theta_enc = new EncryptedNumber[num_features];
 		Double[] theta = new Double[num_features];
+
+		assert !(use_network && use_enc);
+		assert !(use_network && hide_vals);
 
 		//rounds is the number of times you want to iterate over your training set.
 
@@ -219,6 +223,7 @@ public class Driver {
 			conf.setInt(Constants.NUM_INPUTS_TAG, number_of_inputs);
 			conf.setBoolean(Constants.USE_ENC_TAG, use_enc);
 			conf.setBoolean(Constants.HIDE_VALS_TAG, hide_vals);
+			conf.setBoolean(Constants.USE_NETWORK_TAG, use_network);
 			//Theta Value Initialisation
 			for(int j=0;j<num_features;j++){
 				if(use_enc) {
