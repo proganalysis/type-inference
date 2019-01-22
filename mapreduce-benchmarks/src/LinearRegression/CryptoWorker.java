@@ -70,55 +70,7 @@ public class CryptoWorker {
         return n < 0 ? n * -1 : n;
     }
 
-    private String get_op_str(Operations op) {
-        switch (op) {
-            case MULTIPLY:
-                return "MH";
-            case ROUND:
-                return "ROUND";
-            case DIVIDE:
-                return "DVD";
-            case COMPARE:
-                return "COMP";
-        }
-        return "NONE";
-    }
 
-    private String get_comp_op_str(ComparisonOperator comp_op) {
-        switch (comp_op) {
-            case EQ:
-                return "EQ";
-            case GT:
-                return "GT";
-            case LT:
-                return "LT";
-            case NE:
-                return "NE";
-            case GTE:
-                return "GTE";
-            case LTE:
-                return "LTE";
-            default:
-                return "NONE";
-
-        }
-    }
-
-    private String get_msg_type_str(MessageType mtype) {
-        switch (mtype) {
-            case OPE:
-                return "OPE";
-            case MSG:
-                return "MSG";
-            case VALUE:
-                return "VALUE";
-            case ROUND:
-                return "ROUND";
-            case OPD:
-                return "OPD";
-        }
-        return "NONE";
-    }
 
     private ArrayList<String> make_host_list(String hosts_raw) {
         ArrayList<String> ret_val = new ArrayList<>();
@@ -185,8 +137,8 @@ public class CryptoWorker {
     }
 
     private String two_arg_msg(MessageType mtype, Operations op,  EncryptedNumber a, EncryptedNumber b, String additional_msg) {
-        String op_str = get_op_str(op);
-        String mtype_str = get_msg_type_str(mtype);
+        String op_str = Utilities.op_to_str(op);
+        String mtype_str = Utilities.msg_type_to_str(mtype);
         BigInteger ciphertext_a = a.calculateCiphertext();
         BigInteger ciphertext_b = b.calculateCiphertext();
         StringBuilder msg = new StringBuilder();
@@ -208,8 +160,8 @@ public class CryptoWorker {
     }
 
     private String two_arg_msg(MessageType mtype, Operations op,  double a, double b, String additional_msg) {
-        String op_str = get_op_str(op);
-        String mtype_str = get_msg_type_str(mtype);
+        String op_str = Utilities.op_to_str(op);
+        String mtype_str = Utilities.msg_type_to_str(mtype);
         StringBuilder msg = new StringBuilder();
         String[] components;
         if (Objects.equals(additional_msg, "")) {
@@ -231,19 +183,21 @@ public class CryptoWorker {
     }
 
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
-        String op_str = get_op_str(op);
+        String op_str = Utilities.op_to_str(op);
         switch (op) {
             case MULTIPLY:
                 return remote_add_enc(a, b, additional_msg);
             case DIVIDE:
                 return remote_divide_enc(a, b, additional_msg);
             case COMPARE:
+                // TODO: fix this nonesense
                 System.out.println("Don't Call this this way.");
                 System.exit(0);
         }
         return null;
     }
 
+    // TODO: this should be private and encourperated in above function
     public boolean remote_compare_enc(EncryptedNumber a, EncryptedNumber b, ComparisonOperator comp_op, String additional_msg) {
         if(hide_vals) {
             generate_eta(ObfuscatorOperations.COMPARE);
@@ -252,7 +206,7 @@ public class CryptoWorker {
             b = b.multiply(eta.getEncoded());
         }
         String msg = two_arg_msg(MessageType.OPE, Operations.COMPARE, a, b, additional_msg);
-        msg = String.format("%s|%s", msg, get_comp_op_str(comp_op));
+        msg = String.format("%s|%s", msg, Utilities.comp_op_to_str(comp_op));
         String input_str = send_rcv_msg(msg.toString(), true);
         assert !(Objects.equals(input_str, null));
         return Integer.parseInt(input_str) == 1;
@@ -301,15 +255,16 @@ public class CryptoWorker {
     }
 
     public EncryptedNumber remote_round(EncryptedNumber a) {
-        String mtype_str = get_msg_type_str(MessageType.ROUND);
+        String mtype_str = Utilities.msg_type_to_str(MessageType.ROUND);
         String msg = String.format("%s|%s#%d", mtype_str, a.calculateCiphertext().toString(), a.getExponent());
         String input_str = send_rcv_msg(msg, true);
+        assert !(Objects.equals(input_str, null));
         EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
         return aug_ans;
     }
 
     private double send_op_pt(double a, double b, String additional_msg, Operations op) {
-        String op_str = get_op_str(op);
+        String op_str = Utilities.op_to_str(op);
         String msg = two_arg_msg(MessageType.OPD, op, a, b, additional_msg);
         String input_str = send_rcv_msg(msg.toString(), true);
         assert !(Objects.equals(input_str, null));
@@ -337,13 +292,13 @@ public class CryptoWorker {
     }
 
     public void send_value(String name, EncryptedNumber a) {
-        String mtype_str = get_msg_type_str(MessageType.VALUE);
+        String mtype_str = Utilities.msg_type_to_str(MessageType.VALUE);
         String msg = String.format("%s|%s|%s#%d", mtype_str, name, a.calculateCiphertext().toString(), a.getExponent());
         send_rcv_msg(msg, false);
     }
 
     public void send_remote_msg(String base_msg) {
-        String mtype_str = get_msg_type_str(MessageType.MSG);
+        String mtype_str = Utilities.msg_type_to_str(MessageType.MSG);
         String msg = String.format("%s|%s", mtype_str,  base_msg);
         send_rcv_msg(msg, false);
     }

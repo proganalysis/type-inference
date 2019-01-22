@@ -72,9 +72,8 @@ public class ServerTester {
 //        System.out.println(ans.calculateCiphertext() + " " + ans.getExponent());
 
 
-        double d = cryptoWorker.remote_op(10.0, 20.0, Operations.MULTIPLY);
-        double x = ((((4.7 * 0.33) * 0.33) - 0.33) - 0.33);
-        System.out.println(x);
+        double d = cryptoWorker.remote_op(10.0, 20.0, Operations.DIVIDE);
+        System.out.println(d);
 
         EncryptedNumber e = cryptoWorker.create_encrypted_number(50.0);
         EncryptedNumber f = cryptoWorker.create_encrypted_number( 50.0);
