@@ -17,11 +17,11 @@ public class Obfuscator {
     private PaillierContext context;
     private boolean is_aggregate;
 
-    public Obfuscator(PaillierContext context) {
+    public Obfuscator(PaillierContext context, ObfuscatorOperations op) {
         this.rand = new SecureRandom();
         this.context = context;
         this.is_aggregate = false;
-        generate();
+        generate(op);
     }
 
     public Obfuscator(Obfuscator a, Obfuscator b, PaillierContext context, ObfuscatorOperations op) {
@@ -45,9 +45,13 @@ public class Obfuscator {
         return value.setScale(Constants.PLACES, RoundingMode.HALF_UP);
     }
 
-    public void generate() {
+    private void generate(ObfuscatorOperations op) {
         if(!is_aggregate) {
-            decimal = new BigDecimal(Double.toString(rand.nextFloat() * Constants.OBFUSCATOR_MULTI_CONST_DOUBLE));
+            double value = rand.nextFloat() * Constants.OBFUSCATOR_MULTI_CONST_DOUBLE;
+            if(op == ObfuscatorOperations.COMPARE) {
+                value = 1.0 / value;
+            }
+            decimal = new BigDecimal(Double.toString(value));
             decimal = round(decimal);
             try {
                 encoded = context.encode(decimal);

@@ -2,5 +2,6 @@ package LinearRegression;
 
 public enum ObfuscatorOperations {
     MULTIPLY,
-    DIVIDE
+    DIVIDE,
+    COMPARE
 }

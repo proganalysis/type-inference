@@ -33,6 +33,7 @@ public class CryptoWorker {
     private Obfuscator phi;
     private Obfuscator lambda;
     private Obfuscator phi_lambda;
+    private Obfuscator eta;
 
     private ArrayList<String> host_list;
     private int port;
@@ -83,6 +84,42 @@ public class CryptoWorker {
         return "NONE";
     }
 
+    private String get_comp_op_str(ComparisonOperator comp_op) {
+        switch (comp_op) {
+            case EQ:
+                return "EQ";
+            case GT:
+                return "GT";
+            case LT:
+                return "LT";
+            case NE:
+                return "NE";
+            case GTE:
+                return "GTE";
+            case LTE:
+                return "LTE";
+            default:
+                return "NONE";
+
+        }
+    }
+
+    private String get_msg_type_str(MessageType mtype) {
+        switch (mtype) {
+            case OPE:
+                return "OPE";
+            case MSG:
+                return "MSG";
+            case VALUE:
+                return "VALUE";
+            case ROUND:
+                return "ROUND";
+            case OPD:
+                return "OPD";
+        }
+        return "NONE";
+    }
+
     private ArrayList<String> make_host_list(String hosts_raw) {
         ArrayList<String> ret_val = new ArrayList<>();
         Pattern ip_regex = Pattern.compile("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$");
@@ -108,8 +145,8 @@ public class CryptoWorker {
     }
 
     private void generate_phi_lambda(ObfuscatorOperations op) {
-        phi = new Obfuscator(paillier_context);
-        lambda = new Obfuscator(paillier_context);
+        phi = new Obfuscator(paillier_context, op);
+        lambda = new Obfuscator(paillier_context, op);
         try {
             phi_lambda = new Obfuscator(phi, lambda, paillier_context, op);
         } catch (ArithmeticException e) {
@@ -117,30 +154,11 @@ public class CryptoWorker {
             System.err.println("ERROR: " + e.getMessage());
             generate_phi_lambda(op);
         }
-        //TODO: something funky is going on here causing huge _WRONG_ at the end numbers.
-
-//        try {
-//            // TODO: need to try/catch java.lang.ArithmeticException here
-//            phi_big_dec = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
-//            lambda_big_dec = new BigDecimal(Double.toString(rand.nextFloat() * 10.0));
-//
-//        } catch (java.lang.ArithmeticException e) {
-//
-//            phi_big_dec = new BigDecimal(Double.toString(rand.nextInt() % 100));
-//            lambda_big_dec = new BigDecimal(Double.toString(rand.nextInt() % 100));
-//        }
-//        phi_big_dec = local_round(phi_big_dec);
-//        phi_encoded = paillier_context.encode(phi_big_dec);
-//        lambda_big_dec = local_round(lambda_big_dec);
-//        lambda_encoded = paillier_context.encode(lambda_big_dec);
-//        phi_lambda_dec = phi_big_dec.multiply(lambda_big_dec);
-//        phi_lambda_dec = local_round(phi_lambda_dec);
-//        phi_lambda_encoded = paillier_context.encode(phi_lambda_dec);
-//        phi_lambda = paillier_context.encrypt(phi_lambda_encoded);
-//        phi = paillier_context.encrypt(phi_encoded);
-//        lambda = paillier_context.encrypt(lambda_encoded);
     }
 
+    private void generate_eta(ObfuscatorOperations op) {
+        eta = new Obfuscator(paillier_context, op);
+    }
 
     private String send_rcv_msg(String msg, boolean rcv_msg) {
         Socket s;
@@ -166,6 +184,52 @@ public class CryptoWorker {
         return null;
     }
 
+    private String two_arg_msg(MessageType mtype, Operations op,  EncryptedNumber a, EncryptedNumber b, String additional_msg) {
+        String op_str = get_op_str(op);
+        String mtype_str = get_msg_type_str(mtype);
+        BigInteger ciphertext_a = a.calculateCiphertext();
+        BigInteger ciphertext_b = b.calculateCiphertext();
+        StringBuilder msg = new StringBuilder();
+        String[] components;
+        if (Objects.equals(additional_msg, "")) {
+            components = new String[]{mtype_str, MSG_DELIM, op_str, MSG_DELIM,
+                    ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
+                    ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent())};
+        } else {
+            components = new String[]{mtype_str, MSG_DELIM, op_str, MSG_DELIM,
+                    ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
+                    ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent()),
+                    MSG_DELIM, additional_msg};
+        }
+        for (String str : components) {
+            msg.append(str);
+        }
+        return msg.toString();
+    }
+
+    private String two_arg_msg(MessageType mtype, Operations op,  double a, double b, String additional_msg) {
+        String op_str = get_op_str(op);
+        String mtype_str = get_msg_type_str(mtype);
+        StringBuilder msg = new StringBuilder();
+        String[] components;
+        if (Objects.equals(additional_msg, "")) {
+            components = new String[]{mtype_str,
+                    MSG_DELIM, op_str,
+                    MSG_DELIM, Double.toString(a),
+                    MSG_DELIM, Double.toString(b)};
+        } else {
+            components = new String[]{mtype_str,
+                    MSG_DELIM, op_str,
+                    MSG_DELIM, Double.toString(a),
+                    MSG_DELIM, Double.toString(b),
+                    MSG_DELIM, additional_msg};
+        }
+        for (String str : components) {
+            msg.append(str);
+        }
+        return msg.toString();
+    }
+
     private EncryptedNumber send_op_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg, Operations op) {
         String op_str = get_op_str(op);
         switch (op) {
@@ -174,92 +238,71 @@ public class CryptoWorker {
             case DIVIDE:
                 return remote_divide_enc(a, b, additional_msg);
             case COMPARE:
-                break;
+                System.out.println("Don't Call this this way.");
+                System.exit(0);
         }
         return null;
     }
 
-    private String build_complex_msg(EncryptedNumber a, EncryptedNumber b, String op_str, String additional_msg) {
-        BigInteger ciphertext_a = a.calculateCiphertext();
-        BigInteger ciphertext_b = b.calculateCiphertext();
-        StringBuilder msg = new StringBuilder();
-        String msg_format;
-        String[] components;
-        if(Objects.equals(additional_msg, "")) {
-            components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
-                    ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
-                    ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent())};
+    public boolean remote_compare_enc(EncryptedNumber a, EncryptedNumber b, ComparisonOperator comp_op, String additional_msg) {
+        if(hide_vals) {
+            generate_eta(ObfuscatorOperations.COMPARE);
+            System.out.println(eta.getDecimal().doubleValue());
+            a = a.multiply(eta.getEncoded());
+            b = b.multiply(eta.getEncoded());
         }
-        else {
-            components = new String[]{"OPE", MSG_DELIM, op_str, MSG_DELIM,
-                    ciphertext_a.toString(), NUM_DELIM, Integer.toString(a.getExponent()), MSG_DELIM,
-                    ciphertext_b.toString(), NUM_DELIM, Integer.toString(b.getExponent()),
-                    MSG_DELIM, additional_msg};
-        }
-        for(String str : components) {
-            msg.append(str);
-        }
-        return msg.toString();
+        String msg = two_arg_msg(MessageType.OPE, Operations.COMPARE, a, b, additional_msg);
+        msg = String.format("%s|%s", msg, get_comp_op_str(comp_op));
+        String input_str = send_rcv_msg(msg.toString(), true);
+        assert !(Objects.equals(input_str, null));
+        return Integer.parseInt(input_str) == 1;
     }
 
     private EncryptedNumber remote_divide_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg){
-        String op_str = get_op_str(Operations.DIVIDE);
         if(hide_vals) {
             generate_phi_lambda(ObfuscatorOperations.DIVIDE);
             a = a.multiply(phi.getEncoded());
             b = b.multiply(lambda.getEncoded());
         }
-        String msg = build_complex_msg(a, b, op_str, additional_msg);
+        String msg = two_arg_msg(MessageType.OPE, Operations.DIVIDE, a, b, additional_msg);
         String input_str = send_rcv_msg(msg.toString(), true);
         assert !(Objects.equals(input_str, null));
-        if(!Objects.equals(input_str, "ERROR")) {
-            EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
-            if(hide_vals) {
-                aug_ans = aug_ans.multiply(phi_lambda.getEncoded());
-                remote_round(aug_ans);
-            }
-            return aug_ans;
+        EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
+        if(hide_vals) {
+            aug_ans = aug_ans.multiply(phi_lambda.getEncoded());
+            remote_round(aug_ans);
         }
-        else {
-            return null;
-        }
-
+        return aug_ans;
     }
 
-
     private EncryptedNumber remote_add_enc(EncryptedNumber a, EncryptedNumber b, String additional_msg){
-        String op_str = get_op_str(Operations.MULTIPLY);
         if(hide_vals) {
             generate_phi_lambda(ObfuscatorOperations.MULTIPLY);
             a = add_enc(a, phi.getEncrypted());
             b = add_enc(b, lambda.getEncrypted());
         }
-        String msg = build_complex_msg(a, b, op_str, additional_msg);
+        String msg = two_arg_msg(MessageType.OPE, Operations.MULTIPLY, a, b, additional_msg);
         String input_str = send_rcv_msg(msg.toString(), true);
         assert !(Objects.equals(input_str, null));
-        if(!Objects.equals(input_str, "ERROR")) {
-            EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
-            if(hide_vals) {
-                a = subtract_enc(a, phi.getEncrypted());
-                b = subtract_enc(b, lambda.getEncrypted());
-                EncryptedNumber first = a.multiply(lambda.getEncoded());
-                first = remote_round(first);
-                EncryptedNumber second = b.multiply(phi.getEncoded());
-                second = remote_round(second);
-                assert first != null && second != null;
-                EncryptedNumber sub = add_enc(first, second);
-                sub = add_enc(sub, phi_lambda.getEncrypted());
-                aug_ans = subtract_enc(aug_ans, sub);
-            }
-            return aug_ans;
+        EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
+        if(hide_vals) {
+            a = subtract_enc(a, phi.getEncrypted());
+            b = subtract_enc(b, lambda.getEncrypted());
+            EncryptedNumber first = a.multiply(lambda.getEncoded());
+            first = remote_round(first);
+            EncryptedNumber second = b.multiply(phi.getEncoded());
+            second = remote_round(second);
+            assert first != null && second != null;
+            EncryptedNumber sub = add_enc(first, second);
+            sub = add_enc(sub, phi_lambda.getEncrypted());
+            aug_ans = subtract_enc(aug_ans, sub);
         }
-        else {
-            return null;
-        }
+        return aug_ans;
     }
 
     public EncryptedNumber remote_round(EncryptedNumber a) {
-        String msg = String.format("ROUND|%s#%d", a.calculateCiphertext().toString(), a.getExponent());
+        String mtype_str = get_msg_type_str(MessageType.ROUND);
+        String msg = String.format("%s|%s#%d", mtype_str, a.calculateCiphertext().toString(), a.getExponent());
         String input_str = send_rcv_msg(msg, true);
         EncryptedNumber aug_ans = cast_encrypted_number_raw_split(input_str);
         return aug_ans;
@@ -267,31 +310,10 @@ public class CryptoWorker {
 
     private double send_op_pt(double a, double b, String additional_msg, Operations op) {
         String op_str = get_op_str(op);
-        StringBuilder msg = new StringBuilder();
-        String[] components;
-        if(Objects.equals(additional_msg, "")) {
-            components = new String[]{"OPD",
-                    MSG_DELIM, op_str,
-                    MSG_DELIM, Double.toString(a),
-                    MSG_DELIM, Double.toString(b)};
-        }
-        else {
-            components = new String[]{"OPD",
-                    MSG_DELIM, op_str,
-                    MSG_DELIM, Double.toString(a),
-                    MSG_DELIM, Double.toString(b),
-                    MSG_DELIM, additional_msg};
-        }
-        for(String str : components) {
-            msg.append(str);
-        }
+        String msg = two_arg_msg(MessageType.OPD, op, a, b, additional_msg);
         String input_str = send_rcv_msg(msg.toString(), true);
         assert !(Objects.equals(input_str, null));
-        if (!Objects.equals(input_str, "ERROR")) {
-            return Double.parseDouble(input_str);
-        } else {
-            return 0.0D;
-        }
+        return Double.parseDouble(input_str);
     }
 
     public EncryptedNumber remote_op(EncryptedNumber a, EncryptedNumber b, Operations op) {
@@ -310,27 +332,19 @@ public class CryptoWorker {
         return this.send_op_pt(a, b, "", op);
     }
 
-
     public void send_final_value(String name, EncryptedNumber a){
-        try {
-            Socket s = new Socket(host_list.get(0), port);
-            DataOutputStream out = new DataOutputStream(s.getOutputStream());
-            String msg = String.format("VALUE|%s|%s#%d", name, a.calculateCiphertext().toString(), a.getExponent());
-            byte[] ptext = msg.getBytes(StandardCharsets.UTF_8);
-            out.write(ptext);
-            s.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        send_value(name, a);
     }
 
     public void send_value(String name, EncryptedNumber a) {
-        String msg = String.format("VALUE|%s|%s#%d", name, a.calculateCiphertext().toString(), a.getExponent());
+        String mtype_str = get_msg_type_str(MessageType.VALUE);
+        String msg = String.format("%s|%s|%s#%d", mtype_str, name, a.calculateCiphertext().toString(), a.getExponent());
         send_rcv_msg(msg, false);
     }
 
     public void send_remote_msg(String base_msg) {
-        String msg = String.format("MSG|%s", base_msg);
+        String mtype_str = get_msg_type_str(MessageType.MSG);
+        String msg = String.format("%s|%s", mtype_str,  base_msg);
         send_rcv_msg(msg, false);
     }
 

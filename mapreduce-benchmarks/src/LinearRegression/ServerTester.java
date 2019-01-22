@@ -77,9 +77,14 @@ public class ServerTester {
         System.out.println(x);
 
         EncryptedNumber e = cryptoWorker.create_encrypted_number(50.0);
-        EncryptedNumber f = cryptoWorker.create_encrypted_number( 10.0);
+        EncryptedNumber f = cryptoWorker.create_encrypted_number( 50.0);
 
         EncryptedNumber ans2 = cryptoWorker.remote_op(e, f, "feafes", Operations.DIVIDE);
+        boolean rawr = cryptoWorker.remote_compare_enc(e, f, ComparisonOperator.GTE, "");
+        System.out.println(rawr);
+
+        double u = cryptoWorker.remote_op(20, 20, Operations.MULTIPLY);
+        System.out.println(u);
 
         p_enc_num(ans2, pvt);
         ans2 = cryptoWorker.remote_round(ans2);
